@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block title %}Daily Lesson - {{ category.replace('_', ' ').title() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-1">Daily Lesson</h1>
+                    <p class="text-muted mb-0">{{ category.replace('_', ' ').title() }} - {{ terms|length }} terms</p>
+                </div>
+                <div class="text-end">
+                    <div class="badge bg-primary fs-6" id="progress-badge">1/{{ terms|length }}</div>
+                </div>
+            </div>
+
+            <!-- Study Card -->
+            <div class="card shadow-lg mb-4" id="study-card">
+                <div class="card-body p-5">
+                    <!-- Term Display -->
+                    <div class="text-center mb-4">
+                        <h2 class="display-4 fw-bold text-primary" id="dutch-term">
+                            {{ terms[0].dutch_term if terms else 'Loading...' }}
+                        </h2>
+                        <div class="mt-3" id="translation-container" style="display: none;">
+                            <h3 class="h4 text-success" id="translated-term">
+                                {{ terms[0].translated_term if terms else '' }}
+                            </h3>
+                            <p class="text-muted mt-2" id="definition">
+                                {{ terms[0].definition if terms else '' }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="text-center" id="action-buttons">
+                        <button class="btn btn-outline-primary btn-lg me-2" id="show-answer-btn">
+                            Show Answer
+                        </button>
+                        <button class="btn btn-success btn-lg me-2" id="correct-btn" style="display: none;">
+                            ✓ Correct
+                        </button>
+                        <button class="btn btn-danger btn-lg me-2" id="incorrect-btn" style="display: none;">
+                            ✗ Incorrect
+                        </button>
+                        <button class="btn btn-primary btn-lg" id="next-btn" style="display: none;">
+                            Next Term
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Progress</span>
+                        <span id="progress-text">1/{{ terms|length }}</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-primary" role="progressbar" 
+                             id="progress-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Session Info -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="text-primary fw-bold" id="correct-count">0</div>
+                            <small class="text-muted">Correct</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-danger fw-bold" id="incorrect-count">0</div>
+                            <small class="text-muted">Incorrect</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-info fw-bold" id="xp-earned">0</div>
+                            <small class="text-muted">XP Earned</small>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-warning fw-bold" id="time-spent">0s</div>
+                            <small class="text-muted">Time</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results Modal -->
+<div class="modal fade" id="resultsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Lesson Complete!</h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-4">
+                    <h2 class="text-success">🎉 Great Job!</h2>
+                    <p class="lead">You've completed the {{ category.replace('_', ' ').title() }} lesson</p>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h4 id="final-correct">0</h4>
+                                <p class="mb-0">Correct</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h4 id="final-accuracy">0%</h4>
+                                <p class="mb-0">Accuracy</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body">
+                                <h4 id="final-xp">0</h4>
+                                <p class="mb-0">XP Earned</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+                <a href="{{ url_for('daily_lesson.start_lesson', category=category) }}" 
+                   class="btn btn-primary">
+                    Start Another Lesson
+                </a>
+                <a href="{{ url_for('daily_lesson.index') }}" class="btn btn-outline-primary">
+                    Back to Categories
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+class DailyLessonStudy {
+    constructor() {
+        this.terms = {{ terms|tojson }};
+        this.currentIndex = 0;
+        this.correctCount = 0;
+        this.incorrectCount = 0;
+        this.xpEarned = 0;
+        this.startTime = Date.now();
+        this.currentTerm = null;
+        
+        this.init();
+    }
+    
+    init() {
+        this.loadCurrentTerm();
+        this.bindEvents();
+        this.updateProgress();
+    }
+    
+    loadCurrentTerm() {
+        if (this.currentIndex >= this.terms.length) {
+            this.completeLesson();
+            return;
+        }
+        
+        this.currentTerm = this.terms[this.currentIndex];
+        this.showTerm();
+    }
+    
+    showTerm() {
+        document.getElementById('dutch-term').textContent = this.currentTerm.dutch_term;
+        document.getElementById('translated-term').textContent = this.currentTerm.translated_term;
+        document.getElementById('definition').textContent = this.currentTerm.definition || '';
+        
+        // Hide translation initially
+        document.getElementById('translation-container').style.display = 'none';
+        
+        // Show only show answer button
+        document.getElementById('show-answer-btn').style.display = 'inline-block';
+        document.getElementById('correct-btn').style.display = 'none';
+        document.getElementById('incorrect-btn').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'none';
+    }
+    
+    bindEvents() {
+        document.getElementById('show-answer-btn').addEventListener('click', () => {
+            this.showAnswer();
+        });
+        
+        document.getElementById('correct-btn').addEventListener('click', () => {
+            this.submitAnswer(4); // Quality 4 for correct
+        });
+        
+        document.getElementById('incorrect-btn').addEventListener('click', () => {
+            this.submitAnswer(2); // Quality 2 for incorrect
+        });
+        
+        document.getElementById('next-btn').addEventListener('click', () => {
+            this.nextTerm();
+        });
+    }
+    
+    showAnswer() {
+        document.getElementById('translation-container').style.display = 'block';
+        document.getElementById('show-answer-btn').style.display = 'none';
+        document.getElementById('correct-btn').style.display = 'inline-block';
+        document.getElementById('incorrect-btn').style.display = 'inline-block';
+    }
+    
+    async submitAnswer(quality) {
+        try {
+            const response = await fetch('{{ url_for("daily_lesson.submit_answer") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    term_id: this.currentTerm.id,
+                    quality: quality,
+                    time_spent: Math.floor((Date.now() - this.startTime) / 1000)
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.xpEarned += result.xp_earned;
+                
+                if (quality >= 3) {
+                    this.correctCount++;
+                } else {
+                    this.incorrectCount++;
+                }
+                
+                this.updateStats();
+                this.showNextButton();
+            } else {
+                console.error('Error submitting answer:', result.error);
+            }
+        } catch (error) {
+            console.error('Error submitting answer:', error);
+        }
+    }
+    
+    showNextButton() {
+        document.getElementById('correct-btn').style.display = 'none';
+        document.getElementById('incorrect-btn').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'inline-block';
+    }
+    
+    nextTerm() {
+        this.currentIndex++;
+        this.startTime = Date.now();
+        this.updateProgress();
+        this.loadCurrentTerm();
+    }
+    
+    updateProgress() {
+        const progress = ((this.currentIndex + 1) / this.terms.length) * 100;
+        document.getElementById('progress-bar').style.width = progress + '%';
+        document.getElementById('progress-text').textContent = `${this.currentIndex + 1}/${this.terms.length}`;
+        document.getElementById('progress-badge').textContent = `${this.currentIndex + 1}/${this.terms.length}`;
+    }
+    
+    updateStats() {
+        document.getElementById('correct-count').textContent = this.correctCount;
+        document.getElementById('incorrect-count').textContent = this.incorrectCount;
+        document.getElementById('xp-earned').textContent = this.xpEarned;
+        
+        const timeSpent = Math.floor((Date.now() - this.startTime) / 1000);
+        document.getElementById('time-spent').textContent = timeSpent + 's';
+    }
+    
+    completeLesson() {
+        const totalAnswered = this.correctCount + this.incorrectCount;
+        const accuracy = totalAnswered > 0 ? Math.round((this.correctCount / totalAnswered) * 100) : 0;
+        
+        document.getElementById('final-correct').textContent = this.correctCount;
+        document.getElementById('final-accuracy').textContent = accuracy + '%';
+        document.getElementById('final-xp').textContent = this.xpEarned;
+        
+        // Show results modal
+        const modal = new bootstrap.Modal(document.getElementById('resultsModal'));
+        modal.show();
+    }
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    new DailyLessonStudy();
+});
+</script>
+{% endblock %}
+
+
+
+
+

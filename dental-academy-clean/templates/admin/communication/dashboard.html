@@ -1,0 +1,297 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Communication Hub - Mentora{% endblock %}
+
+{% block extra_css %}
+<style>
+.stats-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-top: 4px solid #3ECDC1;
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.stats-card.success { border-top-color: #28a745; }
+.stats-card.warning { border-top-color: #ffc107; }
+.stats-card.info { border-top-color: #17a2b8; }
+.stats-card.danger { border-top-color: #dc3545; }
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.stats-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.quick-action-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-left: 4px solid #3ECDC1;
+    transition: all 0.3s ease;
+}
+
+.quick-action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.email-item {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-left: 4px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.email-item:hover {
+    border-left-color: #3ECDC1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.email-item.crm_lead { border-left-color: #ffc107; }
+.email-item.crm_follow_up { border-left-color: #17a2b8; }
+.email-item.crm_welcome { border-left-color: #28a745; }
+.email-item.notification { border-left-color: #6f42c1; }
+.email-item.custom { border-left-color: #6c757d; }
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-sent { background: #d1ecf1; color: #0c5460; }
+.status-delivered { background: #d4edda; color: #155724; }
+.status-opened { background: #fff3cd; color: #856404; }
+.status-clicked { background: #f8d7da; color: #721c24; }
+.status-failed { background: #f5c6cb; color: #721c24; }
+
+.campaign-item {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-left: 4px solid #e9ecef;
+}
+
+.campaign-item.scheduled { border-left-color: #ffc107; }
+.campaign-item.running { border-left-color: #17a2b8; }
+.campaign-item.completed { border-left-color: #28a745; }
+.campaign-item.cancelled { border-left-color: #dc3545; }
+
+.template-item {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-left: 4px solid #3ECDC1;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">📧 Communication Hub</h1>
+            <p class="text-muted">Центр управления коммуникацией с клиентами</p>
+        </div>
+        <div>
+            <a href="{{ url_for('communication.hub') }}" class="btn btn-primary me-2">
+                <i class="bi bi-envelope-plus"></i> Communication Hub
+            </a>
+            <a href="{{ url_for('communication.send_email') }}" class="btn btn-outline-primary me-2">
+                <i class="bi bi-envelope"></i> Простой Email
+            </a>
+            <a href="{{ url_for('communication.create_campaign') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-broadcast"></i> Создать Кампанию
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ stats.total_emails_sent }}</div>
+                <div class="stats-label">Писем отправлено (30 дней)</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card success">
+                <div class="stats-number">{{ stats.emails_to_users }}</div>
+                <div class="stats-label">Писем пользователям</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card info">
+                <div class="stats-number">{{ stats.emails_to_contacts }}</div>
+                <div class="stats-label">Писем контактам</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card warning">
+                <div class="stats-number">{{ stats.active_campaigns }}</div>
+                <div class="stats-label">Активных кампаний</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Quick Actions -->
+        <div class="col-md-4">
+            <div class="quick-action-card">
+                <h5 class="mb-3">🚀 Быстрые действия</h5>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('communication.hub') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-envelope-plus"></i> Communication Hub
+                    </a>
+                    <a href="{{ url_for('communication.send_email') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-envelope"></i> Простой Email
+                    </a>
+                    <a href="{{ url_for('communication.create_template') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-file-text"></i> Создать Шаблон
+                    </a>
+                    <a href="{{ url_for('communication.create_campaign') }}" class="btn btn-outline-info">
+                        <i class="bi bi-broadcast"></i> Создать Кампанию
+                    </a>
+                    <a href="{{ url_for('communication.history') }}" class="btn btn-outline-success">
+                        <i class="bi bi-clock-history"></i> История Переписки
+                    </a>
+                </div>
+            </div>
+
+            <!-- Popular Templates -->
+            <div class="quick-action-card">
+                <h5 class="mb-3">📝 Популярные шаблоны</h5>
+                {% for template in popular_templates %}
+                <div class="template-item">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">{{ template.name }}</h6>
+                            <small class="text-muted">{{ template.email_type }}</small>
+                        </div>
+                        <span class="badge bg-secondary">{{ template.usage_count }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if not popular_templates %}
+                <p class="text-muted text-center">Нет шаблонов</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Emails -->
+        <div class="col-md-4">
+            <div class="quick-action-card">
+                <h5 class="mb-3">📬 Последние письма</h5>
+                {% for email in recent_emails %}
+                <div class="email-item {{ email.email_type }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">{{ email.subject }}</h6>
+                            <small class="text-muted">{{ email.recipient_name or email.recipient_email }}</small>
+                        </div>
+                        <span class="status-badge status-{{ email.status }}">{{ email.status }}</span>
+                    </div>
+                    <small class="text-muted">{{ email.sent_at.strftime('%d.%m.%Y %H:%M') }}</small>
+                </div>
+                {% endfor %}
+                {% if not recent_emails %}
+                <p class="text-muted text-center">Нет отправленных писем</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Active Campaigns -->
+        <div class="col-md-4">
+            <div class="quick-action-card">
+                <h5 class="mb-3">📢 Активные кампании</h5>
+                {% for campaign in active_campaigns %}
+                <div class="campaign-item {{ campaign.status }}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">{{ campaign.name }}</h6>
+                            <small class="text-muted">{{ campaign.target_type }} • {{ campaign.total_recipients }} получателей</small>
+                        </div>
+                        <span class="badge bg-{{ 'warning' if campaign.status == 'scheduled' else 'info' }}">
+                            {{ campaign.status }}
+                        </span>
+                    </div>
+                    <div class="progress mt-2" style="height: 4px;">
+                        <div class="progress-bar" style="width: {{ (campaign.sent_count / campaign.total_recipients * 100) if campaign.total_recipients > 0 else 0 }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if not active_campaigns %}
+                <p class="text-muted text-center">Нет активных кампаний</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Cards -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-envelope" style="font-size: 2rem; color: #3ECDC1;"></i>
+                    <h5 class="card-title mt-3">Communication Hub</h5>
+                    <p class="card-text">Полноценный центр коммуникаций с профессиональными шаблонами</p>
+                    <a href="{{ url_for('communication.hub') }}" class="btn btn-primary">Открыть</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-file-text" style="font-size: 2rem; color: #17a2b8;"></i>
+                    <h5 class="card-title mt-3">Шаблоны</h5>
+                    <p class="card-text">Управление шаблонами email для переиспользования</p>
+                    <a href="{{ url_for('communication.templates') }}" class="btn btn-info">Управлять</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-broadcast" style="font-size: 2rem; color: #ffc107;"></i>
+                    <h5 class="card-title mt-3">Кампании</h5>
+                    <p class="card-text">Создание и управление массовыми рассылками</p>
+                    <a href="{{ url_for('communication.campaigns') }}" class="btn btn-warning">Управлять</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-clock-history" style="font-size: 2rem; color: #28a745;"></i>
+                    <h5 class="card-title mt-3">История</h5>
+                    <p class="card-text">Просмотр истории всех отправленных писем</p>
+                    <a href="{{ url_for('communication.history') }}" class="btn btn-success">Просмотреть</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

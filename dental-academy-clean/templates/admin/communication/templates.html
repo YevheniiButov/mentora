@@ -1,0 +1,199 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Шаблоны Email - Communication Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+.template-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-left: 4px solid #3ECDC1;
+    transition: all 0.3s ease;
+}
+
+.template-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.template-card.crm_lead { border-left-color: #ffc107; }
+.template-card.crm_follow_up { border-left-color: #17a2b8; }
+.template-card.crm_welcome { border-left-color: #28a745; }
+.template-card.notification { border-left-color: #6f42c1; }
+.template-card.custom { border-left-color: #6c757d; }
+
+.usage-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">📝 Шаблоны Email</h1>
+            <p class="text-muted">Управление шаблонами для переиспользования</p>
+        </div>
+        <div>
+            <a href="{{ url_for('communication.create_template') }}" class="btn btn-primary me-2">
+                <i class="bi bi-plus-circle"></i> Создать шаблон
+            </a>
+            <a href="{{ url_for('communication.hub') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Назад
+            </a>
+        </div>
+    </div>
+
+    <!-- Templates Grid -->
+    {% if templates %}
+        <div class="row">
+            {% for template in templates %}
+            <div class="col-md-6 col-lg-4">
+                <div class="template-card {{ template.email_type }}">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="mb-1">{{ template.name }}</h5>
+                            <span class="badge bg-{{ 'warning' if template.email_type == 'crm_lead' else 'info' if template.email_type == 'crm_follow_up' else 'success' if template.email_type == 'crm_welcome' else 'primary' if template.email_type == 'notification' else 'secondary' }}">
+                                {{ template.email_type }}
+                            </span>
+                        </div>
+                        <span class="usage-badge">{{ template.usage_count }} использований</span>
+                    </div>
+                    
+                    {% if template.variables %}
+                        {% set variables = template.variables|from_json %}
+                    {% else %}
+                        {% set variables = {} %}
+                    {% endif %}
+                    <p class="text-muted mb-2">{{ variables.description or 'Без описания' }}</p>
+                    
+                    <div class="mb-3">
+                        <strong>Тема:</strong> {{ template.subject }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Сообщение:</strong>
+                        <p class="text-muted small">{{ template.html_content[:100] }}{% if template.html_content|length > 100 %}...{% endif %}</p>
+                    </div>
+                    
+                    {% if variables.action_url %}
+                    <div class="mb-3">
+                        <strong>Кнопка:</strong> 
+                        <a href="{{ variables.action_url }}" class="text-decoration-none" target="_blank">
+                            {{ variables.action_text or 'Ссылка' }}
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            Создан: {{ template.created_at.strftime('%d.%m.%Y') }}
+                        </small>
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ url_for('communication.edit_template', template_id=template.id) }}" 
+                               class="btn btn-outline-primary" title="Редактировать">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <button class="btn btn-outline-success" 
+                                    onclick="useTemplate({{ template.id }})" 
+                                    title="Использовать">
+                                <i class="bi bi-envelope"></i>
+                            </button>
+                            <button class="btn btn-outline-info" 
+                                    onclick="duplicateTemplate({{ template.id }})" 
+                                    title="Дублировать">
+                                <i class="bi bi-files"></i>
+                            </button>
+                            {% if not template.is_system %}
+                            <button class="btn btn-outline-danger" 
+                                    onclick="deleteTemplate({{ template.id }})" 
+                                    title="Удалить">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-file-text" style="font-size: 4rem; color: #dee2e6;"></i>
+            <h4 class="text-muted mt-3">Шаблоны не найдены</h4>
+            <p class="text-muted">Создайте свой первый шаблон для переиспользования</p>
+            <a href="{{ url_for('communication.create_template') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Создать шаблон
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function useTemplate(templateId) {
+    // Redirect to send email page with template pre-selected
+    window.location.href = `{{ url_for('communication.send_professional') }}?template_id=${templateId}`;
+}
+
+function duplicateTemplate(templateId) {
+    if (confirm('Создать копию этого шаблона?')) {
+        fetch(`/admin/communication/templates/${templateId}/duplicate`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при копировании шаблона');
+        });
+    }
+}
+
+function deleteTemplate(templateId) {
+    if (confirm('Вы уверены, что хотите удалить этот шаблон? Это действие нельзя отменить.')) {
+        fetch(`/admin/communication/templates/${templateId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Произошла ошибка при удалении шаблона');
+        });
+    }
+}
+</script>
+{% endblock %}

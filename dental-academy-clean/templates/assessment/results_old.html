@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="{{ session.get('language', 'en') }}">
+<head>
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="{{ url_for('static', filename='css/main.min.css') }}" as="style">
+    <link rel="preload" href="{{ url_for('static', filename='css/universal-styles.min.css') }}" as="style">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ _('BIG Assessment Results') }} - Mentora</title>
+    
+    <!-- Modern CSS Framework -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Убираем проблемный плагин datalabels -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script> -->
+    
+    <!-- Base styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base/common.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/assessment.css') }}">
+    
+    <style>
+        :root {
+            --primary-color: #3ECDC1;
+            --secondary-color: #6C5CE7;
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        .results-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Header Section */
+        .results-header {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .results-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .completion-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, var(--success-color), #16a34a);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 18px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .results-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            letter-spacing: -0.025em;
+        }
+
+        .results-subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Overall Score Section */
+        .overall-score {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+
+        .score-circle {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 30px;
+        }
+
+        .score-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .score-label {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .readiness-level {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .readiness-ready {
+            background: linear-gradient(135deg, var(--success-color), #16a34a);
+            color: white;
+        }
+
+        .readiness-almost {
+            background: linear-gradient(135deg, var(--warning-color), #d97706);
+            color: white;
+        }
+
+        .readiness-progress {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        /* Domain Analysis Grid */
+        .domain-analysis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .domain-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .domain-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .domain-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .domain-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .domain-score {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .domain-progress {
+            height: 8px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .domain-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 4px;
+            transition: width 0.8s ease;
+        }
+
+        .domain-chart {
+            height: 120px;
+            margin: 20px 0;
+        }
+
+        .domain-insights {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+
+        .insight-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .insight-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+        }
+
+        .insight-strong {
+            background: var(--success-color);
+        }
+
+        .insight-weak {
+            background: var(--error-color);
+        }
+
+        .insight-average {
+            background: var(--warning-color);
+        }
+
+        /* Recommendations Section */
+        .recommendations {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .recommendations-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .recommendations-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+        }
+
+        .recommendations-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .recommendation-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .recommendation-priority {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .priority-high {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .priority-medium {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .priority-low {
+            background: #f0f9ff;
+            color: #2563eb;
+        }
+
+        /* Action Buttons */
+        .action-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 32px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            min-width: 200px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(62, 205, 193, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        /* Progress Ring */
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            fill: none;
+            stroke: #e5e7eb;
+            stroke-width: 8;
+        }
+
+        .progress-ring-progress {
+            fill: none;
+            stroke: url(#gradient);
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.8s ease;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .results-container {
+                padding: 12px;
+            }
+
+            .results-header,
+            .overall-score,
+            .recommendations,
+            .action-section {
+                padding: 24px;
+            }
+
+            .domain-card {
+                padding: 20px;
+            }
+
+            .results-title {
+                font-size: 28px;
+            }
+
+            .score-circle {
+                width: 160px;
+                height: 160px;
+            }
+
+            .score-value {
+                font-size: 36px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        /* Animation Classes */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .slide-up {
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="results-container">
+        <!-- Header Section -->
+        <div class="results-header fade-in">
+            <div class="completion-badge">
+                <i class="fas fa-check-circle"></i>
+                {{ _('Диагностика завершена') }}
+            </div>
+            <h1 class="results-title">{{ _('Ваши результаты BIG диагностики') }}</h1>
+            <p class="results-subtitle">
+                {{ _('Персональный анализ ваших знаний и навыков на основе современных методов Item Response Theory (IRT). Результаты помогут создать оптимальный план подготовки к экзамену.') }}
+            </p>
+        </div>
+        
+        <!-- Overall Score Section -->
+        <div class="overall-score slide-up">
+            <div class="score-circle">
+                <svg width="200" height="200" class="progress-ring">
+                    <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#3ECDC1"/>
+                            <stop offset="100%" style="stop-color:#6C5CE7"/>
+                        </linearGradient>
+                    </defs>
+                    <circle cx="100" cy="100" r="80" class="progress-ring-circle"></circle>
+                    <circle cx="100" cy="100" r="80" class="progress-ring-progress" id="progress-circle"></circle>
+                </svg>
+                <div class="score-value" id="overall-score">--</div>
+                    </div>
+            <div class="score-label">{{ _('Общий уровень подготовки') }}</div>
+            <div class="readiness-level" id="readiness-badge">
+                <i class="fas fa-clock"></i>
+                {{ _('Анализируем результаты...') }}
+                    </div>
+                </div>
+                
+        <!-- Domain Analysis Grid -->
+        <div class="domain-analysis" id="domain-grid">
+            <!-- Domain cards will be generated by JavaScript -->
+            </div>
+            
+        <!-- Recommendations Section -->
+        <div class="recommendations slide-up">
+            <div class="recommendations-header">
+                <div class="recommendations-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div class="recommendations-title">{{ _('Персональные рекомендации') }}</div>
+            </div>
+            <div id="recommendations-content">
+                <!-- Recommendations will be generated by JavaScript -->
+            </div>
+            </div>
+            
+        <!-- Action Section -->
+        <div class="action-section slide-up">
+            <h2 style="font-size: 28px; margin-bottom: 16px; color: var(--text-primary);">{{ _('Следующие шаги') }}</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                {{ _('На основе результатов диагностики мы создадим персональный план обучения, который поможет вам эффективно подготовиться к BIG экзамену.') }}
+            </p>
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="createLearningPlan()">
+                    <i class="fas fa-route"></i>
+                    {{ _('Создать план обучения') }}
+                </button>
+                <a href="#" class="btn btn-secondary" onclick="downloadReport()">
+                    <i class="fas fa-download"></i>
+                    {{ _('Скачать отчет') }}
+                </a>
+                <a href="#" class="btn btn-secondary" onclick="shareResults()">
+                    <i class="fas fa-share"></i>
+                    {{ _('Поделиться результатами') }}
+                </a>
+        </div>
+    </div>
+</div>
+
+    <!-- Diagnostic data from server -->
+<script>
+        // Diagnostic data from Flask backend
+        const diagnosticData = {{ diagnostic_data | tojson | safe }};
+    </script>
+
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/diagnostic.js') }}"></script>
+
+    <!-- Image Optimization -->
+    <script src="{{ url_for('static', filename='js/image-optimizer.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/image-optimization.min.css') }}">
+</body>
+</html>

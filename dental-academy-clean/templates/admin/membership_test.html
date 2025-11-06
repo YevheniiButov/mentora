@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+
+{% block title %}Membership Testing Panel - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .testing-banner {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        color: white;
+        padding: 1rem;
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #00bfa5;
+        transition: transform 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #00bfa5;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .users-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+    
+    .users-table th,
+    .users-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .users-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .users-table tr:hover {
+        background: #f8f9fa;
+    }
+    
+    .membership-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .membership-badge.free {
+        background: #e9ecef;
+        color: #6c757d;
+    }
+    
+    .membership-badge.premium {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .btn-test {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-activate {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-activate:hover {
+        background: #218838;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-deactivate {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .btn-deactivate:hover {
+        background: #c82333;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-view {
+        background: #17a2b8;
+        color: white;
+    }
+    
+    .btn-view:hover {
+        background: #138496;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .test-actions {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .test-actions h3 {
+        color: #333;
+        margin-bottom: 1rem;
+    }
+    
+    .test-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-test-large {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        min-width: 200px;
+        text-align: center;
+    }
+    
+    .btn-mollie {
+        background: linear-gradient(135deg, #00bfa5, #00897b);
+        color: white;
+    }
+    
+    .btn-mollie:hover {
+        background: linear-gradient(135deg, #00897b, #00695c);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+    
+    .btn-card {
+        background: linear-gradient(135deg, #6c5ce7, #5f3dc4);
+        color: white;
+    }
+    
+    .btn-card:hover {
+        background: linear-gradient(135deg, #5f3dc4, #4c63d2);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+    
+    .btn-upgrade {
+        background: linear-gradient(135deg, #fd79a8, #e84393);
+        color: white;
+    }
+    
+    .btn-upgrade:hover {
+        background: linear-gradient(135deg, #e84393, #d63031);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+    
+    .warning-box {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        color: #856404;
+    }
+    
+    .warning-box h4 {
+        margin: 0 0 0.5rem 0;
+        color: #856404;
+    }
+    
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .test-buttons {
+            flex-direction: column;
+        }
+        
+        .btn-test-large {
+            min-width: auto;
+        }
+        
+        .users-table {
+            font-size: 0.9rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Testing Banner -->
+    <div class="testing-banner">
+        <h2>🧪 TESTING MODE - Membership Features</h2>
+        <p>This panel is hidden from regular users and only accessible to admins</p>
+    </div>
+
+    <!-- Warning Box -->
+    <div class="warning-box">
+        <h4>⚠️ Testing Environment</h4>
+        <p>This is a testing panel for membership functionality. All actions here are for testing purposes only and should not be used in production with real user data.</p>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_users }}</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ premium_users }}</div>
+            <div class="stat-label">Premium Users</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ users_with_qr }}</div>
+            <div class="stat-label">Users with QR</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ (total_users - premium_users) }}</div>
+            <div class="stat-label">Free Users</div>
+        </div>
+    </div>
+
+    <!-- Test Actions -->
+    <div class="test-actions">
+        <h3>🧪 Test Actions</h3>
+        <div class="test-buttons">
+            <a href="{{ url_for('membership.upgrade_page') }}" class="btn-test-large btn-upgrade">
+                📈 Test Upgrade Page
+            </a>
+            <a href="{{ url_for('membership.card') }}" class="btn-test-large btn-card">
+                🆔 View Member Card
+            </a>
+            <a href="{{ url_for('membership.checkout') }}" class="btn-test-large btn-mollie" onclick="return confirm('This will create a test payment. Continue?')">
+                💳 Test Mollie Payment
+            </a>
+        </div>
+    </div>
+
+    <!-- Users Management -->
+    <div class="users-section">
+        <h3>👥 User Management</h3>
+        <p>Recent users for testing membership features:</p>
+        
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Membership</th>
+                    <th>Member ID</th>
+                    <th>QR Code</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in recent_users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.get_display_name() }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        <span class="membership-badge {{ user.role }}">
+                            {{ user.role }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="membership-badge {{ user.membership_type or 'free' }}">
+                            {{ user.membership_type or 'free' }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if user.member_id %}
+                            <code>{{ user.member_id }}</code>
+                        {% else %}
+                            <span style="color: #999;">None</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.qr_code_path %}
+                            <span style="color: #28a745;">✓ Generated</span>
+                        {% else %}
+                            <span style="color: #999;">Not generated</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            {% if user.membership_type != 'premium' %}
+                            <a href="{{ url_for('admin.test_activate_premium', user_id=user.id) }}" 
+                               class="btn-test btn-activate"
+                               onclick="return confirm('Activate Premium for {{ user.get_display_name() }}?')">
+                                Activate Premium
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('admin.test_deactivate_premium', user_id=user.id) }}" 
+                               class="btn-test btn-deactivate"
+                               onclick="return confirm('Deactivate Premium for {{ user.get_display_name() }}?')">
+                                Deactivate
+                            </a>
+                            {% endif %}
+                            
+                            {% if user.member_id %}
+                            <a href="{{ url_for('membership.verify_member', member_id=user.member_id) }}" 
+                               class="btn-test btn-view"
+                               target="_blank">
+                                View Card
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="test-actions">
+        <h3>🔗 Quick Links</h3>
+        <div class="test-buttons">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn-test-large btn-upgrade">
+                ← Back to Admin Dashboard
+            </a>
+            <a href="{{ url_for('membership.upgrade_page') }}" class="btn-test-large btn-mollie">
+                Membership Upgrade Page
+            </a>
+            <a href="{{ url_for('membership.card') }}" class="btn-test-large btn-card">
+                Member Card Page
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add some interactive features
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click tracking for test buttons
+    const testButtons = document.querySelectorAll('.btn-test, .btn-test-large');
+    testButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Test action clicked:', this.textContent.trim());
+        });
+    });
+    
+    // Add confirmation for destructive actions
+    const destructiveButtons = document.querySelectorAll('.btn-deactivate');
+    destructiveButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (!confirm('Are you sure you want to deactivate Premium membership?')) {
+                e.preventDefault();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+
+

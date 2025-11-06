@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('contact_title', lang) | default('Contact') }} - Mentora{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <h1 class="display-4 mb-4">{{ t('contact_us', lang) | default('Contact Us') }}</h1>
+                <p class="lead text-muted">{{ t('contact_subtitle', lang) | default('We are always ready to help you with questions and suggestions') }}</p>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
+                            <h4 class="card-title">{{ t('email_contact', lang) | default('Email') }}</h4>
+                            <p class="card-text">
+                                <a href="mailto:info@bigmentor.nl" class="text-decoration-none">
+                                    info@bigmentor.nl
+                                </a><br>
+                                <a href="mailto:info@mentora.com.in" class="text-decoration-none">
+                                    info@mentora.com.in
+                                </a>
+                            </p>
+                            <p class="text-muted small">
+                                {{ t('response_time', lang) | default('We will respond within 24 hours') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center p-4">
+                            <i class="fas fa-question-circle fa-3x text-info mb-3"></i>
+                            <h4 class="card-title">{{ t('technical_support', lang) | default('Technical Support') }}</h4>
+                            <p class="card-text">
+                                <a href="mailto:support@mentora.com.in" class="text-decoration-none">
+                                    support@mentora.com.in
+                                </a>
+                            </p>
+                            <p class="text-muted small">
+                                {{ t('technical_help', lang) | default('Help with technical questions') }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        {{ t('send_message', lang) | default('Send Message') }}
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">{{ t('name', lang) | default('Name') }} *</label>
+                                <input type="text" class="form-control" id="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">{{ t('email', lang) | default('Email') }} *</label>
+                                <input type="email" class="form-control" id="email" required autocomplete="email">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="subject" class="form-label">{{ t('subject', lang) | default('Subject') }}</label>
+                            <select class="form-select" id="subject">
+                                <option value="">{{ t('select_subject', lang) | default('Select subject') }}</option>
+                                <option value="general">{{ t('general_questions', lang) | default('General Questions') }}</option>
+                                <option value="technical">{{ t('technical_support', lang) | default('Technical Support') }}</option>
+                                <option value="feedback">{{ t('feedback', lang) | default('Feedback') }}</option>
+                                <option value="partnership">{{ t('partnership', lang) | default('Partnership') }}</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="message" class="form-label">{{ t('message', lang) | default('Message') }} *</label>
+                            <textarea class="form-control" id="message" rows="5" required 
+                                      placeholder="{{ t('message_placeholder', lang) | default('Describe your question or suggestion...') }}"></textarea>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                {{ t('send_message', lang) | default('Send Message') }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>{{ t('note', lang) | default('Note') }}:</strong> {{ t('contact_form_note', lang) | default('The contact form is under development. Please use email for contact.') }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

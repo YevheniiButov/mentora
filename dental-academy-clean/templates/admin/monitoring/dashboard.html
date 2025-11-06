@@ -1,0 +1,281 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Monitoring Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+        border-left: 4px solid #007bff;
+    }
+    
+    .stat-card.success { border-left-color: #28a745; }
+    .stat-card.error { border-left-color: #dc3545; }
+    .stat-card.warning { border-left-color: #ffc107; }
+    .stat-card.info { border-left-color: #17a2b8; }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #7f8c8d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .recent-item {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-left: 3px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .recent-item:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transform: translateY(-1px);
+    }
+    
+    .recent-item.error { border-left-color: #dc3545; }
+    .recent-item.warning { border-left-color: #ffc107; }
+    .recent-item.info { border-left-color: #17a2b8; }
+    
+    .timestamp {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .error-message {
+        font-family: monospace;
+        background: #f8f9fa;
+        padding: 0.5rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+    }
+    
+    .notification-badge {
+        background: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        margin-left: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">📊 Monitoring Dashboard</h1>
+                <div>
+                    <a href="{{ url_for('monitoring.logs') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-list-ul"></i> View All Logs
+                    </a>
+                    <button class="btn btn-primary" onclick="refreshDashboard()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="stat-card success">
+                <div class="stat-number">{{ stats.successful_registrations or 0 }}</div>
+                <div class="stat-label">Successful Registrations</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card error">
+                <div class="stat-number">{{ stats.failed_registrations or 0 }}</div>
+                <div class="stat-label">Failed Registrations</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card warning">
+                <div class="stat-number">{{ stats.validation_errors or 0 }}</div>
+                <div class="stat-label">Validation Errors</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card info">
+                <div class="stat-number">{{ stats.critical_errors or 0 }}</div>
+                <div class="stat-label">Critical Errors</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Registration Types -->
+    <div class="row">
+        <div class="col-12">
+            <div class="stat-card">
+                <h5 class="mb-3">Registration Types (Last 24h)</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between">
+                            <span>Full Registration:</span>
+                            <strong>{{ stats.registration_types.full_registration or 0 }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between">
+                            <span>Quick Registration:</span>
+                            <strong>{{ stats.registration_types.quick_registration or 0 }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between">
+                            <span>Invite Registration:</span>
+                            <strong>{{ stats.registration_types.invite_registration or 0 }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="stat-card">
+                <h5 class="mb-3">
+                    Recent Errors
+                    {% if recent_errors|length > 0 %}
+                        <span class="notification-badge">{{ recent_errors|length }}</span>
+                    {% endif %}
+                </h5>
+                {% if recent_errors %}
+                    {% for error in recent_errors[:5] %}
+                    <div class="recent-item error">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ error.get('registration_type', 'Unknown') }}</strong>
+                                <div class="timestamp">{{ error.get('request_context', {}).get('timestamp', 'Unknown time') }}</div>
+                            </div>
+                            <span class="badge bg-danger">{{ error.get('event', 'error') }}</span>
+                        </div>
+                        <div class="error-message">
+                            {{ error.get('error_message', 'No message') }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="bi bi-check-circle-fill text-success"></i>
+                        No recent errors
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="stat-card">
+                <h5 class="mb-3">
+                    Recent Notifications
+                    {% if recent_notifications|length > 0 %}
+                        <span class="notification-badge">{{ recent_notifications|length }}</span>
+                    {% endif %}
+                </h5>
+                {% if recent_notifications %}
+                    {% for notification in recent_notifications[:5] %}
+                    <div class="recent-item {% if notification.get('type') == 'critical_error' %}error{% else %}info{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ notification.get('type', 'Unknown') }}</strong>
+                                <div class="timestamp">{{ notification.get('created_at', 'Unknown time') }}</div>
+                            </div>
+                            {% if not notification.get('read', False) %}
+                                <span class="badge bg-warning">Unread</span>
+                            {% endif %}
+                        </div>
+                        {% if notification.get('data') %}
+                        <div class="error-message">
+                            {{ notification.data[:100] }}{% if notification.data|length > 100 %}...{% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="bi bi-bell-slash"></i>
+                        No recent notifications
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Error Breakdown -->
+    <div class="row">
+        <div class="col-12">
+            <div class="stat-card">
+                <h5 class="mb-3">Error Breakdown (Last 24h)</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Database Errors:</span>
+                            <strong class="text-danger">{{ stats.database_errors or 0 }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Email Errors:</span>
+                            <strong class="text-warning">{{ stats.email_errors or 0 }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Validation Errors:</span>
+                            <strong class="text-info">{{ stats.validation_errors or 0 }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Critical Errors:</span>
+                            <strong class="text-danger">{{ stats.critical_errors or 0 }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function refreshDashboard() {
+    location.reload();
+}
+
+// Auto-refresh every 5 minutes
+setInterval(function() {
+    // Only refresh if user is still on the page
+    if (document.visibilityState === 'visible') {
+        location.reload();
+    }
+}, 300000); // 5 minutes
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,307 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Создать профессию - Mentora{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-left: 5px solid #007bff;
+}
+
+.form-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.category-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-right: 10px;
+}
+
+.category-dental { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+.category-medical { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+.category-pharmacy { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+.category-other { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; }
+
+.requirement-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-left: 4px solid #007bff;
+}
+
+.big-exam-toggle {
+    background: #e3f2fd;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">➕ Создать профессию</h1>
+            <p class="text-muted">Добавление новой профессии в систему CRM</p>
+        </div>
+        <div>
+            <a href="{{ url_for('admin.crm_professions') }}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Назад к списку
+            </a>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="form-card">
+                <div class="form-header">
+                    <h4 class="mb-0">👨‍⚕️ Новая профессия</h4>
+                    <p class="mb-0">Заполните информацию о профессии</p>
+                </div>
+
+                <form method="POST">
+                    <!-- Basic Information -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">📋 Основная информация</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Название (английский) *</label>
+                                    <input type="text" class="form-control" id="name" name="name" required
+                                           placeholder="например: Dentist">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name_nl" class="form-label">Название (голландский)</label>
+                                    <input type="text" class="form-control" id="name_nl" name="name_nl"
+                                           placeholder="например: Tandarts">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="code" class="form-label">Код профессии *</label>
+                                    <input type="text" class="form-control" id="code" name="code" required
+                                           placeholder="например: DENT">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="category" class="form-label">Категория *</label>
+                                    <select class="form-select" id="category" name="category" required>
+                                        <option value="">Выберите категорию</option>
+                                        <option value="dental">Стоматология</option>
+                                        <option value="medical">🩺 Медицина</option>
+                                        <option value="pharmacy">💊 Фармация</option>
+                                        <option value="other">👨‍⚕️ Другое</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BIG Exam Requirements -->
+                    <div class="big-exam-toggle">
+                        <h5 class="mb-3">Требования BIG экзамена</h5>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="big_exam_required" 
+                                   name="big_exam_required" value="1" checked>
+                            <label class="form-check-label" for="big_exam_required">
+                                <strong>Требуется BIG экзамен для этой профессии</strong>
+                            </label>
+                        </div>
+                        <small class="text-muted">
+                            Если включено, пользователи этой профессии должны будут сдать BIG экзамен
+                        </small>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">📝 Описание</h5>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Описание профессии</label>
+                            <textarea class="form-control" id="description" name="description" rows="4"
+                                      placeholder="Опишите профессию, её особенности и требования..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Requirements -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">📋 Требования</h5>
+                        <div class="mb-3">
+                            <label for="requirements" class="form-label">Требования к профессии</label>
+                            <textarea class="form-control" id="requirements" name="requirements" rows="4"
+                                      placeholder="Укажите требования к образованию, опыту, сертификации..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">👁️ Предварительный просмотр</h5>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2">
+                                        <div class="category-icon category-other" id="preview-icon">
+                                            👨‍⚕️
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h5 class="mb-1" id="preview-name">Название профессии</h5>
+                                        <p class="text-muted mb-1" id="preview-name-nl">Голландское название</p>
+                                        <p class="mb-0">
+                                            <span class="badge bg-info" id="preview-category">Категория</span>
+                                            <span class="ms-2" id="preview-code">КОД</span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <span class="badge bg-success" id="preview-big">BIG экзамен</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3" id="preview-description" style="display: none;">
+                                    <strong>Описание:</strong>
+                                    <p class="mb-0" id="preview-description-text"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="text-end">
+                        <a href="{{ url_for('admin.crm_professions') }}" class="btn btn-secondary me-2">
+                            <i class="bi bi-x-circle"></i> Отмена
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-lg"></i> Создать профессию
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Update preview when form fields change
+document.addEventListener('DOMContentLoaded', function() {
+    const nameInput = document.getElementById('name');
+    const nameNlInput = document.getElementById('name_nl');
+    const codeInput = document.getElementById('code');
+    const categorySelect = document.getElementById('category');
+    const bigExamCheckbox = document.getElementById('big_exam_required');
+    const descriptionTextarea = document.getElementById('description');
+
+    // Preview elements
+    const previewName = document.getElementById('preview-name');
+    const previewNameNl = document.getElementById('preview-name-nl');
+    const previewCode = document.getElementById('preview-code');
+    const previewCategory = document.getElementById('preview-category');
+    const previewIcon = document.getElementById('preview-icon');
+    const previewBig = document.getElementById('preview-big');
+    const previewDescription = document.getElementById('preview-description');
+    const previewDescriptionText = document.getElementById('preview-description-text');
+
+    function updatePreview() {
+        // Update name
+        previewName.textContent = nameInput.value || 'Название профессии';
+        previewNameNl.textContent = nameNlInput.value || 'Голландское название';
+        previewCode.textContent = codeInput.value || 'КОД';
+
+        // Update category
+        const category = categorySelect.value;
+        if (category) {
+            const categoryNames = {
+                'dental': 'Стоматология',
+                'medical': 'Медицина',
+                'pharmacy': 'Фармация',
+                'other': 'Другое'
+            };
+            const categoryIcons = {
+                'dental': '',
+                'medical': '🩺',
+                'pharmacy': '💊',
+                'other': '👨‍⚕️'
+            };
+            
+            previewCategory.textContent = categoryNames[category];
+            previewIcon.textContent = categoryIcons[category];
+            previewIcon.className = `category-icon category-${category}`;
+        } else {
+            previewCategory.textContent = 'Категория';
+            previewIcon.textContent = '👨‍⚕️';
+            previewIcon.className = 'category-icon category-other';
+        }
+
+        // Update BIG exam status
+        if (bigExamCheckbox.checked) {
+            previewBig.textContent = 'BIG экзамен';
+            previewBig.className = 'badge bg-success';
+        } else {
+            previewBig.textContent = 'Без экзамена';
+            previewBig.className = 'badge bg-secondary';
+        }
+
+        // Update description
+        if (descriptionTextarea.value.trim()) {
+            previewDescription.style.display = 'block';
+            previewDescriptionText.textContent = descriptionTextarea.value;
+        } else {
+            previewDescription.style.display = 'none';
+        }
+    }
+
+    // Add event listeners
+    nameInput.addEventListener('input', updatePreview);
+    nameNlInput.addEventListener('input', updatePreview);
+    codeInput.addEventListener('input', updatePreview);
+    categorySelect.addEventListener('change', updatePreview);
+    bigExamCheckbox.addEventListener('change', updatePreview);
+    descriptionTextarea.addEventListener('input', updatePreview);
+
+    // Initial preview update
+    updatePreview();
+});
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    const code = document.getElementById('code').value.trim();
+    const category = document.getElementById('category').value;
+
+    if (!name || !code || !category) {
+        e.preventDefault();
+        alert('Пожалуйста, заполните все обязательные поля (название, код, категория)');
+        return false;
+    }
+
+    // Check if code is unique (basic client-side validation)
+    if (code.length < 2) {
+        e.preventDefault();
+        alert('Код профессии должен содержать минимум 2 символа');
+        return false;
+    }
+});
+</script>
+{% endblock %}

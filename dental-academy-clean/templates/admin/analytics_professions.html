@@ -1,0 +1,423 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Аналитика по профессиям - Админ панель{% endblock %}
+
+{% block extra_css %}
+<style>
+.profession-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #667eea;
+}
+
+.profession-icon {
+    font-size: 2rem;
+    margin-right: 15px;
+    width: 50px;
+    text-align: center;
+}
+
+.profession-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.profession-info {
+    flex: 1;
+}
+
+.profession-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.profession-details {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.metric-item {
+    text-align: center;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.metric-value {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.metric-label {
+    color: #666;
+    font-size: 0.8rem;
+    margin-top: 5px;
+}
+
+.sort-controls {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.sort-btn {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    color: #495057;
+    padding: 8px 16px;
+    border-radius: 6px;
+    margin-right: 10px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.sort-btn:hover, .sort-btn.active {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+    text-decoration: none;
+}
+
+.progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: #e9ecef;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.performance-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin-left: auto;
+}
+
+.performance-badge.excellent {
+    background: #28a745;
+    color: white;
+}
+
+.performance-badge.good {
+    background: #17a2b8;
+    color: white;
+}
+
+.performance-badge.average {
+    background: #ffc107;
+    color: #333;
+}
+
+.performance-badge.poor {
+    background: #dc3545;
+    color: white;
+}
+
+.retention-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.retention-item {
+    text-align: center;
+    padding: 8px;
+    background: #e9ecef;
+    border-radius: 6px;
+}
+
+.retention-value {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.retention-label {
+    color: #666;
+    font-size: 0.7rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">👨‍⚕️ Аналитика по профессиям</h1>
+            <p class="text-muted">Детальная статистика по медицинским профессиям</p>
+        </div>
+        <div>
+            <a href="{{ url_for('admin.analytics_export', type='professions', format='json') }}" class="btn btn-success">
+                📥 Экспорт JSON
+            </a>
+            <a href="{{ url_for('admin.analytics_export', type='professions', format='csv') }}" class="btn btn-secondary">
+                📊 Экспорт CSV
+            </a>
+        </div>
+    </div>
+
+    <!-- Sort Controls -->
+    <div class="sort-controls">
+        <h5 class="mb-3">🔍 Сортировка</h5>
+        <a href="{{ url_for('admin.analytics_professions', sort='total_registrations', order='desc') }}" 
+           class="sort-btn {% if sort_by == 'total_registrations' and order == 'desc' %}active{% endif %}">
+            📝 Регистрации ↓
+        </a>
+        <a href="{{ url_for('admin.analytics_professions', sort='total_registrations', order='asc') }}" 
+           class="sort-btn {% if sort_by == 'total_registrations' and order == 'asc' %}active{% endif %}">
+            📝 Регистрации ↑
+        </a>
+        <a href="{{ url_for('admin.analytics_professions', sort='active_users', order='desc') }}" 
+           class="sort-btn {% if sort_by == 'active_users' and order == 'desc' %}active{% endif %}">
+            🟢 Активные ↓
+        </a>
+        <a href="{{ url_for('admin.analytics_professions', sort='active_users', order='asc') }}" 
+           class="sort-btn {% if sort_by == 'active_users' and order == 'asc' %}active{% endif %}">
+            🟢 Активные ↑
+        </a>
+        <a href="{{ url_for('admin.analytics_professions', sort='avg_progress', order='desc') }}" 
+           class="sort-btn {% if sort_by == 'avg_progress' and order == 'desc' %}active{% endif %}">
+            📈 Прогресс ↓
+        </a>
+        <a href="{{ url_for('admin.analytics_professions', sort='avg_progress', order='asc') }}" 
+           class="sort-btn {% if sort_by == 'avg_progress' and order == 'asc' %}active{% endif %}">
+            📈 Прогресс ↑
+        </a>
+        <a href="{{ url_for('admin.analytics_professions', sort='exam_pass_rate', order='desc') }}" 
+           class="sort-btn {% if sort_by == 'exam_pass_rate' and order == 'desc' %}active{% endif %}">
+            🎯 Экзамены ↓
+        </a>
+        <a href="{{ url_for('admin.analytics_professions', sort='exam_pass_rate', order='asc') }}" 
+           class="sort-btn {% if sort_by == 'exam_pass_rate' and order == 'asc' %}active{% endif %}">
+            🎯 Экзамены ↑
+        </a>
+    </div>
+
+    <!-- Professions List -->
+    {% if professions and professions.items %}
+        {% for profession_data in professions.items %}
+        {% set profession = profession_data[0] %}
+        {% set profession_name = profession_data[1] %}
+        <div class="profession-card">
+            <div class="profession-header">
+                <div class="profession-icon">
+                    {% if 'tandarts' in profession_name.lower() %}
+                    {% elif 'apotheker' in profession_name.lower() %}💊
+                    {% elif 'huisarts' in profession_name.lower() %}🩺
+                    {% elif 'verpleegkundige' in profession_name.lower() %}👩‍⚕️
+                    {% else %}👨‍⚕️{% endif %}
+                </div>
+                <div class="profession-info">
+                    <div class="profession-name">{{ profession_name }}</div>
+                    <div class="profession-details">
+                        ID: {{ profession.profession_id }} | 
+                        Обновлено: {{ profession.last_updated.strftime('%d.%m.%Y %H:%M') if profession.last_updated else 'Неизвестно' }}
+                    </div>
+                </div>
+                <div class="performance-badge 
+                    {% if profession.avg_progress > 80 %}excellent
+                    {% elif profession.avg_progress > 60 %}good
+                    {% elif profession.avg_progress > 40 %}average
+                    {% else %}poor{% endif %}">
+                    {{ "%.1f"|format(profession.avg_progress) }}% прогресс
+                </div>
+            </div>
+            
+            <div class="metric-grid">
+                <div class="metric-item">
+                    <div class="metric-value">{{ profession.total_registrations }}</div>
+                    <div class="metric-label">📝 Всего регистраций</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">{{ profession.new_registrations_today }}</div>
+                    <div class="metric-label">🆕 Сегодня</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">{{ profession.new_registrations_this_week }}</div>
+                    <div class="metric-label">📅 На неделе</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">{{ profession.new_registrations_this_month }}</div>
+                    <div class="metric-label">📆 В месяце</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">{{ profession.active_users }}</div>
+                    <div class="metric-label">🟢 Активных</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">{{ profession.users_with_progress }}</div>
+                    <div class="metric-label">📈 С прогрессом</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">{{ profession.users_completed_courses }}</div>
+                    <div class="metric-label">✅ Завершили</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">{{ "%.1f"|format(profession.avg_time_spent) }}ч</div>
+                    <div class="metric-label">⏱️ Время обучения</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">{{ "%.1f"|format(profession.avg_lessons_completed) }}</div>
+                    <div class="metric-label">📚 Уроков</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">{{ profession.total_exam_attempts }}</div>
+                    <div class="metric-label">🎯 Попыток экзамена</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">{{ profession.successful_exam_attempts }}</div>
+                    <div class="metric-label">✅ Успешных</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">{{ "%.1f"|format(profession.avg_exam_score) }}%</div>
+                    <div class="metric-label">📊 Средний балл</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">{{ "%.1f"|format(profession.avg_session_duration) }} мин</div>
+                    <div class="metric-label">⏱️ Сессия</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value">{{ "%.1f"|format(profession.avg_sessions_per_user) }}</div>
+                    <div class="metric-label">🔄 Сессий/пользователь</div>
+                </div>
+            </div>
+            
+            <!-- Retention Stats -->
+            <div class="retention-stats">
+                <div class="retention-item">
+                    <div class="retention-value">{{ "%.1f"|format(profession.retention_rate_7d) }}%</div>
+                    <div class="retention-label">7-дневная ретенция</div>
+                </div>
+                <div class="retention-item">
+                    <div class="retention-value">{{ "%.1f"|format(profession.retention_rate_30d) }}%</div>
+                    <div class="retention-label">30-дневная ретенция</div>
+                </div>
+            </div>
+            
+            <!-- Progress bars for key metrics -->
+            <div class="mt-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <small>Прогресс обучения</small>
+                    <small>{{ "%.1f"|format(profession.avg_progress) }}%</small>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ profession.avg_progress }}%"></div>
+                </div>
+            </div>
+            
+            <div class="mt-2">
+                <div class="d-flex justify-content-between mb-1">
+                    <small>Процент сдачи экзаменов</small>
+                    <small>{{ "%.1f"|format(profession.exam_pass_rate) }}%</small>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ profession.exam_pass_rate }}%"></div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Pagination -->
+        {% if professions.pages > 1 %}
+        <nav aria-label="Professions pagination">
+            <ul class="pagination justify-content-center">
+                {% if professions.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.analytics_professions', page=professions.prev_num, sort=sort_by, order=order) }}">Предыдущая</a>
+                    </li>
+                {% endif %}
+                
+                {% for page_num in professions.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != professions.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('admin.analytics_professions', page=page_num, sort=sort_by, order=order) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if professions.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('admin.analytics_professions', page=professions.next_num, sort=sort_by, order=order) }}">Следующая</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-user-md fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">Нет данных по профессиям</h3>
+            <p class="text-muted">Аналитика по профессиям будет доступна после накопления данных</p>
+            <a href="{{ url_for('admin.advanced_analytics') }}" class="btn btn-primary">
+                ← Вернуться к общей аналитике
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Add smooth animations for progress bars
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.progress-fill');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 500);
+    });
+});
+
+// Add hover effects for profession cards
+document.querySelectorAll('.profession-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+    });
+});
+</script>
+{% endblock %}

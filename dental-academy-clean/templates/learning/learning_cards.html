@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-cards-blank"></i>
+                        {{ title }}
+                    </h2>
+                    <p class="card-subtitle text-muted">
+                        <i class="fas fa-folder"></i> Путь: {{ path }}
+                    </p>
+                </div>
+                <div class="card-body">
+                    {% if cards %}
+                    <div class="row">
+                        {% for card in cards %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card learning-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ card.question }}</h5>
+                                    
+                                    {% if card.explanation %}
+                                    <p class="card-text text-muted">
+                                        <small>{{ card.explanation }}</small>
+                                    </p>
+                                    {% endif %}
+                                    
+                                    {% if card.options %}
+                                    <div class="options-list">
+                                        <small class="text-muted">Варианты ответов:</small>
+                                        <ul class="list-unstyled mt-2">
+                                            {% for option in card.options %}
+                                            <li class="option-item">
+                                                <span class="option-letter">{{ loop.index0|string|upper }}</span>
+                                                <span class="option-text">{{ option }}</span>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if card.correct_answer is defined %}
+                                    <div class="correct-answer mt-3">
+                                        <small class="text-success">
+                                            <i class="fas fa-check-circle"></i>
+                                            Правильный ответ: {{ card.correct_answer }}
+                                        </small>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if card.category %}
+                                    <div class="card-category mt-2">
+                                        <span class="badge badge-primary">{{ card.category }}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <div class="card-stats">
+                            <span class="badge badge-info">Всего карточек: {{ cards|length }}</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Карточки для этого раздела пока не добавлены.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.learning-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid #e9ecef;
+    height: 100%;
+}
+
+.learning-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.option-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+.option-letter {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-right: 0.5rem;
+    color: #6c757d;
+}
+
+.option-text {
+    flex: 1;
+}
+
+.correct-answer {
+    border-top: 1px solid #e9ecef;
+    padding-top: 0.5rem;
+}
+
+.card-category {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+}
+
+.card-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.learning-card .card-body {
+    position: relative;
+    padding-bottom: 2rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем интерактивность к карточкам
+    const cards = document.querySelectorAll('.learning-card');
+    
+    cards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Можно добавить логику для показа/скрытия ответов
+            this.classList.toggle('active');
+        });
+    });
+});
+</script>
+{% endblock %} 

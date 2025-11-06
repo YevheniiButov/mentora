@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ feature_name or 'Feature' }} - Coming Soon</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #000000;
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Animated gradient background */
+        .gradient-bg {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(139, 92, 246, 0.3), transparent 50%),
+                        radial-gradient(circle at 70% 50%, rgba(236, 72, 153, 0.2), transparent 50%);
+            animation: moveGradient 15s ease infinite;
+        }
+
+        @keyframes moveGradient {
+            0%, 100% { 
+                background-position: 0% 50%, 100% 50%; 
+            }
+            50% { 
+                background-position: 100% 50%, 0% 50%; 
+            }
+        }
+
+        /* Grid pattern overlay */
+        .grid-pattern {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .content {
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Logo/Icon */
+        .icon-wrapper {
+            margin-bottom: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            box-shadow: 0 20px 60px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        /* Title */
+        h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+
+        p {
+            font-size: 1.25rem;
+            color: #9ca3af;
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            line-height: 1.6;
+            animation: fadeIn 0.8s ease-out 0.4s both;
+        }
+
+        /* Countdown Timer */
+        .countdown {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            animation: fadeIn 0.8s ease-out 0.6s both;
+        }
+
+        .countdown-item {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem 1rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .countdown-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
+        }
+
+        .countdown-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #8b5cf6, transparent);
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .countdown-number {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .countdown-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        /* Launch Date */
+        .launch-date {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.8s ease-out 0.8s both;
+        }
+
+        .launch-date-icon {
+            font-size: 1.5rem;
+        }
+
+        .launch-date-text {
+            font-weight: 600;
+            color: #d1d5db;
+        }
+
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeIn 0.8s ease-out 1s both;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            color: white;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .countdown {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .countdown-number {
+                font-size: 2rem;
+            }
+
+            .actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .icon {
+                width: 80px;
+                height: 80px;
+                font-size: 40px;
+            }
+        }
+
+        /* Language specific adjustments */
+        html[lang="nl"] .countdown-label {
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-bg"></div>
+    <div class="grid-pattern"></div>
+
+    <div class="container">
+        <div class="content">
+            <!-- Icon -->
+            <div class="icon-wrapper">
+                <div class="icon">🧠</div>
+            </div>
+
+            <!-- Badge -->
+            <div class="badge">
+                <span class="badge-dot"></span>
+                <span id="badge-text">Coming Soon</span>
+            </div>
+
+            <!-- Title -->
+            <h1 id="title">{{ feature_name or 'Feature' }}<br>Launching Soon</h1>
+
+            <!-- Description -->
+            <p id="description">
+                {% if feature_type == 'knowledge_base' %}
+                    Comprehensive medical knowledge repository with interactive learning materials, case studies, and expert insights. Access evidence-based information across all medical specialties.
+                {% else %}
+                    Adaptive assessment powered by Item Response Theory. 
+                    Get your personalized learning path based on your exact knowledge level.
+                {% endif %}
+            </p>
+
+            <!-- Countdown Timer -->
+            <div class="countdown">
+                <div class="countdown-item">
+                    <span class="countdown-number" id="days">0</span>
+                    <span class="countdown-label" id="days-label">Days</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="hours">0</span>
+                    <span class="countdown-label" id="hours-label">Hours</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="minutes">0</span>
+                    <span class="countdown-label" id="minutes-label">Minutes</span>
+                </div>
+                <div class="countdown-item">
+                    <span class="countdown-number" id="seconds">0</span>
+                    <span class="countdown-label" id="seconds-label">Seconds</span>
+                </div>
+            </div>
+
+            <!-- Launch Date -->
+            <div class="launch-date">
+                <span class="launch-date-icon">📅</span>
+                <span class="launch-date-text" id="launch-text">Launch Date: October 13, 2025</span>
+            </div>
+
+            <!-- Actions -->
+            <div class="actions">
+                <a href="{{ main_index_url(lang) }}" class="btn btn-primary">
+                    <span>🏠</span>
+                    <span id="home-btn">Back to Home</span>
+                </a>
+                <a href="{{ url_for('main.community', lang=lang) }}" class="btn btn-secondary">
+                    <span>👥</span>
+                    <span id="community-btn">Join Community</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Translations
+        const translations = {
+            en: {
+                badgeText: 'Coming Soon',
+                title: 'Virtual patients<br>Launching Soon',
+                description: 'Adaptive assessment powered by Item Response Theory. Get your personalized learning path based on your exact knowledge level.',
+                daysLabel: 'Days',
+                hoursLabel: 'Hours',
+                minutesLabel: 'Minutes',
+                secondsLabel: 'Seconds',
+                launchText: 'Launch Date: November 13, 2025',
+                homeBtn: 'Back to Home',
+                communityBtn: 'Join Community',
+                launchedTitle: '{{ feature_name or "Feature" }}<br>Now Available!',
+                launchedDescription: '{% if feature_type == "knowledge_base" %}Explore our comprehensive knowledge base and enhance your medical expertise.{% else %}Start your adaptive assessment now and get your personalized learning path.{% endif %}',
+                launchedBtn: '{% if feature_type == "knowledge_base" %}Explore Knowledge Base{% else %}Start Diagnostic{% endif %}'
+            },
+            nl: {
+                badgeText: 'Binnenkort',
+                title: 'Virtual patients<br>Komt Binnenkort',
+                description: 'Adaptieve beoordeling aangedreven door Item Response Theory. Krijg je persoonlijke leerpad op basis van je exacte kennisniveau.',
+                daysLabel: 'Dagen',
+                hoursLabel: 'Uren',
+                minutesLabel: 'Minuten',
+                secondsLabel: 'Seconden',
+                launchText: 'Lanceringsdatum: 13 november 2025',
+                homeBtn: 'Terug naar Home',
+                communityBtn: 'Word lid van Community',
+                launchedTitle: '{{ feature_name or "Functie" }}<br>Nu Beschikbaar!',
+                launchedDescription: '{% if feature_type == "knowledge_base" %}Verken onze uitgebreide kennisbank en verbeter je medische expertise.{% else %}Start nu je adaptieve beoordeling en krijg je persoonlijke leerpad.{% endif %}',
+                launchedBtn: '{% if feature_type == "knowledge_base" %}Verken Kennisbank{% else %}Start Diagnostiek{% endif %}'
+            }
+        };
+
+        // Get current language and feature type
+        const lang = document.documentElement.lang || 'en';
+        const featureType = '{{ feature_type or "" }}';
+        const t = translations[lang] || translations.en;
+
+        // Apply translations
+        document.getElementById('badge-text').textContent = t.badgeText;
+        document.getElementById('title').innerHTML = t.title;
+        document.getElementById('description').textContent = t.description;
+        document.getElementById('days-label').textContent = t.daysLabel;
+        document.getElementById('hours-label').textContent = t.hoursLabel;
+        document.getElementById('minutes-label').textContent = t.minutesLabel;
+        document.getElementById('seconds-label').textContent = t.secondsLabel;
+        document.getElementById('launch-text').textContent = t.launchText;
+        document.getElementById('home-btn').textContent = t.homeBtn;
+        document.getElementById('community-btn').textContent = t.communityBtn;
+
+        // Countdown Timer
+        const launchDate = new Date('2025-11-13T00:00:00').getTime();
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = launchDate - now;
+
+            if (distance < 0) {
+                // Launch has happened
+                document.getElementById('badge-text').textContent = '🎉 ' + (lang === 'nl' ? 'Gelanceerd!' : 'Launched!');
+                document.getElementById('title').innerHTML = t.launchedTitle;
+                document.getElementById('description').textContent = t.launchedDescription;
+                document.querySelector('.countdown').style.display = 'none';
+                document.querySelector('.launch-date').style.display = 'none';
+                
+                // Change button based on feature type
+                const primaryBtn = document.querySelector('.btn-primary');
+                if (featureType === 'knowledge_base') {
+                    primaryBtn.href = '/' + lang + '/knowledge-base';
+                } else {
+                    primaryBtn.href = '/big-diagnostic?lang=' + lang;
+                }
+                primaryBtn.innerHTML = '<span>🚀</span><span>' + t.launchedBtn + '</span>';
+                
+                return;
+            }
+
+            // Calculate time units
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Update display
+            document.getElementById('days').textContent = days.toString().padStart(2, '0');
+            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+        }
+
+        // Update countdown every second
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        // Mouse move gradient effect (optional enhancement)
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth) * 100;
+            const y = (e.clientY / window.innerHeight) * 100;
+            
+            const gradientBg = document.querySelector('.gradient-bg');
+            gradientBg.style.background = `
+                radial-gradient(circle at ${x}% ${y}%, rgba(139, 92, 246, 0.4), transparent 50%),
+                radial-gradient(circle at ${100-x}% ${100-y}%, rgba(236, 72, 153, 0.2), transparent 50%)
+            `;
+        });
+    </script>
+</body>
+</html>

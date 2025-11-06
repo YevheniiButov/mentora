@@ -1,0 +1,53 @@
+{% extends "emails/professional_base.html" %}
+
+{% block title %}Friendly Reminder from Mentora{% endblock %}
+
+{% block content %}
+<div class="greeting">Hello {{ user.first_name or 'Valued Professional' }},</div>
+
+<div class="message">
+    I hope you're doing well! I wanted to send you a friendly reminder about your upcoming BIG certification preparation and the resources available to you through Mentora.
+</div>
+
+<div class="highlight-box">
+    <h3>⏰ Important Dates</h3>
+    <p>Here are some key dates to keep in mind:</p>
+    <ul style="margin: 15px 0; padding-left: 20px;">
+        <li><strong>Assessment Deadline:</strong> {{ assessment_deadline or 'Please check your dashboard' }}</li>
+        <li><strong>Study Plan Review:</strong> {{ review_date or 'Schedule in your dashboard' }}</li>
+        <li><strong>Mock Exam:</strong> {{ mock_exam_date or 'Available anytime' }}</li>
+        <li><strong>Final Preparation:</strong> {{ final_prep_date or '2 weeks before exam' }}</li>
+    </ul>
+</div>
+
+<div class="message">
+    Don't worry if you feel behind - our flexible learning approach allows you to catch up at your own pace. The important thing is to stay consistent and use our proven study methods.
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ dashboard_url or 'https://www.bigmentor.nl/dashboard' }}" class="cta-button">Continue Learning</a>
+</div>
+
+<div class="message">
+    Remember, our support team is always available to help you stay on track. If you need any assistance or have questions about your study plan, just reach out!
+</div>
+
+<div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin: 25px 0;">
+    <h4 style="color: #856404; margin-bottom: 10px;">💡 Study Tip</h4>
+    <p style="margin: 0; color: #856404;">
+        <strong>Consistency is key!</strong> Even 30 minutes of focused study each day is more effective than cramming. 
+        Use our spaced repetition system to maximize your retention.
+    </p>
+</div>
+
+<div style="text-align: center; margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+    <p style="margin: 0; font-size: 14px; color: #666;">
+        <strong>Need motivation?</strong> Visit our website at 
+        <a href="https://www.bigmentor.nl" style="color: #667eea;">bigmentor.nl</a>
+    </p>
+</div>
+
+<div class="message">
+    You've got this! We believe in your success and are here to support you every step of the way.
+</div>
+{% endblock %}

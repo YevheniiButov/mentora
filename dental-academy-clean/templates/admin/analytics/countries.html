@@ -1,0 +1,568 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Аналитика по странам - Админ панель{% endblock %}
+
+{% block extra_css %}
+<style>
+.countries-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-left: 5px solid #667eea;
+}
+
+.country-row {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #28a745;
+    transition: transform 0.3s ease;
+}
+
+.country-row:hover {
+    transform: translateY(-2px);
+}
+
+.country-header {
+    display: flex;
+    justify-content-between;
+    align-items-center;
+    margin-bottom: 15px;
+}
+
+.country-name {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.country-code {
+    background: #667eea;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.country-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.country-stat {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.country-stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 5px;
+}
+
+.country-stat-label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.country-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.country-metric {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.country-metric-label {
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+.country-metric-value {
+    color: #333;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: #e9ecef;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.filter-controls {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.filter-group {
+    margin-bottom: 15px;
+}
+
+.filter-group:last-child {
+    margin-bottom: 0;
+}
+
+.filter-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.filter-select, .filter-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    background: white;
+    color: #495057;
+    transition: border-color 0.3s ease;
+}
+
+.filter-select:focus, .filter-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.filter-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-right: 10px;
+}
+
+.filter-btn:hover {
+    background: #5a6fd8;
+}
+
+.clear-btn {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.clear-btn:hover {
+    background: #5a6268;
+}
+
+.stats-summary {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.action-btn.primary {
+    background: #667eea;
+    color: white;
+}
+
+.action-btn.primary:hover {
+    background: #5a6fd8;
+    color: white;
+}
+
+.action-btn.success {
+    background: #28a745;
+    color: white;
+}
+
+.action-btn.success:hover {
+    background: #218838;
+    color: white;
+}
+
+.action-btn.info {
+    background: #17a2b8;
+    color: white;
+}
+
+.action-btn.info:hover {
+    background: #138496;
+    color: white;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    height: 400px;
+}
+
+.chart-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">🌍 Аналитика по странам</h1>
+            <p class="text-muted">Детальная статистика по странам и регионам</p>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="refreshData()">
+                🔄 Обновить
+            </button>
+            <button class="btn btn-success" onclick="exportData()">
+                📤 Экспорт
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Summary -->
+    {% if countries and countries.items %}
+    <div class="stats-summary">
+        <h5 class="mb-3">📊 Статистика по странам</h5>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value">{{ countries.total }}</div>
+                <div class="stat-label">Всего стран</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ countries.items|length }}</div>
+                <div class="stat-label">На странице</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ countries.page }}</div>
+                <div class="stat-label">Страница</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ countries.pages }}</div>
+                <div class="stat-label">Всего страниц</div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filter Controls -->
+    <div class="filter-controls">
+        <form method="GET" action="{{ url_for('analytics.countries') }}">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="filter-group">
+                        <label class="filter-label">🔍 Поиск</label>
+                        <input type="text" name="search" class="filter-input" value="{{ search_query }}" placeholder="Название страны или код...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-group">
+                        <label class="filter-label">📊 Сортировка</label>
+                        <select name="sort" class="filter-select">
+                            <option value="total_users" {% if sort_by == 'total_users' %}selected{% endif %}>Пользователи</option>
+                            <option value="active_users" {% if sort_by == 'active_users' %}selected{% endif %}>Активные</option>
+                            <option value="conversion_rate" {% if sort_by == 'conversion_rate' %}selected{% endif %}>Конверсия</option>
+                            <option value="completion_rate" {% if sort_by == 'completion_rate' %}selected{% endif %}>Завершение</option>
+                            <option value="country_name" {% if sort_by == 'country_name' %}selected{% endif %}>Название</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-group">
+                        <label class="filter-label">📈 Порядок</label>
+                        <select name="order" class="filter-select">
+                            <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>По убыванию</option>
+                            <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>По возрастанию</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="filter-group">
+                        <label class="filter-label">&nbsp;</label>
+                        <div>
+                            <button type="submit" class="filter-btn">🔍 Фильтр</button>
+                            <a href="{{ url_for('analytics.countries') }}" class="clear-btn">🗑️ Очистить</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Countries List -->
+    {% if countries and countries.items %}
+        {% for country in countries.items %}
+        <div class="country-row">
+            <div class="country-header">
+                <div class="country-name">{{ country.country_name }}</div>
+                <div class="country-code">{{ country.country_code }}</div>
+            </div>
+            
+            <div class="country-stats">
+                <div class="country-stat">
+                    <div class="country-stat-value">{{ country.total_users }}</div>
+                    <div class="country-stat-label">👥 Всего пользователей</div>
+                </div>
+                <div class="country-stat">
+                    <div class="country-stat-value">{{ country.active_users }}</div>
+                    <div class="country-stat-label">✅ Активных</div>
+                </div>
+                <div class="country-stat">
+                    <div class="country-stat-value">{{ country.new_users_today }}</div>
+                    <div class="country-stat-label">🆕 Сегодня</div>
+                </div>
+                <div class="country-stat">
+                    <div class="country-stat-value">{{ country.new_users_this_week }}</div>
+                    <div class="country-stat-label">📅 На неделе</div>
+                </div>
+                <div class="country-stat">
+                    <div class="country-stat-value">{{ country.new_users_this_month }}</div>
+                    <div class="country-stat-label">📆 В месяце</div>
+                </div>
+            </div>
+            
+            <div class="country-metrics">
+                <div class="country-metric">
+                    <div class="country-metric-label">🎯 Конверсия</div>
+                    <div class="country-metric-value">{{ "%.1f"|format(country.conversion_rate) }}%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ country.conversion_rate }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="country-metric">
+                    <div class="country-metric-label">📚 Завершение курсов</div>
+                    <div class="country-metric-value">{{ "%.1f"|format(country.completion_rate) }}%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ country.completion_rate }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="country-metric">
+                    <div class="country-metric-label">Сдача экзаменов</div>
+                    <div class="country-metric-value">{{ "%.1f"|format(country.exam_pass_rate) }}%</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ country.exam_pass_rate }}%"></div>
+                    </div>
+                </div>
+                
+                <div class="country-metric">
+                    <div class="country-metric-label">⏱️ Средняя сессия</div>
+                    <div class="country-metric-value">{{ "%.1f"|format(country.avg_session_duration) }} мин</div>
+                </div>
+                
+                <div class="country-metric">
+                    <div class="country-metric-label">📄 Страниц за сессию</div>
+                    <div class="country-metric-value">{{ "%.1f"|format(country.avg_pages_per_session) }}</div>
+                </div>
+                
+                <div class="country-metric">
+                    <div class="country-metric-label">📉 Процент отказов</div>
+                    <div class="country-metric-value">{{ "%.1f"|format(country.bounce_rate) }}%</div>
+                </div>
+            </div>
+            
+            {% if country.total_revenue > 0 %}
+            <div class="country-metrics mt-3">
+                <div class="country-metric">
+                    <div class="country-metric-label">💰 Общий доход</div>
+                    <div class="country-metric-value">€{{ "%.2f"|format(country.total_revenue) }}</div>
+                </div>
+                <div class="country-metric">
+                    <div class="country-metric-label">💵 Доход с пользователя</div>
+                    <div class="country-metric-value">€{{ "%.2f"|format(country.avg_revenue_per_user) }}</div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="action-buttons">
+                <button class="action-btn primary" onclick="viewCountryDetails('{{ country.country_code }}')">
+                    👁️ Подробнее
+                </button>
+                <button class="action-btn success" onclick="exportCountryData('{{ country.country_code }}')">
+                    📤 Экспорт данных
+                </button>
+                <button class="action-btn info" onclick="viewCountryUsers('{{ country.country_code }}')">
+                    👥 Пользователи
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Pagination -->
+        {% if countries.pages > 1 %}
+        <nav aria-label="Countries pagination">
+            <ul class="pagination justify-content-center">
+                {% if countries.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('analytics.countries', page=countries.prev_num, search=search_query, sort=sort_by, order=sort_order) }}">Предыдущая</a>
+                    </li>
+                {% endif %}
+                
+                {% for page_num in countries.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != countries.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('analytics.countries', page=page_num, search=search_query, sort=sort_by, order=sort_order) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if countries.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('analytics.countries', page=countries.next_num, search=search_query, sort=sort_by, order=sort_order) }}">Следующая</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-globe fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">Нет данных по странам</h3>
+            <p class="text-muted">Аналитические данные по странам будут отображаться здесь</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function refreshData() {
+    location.reload();
+}
+
+function exportData() {
+    const format = prompt('Выберите формат экспорта:\n1. JSON\n2. CSV', '1');
+    if (format === '1') {
+        window.open('{{ url_for("analytics.api_export", report_type="countries") }}?format=json', '_blank');
+    } else if (format === '2') {
+        window.open('{{ url_for("analytics.api_export", report_type="countries") }}?format=csv', '_blank');
+    }
+}
+
+function viewCountryDetails(countryCode) {
+    alert(`Детальная информация по стране ${countryCode} будет реализована в следующей версии`);
+}
+
+function exportCountryData(countryCode) {
+    alert(`Экспорт данных по стране ${countryCode} будет реализован в следующей версии`);
+}
+
+function viewCountryUsers(countryCode) {
+    alert(`Просмотр пользователей страны ${countryCode} будет реализован в следующей версии`);
+}
+
+// Add hover effects
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.country-row').forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+        });
+    });
+});
+
+// Auto-refresh every 5 minutes
+setTimeout(function() {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}

@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+
+{% block title %}{{ scenario.title }} - Виртуальный пациент{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/virtual_patient.js') }}"></script>
+<script>
+    // Передаем данные сценария в JavaScript
+    window.scenarioData = {{ scenario_data | tojson }};
+    window.scenarioId = {{ scenario.id }};
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Левая панель - Информация о пациенте -->
+        <div class="col-md-4 col-lg-3">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-md me-2"></i>
+                        Информация о пациенте
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% set patient_info = scenario_data.patient_info %}
+                    <div class="text-center mb-3">
+                        <div class="patient-avatar mb-2">
+                            <i class="fas fa-user-circle text-primary" style="font-size: 4rem;"></i>
+                        </div>
+                        <h6 class="mb-0">{{ patient_info.name }}</h6>
+                        <small class="text-muted">
+                            {{ patient_info.age }} лет, {{ patient_info.gender }}
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Медицинская история:</strong>
+                        <p class="small text-muted mt-1">{{ patient_info.medical_history }}</p>
+                    </div>
+                    
+                    <!-- Счетчик баллов -->
+                    <div class="score-display p-3 bg-light rounded">
+                        <div class="d-flex justify-content-between">
+                            <span>Текущий балл:</span>
+                            <span class="fw-bold" id="current-score">{{ attempt.score }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Максимум:</span>
+                            <span>{{ attempt.max_score }}</span>
+                        </div>
+                        <div class="progress mt-2" style="height: 6px;">
+                            <div class="progress-bar" id="score-progress" 
+                                 style="width: {{ (attempt.score / attempt.max_score * 100) if attempt.max_score > 0 else 0 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Основная область - Диалог -->
+        <div class="col-md-8 col-lg-9">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ scenario.title }}</h5>
+                        <div class="scenario-controls">
+                            <span class="badge bg-{{ 'success' if scenario.difficulty == 'easy' else 'warning' if scenario.difficulty == 'medium' else 'danger' }}">
+                                {{ scenario.difficulty }}
+                            </span>
+                            {% if scenario.category %}
+                            <span class="badge bg-info">{{ scenario.category }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body" style="min-height: 500px;">
+                    <!-- Область диалога -->
+                    <div id="dialogue-area">
+                        {% set initial_state = scenario_data.initial_state %}
+                        
+                        <!-- Начальное состояние -->
+                        <div class="dialogue-message patient-message mb-4">
+                            <div class="d-flex">
+                                <div class="patient-avatar me-3">
+                                    <i class="fas fa-user-circle text-primary" style="font-size: 2rem;"></i>
+                                </div>
+                                <div class="message-content">
+                                    <div class="message-text p-3 bg-light rounded">
+                                        {{ initial_state.patient_statement }}
+                                    </div>
+                                    {% if initial_state.notes %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-sticky-note me-1"></i>
+                                        {{ initial_state.notes }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Динамические сообщения диалога -->
+                        <div id="dynamic-dialogue"></div>
+                        
+                        <!-- Варианты ответов -->
+                        <div id="response-options">
+                            {% if scenario_data.dialogue_nodes %}
+                                {% set first_node = scenario_data.dialogue_nodes[0] %}
+                                <div class="response-section">
+                                    <h6 class="mb-3">Выберите действие:</h6>
+                                    <div class="options-list">
+                                        {% for option in first_node.options %}
+                                        <button type="button" 
+                                                class="btn btn-outline-primary option-button mb-2 w-100 text-start"
+                                                data-node-id="{{ first_node.id }}"
+                                                data-choice-id="{{ option.id or loop.index0 }}"
+                                                data-score="{{ option.score or 0 }}">
+                                            {{ option.text }}
+                                        </button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('virtual_patient.list_scenarios') }}" 
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>
+                            Назад к списку
+                        </a>
+                        <div class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            <span id="timer">00:00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно завершения -->
+<div class="modal fade" id="completionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Сценарий завершен!</h5>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <i class="fas fa-check-circle text-success mb-3" style="font-size: 3rem;"></i>
+                    <h6>Поздравляем!</h6>
+                    <p>Вы успешно завершили сценарий.</p>
+                    <div class="score-summary p-3 bg-light rounded">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="text-muted">Итоговый балл</div>
+                                <div class="h4 mb-0" id="final-score">{{ attempt.score }}</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted">Процент</div>
+                                <div class="h4 mb-0" id="final-percentage">{{ attempt.percentage_score }}%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="{{ url_for('virtual_patient.list_scenarios') }}" 
+                   class="btn btn-outline-secondary">
+                    К списку сценариев
+                </a>
+                <button type="button" class="btn btn-primary" id="view-results">
+                    Подробные результаты
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let startTime = new Date();
+let currentScore = {{ attempt.score }};
+let maxScore = {{ attempt.max_score }};
+let attemptId = {{ attempt.id }};
+let scenarioData = {{ scenario_data | tojson }};
+let dialogueHistory = [];
+
+// Таймер
+function updateTimer() {
+    const now = new Date();
+    const diff = now - startTime;
+    const minutes = Math.floor(diff / 60000);
+    const seconds = Math.floor((diff % 60000) / 1000);
+    document.getElementById('timer').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+setInterval(updateTimer, 1000);
+
+// Обработка выбора варианта
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('option-button')) {
+        const button = e.target;
+        const nodeId = button.dataset.nodeId;
+        const choiceId = button.dataset.choiceId;
+        const score = parseInt(button.dataset.score) || 0;
+        
+        makeChoice(nodeId, choiceId, button.textContent.trim());
+    }
+});
+
+function makeChoice(nodeId, choiceId, choiceText) {
+    // Показываем выбор пользователя
+    addDoctorMessage(choiceText);
+    
+    // Отправляем выбор на сервер
+    fetch('{{ url_for("virtual_patient.make_choice") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            attempt_id: attemptId,
+            node_id: nodeId,
+            choice_id: choiceId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Обновляем счет
+            currentScore = data.total_score;
+            updateScoreDisplay();
+            
+            // Показываем изменение баллов
+            if (data.score_change !== 0) {
+                showScoreChange(data.score_change);
+            }
+            
+            if (data.completed) {
+                // Сценарий завершен
+                setTimeout(() => {
+                    showCompletionModal();
+                }, 1000);
+            } else if (data.next_node) {
+                // Показываем следующий узел
+                showNextNode(data.next_node);
+            }
+        } else {
+            console.error('Ошибка:', data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+    });
+}
+
+function addDoctorMessage(text) {
+    const dialogueArea = document.getElementById('dynamic-dialogue');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'dialogue-message doctor-message mb-4';
+    messageDiv.innerHTML = `
+        <div class="d-flex justify-content-end">
+            <div class="message-content">
+                <div class="message-text p-3 bg-primary text-white rounded">
+                    ${text}
+                </div>
+            </div>
+            <div class="doctor-avatar ms-3">
+                <i class="fas fa-user-md text-primary" style="font-size: 2rem;"></i>
+            </div>
+        </div>
+    `;
+    dialogueArea.appendChild(messageDiv);
+    messageDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function addPatientMessage(text) {
+    const dialogueArea = document.getElementById('dynamic-dialogue');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'dialogue-message patient-message mb-4';
+    messageDiv.innerHTML = `
+        <div class="d-flex">
+            <div class="patient-avatar me-3">
+                <i class="fas fa-user-circle text-primary" style="font-size: 2rem;"></i>
+            </div>
+            <div class="message-content">
+                <div class="message-text p-3 bg-light rounded">
+                    ${text}
+                </div>
+            </div>
+        </div>
+    `;
+    dialogueArea.appendChild(messageDiv);
+    messageDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function showNextNode(node) {
+    // Показываем ответ пациента
+    if (node.patient_statement) {
+        addPatientMessage(node.patient_statement);
+    }
+    
+    // Обновляем варианты ответов
+    const optionsContainer = document.getElementById('response-options');
+    if (node.options && node.options.length > 0) {
+        optionsContainer.innerHTML = `
+            <div class="response-section">
+                <h6 class="mb-3">Выберите действие:</h6>
+                <div class="options-list">
+                    ${node.options.map((option, index) => `
+                        <button type="button" 
+                                class="btn btn-outline-primary option-button mb-2 w-100 text-start"
+                                data-node-id="${node.id}"
+                                data-choice-id="${option.id || index}"
+                                data-score="${option.score || 0}">
+                            ${option.text}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    } else {
+        optionsContainer.innerHTML = '<div class="text-center text-muted">Сценарий завершен</div>';
+    }
+}
+
+function updateScoreDisplay() {
+    document.getElementById('current-score').textContent = currentScore;
+    const percentage = maxScore > 0 ? (currentScore / maxScore * 100) : 0;
+    document.getElementById('score-progress').style.width = percentage + '%';
+}
+
+function showScoreChange(change) {
+    const scoreElement = document.getElementById('current-score');
+    const changeElement = document.createElement('span');
+    changeElement.className = change > 0 ? 'text-success' : 'text-danger';
+    changeElement.textContent = (change > 0 ? '+' : '') + change;
+    changeElement.style.fontSize = '0.8em';
+    changeElement.style.marginLeft = '5px';
+    
+    scoreElement.parentNode.appendChild(changeElement);
+    
+    setTimeout(() => {
+        changeElement.remove();
+    }, 2000);
+}
+
+function showCompletionModal() {
+    const percentage = maxScore > 0 ? Math.round((currentScore / maxScore) * 100) : 0;
+    document.getElementById('final-score').textContent = currentScore;
+    document.getElementById('final-percentage').textContent = percentage + '%';
+    
+    const modal = new bootstrap.Modal(document.getElementById('completionModal'));
+    modal.show();
+}
+
+// Обработка кнопки "Подробные результаты"
+document.getElementById('view-results').addEventListener('click', function() {
+    window.location.href = `{{ url_for('virtual_patient.scenario_results', attempt_id=attempt.id) }}`;
+});
+</script>
+{% endblock %} 

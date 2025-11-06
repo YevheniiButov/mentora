@@ -1,0 +1,1486 @@
+class VirtualPatientDialogue {
+  constructor(scenarioId, attemptId) {
+    this.scenarioId = scenarioId;
+    this.attemptId = attemptId;
+    this.scenario = null;
+    this.attempt = null;
+    this.currentNodeId = null;
+    this.score = 0;
+    this.fillInScore = 0;
+    this.startTime = Date.now();
+    this.state = 'loading'; // loading, playing, complete
+    this.dialogueHistory = [];
+    this.notes = '';
+    
+    // DOM elements
+    this.container = document.getElementById('vpContainer');
+    this.loadingEl = document.getElementById('vpLoading');
+    this.interfaceEl = document.getElementById('vpInterface');
+    this.dialogueThread = document.getElementById('dialogueThread');
+    this.interactionArea = document.getElementById('interactionArea');
+    this.interactionContent = document.getElementById('interactionContent');
+    this.interactionLoading = document.getElementById('interactionLoading');
+    this.completionModal = document.getElementById('completionModal');
+    this.modalBackdrop = document.getElementById('modalBackdrop');
+    this.notesArea = document.getElementById('notesArea');
+    // progressRing больше не существует (удален с правым sidebar)
+  }
+  
+  async init(scenarioId, attemptId) {
+    try {
+      // 1. Загрузить сценарий
+      const scenarioResponse = await fetch(`/api/vp/daily-scenario`);
+      if (!scenarioResponse.ok) throw new Error('Failed to load scenario');
+      const scenarioData = await scenarioResponse.json();
+      
+      if (!scenarioData.success) {
+        this.showError(scenarioData.message || 'No scenario available');
+        return;
+      }
+      
+      this.scenario = scenarioData.scenario;
+      
+      // 1.1. Установить/создать attempt
+      if (attemptId) {
+        this.attemptId = attemptId;
+      } else {
+        try {
+          const attemptResp = await fetch('/api/vp/start-attempt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ scenario_id: this.scenario.id })
+          });
+          const attemptJson = await attemptResp.json();
+          if (attemptJson && attemptJson.success) {
+            this.attemptId = attemptJson.attempt_id;
+          } else {
+            console.warn('Attempt not created:', attemptJson);
+          }
+        } catch (e) {
+          console.warn('Failed to start attempt automatically', e);
+        }
+      }
+      
+      // 2. Показать интерфейс
+      this.showInterface();
+      
+      // 3. Инициализировать компоненты
+      this.initPatientInfo();
+      this.initDetailToggles();
+      this.initProgressTracking();
+      this.initTimerUpdate();
+      this.initMobileModalControls();
+      
+      // 4. Показать initial_state (начальное сообщение пациента)
+      const initialState = this.scenario.scenario_data.initial_state;
+      const hasInitialState = initialState && initialState.patient_statement;
+      
+      if (hasInitialState) {
+        this.addMessageToThread('from-patient', initialState.patient_statement);
+        
+        // Показать заметки врача если есть
+        if (initialState.notes_dentist) {
+          console.log('Initial notes:', initialState.notes_dentist);
+        }
+      }
+      
+      // 5. Показать первый узел с вариантами ответа
+      const nodes = this.scenario.scenario_data.dialogue_nodes;
+      if (nodes && nodes.length > 0) {
+        this.currentNodeId = nodes[0].id;
+        // Не показываем patient_statement первого узла, если уже показали initial_state
+        await this.displayNode(this.currentNodeId, !hasInitialState);
+      } else {
+        this.showError('Сценарий не содержит узлов диалога');
+        return;
+      }
+      
+      this.state = 'playing';
+    } catch (error) {
+      console.error('Initialization error:', error);
+      this.showError('Ошибка при загрузке сценария. Пожалуйста, попробуйте позже.');
+    }
+  }
+  
+  initMobileModalControls() {
+    const toggleBtn = document.getElementById('menuToggleBtn');
+    const patientModal = document.getElementById('patientModal');
+    const patientModalBackdrop = document.getElementById('patientModalBackdrop');
+    const patientModalClose = document.getElementById('patientModalClose');
+    
+    // Make button visible only when present (mobile)
+    if (toggleBtn) {
+      toggleBtn.style.display = 'inline-flex';
+      toggleBtn.addEventListener('click', () => {
+        if (patientModal) patientModal.style.display = 'flex';
+      });
+    }
+    
+    if (patientModalBackdrop) {
+      patientModalBackdrop.addEventListener('click', () => {
+        patientModal.style.display = 'none';
+      });
+    }
+    
+    if (patientModalClose) {
+      patientModalClose.addEventListener('click', () => {
+        patientModal.style.display = 'none';
+      });
+    }
+  }
+
+  showInterface() {
+    this.loadingEl.style.display = 'none';
+    this.interfaceEl.style.display = 'flex';
+  }
+  
+  initPatientInfo() {
+    const data = this.scenario.scenario_data || {};
+    const patientInfo = data.patient_info || {};
+    
+    // Безопасные значения по умолчанию
+    const patientName = patientInfo.name || 'Patient';
+    const patientAge = patientInfo.age || 'Onbekend';
+    const patientGender = patientInfo.gender || 'unknown';
+    
+    // Инициалы
+    const initials = patientName && patientName.trim() 
+      ? (patientName.split(' ').map(n => n[0] || '').filter(Boolean).join('').toUpperCase() || 'P')
+      : 'P';
+    const initialsEl = document.getElementById('patientInitials');
+    const initialsMobileEl = document.getElementById('patientInitialsMobile');
+    if (initialsEl) initialsEl.textContent = initials;
+    if (initialsMobileEl) initialsMobileEl.textContent = initials;
+    
+    // Основная информация
+    const nameEl = document.getElementById('patientName');
+    const nameMobileEl = document.getElementById('patientNameMobile');
+    const ageEl = document.getElementById('patientAge');
+    const ageMobileEl = document.getElementById('patientAgeMobile');
+    const genderEl = document.getElementById('patientGender');
+    
+    if (nameEl) nameEl.textContent = patientName;
+    if (nameMobileEl) nameMobileEl.textContent = patientName;
+    if (ageEl) ageEl.textContent = patientAge;
+    if (ageMobileEl) ageMobileEl.textContent = `${patientAge} jaar`;
+    if (genderEl) genderEl.textContent = this.translateGender(patientGender);
+    
+    // История болезни
+    const historyEl = document.getElementById('patientHistory');
+    const historyMobileEl = document.getElementById('patientHistoryMobile');
+    const historyText = patientInfo.medical_history || 'Geen informatie';
+    if (historyEl) historyEl.textContent = historyText;
+    if (historyMobileEl) historyMobileEl.textContent = historyText;
+    
+    // Аллергии
+    const allergiesContainer = document.getElementById('allergiesContainer');
+    const allergiesMobile = document.getElementById('allergiesMobile');
+    if (patientInfo.allergies && Array.isArray(patientInfo.allergies) && patientInfo.allergies.length > 0) {
+      const allergiesHtml = patientInfo.allergies.map(a => 
+        `<span class="allergy-tag">${a}</span>`
+      ).join('');
+      if (allergiesContainer) allergiesContainer.innerHTML = allergiesHtml;
+      
+      const allergiesMobileHtml = patientInfo.allergies.map(a => 
+        `<span class="allergy-tag">${a}</span>`
+      ).join('');
+      if (allergiesMobile) allergiesMobile.innerHTML = allergiesMobileHtml;
+    } else {
+      if (allergiesContainer) allergiesContainer.innerHTML = '';
+      if (allergiesMobile) allergiesMobile.innerHTML = '';
+    }
+    
+    // Симптомы
+    const symptomsContainer = document.getElementById('symptomsContainer');
+    if (patientInfo.symptoms && Array.isArray(patientInfo.symptoms) && patientInfo.symptoms.length > 0) {
+      const symptomsHtml = patientInfo.symptoms.map(s => 
+        `<div class="symptom-item">
+           <span class="symptom-icon">⚠</span>
+           <span>${s}</span>
+         </div>`
+      ).join('');
+      if (symptomsContainer) symptomsContainer.innerHTML = symptomsHtml;
+    } else {
+      if (symptomsContainer) symptomsContainer.innerHTML = '';
+    }
+    
+    // Vital signs если есть
+    const vitalSignsSection = document.getElementById('vitalSignsSection');
+    const vitalsContainer = document.getElementById('vitalsContainer');
+    if (patientInfo.vital_signs && typeof patientInfo.vital_signs === 'object') {
+      if (vitalSignsSection) vitalSignsSection.style.display = 'block';
+      const vitalsHtml = Object.entries(patientInfo.vital_signs).map(([key, value]) => 
+        `<div class="vital-item">
+           <span class="vital-label">${this.translateVitalSign(key)}</span>
+           <span class="vital-value">${value}</span>
+         </div>`
+      ).join('');
+      if (vitalsContainer) vitalsContainer.innerHTML = vitalsHtml;
+    } else {
+      if (vitalSignsSection) vitalSignsSection.style.display = 'none';
+      if (vitalsContainer) vitalsContainer.innerHTML = '';
+    }
+  }
+  
+  initDetailToggles() {
+    const toggles = document.querySelectorAll('.detail-toggle');
+    toggles.forEach(toggle => {
+      toggle.addEventListener('click', (e) => {
+        const section = toggle.dataset.section;
+        const content = document.getElementById(`detail-${section}`);
+        const isOpen = content.style.display !== 'none';
+        
+        content.style.display = isOpen ? 'none' : 'block';
+        toggle.classList.toggle('active', !isOpen);
+      });
+    });
+    
+    // Mobile card toggle
+    const mobileToggle = document.getElementById('mobileCardToggle');
+    const mobileExpanded = document.getElementById('mobileCardExpanded');
+    mobileToggle.addEventListener('click', () => {
+      const isOpen = mobileExpanded.style.display !== 'none';
+      mobileExpanded.style.display = isOpen ? 'none' : 'block';
+      mobileToggle.classList.toggle('active', !isOpen);
+    });
+  }
+  
+  initProgressTracking() {
+    const data = this.scenario.scenario_data || {};
+    const dialogueNodes = data.dialogue_nodes || [];
+    const totalNodes = dialogueNodes.length;
+    const totalStepsEl = document.getElementById('totalSteps');
+    if (totalStepsEl) {
+      totalStepsEl.textContent = totalNodes;
+    }
+  }
+  
+  initTimerUpdate() {
+    const timeSpentEl = document.getElementById('timeSpent');
+    if (!timeSpentEl) return;
+    
+    setInterval(() => {
+      const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = elapsed % 60;
+      const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      timeSpentEl.textContent = formatted;
+    }, 1000);
+  }
+  
+  async displayNode(nodeId, showPatientStatement = true) {
+    this.interactionLoading.style.display = 'flex';
+    this.interactionContent.style.display = 'none';
+    
+    try {
+      // Найти узел в сценарии
+      console.log('Looking for node:', nodeId);
+      console.log('Available nodes:', this.scenario.scenario_data.dialogue_nodes);
+      let node = this.scenario.scenario_data.dialogue_nodes.find(n => n.id === nodeId);
+      
+      // Если узел не найден в dialogue_nodes, проверяем outcomes
+      if (!node) {
+        const outcomes = this.scenario.scenario_data.outcomes;
+        
+        if (outcomes && typeof outcomes === 'object') {
+          // Пробуем разные варианты маппинга outcome ID
+          let outcomeData = null;
+          
+          // 1. Прямое совпадение (outcome_excellent → outcomes.excellent)
+          if (outcomes[nodeId]) {
+            outcomeData = outcomes[nodeId];
+          }
+          
+          // 2. Убираем префикс "outcome_" (outcome_excellent → outcomes.excellent)
+          if (!outcomeData && nodeId.startsWith('outcome_')) {
+            const outcomeKey = nodeId.replace('outcome_', '');
+            if (outcomes[outcomeKey]) {
+              outcomeData = outcomes[outcomeKey];
+            }
+          }
+          
+          // 3. Если не нашли, берем последнее слово после подчеркивания
+          // outcome_anxious_good → 'good' → outcomes.good
+          if (!outcomeData) {
+            const parts = nodeId.split('_');
+            const lastPart = parts[parts.length - 1]; // Берем последнее слово (good, average, poor, excellent, etc.)
+            
+            // Маппинг возможных вариантов
+            const outcomeKeyMap = {
+              'good': 'good',
+              'excellent': 'excellent', // Пробуем сначала excellent
+              'average': 'average',
+              'medium': 'average', // medium → average
+              'poor': 'poor',
+              'bad': 'poor', // bad → poor
+              'suspected': 'good', // для старых сценариев
+              'default': 'good'
+            };
+            
+            // Пробуем сначала прямое значение
+            if (outcomes[lastPart]) {
+              outcomeData = outcomes[lastPart];
+            } else {
+              // Пробуем маппинг
+              const mappedKey = outcomeKeyMap[lastPart];
+              if (mappedKey && outcomes[mappedKey]) {
+                outcomeData = outcomes[mappedKey];
+              }
+            }
+          }
+          
+          if (outcomeData) {
+            // Создаем временный outcome node
+            node = {
+              id: nodeId,
+              is_outcome: true,
+              title: outcomeData.title || 'Scenario Completed',
+              patient_statement: outcomeData.text || outcomeData.description || 'Scenario completed',
+              outcome_type: nodeId.startsWith('outcome_') ? nodeId.replace('outcome_', '') : 'default'
+            };
+            console.log('Found outcome:', node);
+          } else {
+            console.error('Node not found:', nodeId);
+            console.error('Available node IDs:', this.scenario.scenario_data.dialogue_nodes.map(n => n.id));
+            console.error('Available outcomes:', Object.keys(outcomes || {}));
+            
+            // Если outcomes есть, но нужного ключа нет - создаем дефолтный outcome
+            const defaultKeys = ['excellent', 'good', 'average', 'poor'];
+            for (const key of defaultKeys) {
+              if (outcomes[key]) {
+                console.log(`Using fallback outcome: ${key}`);
+                node = {
+                  id: nodeId,
+                  is_outcome: true,
+                  title: outcomes[key].title || 'Scenario Completed',
+                  patient_statement: outcomes[key].text || outcomes[key].description || 'Scenario completed',
+                  outcome_type: key
+                };
+                break;
+              }
+            }
+            
+            // Если ничего не найдено, завершаем сценарий
+            if (!node) {
+              console.warn('No outcome found, completing scenario');
+              this.completeScenario();
+              return;
+            }
+          }
+        } else {
+          // Outcomes секции нет - создаем динамический outcome на основе score
+          console.warn('Outcomes section not found in scenario_data, creating dynamic outcome');
+          
+          // Определяем уровень outcome на основе накопленного score
+          const totalScore = this.score + this.fillInScore;
+          let outcomeLevel = 'good';
+          let outcomeTitle = 'Scenario Voltooid';
+          let outcomeMessage = 'Goed gedaan! Je hebt de casus afgerond.';
+          
+          if (totalScore >= 150) {
+            outcomeLevel = 'excellent';
+            outcomeTitle = 'Uitstekend Resultaat';
+            outcomeMessage = 'Uitstekend! Je hebt alle belangrijke aspecten goed aangepakt.';
+          } else if (totalScore >= 100) {
+            outcomeLevel = 'good';
+            outcomeTitle = 'Goed Resultaat';
+            outcomeMessage = 'Goed gedaan! Je hebt de casus goed aangepakt.';
+          } else if (totalScore >= 50) {
+            outcomeLevel = 'average';
+            outcomeTitle = 'Redelijk Resultaat';
+            outcomeMessage = 'Redelijk. Er is ruimte voor verbetering.';
+          } else {
+            outcomeLevel = 'poor';
+            outcomeTitle = 'Onvoldoende Resultaat';
+            outcomeMessage = 'Er is nog veel ruimte voor verbetering. Probeer het opnieuw.';
+          }
+          
+          // Создаем временный outcome node
+          node = {
+            id: nodeId,
+            is_outcome: true,
+            title: outcomeTitle,
+            patient_statement: outcomeMessage,
+            description: outcomeMessage,
+            outcome_type: outcomeLevel
+          };
+          
+          console.log('Created dynamic outcome:', node);
+          
+          // Продолжаем обработку как обычный outcome node
+          // (не делаем return, чтобы код ниже обработал его)
+        }
+      } else {
+        console.log('Found node:', node);
+        
+        // Проверяем, есть ли у узла поле outcome - это означает финальный узел
+        if (node.outcome && !node.is_outcome) {
+          console.log('Node has outcome field, marking as outcome node:', node.outcome);
+          node.is_outcome = true;
+          node.outcome_type = node.outcome;
+          
+          // Если нет patient_statement, но есть body_language - используем его
+          if (!node.patient_statement && node.body_language) {
+            node.patient_statement = node.body_language;
+          }
+        }
+      }
+      
+      // Добавить сообщение пациента в диалог только если нужно
+      // (для первого узла не показываем, если уже показали initial_state)
+      if (showPatientStatement) {
+        if (node.patient_statement) {
+          console.log('💬 Adding patient statement:', {
+            node_id: node.id,
+            statement_preview: node.patient_statement.substring(0, 50) + '...'
+          });
+          this.addMessageToThread('from-patient', node.patient_statement);
+        } else {
+          // Если у узла нет patient_statement, но он ожидается, используем альтернативные источники
+          console.warn('⚠️ Node has no patient_statement but showPatientStatement=true:', {
+            node_id: node.id,
+            has_options: !!node.options,
+            has_fill_in: !!node.fill_in,
+            is_outcome: !!node.is_outcome
+          });
+          
+          // Пробуем использовать body_language, title или другие поля как заглушку
+          let fallbackMessage = null;
+          
+          if (node.body_language) {
+            // Используем body_language как описание невербального поведения пациента
+            fallbackMessage = `*${node.body_language}*`;
+          } else if (node.title && node.title.includes(':')) {
+            // Если title содержит описание, берем часть после двоеточия
+            const titleParts = node.title.split(':');
+            if (titleParts.length > 1) {
+              fallbackMessage = titleParts[1].trim();
+            }
+          }
+          
+          // Если нашли заглушку, добавляем её как сообщение пациента
+          if (fallbackMessage) {
+            console.log('💬 Using fallback patient statement:', fallbackMessage);
+            this.addMessageToThread('from-patient', fallbackMessage);
+          }
+          // Если заглушки нет, просто пропускаем - это нормально для промежуточных узлов
+        }
+      }
+      
+      // Обновить прогресс
+      this.updateProgress(nodeId);
+      
+      // Показать interaction элемент
+      setTimeout(() => {
+        this.renderInteraction(node);
+        this.interactionLoading.style.display = 'none';
+        this.interactionContent.style.display = 'block';
+      }, 300);
+    } catch (error) {
+      console.error('Error displaying node:', error);
+      this.showError('Ошибка при отображении узла');
+    }
+  }
+  
+  addMessageToThread(sender, message) {
+    const messageEl = document.createElement('div');
+    messageEl.className = `dialogue-message ${sender}`;
+    messageEl.innerHTML = `
+      <div class="message-content">${this.escapeHtml(message)}</div>
+      <div class="message-timestamp">${new Date().toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })}</div>
+    `;
+    messageEl.classList.add('animate-slideInUp');
+    this.dialogueThread.appendChild(messageEl);
+    
+    // Scroll to bottom
+    this.dialogueThread.scrollTop = this.dialogueThread.scrollHeight;
+  }
+  
+  renderInteraction(node) {
+    this.interactionContent.innerHTML = '';
+    
+    // Проверяем, является ли узел финальным (outcome)
+    const isFinalNode = node.is_outcome || (node.outcome && !node.options && !node.fill_in);
+    
+    // Если узел является delayed_consequence или event_type и нет взаимодействий - завершаем
+    const isEventNode = node.event_type === 'delayed_consequence' || node.event_type === 'catastrophic_outcome' || node.event_type === 'random_event';
+    
+    // Если есть fill-in и это не финальный узел
+    if (node.fill_in && !isFinalNode) {
+      this.renderFillIn(node);
+    }
+    // Если есть options и это не финальный узел
+    else if (node.options && node.options.length > 0 && !isFinalNode) {
+      this.renderOptions(node);
+    }
+    // Если это конец (outcome node)
+    else if (isFinalNode) {
+      console.log('Handling outcome node:', node.id, 'outcome:', node.outcome || node.outcome_type);
+      this.handleOutcome(node);
+    }
+    // Если это event node (delayed_consequence, etc.) без дальнейших действий - завершаем
+    else if (isEventNode && !node.options && !node.fill_in) {
+      console.log('Handling event node without interactions, completing scenario:', node.id);
+      // Создаем временный outcome на основе поля outcome в узле или используем score
+      const outcomeValue = node.outcome || 'poor'; // delayed_consequence обычно означает poor outcome
+      setTimeout(() => {
+        this.handleOutcome({
+          ...node,
+          is_outcome: true,
+          outcome_type: outcomeValue
+        });
+      }, 2000); // Даем время прочитать сообщение
+    }
+    // Если ничего не подошло - проверяем наличие outcome поля
+    else if (node.outcome) {
+      console.log('Node has outcome but wasn\'t handled properly, completing scenario');
+      this.handleOutcome(node);
+    }
+    // Если узел без взаимодействий и без outcome - завершаем на основе score
+    else if (!node.options && !node.fill_in && !node.is_outcome) {
+      console.warn('Node has no interactions and no outcome, completing scenario based on score:', node.id);
+      setTimeout(() => {
+        this.handleOutcome({
+          ...node,
+          is_outcome: true,
+          outcome_type: 'good' // Default
+        });
+      }, 2000);
+    }
+    else {
+      console.warn('No interaction type found for node:', node.id);
+      console.warn('Node properties:', {
+        has_options: !!node.options,
+        options_count: node.options?.length || 0,
+        has_fill_in: !!node.fill_in,
+        is_outcome: node.is_outcome,
+        outcome: node.outcome,
+        event_type: node.event_type
+      });
+    }
+  }
+  
+  renderOptions(node) {
+    const container = document.createElement('div');
+    container.className = 'options-container';
+    
+    node.options.forEach((option, index) => {
+      const button = document.createElement('button');
+      button.className = 'option-button';
+      button.textContent = option.text;
+      // Устанавливаем ID опции, если его нет
+      if (!option.id) {
+        option.id = `option_${index}`;
+      }
+      button.addEventListener('click', () => this.selectOption(option, node));
+      container.appendChild(button);
+    });
+    
+    this.interactionContent.appendChild(container);
+  }
+  
+  renderFillIn(node) {
+    const container = document.createElement('div');
+    container.className = 'fill-in-container';
+    
+    const fillInConfig = node.fill_in;
+    
+    // Проверяем, что fillInConfig существует и корректный
+    if (!fillInConfig) {
+      console.error('Fill-in config is missing for node:', node.id);
+      return;
+    }
+    
+    // Если есть явный вопрос - показываем его первым
+    if (fillInConfig.question && typeof fillInConfig.question === 'string') {
+      const questionEl = document.createElement('p');
+      questionEl.className = 'fill-in-question';
+      questionEl.style.fontWeight = '600';
+      questionEl.style.marginBottom = '12px';
+      questionEl.style.color = '#2563eb';
+      questionEl.textContent = fillInConfig.question;
+      container.appendChild(questionEl);
+    }
+    
+    // Текст с пропуском
+    const textEl = document.createElement('p');
+    textEl.className = 'fill-in-text';
+    
+    let text = '';
+    
+    // Если есть text в конфиге (старый формат с ____)
+    if (fillInConfig.text && typeof fillInConfig.text === 'string') {
+      text = fillInConfig.text.replace('____', `<span class="blank">[?]</span>`);
+    }
+    // Если есть word в конфиге (новый формат - заменяем слово в patient_statement)
+    else if (fillInConfig.word && typeof fillInConfig.word === 'string') {
+      // Используем patient_statement из узла, если есть
+      const sourceText = node.patient_statement || node.title || '';
+      
+      // Заменяем слово на пропуск (case-insensitive)
+      const wordRegex = new RegExp(`\\b${fillInConfig.word}\\b`, 'gi');
+      text = sourceText.replace(wordRegex, `<span class="blank">[?]</span>`);
+      
+      // Если замена не произошла, просто показываем текст с пропуском в конце
+      if (text === sourceText) {
+        text = sourceText + ' <span class="blank">[?]</span>';
+      }
+    }
+    // Fallback: используем patient_statement с пропуском
+    else {
+      const sourceText = node.patient_statement || node.title || 'Vul het ontbrekende woord in:';
+      text = sourceText + ' <span class="blank">[?]</span>';
+    }
+    
+    textEl.innerHTML = text;
+    container.appendChild(textEl);
+    
+    // Input group
+    const inputGroup = document.createElement('div');
+    inputGroup.className = 'fill-in-input-group';
+    
+    const label = document.createElement('label');
+    label.className = 'fill-in-label';
+    label.textContent = 'Voer het juiste woord in:';
+    inputGroup.appendChild(label);
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'fill-in-input';
+    input.placeholder = 'Typ hier...';
+    input.setAttribute('data-node-id', node.id);
+    inputGroup.appendChild(input);
+    
+    // Actions
+    const actions = document.createElement('div');
+    actions.className = 'fill-in-actions';
+    
+    const hintBtn = document.createElement('button');
+    hintBtn.className = 'btn-hint';
+    hintBtn.textContent = '? Hint';
+    hintBtn.addEventListener('click', () => this.showFillInHint(fillInConfig, input));
+    actions.appendChild(hintBtn);
+    
+    const submitBtn = document.createElement('button');
+    submitBtn.className = 'btn-submit';
+    submitBtn.textContent = 'Controleer antwoord';
+    submitBtn.addEventListener('click', () => this.validateFillIn(input, node, fillInConfig));
+    actions.appendChild(submitBtn);
+    
+    inputGroup.appendChild(actions);
+    container.appendChild(inputGroup);
+    
+    // Focus on input
+    setTimeout(() => input.focus(), 100);
+    
+    this.interactionContent.appendChild(container);
+  }
+  
+  async selectOption(option, node) {
+    // Логирование для диагностики - проверим что приходит в option
+    console.log('🎯 selectOption called:', {
+      option_id: option.id,
+      option_text_preview: option.text?.substring(0, 50) + '...',
+      has_score: option.score !== undefined,
+      has_trade_offs: !!option.trade_offs,
+      trade_offs_keys: option.trade_offs ? Object.keys(option.trade_offs) : [],
+      option_full: option  // Полный объект для проверки
+    });
+    
+    // Disable all buttons
+    const buttons = this.interactionContent.querySelectorAll('.option-button');
+    buttons.forEach(btn => btn.disabled = true);
+    
+    // Защита от циклов: проверяем, что мы не пытаемся перейти на тот же узел
+    if (option.next_node === node.id) {
+      console.error('⚠️ Warning: next_node points to current node, this would cause infinite loop!', {
+        current_node: node.id,
+        next_node: option.next_node,
+        option_id: option.id
+      });
+      
+      // Пытаемся найти следующий логический узел
+      const nodes = this.scenario.scenario_data.dialogue_nodes || [];
+      const currentIndex = nodes.findIndex(n => n.id === node.id);
+      
+      // Стратегия 1: Ищем другие опции в текущем узле, которые ведут в другое место
+      let fixedNextNode = null;
+      if (node.options && node.options.length > 1) {
+        const otherOptions = node.options.filter(opt => opt.next_node && opt.next_node !== node.id);
+        if (otherOptions.length > 0) {
+          // Берем next_node из другой опции
+          fixedNextNode = otherOptions[0].next_node;
+          console.log('🔄 Auto-fixed: using next_node from another option in same node:', fixedNextNode);
+        }
+      }
+      
+      // Стратегия 2: Если не нашли, берем следующий узел по порядку
+      if (!fixedNextNode && currentIndex >= 0 && currentIndex < nodes.length - 1) {
+        // Пропускаем узлы без options (они могут быть промежуточными)
+        for (let i = currentIndex + 1; i < nodes.length; i++) {
+          if (nodes[i].options && nodes[i].options.length > 0) {
+            fixedNextNode = nodes[i].id;
+            console.log('🔄 Auto-fixed: using next sequential node with options:', fixedNextNode);
+            break;
+          }
+        }
+        
+        // Если не нашли узел с options, просто берем следующий
+        if (!fixedNextNode && currentIndex < nodes.length - 1) {
+          fixedNextNode = nodes[currentIndex + 1].id;
+          console.log('🔄 Auto-fixed: using next sequential node:', fixedNextNode);
+        }
+      }
+      
+      // Стратегия 3: Если ничего не найдено, завершаем сценарий
+      if (!fixedNextNode) {
+        fixedNextNode = 'end';
+        console.log('🔄 Auto-fixed: using end node (no valid next node found)');
+      }
+      
+      // Заменяем next_node
+      option.next_node = fixedNextNode;
+    }
+    
+    try {
+      // Убедиться, что attempt существует
+      if (!this.attemptId && this.scenario?.id) {
+        try {
+          const attemptResp = await fetch('/api/vp/start-attempt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ scenario_id: this.scenario.id })
+          });
+          const attemptJson = await attemptResp.json();
+          if (attemptJson && attemptJson.success) {
+            this.attemptId = attemptJson.attempt_id;
+          }
+        } catch (e) {
+          console.warn('Attempt fallback creation failed', e);
+        }
+      }
+      
+      // Получить точку перед сохранением
+      // Пробуем получить score из разных мест
+      let optionScore = 0;
+      
+      console.log('🔍 Calculating score for option:', {
+        option_id: option.id,
+        has_explicit_score: option.score !== undefined,
+        explicit_score: option.score,
+        has_trade_offs: !!option.trade_offs,
+        trade_offs: option.trade_offs
+      });
+      
+      if (option.score !== undefined && option.score !== null) {
+        optionScore = option.score;
+        console.log('✅ Using explicit score:', optionScore);
+      } else if (option.trade_offs) {
+        // Если score нет, пытаемся вычислить из trade_offs
+        // Берем среднее из empathy, trust, cooperation и т.д.
+        const values = [];
+        Object.entries(option.trade_offs).forEach(([key, val]) => {
+          console.log(`  Processing trade_off ${key}:`, val, typeof val);
+          if (typeof val === 'string') {
+            // Пробуем распарсить строку вида "+40", "-20", "+HIGH", "0", etc.
+            if (val.startsWith('+')) {
+              const numVal = parseInt(val.slice(1));
+              if (!isNaN(numVal)) {
+                console.log(`    -> Parsed as +${numVal}`);
+                values.push(numVal);
+              } else if (val.toUpperCase().includes('HIGH') || val.toUpperCase().includes('EXCELLENT')) {
+                console.log(`    -> Parsed as HIGH/EXCELLENT = 40`);
+                values.push(40); // HIGH/EXCELLENT = 40
+              } else if (val.toUpperCase().includes('MODERATE') || val.toUpperCase().includes('AVERAGE')) {
+                console.log(`    -> Parsed as MODERATE/AVERAGE = 20`);
+                values.push(20); // MODERATE/AVERAGE = 20
+              } else if (val.toUpperCase().includes('LOW')) {
+                console.log(`    -> Parsed as LOW = 10`);
+                values.push(10); // LOW = 10
+              }
+            } else if (val.startsWith('-')) {
+              // Отрицательные значения учитываем, но с меньшим весом
+              const numVal = parseInt(val.slice(1));
+              if (!isNaN(numVal)) {
+                console.log(`    -> Negative value ignored: -${numVal}`);
+                // Отрицательные значения уменьшают score, но не ниже 0
+                // Мы не добавляем их напрямую, но учитываем при расчете
+              }
+            } else {
+              // Пробуем распарсить как число
+              const numVal = parseInt(val);
+              if (!isNaN(numVal) && numVal > 0) {
+                console.log(`    -> Parsed as number: ${numVal}`);
+                values.push(numVal);
+              } else {
+                console.log(`    -> Could not parse: ${val}`);
+              }
+            }
+          } else if (typeof val === 'number' && val > 0) {
+            console.log(`    -> Using number value: ${val}`);
+            values.push(val);
+          } else {
+            console.log(`    -> Skipped (not parseable):`, val);
+          }
+        });
+        
+        console.log('📊 Collected values:', values);
+        
+        if (values.length > 0) {
+          const sum = values.reduce((a, b) => a + b, 0);
+          const avg = sum / values.length;
+          // Среднее значение * 1.5 для нормализации
+          optionScore = Math.round(avg * 1.5);
+          // Ограничиваем диапазон 0-30
+          optionScore = Math.max(0, Math.min(30, optionScore));
+          console.log(`✅ Computed score: ${optionScore} (from ${values.length} values: sum=${sum}, avg=${avg.toFixed(2)})`);
+        } else {
+          console.warn('⚠️ No parseable values found in trade_offs:', option.trade_offs);
+        }
+      } else {
+        console.warn('⚠️ No score and no trade_offs found in option:', option.id);
+      }
+      
+      this.score += optionScore;
+      console.log(`💰 Total score after adding ${optionScore}: ${this.score}`);
+      
+      // Логирование для диагностики
+      console.log('Sending choice data:', {
+        attempt_id: this.attemptId,
+        option_id: option.id,
+        score: optionScore,
+        next_node: option.next_node,
+        dialogue_history: this.dialogueHistory
+      });
+      
+      // Сохранить выбор на backend
+      const response = await fetch('/api/vp/save-choice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          attempt_id: this.attemptId,
+          option_id: option.id,
+          score: optionScore,
+          next_node: option.next_node,
+          dialogue_history: this.dialogueHistory
+        })
+      });
+      
+      const result = await response.json();
+      if (!result.success) throw new Error('Failed to save choice');
+      
+      // Обновить UI
+      this.updateScore(result.current_score, result.fill_in_score);
+      
+      // Показать выбранный вариант визуально
+      const selectedBtn = Array.from(buttons).find(btn => btn.textContent === option.text);
+      if (selectedBtn) {
+        selectedBtn.classList.add('correct');
+      }
+      
+      // Добавить ответ врача в диалог
+      this.addMessageToThread('from-doctor', option.text);
+      
+      // Сохранить выбор в историю диалога
+      this.dialogueHistory.push({
+        node_id: node.id,
+        choice_id: option.id,
+        choice_text: option.text,
+        score: optionScore,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Переход к следующему узлу
+      setTimeout(() => {
+        const nextNodeId = option.next_node;
+        
+        console.log('🔄 Transition:', {
+          from_node: node.id,
+          to_node: nextNodeId,
+          option_id: option.id,
+          option_text: option.text.substring(0, 50) + '...'
+        });
+        
+        // Проверяем, что next_node не указывает на текущий узел (дополнительная защита)
+        if (nextNodeId && nextNodeId === node.id) {
+          console.error('❌ Blocked infinite loop: next_node === current_node');
+          // Ищем следующий узел по порядку
+          const nodes = this.scenario.scenario_data.dialogue_nodes || [];
+          const currentIndex = nodes.findIndex(n => n.id === node.id);
+          if (currentIndex >= 0 && currentIndex < nodes.length - 1) {
+            this.currentNodeId = nodes[currentIndex + 1].id;
+            console.log('✅ Using sequential next node:', this.currentNodeId);
+          } else {
+            this.completeScenario();
+            return;
+          }
+        } else if (nextNodeId && nextNodeId !== 'end') {
+          this.currentNodeId = nextNodeId;
+        } else {
+          // Сценарий завершен
+          this.completeScenario();
+          return;
+        }
+        
+        // Всегда показываем patient_statement для следующих узлов
+        this.displayNode(this.currentNodeId, true);
+      }, 1000);
+    } catch (error) {
+      console.error('Error selecting option:', error);
+      buttons.forEach(btn => btn.disabled = false);
+    }
+  }
+  
+  showFillInHint(fillInConfig, input) {
+    if (!fillInConfig) {
+      console.error('Fill-in config is missing for hint');
+      return;
+    }
+    
+    const hint = (fillInConfig.hint && typeof fillInConfig.hint === 'string') 
+      ? fillInConfig.hint 
+      : 'Geen hint beschikbaar';
+    
+    const message = document.createElement('div');
+    message.className = 'hint-message';
+    message.textContent = hint;
+    input.parentElement.insertBefore(message, input.nextSibling);
+    setTimeout(() => message.remove(), 5000);
+  }
+  
+  async validateFillIn(input, node, fillInConfig) {
+    const userAnswer = input.value.trim();
+    
+    if (!userAnswer) {
+      input.classList.add('error');
+      input.classList.remove('success');
+      setTimeout(() => input.classList.remove('error'), 500);
+      return;
+    }
+    
+    try {
+      // Валидировать на backend
+      const response = await fetch('/api/vp/validate-fill-in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          attempt_id: this.attemptId,
+          node_id: node.id,
+          user_answer: userAnswer
+        })
+      });
+      
+      // Проверяем статус ответа
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.error('❌ Endpoint /api/vp/validate-fill-in not found (404). This may mean the endpoint is not deployed yet.');
+          // Fallback: валидация на frontend
+          this.handleFillInFallback(input, node, fillInConfig, userAnswer);
+          return;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      // Блокируем input
+      input.disabled = true;
+      
+      if (result.valid) {
+        // Правильно!
+        input.classList.add('success');
+        input.classList.remove('error');
+        
+        this.fillInScore += result.score || 0;
+        this.updateScore(this.score, this.fillInScore);
+        
+        // Feedback
+        this.showFeedback('success', result.message || 'Correct! Goed gedaan!');
+        
+        // Добавить ответ в диалог
+        this.addMessageToThread('from-doctor', userAnswer);
+        
+        // Переход к следующему узлу
+        this.continueAfterFillIn(node, result.correct_answer);
+      } else {
+        // Неправильно - показываем правильный ответ, но продолжаем
+        input.classList.add('error');
+        input.classList.remove('success');
+        
+        // Показываем правильный ответ
+        const correctAnswer = result.correct_answer || fillInConfig.word || 'N/A';
+        const feedbackMessage = result.message || `Niet correct. Het juiste antwoord is: "${correctAnswer}"`;
+        
+        // Feedback с правильным ответом
+        this.showFeedback('error', feedbackMessage);
+        
+        // Обновляем input чтобы показать правильный ответ
+        input.value = correctAnswer;
+        input.classList.remove('error');
+        input.classList.add('correct-answer-shown');
+        
+        // Добавить ответ в диалог (показываем пользовательский ответ, но потом правильный)
+        this.addMessageToThread('from-doctor', `${userAnswer} (correct: ${correctAnswer})`);
+        
+        // Переход к следующему узлу (не блокируем)
+        setTimeout(() => {
+          this.continueAfterFillIn(node, correctAnswer);
+        }, 2000); // Даем время прочитать правильный ответ
+      }
+    } catch (error) {
+      console.error('Error validating fill-in:', error);
+      // Fallback на frontend валидацию при ошибке
+      this.handleFillInFallback(input, node, fillInConfig, userAnswer);
+    }
+  }
+  
+  handleFillInFallback(input, node, fillInConfig, userAnswer) {
+    // Frontend fallback валидация если backend недоступен
+    console.log('🔄 Using frontend fallback validation for fill-in');
+    
+    const correctWord = fillInConfig.word || '';
+    const userAnswerLower = userAnswer.toLowerCase();
+    const correctWordLower = correctWord.toLowerCase();
+    
+    let isCorrect = false;
+    let score = 0;
+    
+    if (correctWordLower) {
+      // Точное совпадение
+      if (userAnswerLower === correctWordLower) {
+        isCorrect = true;
+        score = 10;
+      }
+      // Частичное совпадение
+      else if (correctWordLower.includes(userAnswerLower) || userAnswerLower.includes(correctWordLower)) {
+        isCorrect = true;
+        score = 5;
+      }
+    }
+    
+    // Блокируем input
+    input.disabled = true;
+    
+    if (isCorrect) {
+      input.classList.add('success');
+      input.classList.remove('error');
+      
+      this.fillInScore += score;
+      this.updateScore(this.score, this.fillInScore);
+      
+      this.showFeedback('success', `Correct! Goed gedaan! (+${score} punten)`);
+      this.addMessageToThread('from-doctor', userAnswer);
+      
+      // Переход к следующему узлу
+      this.continueAfterFillIn(node, correctWord);
+    } else {
+      // Неправильно - показываем правильный ответ, но продолжаем
+      input.classList.add('error');
+      input.classList.remove('success');
+      
+      const hint = fillInConfig.hint || '';
+      const message = hint 
+        ? `Niet correct. Hint: ${hint}. Het juiste antwoord is: "${correctWord}"`
+        : `Niet correct. Het juiste antwoord is: "${correctWord}"`;
+      
+      this.showFeedback('error', message);
+      
+      // Обновляем input чтобы показать правильный ответ
+      input.value = correctWord;
+      input.classList.remove('error');
+      input.classList.add('correct-answer-shown');
+      
+      // Добавить ответ в диалог
+      this.addMessageToThread('from-doctor', `${userAnswer} (correct: ${correctWord})`);
+      
+      // Переход к следующему узлу (не блокируем)
+      setTimeout(() => {
+        this.continueAfterFillIn(node, correctWord);
+      }, 2000); // Даем время прочитать правильный ответ
+    }
+  }
+  
+  continueAfterFillIn(node, correctAnswer) {
+    // Общая логика продолжения после fill-in вопроса
+    let nextNodeId = node.next_node;
+    
+    // Если next_node не указан, берем следующий узел по порядку в массиве
+    if (!nextNodeId || nextNodeId === 'end') {
+      const nodes = this.scenario.scenario_data.dialogue_nodes || [];
+      const currentIndex = nodes.findIndex(n => n.id === node.id);
+      
+      if (currentIndex >= 0 && currentIndex < nodes.length - 1) {
+        nextNodeId = nodes[currentIndex + 1].id;
+      } else {
+        nextNodeId = 'end';
+      }
+    }
+    
+    this.currentNodeId = nextNodeId;
+    
+    if (this.currentNodeId === 'end') {
+      this.completeScenario();
+    } else {
+      // Всегда показываем patient_statement для следующих узлов
+      this.displayNode(this.currentNodeId, true);
+    }
+  }
+  
+  showFeedback(type, message) {
+    const feedback = document.createElement('div');
+    feedback.className = `feedback-message ${type}`;
+    feedback.textContent = message;
+    this.interactionContent.appendChild(feedback);
+    setTimeout(() => feedback.remove(), 4000);
+  }
+  
+  updateScore(dialogueScore, fillInScore) {
+    this.score = dialogueScore;
+    this.fillInScore = fillInScore;
+    // Обновляем только внутренние переменные, больше не показываем счет пользователю
+  }
+  
+  updateProgress(nodeId) {
+    const totalNodes = this.scenario.scenario_data.dialogue_nodes.length;
+    const currentIndex = this.scenario.scenario_data.dialogue_nodes.findIndex(n => n.id === nodeId);
+    const progress = ((currentIndex + 1) / totalNodes) * 100;
+    
+    // Обновляем только элементы, которые существуют
+    const currentStepEl = document.getElementById('currentStep');
+    if (currentStepEl) {
+      currentStepEl.textContent = currentIndex + 1;
+    }
+    
+    const totalStepsEl = document.getElementById('totalSteps');
+    if (totalStepsEl) {
+      totalStepsEl.textContent = totalNodes;
+    }
+    
+    const progressFillEl = document.getElementById('progressFill');
+    if (progressFillEl) {
+      progressFillEl.style.width = progress + '%';
+    }
+  }
+  
+  async completeScenario() {
+    try {
+      // Вычислить время в минутах (с округлением вверх, минимум 1 минута)
+      const timeSpentSeconds = (Date.now() - this.startTime) / 1000;
+      const timeSpentMinutes = Math.max(1, Math.ceil(timeSpentSeconds / 60)); // Минимум 1 минута
+      
+      console.log('📊 Completing scenario:', {
+        attempt_id: this.attemptId,
+        score: this.score,
+        fillInScore: this.fillInScore,
+        totalScore: this.score + this.fillInScore,
+        timeSpent: timeSpentMinutes,
+        timeSpentSeconds: timeSpentSeconds.toFixed(1),
+        dialogueHistory: this.dialogueHistory.length,
+        startTime: this.startTime,
+        endTime: Date.now()
+      });
+      
+      const response = await fetch('/api/vp/complete-attempt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          attempt_id: this.attemptId,
+          score: this.score + this.fillInScore, // Общий счет
+          time_spent: timeSpentMinutes,
+          dialogue_history: this.dialogueHistory
+        })
+      });
+      
+      const result = await response.json();
+      if (!result.success) throw new Error('Failed to complete');
+      
+      const attempt = result.attempt;
+      
+      // Добавить детальный feedback на основе истории
+      attempt.detailed_feedback = this.generateDetailedFeedback();
+      
+      this.showResultsModal(attempt);
+    } catch (error) {
+      console.error('Error completing scenario:', error);
+    }
+  }
+  
+  generateDetailedFeedback() {
+    // Анализируем историю диалога и формируем детальный feedback
+    const feedback = [];
+    
+    // Собираем информацию о выбранных опциях из истории
+    const dialogueHistory = this.dialogueHistory || [];
+    const nodes = this.scenario.scenario_data.dialogue_nodes || [];
+    
+    // Группируем выборы по узлам
+    const choicesByNode = {};
+    dialogueHistory.forEach(entry => {
+      if (entry.node_id && entry.choice_id) {
+        if (!choicesByNode[entry.node_id]) {
+          choicesByNode[entry.node_id] = [];
+        }
+        choicesByNode[entry.node_id].push(entry);
+      }
+    });
+    
+    // Анализируем каждый выбор
+    Object.keys(choicesByNode).forEach(nodeId => {
+      const node = nodes.find(n => n.id === nodeId);
+      if (!node || !node.options) return;
+      
+      const choice = choicesByNode[nodeId][0]; // Берем первый выбор
+      const selectedOption = node.options.find(opt => opt.id === choice.choice_id);
+      
+      if (selectedOption) {
+        // Пробуем получить score из разных источников
+        // Используем ТУ ЖЕ логику, что и в selectOption
+        let score = 0;
+        
+        if (selectedOption.score !== undefined && selectedOption.score !== null) {
+          score = selectedOption.score;
+        } else if (selectedOption.trade_offs) {
+          // Вычисляем score из trade_offs - ТА ЖЕ логика, что в selectOption
+          const values = [];
+          Object.values(selectedOption.trade_offs).forEach(val => {
+            if (typeof val === 'string') {
+              if (val.startsWith('+')) {
+                const numVal = parseInt(val.slice(1));
+                if (!isNaN(numVal)) {
+                  values.push(numVal);
+                } else if (val.toUpperCase().includes('HIGH') || val.toUpperCase().includes('EXCELLENT')) {
+                  values.push(40);
+                } else if (val.toUpperCase().includes('MODERATE') || val.toUpperCase().includes('AVERAGE')) {
+                  values.push(20);
+                } else if (val.toUpperCase().includes('LOW')) {
+                  values.push(10);
+                }
+              } else if (val.startsWith('-')) {
+                // Отрицательные значения игнорируем
+              } else {
+                const numVal = parseInt(val);
+                if (!isNaN(numVal) && numVal > 0) {
+                  values.push(numVal);
+                }
+              }
+            } else if (typeof val === 'number' && val > 0) {
+              values.push(val);
+            }
+          });
+          if (values.length > 0) {
+            // Среднее значение * 1.5 для нормализации (как в selectOption)
+            const sum = values.reduce((a, b) => a + b, 0);
+            const avg = sum / values.length;
+            score = Math.round(avg * 1.5);
+            // Ограничиваем диапазон 0-30 (как в selectOption)
+            score = Math.max(0, Math.min(30, score));
+          }
+        }
+        
+        const optionText = selectedOption.text.substring(0, 80) + (selectedOption.text.length > 80 ? '...' : '');
+        
+        // Определяем тип feedback на основе trade_offs
+        let feedbackType = 'neutral';
+        if (selectedOption.trade_offs) {
+          const empathy = selectedOption.trade_offs.empathy || selectedOption.trade_offs.trust || 0;
+          const empathyValue = typeof empathy === 'string' ? parseInt(empathy.replace(/[+-]/, '')) || 0 : empathy || 0;
+          
+          if (empathyValue > 20 || score > 15) {
+            feedbackType = 'good';
+          } else if (empathyValue < -10 || score < 5) {
+            feedbackType = 'poor';
+          }
+        } else if (score > 0) {
+          feedbackType = 'good';
+        } else if (score < 0) {
+          feedbackType = 'poor';
+        }
+        
+        if (feedbackType === 'good') {
+          feedback.push({
+            type: 'good',
+            node_title: node.title || nodeId,
+            message: `✅ Goed: "${optionText}" - Dit was een goede keuze!${score > 0 ? ` (+${score} punten)` : ''}`
+          });
+        } else if (feedbackType === 'poor') {
+          feedback.push({
+            type: 'poor',
+            node_title: node.title || nodeId,
+            message: `⚠️ Verbetering: "${optionText}" - Deze keuze had beter gekund.${score < 0 ? ` (${score} punten)` : ''}`
+          });
+        } else if (score > 0) {
+          // Нейтральные, но с положительным score
+          feedback.push({
+            type: 'good',
+            node_title: node.title || nodeId,
+            message: `✓ "${optionText}" - Correcte keuze (+${score} punten)`
+          });
+        }
+      }
+    });
+    
+    return feedback;
+  }
+  
+  showResultsModal(attempt) {
+    const level = attempt.level || (attempt.percentage >= 70 ? 'good' : 'needs_improvement');
+    const badges = {
+      'excellent': { icon: '✓', emoji: '⭐' },
+      'good': { icon: '✓', emoji: '👍' },
+      'needs_improvement': { icon: '!', emoji: '📚' },
+      'poor': { icon: '✗', emoji: '🔄' }
+    };
+    
+    const badge = badges[level] || badges['needs_improvement'];
+    
+    document.getElementById('badgeIcon').textContent = badge.icon;
+    document.getElementById('badgeLabel').textContent = this.translateLevel(level);
+    document.getElementById('badgeIcon').className = `badge-icon ${level}`;
+    
+    // Используем правильные поля из attempt
+    const totalScore = attempt.total_score || attempt.score || 0;
+    const percentage = attempt.percentage || attempt.percentage_score || 0;
+    const dialogueScore = attempt.score || totalScore;
+    const fillInScore = attempt.fill_in_score || this.fillInScore || 0;
+    
+    document.getElementById('finalTotalScore').textContent = totalScore;
+    document.getElementById('finalPercentage').textContent = percentage + '%';
+    document.getElementById('finalDialogueScore').textContent = dialogueScore;
+    document.getElementById('finalFillInScore').textContent = fillInScore;
+    
+    // Генерируем улучшенное feedback сообщение
+    let feedbackMessage = attempt.feedback || 'Goed werk!';
+    if (attempt.detailed_feedback && attempt.detailed_feedback.length > 0) {
+      const goodChoices = attempt.detailed_feedback.filter(f => f.type === 'good').length;
+      const poorChoices = attempt.detailed_feedback.filter(f => f.type === 'poor').length;
+      
+      if (goodChoices > 0 || poorChoices > 0) {
+        feedbackMessage = `Je hebt ${goodChoices} goede keuze(s) gemaakt${poorChoices > 0 ? ` en ${poorChoices} keuze(s) die verbetering nodig heeft/hebben` : ''}. Bekijk de details hieronder.`;
+      }
+    }
+    document.getElementById('feedbackMessage').textContent = feedbackMessage;
+    
+    // Заполняем timeline с детальным feedback
+    this.populateTimeline(attempt.detailed_feedback || []);
+    
+    this.completionModal.style.display = 'flex';
+    
+    // Buttons (убираем старые обработчики, чтобы избежать дублирования)
+    const continueBtn = document.getElementById('continueBtn');
+    const closeBtn = document.getElementById('modalCloseBtn');
+    const backdrop = document.getElementById('modalBackdrop');
+    
+    // Удаляем старые обработчики
+    const newContinueBtn = continueBtn.cloneNode(true);
+    continueBtn.parentNode.replaceChild(newContinueBtn, continueBtn);
+    const newCloseBtn = closeBtn.cloneNode(true);
+    closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+    
+    newContinueBtn.addEventListener('click', () => {
+      // Получаем язык из текущего URL или используем 'nl' по умолчанию
+      const currentLang = window.location.pathname.split('/')[1] || 'nl';
+      window.location.href = `/${currentLang}/learning-map/irt`;
+    });
+    
+    newCloseBtn.addEventListener('click', () => {
+      this.completionModal.style.display = 'none';
+    });
+    
+    backdrop.addEventListener('click', () => {
+      this.completionModal.style.display = 'none';
+    });
+  }
+  
+  populateTimeline(feedbackItems) {
+    const timeline = document.getElementById('resultTimeline');
+    if (!timeline) return;
+    
+    timeline.innerHTML = '';
+    
+    if (feedbackItems.length === 0) {
+      timeline.innerHTML = '<p class="text-muted">Geen specifieke feedback beschikbaar.</p>';
+      return;
+    }
+    
+    feedbackItems.forEach((item, index) => {
+      const itemEl = document.createElement('div');
+      itemEl.className = `timeline-item ${item.type}`;
+      itemEl.innerHTML = `
+        <div class="timeline-marker ${item.type === 'good' ? 'success' : 'warning'}"></div>
+        <div class="timeline-content">
+          <h5>${item.node_title}</h5>
+          <p>${item.message}</p>
+        </div>
+      `;
+      timeline.appendChild(itemEl);
+    });
+  }
+  
+  translateLevel(level) {
+    const map = {
+      'excellent': 'Uitstekend',
+      'good': 'Goed',
+      'needs_improvement': 'Kan beter',
+      'poor': 'Moet beter'
+    };
+    return map[level] || 'Kan beter';
+  }
+  
+  handleOutcome(node) {
+    // Если это outcome node - завершить
+    this.completeScenario();
+  }
+  
+  translateGender(gender) {
+    const map = {
+      'male': 'Man',
+      'female': 'Vrouw',
+      'other': 'Anders'
+    };
+    return map[gender] || gender;
+  }
+  
+  translateVitalSign(sign) {
+    const map = {
+      'blood_pressure': 'Bloeddruk',
+      'heart_rate': 'Hartslag',
+      'temperature': 'Temperatuur',
+      'oxygen_saturation': 'Zuurstofverzadiging'
+    };
+    return map[sign] || sign;
+  }
+  
+  translateLevel(level) {
+    const map = {
+      'excellent': 'Uitstekend',
+      'good': 'Goed',
+      'needs_improvement': 'Kan beter',
+      'poor': 'Moet herhalen'
+    };
+    return map[level] || level;
+  }
+  
+  showError(message) {
+    const error = document.createElement('div');
+    error.style.cssText = `
+      padding: 20px;
+      background-color: #EF4444;
+      color: white;
+      border-radius: 8px;
+      text-align: center;
+      margin: 40px 20px;
+    `;
+    error.textContent = message;
+    this.container.appendChild(error);
+  }
+  
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+}
+
+// Initialize
+const vpDialogue = new VirtualPatientDialogue();
+

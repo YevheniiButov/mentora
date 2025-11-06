@@ -1,0 +1,482 @@
+{% extends "admin/base.html" %}
+
+{% block title %}CRM Dashboard - Админ панель{% endblock %}
+
+{% block extra_css %}
+<style>
+.crm-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-left: 5px solid #667eea;
+}
+
+.metric-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-3px);
+}
+
+.metric-card.leads {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    color: #333;
+}
+
+.metric-card.prospects {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+}
+
+.metric-card.active {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.metric-card.converted {
+    background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+    color: white;
+}
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.funnel-step {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #667eea;
+    transition: transform 0.3s ease;
+}
+
+.funnel-step:hover {
+    transform: translateY(-2px);
+}
+
+.funnel-step.leads {
+    border-left-color: #ffc107;
+}
+
+.funnel-step.prospects {
+    border-left-color: #17a2b8;
+}
+
+.funnel-step.active {
+    border-left-color: #28a745;
+}
+
+.funnel-step.converted {
+    border-left-color: #6f42c1;
+}
+
+.contact-card {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #28a745;
+    transition: transform 0.3s ease;
+}
+
+.contact-card:hover {
+    transform: translateY(-2px);
+}
+
+.contact-header {
+    display: flex;
+    justify-content-between;
+    align-items-center;
+    margin-bottom: 10px;
+}
+
+.contact-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.contact-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.contact-status.lead {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.contact-status.prospect {
+    background: #d1ecf1;
+    color: #0c5460;
+}
+
+.contact-status.active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.contact-status.converted {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.chart-container {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: #e9ecef;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.activity-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-left: 3px solid #667eea;
+}
+
+.activity-type {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.activity-time {
+    color: #666;
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">📊 CRM Dashboard</h1>
+            <p class="text-muted">Управление контактами и воронка продаж</p>
+        </div>
+        <div>
+            <button class="btn btn-primary" onclick="refreshStats()">
+                🔄 Обновить
+            </button>
+            <a href="{{ url_for('crm.contact_create') }}" class="btn btn-success">
+                ➕ Новый контакт
+            </a>
+        </div>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="stats-grid">
+        <div class="metric-card leads">
+            <div class="metric-value">{{ leads }}</div>
+            <div class="metric-label">🎯 Лиды</div>
+        </div>
+        <div class="metric-card prospects">
+            <div class="metric-value">{{ prospects }}</div>
+            <div class="metric-label">👥 Потенциальные клиенты</div>
+        </div>
+        <div class="metric-card active">
+            <div class="metric-value">{{ active_contacts }}</div>
+            <div class="metric-label">✅ Активные контакты</div>
+        </div>
+        <div class="metric-card converted">
+            <div class="metric-value">{{ converted }}</div>
+            <div class="metric-label">🎉 Конвертированные</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sales Funnel -->
+        <div class="col-lg-6">
+            <div class="crm-card">
+                <h3 class="mb-4">🎯 Воронка продаж</h3>
+                
+                <div class="funnel-step leads">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">Лиды</h5>
+                            <p class="mb-0 text-muted">Новые потенциальные клиенты</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="h4 mb-0">{{ leads }}</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ (leads / total_contacts * 100) if total_contacts > 0 else 0 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="funnel-step prospects">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">Потенциальные клиенты</h5>
+                            <p class="mb-0 text-muted">Заинтересованные в услугах</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="h4 mb-0">{{ prospects }}</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ (prospects / total_contacts * 100) if total_contacts > 0 else 0 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="funnel-step active">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">Активные клиенты</h5>
+                            <p class="mb-0 text-muted">Активно работающие с нами</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="h4 mb-0">{{ active_contacts }}</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ (active_contacts / total_contacts * 100) if total_contacts > 0 else 0 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="funnel-step converted">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">Конвертированные</h5>
+                            <p class="mb-0 text-muted">Успешно завершившие обучение</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="h4 mb-0">{{ converted }}</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ (converted / total_contacts * 100) if total_contacts > 0 else 0 }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Общая конверсия:</span>
+                        <strong>{{ "%.1f"|format(conversion_rate) }}%</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Contacts -->
+        <div class="col-lg-6">
+            <div class="crm-card">
+                <h3 class="mb-4">👥 Последние контакты</h3>
+                
+                {% if recent_contacts %}
+                    {% for contact in recent_contacts %}
+                    <div class="contact-card">
+                        <div class="contact-header">
+                            <div class="contact-name">{{ contact.full_name }}</div>
+                            <div class="contact-status {{ contact.contact_status }}">
+                                {{ contact.status_display }}
+                            </div>
+                        </div>
+                        
+                        <div class="contact-details">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="text-muted">📧 {{ contact.email }}</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted">🌍 {{ contact.country }}</small>
+                                </div>
+                            </div>
+                            {% if contact.profession %}
+                            <div class="mt-1">
+                                <small class="text-muted">👨‍⚕️ {{ contact.profession.name }}</small>
+                            </div>
+                            {% endif %}
+                            <div class="mt-1">
+                                <small class="text-muted">📅 {{ contact.created_at.strftime('%d.%m.%Y') }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-2">
+                            <a href="{{ url_for('crm.contact_detail', contact_id=contact.id) }}" class="btn btn-sm btn-outline-primary">
+                                👁️ Подробнее
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Нет контактов</h5>
+                        <p class="text-muted">Создайте первый контакт для начала работы</p>
+                        <a href="{{ url_for('crm.contact_create') }}" class="btn btn-primary">
+                            ➕ Создать контакт
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Lead Sources -->
+        <div class="col-lg-6">
+            <div class="crm-card">
+                <h3 class="mb-4">📈 Источники лидов</h3>
+                
+                {% if lead_sources %}
+                    {% for source, count in lead_sources %}
+                    <div class="activity-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="activity-type">{{ source or 'Не указан' }}</div>
+                            </div>
+                            <div>
+                                <strong>{{ count }}</strong> контактов
+                            </div>
+                        </div>
+                        <div class="progress-bar mt-2">
+                            <div class="progress-fill" style="width: {{ (count / total_contacts * 100) if total_contacts > 0 else 0 }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Нет данных об источниках</h5>
+                        <p class="text-muted">Данные появятся после создания контактов</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Profession Distribution -->
+        <div class="col-lg-6">
+            <div class="crm-card">
+                <h3 class="mb-4">👨‍⚕️ Распределение по профессиям</h3>
+                
+                {% if profession_stats %}
+                    {% for profession, count in profession_stats %}
+                    <div class="activity-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="activity-type">{{ profession }}</div>
+                            </div>
+                            <div>
+                                <strong>{{ count }}</strong> контактов
+                            </div>
+                        </div>
+                        <div class="progress-bar mt-2">
+                            <div class="progress-fill" style="width: {{ (count / total_contacts * 100) if total_contacts > 0 else 0 }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-user-md fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Нет данных по профессиям</h5>
+                        <p class="text-muted">Данные появятся после назначения профессий контактам</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="crm-card text-center">
+                <h4 class="text-primary">{{ new_contacts_today }}</h4>
+                <p class="text-muted mb-0">Новых контактов сегодня</p>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="crm-card text-center">
+                <h4 class="text-warning">{{ overdue_followups }}</h4>
+                <p class="text-muted mb-0">Просроченных контактов</p>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="crm-card text-center">
+                <h4 class="text-info">{{ activities_last_30_days }}</h4>
+                <p class="text-muted mb-0">Активностей за 30 дней</p>
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <div class="crm-card text-center">
+                <h4 class="text-success">{{ total_contacts }}</h4>
+                <p class="text-muted mb-0">Всего контактов</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function refreshStats() {
+    location.reload();
+}
+
+// Auto-refresh every 5 minutes
+setTimeout(function() {
+    location.reload();
+}, 300000);
+
+// Add hover effects
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.metric-card, .funnel-step, .contact-card').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-3px)';
+            this.style.boxShadow = '0 12px 35px rgba(0,0,0,0.15)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,539 @@
+{% extends "base.html" %}
+
+{% block title %}Адаптация плана обучения{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-header">
+                <h1>🔄 Адаптация плана обучения</h1>
+                <p>Система автоматически корректирует ваш план на основе прогресса</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Текущий план -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>📋 Текущий план</h3>
+                </div>
+                <div class="card-body">
+                    <div class="plan-info">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <span class="label">Статус:</span>
+                                    <span class="value badge bg-{{ 'success' if plan.status == 'active' else 'secondary' }}">
+                                        {{ plan.status }}
+                                    </span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Дата экзамена:</span>
+                                    <span class="value">{{ plan.exam_date.strftime('%d.%m.%Y') if plan.exam_date else 'Не задано' }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Готовность:</span>
+                                    <span class="value">{{ "%.1f"|format(plan.estimated_readiness * 100) if plan.estimated_readiness else 0 }}%</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <span class="label">Создан:</span>
+                                    <span class="value">{{ plan.created_at.strftime('%d.%m.%Y') if plan.created_at else 'Неизвестно' }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Обновлен:</span>
+                                    <span class="value">{{ plan.last_updated.strftime('%d.%m.%Y %H:%M') if plan.last_updated else 'Неизвестно' }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Целевая способность:</span>
+                                    <span class="value">{{ "%.2f"|format(plan.target_ability) if plan.target_ability else 0 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Аналитика прогресса -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>📊 Общий прогресс</h3>
+                </div>
+                <div class="card-body">
+                    <div class="progress-stats">
+                        <div class="stat-item">
+                            <div class="stat-circle">
+                                <div class="stat-value">{{ "%.1f"|format(insights.overall_progress) }}%</div>
+                                <div class="stat-label">Завершено</div>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-circle">
+                                <div class="stat-value">{{ "%.1f"|format(insights.time_spent) }} ч</div>
+                                <div class="stat-label">Время изучения</div>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-circle">
+                                <div class="stat-value">{{ insights.days_until_exam or 'N/A' }}</div>
+                                <div class="stat-label">Дней до экзамена</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>🎯 Готовность к экзамену</h3>
+                </div>
+                <div class="card-body">
+                    <div class="readiness-meter">
+                        <div class="readiness-circle">
+                            <div class="readiness-value">{{ "%.1f"|format(insights.estimated_readiness * 100) }}%</div>
+                            <div class="readiness-label">Готовность</div>
+                        </div>
+                        <div class="readiness-description">
+                            {% if insights.estimated_readiness >= 0.8 %}
+                                <p class="text-success">🎉 Отличная готовность! Вы почти готовы к экзамену.</p>
+                            {% elif insights.estimated_readiness >= 0.6 %}
+                                <p class="text-warning">📚 Хороший прогресс! Продолжайте обучение.</p>
+                            {% elif insights.estimated_readiness >= 0.4 %}
+                                <p class="text-info">📖 Средний прогресс. Рекомендуется увеличить интенсивность.</p>
+                            {% else %}
+                                <p class="text-danger">⚠️ Низкий прогресс. Требуется больше времени на изучение.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Анализ по доменам -->
+    {% if insights.domain_analysis %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>📚 Анализ по областям знаний</h3>
+                </div>
+                <div class="card-body">
+                    <div class="domain-analysis">
+                        {% for domain_name, analysis in insights.domain_analysis.items() %}
+                        <div class="domain-item">
+                            <div class="domain-header">
+                                <h4>{{ domain_name }}</h4>
+                                <div class="domain-progress">
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: {{ analysis.completion_rate }}%">
+                                            {{ "%.1f"|format(analysis.completion_rate) }}%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="domain-details">
+                                <div class="detail-item">
+                                    <span class="label">Изучено:</span>
+                                    <span class="value">{{ analysis.completed_lessons }}/{{ analysis.total_lessons }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Время:</span>
+                                    <span class="value">{{ "%.1f"|format(analysis.time_spent) }} ч</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Средний балл:</span>
+                                    <span class="value">{{ "%.1f"|format(analysis.average_score) }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Статус:</span>
+                                    <span class="value {% if analysis.needs_attention %}text-warning{% else %}text-success{% endif %}">
+                                        {% if analysis.needs_attention %}
+                                            ⚠️ Требует внимания
+                                        {% else %}
+                                            ✅ Хорошо освоено
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Кнопки действий -->
+    <div class="row">
+        <div class="col-12">
+            <div class="action-buttons">
+                <button class="btn btn-primary btn-lg" onclick="adaptPlan()">
+                    <i class="bi bi-magic"></i>
+                    Адаптировать план
+                </button>
+                <a href="{{ url_for('dashboard.plan_insights', plan_id=plan_id) }}" class="btn btn-info btn-lg">
+                    <i class="bi bi-graph-up"></i>
+                    Подробная аналитика
+                </a>
+                <a href="{{ url_for('dashboard.learning_plan', plan_id=plan_id) }}" class="btn btn-secondary btn-lg">
+                    <i class="bi bi-arrow-left"></i>
+                    К плану обучения
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Результат адаптации -->
+    <div id="adaptation-result" class="row mt-4" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>🔄 Результат адаптации</h3>
+                </div>
+                <div class="card-body">
+                    <div id="result-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+.page-header p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.9;
+}
+
+.plan-info .info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.plan-info .info-item:last-child {
+    border-bottom: none;
+}
+
+.plan-info .label {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.plan-info .value {
+    font-weight: bold;
+    color: #495057;
+}
+
+.progress-stats {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.stat-circle {
+    text-align: center;
+    padding: 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    opacity: 0.9;
+}
+
+.readiness-meter {
+    text-align: center;
+}
+
+.readiness-circle {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 1rem;
+}
+
+.readiness-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.readiness-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.readiness-description {
+    margin-top: 1rem;
+}
+
+.domain-item {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.domain-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.domain-header h4 {
+    margin: 0;
+    color: #495057;
+}
+
+.domain-progress {
+    width: 200px;
+}
+
+.progress {
+    height: 8px;
+    border-radius: 4px;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
+.domain-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.detail-item .label {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.detail-item .value {
+    font-weight: bold;
+    color: #495057;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.action-buttons .btn {
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 1.1rem;
+}
+
+.action-buttons .btn i {
+    margin-right: 0.5rem;
+}
+
+#adaptation-result {
+    animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.adjustment-item {
+    background: #f8f9fa;
+    border-left: 4px solid #667eea;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+}
+
+.adjustment-type {
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+}
+
+.recommendation-item {
+    background: #e8f5e8;
+    border-left: 4px solid #28a745;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+}
+</style>
+
+<script>
+function adaptPlan() {
+    // Показываем индикатор загрузки
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="bi bi-hourglass-split"></i> Адаптация...';
+    button.disabled = true;
+    
+    fetch(`{{ url_for('dashboard.adapt_plan', plan_id=plan_id) }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Показываем результат
+            showAdaptationResult(data);
+            
+            // Обновляем кнопку
+            button.innerHTML = '<i class="bi bi-check-circle"></i> Адаптировано!';
+            button.className = 'btn btn-success btn-lg';
+            
+            // Перезагружаем страницу через 3 секунды
+            setTimeout(() => {
+                window.location.reload();
+            }, 3000);
+        } else {
+            showError('Ошибка при адаптации плана: ' + data.message);
+            
+            // Восстанавливаем кнопку
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showError('Ошибка при адаптации плана');
+        
+        // Восстанавливаем кнопку
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
+function showAdaptationResult(data) {
+    const resultDiv = document.getElementById('adaptation-result');
+    const contentDiv = document.getElementById('result-content');
+    
+    let html = '<div class="row">';
+    
+    // Показываем корректировки
+    if (data.adjustments && data.adjustments.schedule_changes) {
+        html += '<div class="col-md-6"><h4>🔧 Корректировки:</h4>';
+        data.adjustments.schedule_changes.forEach(change => {
+            html += `<div class="adjustment-item">
+                <div class="adjustment-type">${change.type.toUpperCase()}</div>
+                <div><strong>Причина:</strong> ${change.reason}</div>
+                <div><strong>Действие:</strong> ${change.action}</div>
+            </div>`;
+        });
+        html += '</div>';
+    }
+    
+    // Показываем рекомендации
+    if (data.recommendations) {
+        html += '<div class="col-md-6"><h4>💡 Рекомендации:</h4>';
+        data.recommendations.forEach(rec => {
+            html += `<div class="recommendation-item">${rec}</div>`;
+        });
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    
+    // Показываем новую готовность
+    if (data.new_readiness !== undefined) {
+        html += `<div class="row mt-3">
+            <div class="col-12">
+                <div class="alert alert-success">
+                    <h5>🎯 Новая готовность к экзамену: ${(data.new_readiness * 100).toFixed(1)}%</h5>
+                </div>
+            </div>
+        </div>`;
+    }
+    
+    contentDiv.innerHTML = html;
+    resultDiv.style.display = 'block';
+    
+    // Прокручиваем к результату
+    resultDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function showError(message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.querySelector('.container-fluid').insertBefore(alertDiv, document.querySelector('.row'));
+    
+    // Автоматически скрываем через 5 секунд
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %} 

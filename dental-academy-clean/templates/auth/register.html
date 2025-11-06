@@ -1,0 +1,1474 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('registration', lang) | default('Registration') }} - Mentora{% endblock %}
+
+{% block description %}{{ t('registration_description', lang) | default('Register for the Mentora BIG preparation program') }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+<style>
+.registration-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-top: 100px; /* Отступ сверху для шапки */
+}
+
+.registration-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.registration-header h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.registration-header p {
+    color: #7f8c8d;
+    font-size: 16px;
+}
+
+.quick-register-link {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.quick-register-link .btn {
+    border-radius: 25px;
+    padding: 8px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.quick-register-link .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.registration-form {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+.form-section {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.form-section h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+}
+
+.form-section h3 i {
+    margin-right: 10px;
+    color: #3498db;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    flex: 1;
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ecf0f1;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.form-group .help-text {
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-top: 5px;
+}
+
+.required {
+    color: #e74c3c;
+}
+
+.file-upload {
+    border: 2px dashed #bdc3c7;
+    border-radius: 5px;
+    padding: 20px;
+    text-align: center;
+    transition: border-color 0.3s;
+}
+
+.file-upload:hover {
+    border-color: #3498db;
+}
+
+.file-upload input[type="file"] {
+    display: none;
+}
+
+.file-upload-label {
+    cursor: pointer;
+    color: #3498db;
+    font-weight: 600;
+}
+
+.file-upload-label:hover {
+    color: #2980b9;
+}
+
+.uploaded-files {
+    margin-top: 10px;
+}
+
+.uploaded-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+}
+
+.uploaded-file .file-name {
+    font-weight: 500;
+}
+
+.uploaded-file .remove-file {
+    color: #e74c3c;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    padding: 0.5rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 12px;
+    margin-top: 2px;
+    transform: scale(1);
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.checkbox-group label {
+    margin-bottom: 0;
+    font-weight: normal;
+    line-height: 1.4;
+    flex: 1;
+}
+
+.submit-section {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ecf0f1;
+}
+
+.btn-register {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-width: 200px;
+}
+
+.btn-register:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+}
+
+.btn-register:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.success-message {
+    color: #27ae60;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+/* Шаги навигации удалены */
+
+.consent-block {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.consent-block h4 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.consent-block h4 i {
+    margin-right: 8px;
+    color: #3498db;
+}
+
+.consent-content {
+    margin-bottom: 15px;
+}
+
+.consent-content p {
+    margin-bottom: 10px;
+    color: #555;
+    font-weight: 500;
+}
+
+.consent-content ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.consent-content li {
+    margin-bottom: 5px;
+    color: #666;
+}
+
+.signature-block {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.signature-block h4 {
+    color: #856404;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+.signature-block .form-group {
+    margin-bottom: 0;
+}
+
+.phone-input-group {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+}
+
+.country-code-select {
+    flex: 0 0 200px;
+    padding: 12px;
+    border: 2px solid #ecf0f1;
+    border-radius: 5px;
+    font-size: 14px;
+    background: white;
+    transition: border-color 0.3s;
+}
+
+.country-code-select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.phone-number-input {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #ecf0f1;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.phone-number-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    /* Мобильные стили для шагов навигации удалены */
+    
+    .consent-block,
+    .signature-block {
+        padding: 15px;
+    }
+    
+    .phone-input-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .country-code-select {
+        flex: none;
+        width: 100%;
+    }
+}
+
+.password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-container input {
+    padding-right: 45px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #7f8c8d;
+    font-size: 16px;
+    padding: 5px;
+    transition: color 0.3s;
+}
+
+.password-toggle:hover {
+    color: #3498db;
+}
+
+.password-toggle:focus {
+    outline: none;
+    color: #3498db;
+}
+
+.nationality-search-container {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.nationality-search {
+    width: 100%;
+    padding: 10px 35px 10px 12px;
+    border: 2px solid #ecf0f1;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.nationality-search:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.nationality-search-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.nationality-select {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.nationality-select option {
+    padding: 8px 12px;
+}
+
+.year-range-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.year-input {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #ecf0f1;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.year-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.year-separator {
+    color: #7f8c8d;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* Стили для обновленной формы регистрации */
+
+.early-access-notice {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.notice-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #3ECDC1 0%, #44A08D 100%);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.registration-header h1 {
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    font-size: 2.2rem;
+    font-weight: 700;
+}
+
+.main-subtitle {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.early-access-benefits {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 2rem 0;
+    text-align: center;
+}
+
+.early-access-benefits h3 {
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s ease;
+}
+
+.benefit-item:hover {
+    transform: translateY(-2px);
+}
+
+.benefit-item i {
+    color: #3ECDC1;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.benefit-item span {
+    font-weight: 500;
+    color: #2c3e50;
+    font-size: 0.9rem;
+}
+
+.launch-timeline {
+    background: rgba(62, 205, 193, 0.1);
+    border: 1px solid rgba(62, 205, 193, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.timeline-item i {
+    color: #3ECDC1;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.timeline-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.timeline-content strong {
+    color: #2c3e50;
+    font-size: 1.1rem;
+}
+
+.timeline-content span {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.interests-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+}
+
+.early-access-consent {
+    background: rgba(62, 205, 193, 0.05);
+    border: 1px solid rgba(62, 205, 193, 0.1);
+}
+
+.early-access-btn {
+    background: linear-gradient(135deg, #3ECDC1, #44A08D);
+    position: relative;
+    overflow: hidden;
+}
+
+.early-access-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.early-access-btn:hover::before {
+    left: 100%;
+}
+
+.submit-note {
+    margin-top: 1rem;
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .benefits-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .interests-checkboxes {
+        grid-template-columns: 1fr;
+    }
+    
+    .registration-header h1 {
+        font-size: 1.8rem;
+    }
+    
+    .early-access-benefits {
+        padding: 1.5rem;
+    }
+}
+
+/* Темная тема */
+[data-theme="dark"] .early-access-benefits {
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+    border: 1px solid #6b7280;
+}
+
+[data-theme="dark"] .benefit-item {
+    background: #374151;
+    border-color: #6b7280;
+    color: #f9fafb;
+}
+
+[data-theme="dark"] .benefit-item span {
+    color: #f9fafb;
+}
+
+[data-theme="dark"] .timeline-content strong {
+    color: #f9fafb;
+}
+
+[data-theme="dark"] .timeline-content span {
+    color: #d1d5db;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="registration-container">
+    <div class="registration-header">
+        <!-- Уведомление о предварительной регистрации -->
+        <div class="early-access-notice">
+            <div class="notice-badge">
+                <i class="bi bi-rocket-takeoff"></i>
+                {{ t('early_access', lang)|default('Ранний доступ') }}
+            </div>
+            <h1>{{ t('early_registration_title', lang)|default('Предварительная регистрация') }}</h1>
+            <p class="main-subtitle">{{ t('comprehensive_program_subtitle', lang)|default('Зарегистрируйтесь сейчас для участия в комплексной программе подготовки к BIG экзамену с практическими стажировками') }}</p>
+            
+            <!-- Ссылка на быструю регистрацию -->
+            <div class="quick-register-link">
+                <a href="{{ url_for('auth.quick_register', lang=lang) if lang != 'en' else url_for('auth.quick_register') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-lightning-charge"></i>
+                    {{ t('quick_registration', lang)|default('Быстрая регистрация') }}
+                </a>
+            </div>
+        </div>
+        
+        <!-- Преимущества ранней регистрации -->
+        <div class="early-access-benefits">
+            <h3>{{ t('what_you_get', lang)|default('Что вас ждет:') }}</h3>
+            <div class="benefits-grid">
+                <div class="benefit-item">
+                    <i class="bi bi-award-fill"></i>
+                    <span>{{ t('structured_big_prep', lang)|default('Структурированная подготовка к BIG') }}</span>
+                </div>
+                <div class="benefit-item">
+                    <i class="bi bi-hospital-fill"></i>
+                    <span>{{ t('hospital_internships', lang)|default('Стажировки в больницах') }}</span>
+                </div>
+                <div class="benefit-item">
+                    <i class="bi bi-people-fill"></i>
+                    <span>{{ t('mentorship', lang)|default('Менторское сопровождение') }}</span>
+                </div>
+                <div class="benefit-item">
+                    <i class="bi bi-star-fill"></i>
+                    <span>{{ t('priority_access', lang)|default('Приоритетный доступ') }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Информация о запуске -->
+        <div class="launch-timeline">
+            <div class="timeline-item">
+                <i class="bi bi-clock-fill"></i>
+                <div class="timeline-content">
+                    <strong>{{ t('launch_date', lang)|default('Запуск: 2026') }}</strong>
+                    <span>{{ t('early_notification', lang)|default('Вы получите уведомление о начале программы') }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <form class="registration-form" id="registrationForm" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <!-- Personal Information Section -->
+        <div class="form-section">
+            <h3><i class="fas fa-user"></i> {{ t('personal_information', lang) | default('Personal Information') }}</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="first_name">{{ t('first_name', lang) | default('First Name') }} <span class="required">*</span></label>
+                    <input type="text" id="first_name" name="first_name" autocomplete="given-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="last_name">{{ t('last_name', lang) | default('Last Name') }} <span class="required">*</span></label>
+                    <input type="text" id="last_name" name="last_name" autocomplete="family-name" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">{{ t('email', lang) | default('Email') }} <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" autocomplete="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">{{ t('phone', lang) | default('Phone Number') }}</label>
+                    <div class="phone-input-group">
+                        <select id="country_code" name="country_code" class="country-code-select">
+                            <option value="+31">🇳🇱 +31 (Netherlands)</option>
+                            <option value="+49">🇩🇪 +49 (Germany)</option>
+                            <option value="+32">🇧🇪 +32 (Belgium)</option>
+                            <option value="+33">🇫🇷 +33 (France)</option>
+                            <option value="+34">🇪🇸 +34 (Spain)</option>
+                            <option value="+39">🇮🇹 +39 (Italy)</option>
+                            <option value="+351">🇵🇹 +351 (Portugal)</option>
+                            <option value="+48">🇵🇱 +48 (Poland)</option>
+                            <option value="+40">🇷🇴 +40 (Romania)</option>
+                            <option value="+359">🇧🇬 +359 (Bulgaria)</option>
+                            <option value="+36">🇭🇺 +36 (Hungary)</option>
+                            <option value="+420">🇨🇿 +420 (Czech Republic)</option>
+                            <option value="+421">🇸🇰 +421 (Slovakia)</option>
+                            <option value="+385">🇭🇷 +385 (Croatia)</option>
+                            <option value="+386">🇸🇮 +386 (Slovenia)</option>
+                            <option value="+372">🇪🇪 +372 (Estonia)</option>
+                            <option value="+371">🇱🇻 +371 (Latvia)</option>
+                            <option value="+370">🇱🇹 +370 (Lithuania)</option>
+                            <option value="+356">🇲🇹 +356 (Malta)</option>
+                            <option value="+357">🇨🇾 +357 (Cyprus)</option>
+                            <option value="+352">🇱🇺 +352 (Luxembourg)</option>
+                            <option value="+43">🇦🇹 +43 (Austria)</option>
+                            <option value="+41">🇨🇭 +41 (Switzerland)</option>
+                            <option value="+46">🇸🇪 +46 (Sweden)</option>
+                            <option value="+47">🇳🇴 +47 (Norway)</option>
+                            <option value="+45">🇩🇰 +45 (Denmark)</option>
+                            <option value="+358">🇫🇮 +358 (Finland)</option>
+                            <option value="+354">🇮🇸 +354 (Iceland)</option>
+                            <option value="+353">🇮🇪 +353 (Ireland)</option>
+                            <option value="+44">🇬🇧 +44 (United Kingdom)</option>
+                            <option value="+1">🇺🇸 +1 (United States)</option>
+                            <option value="+1">🇨🇦 +1 (Canada)</option>
+                            <option value="+61">🇦🇺 +61 (Australia)</option>
+                            <option value="+64">🇳🇿 +64 (New Zealand)</option>
+                            <option value="+27">🇿🇦 +27 (South Africa)</option>
+                            <option value="+55">🇧🇷 +55 (Brazil)</option>
+                            <option value="+54">🇦🇷 +54 (Argentina)</option>
+                            <option value="+52">🇲🇽 +52 (Mexico)</option>
+                            <option value="+91">🇮🇳 +91 (India)</option>
+                            <option value="+86">🇨🇳 +86 (China)</option>
+                            <option value="+81">🇯🇵 +81 (Japan)</option>
+                            <option value="+82">🇰🇷 +82 (South Korea)</option>
+                            <option value="+66">🇹🇭 +66 (Thailand)</option>
+                            <option value="+84">🇻🇳 +84 (Vietnam)</option>
+                            <option value="+63">🇵🇭 +63 (Philippines)</option>
+                            <option value="+62">🇮🇩 +62 (Indonesia)</option>
+                            <option value="+60">🇲🇾 +60 (Malaysia)</option>
+                            <option value="+65">🇸🇬 +65 (Singapore)</option>
+                            <option value="+90">🇹🇷 +90 (Turkey)</option>
+                            <option value="+20">🇪🇬 +20 (Egypt)</option>
+                            <option value="+212">🇲🇦 +212 (Morocco)</option>
+                            <option value="+216">🇹🇳 +216 (Tunisia)</option>
+                            <option value="+213">🇩🇿 +213 (Algeria)</option>
+                            <option value="+234">🇳🇬 +234 (Nigeria)</option>
+                            <option value="+254">🇰🇪 +254 (Kenya)</option>
+                            <option value="+233">🇬🇭 +233 (Ghana)</option>
+                            <option value="+251">🇪🇹 +251 (Ethiopia)</option>
+                            <option value="+380">🇺🇦 +380 (Ukraine)</option>
+                            <option value="+375">🇧🇾 +375 (Belarus)</option>
+                            <option value="+7">🇷🇺 +7 (Russia)</option>
+                            <option value="+381">🇷🇸 +381 (Serbia)</option>
+                            <option value="+387">🇧🇦 +387 (Bosnia)</option>
+                            <option value="+382">🇲🇪 +382 (Montenegro)</option>
+                            <option value="+389">🇲🇰 +389 (Macedonia)</option>
+                            <option value="+355">🇦🇱 +355 (Albania)</option>
+                            <option value="+373">🇲🇩 +373 (Moldova)</option>
+                        </select>
+                        <input type="tel" id="phone" name="phone" placeholder="{{ t('phone_placeholder', lang) | default('123456789') }}" class="phone-number-input" autocomplete="tel">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password">{{ t('password', lang) | default('Password') }} <span class="required">*</span></label>
+                    <div class="password-input-container">
+                        <input type="password" id="password" name="password" required minlength="8" autocomplete="new-password" placeholder="{{ t('password_placeholder', lang) | default('Enter your password') }}">
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <i class="fas fa-eye" id="password-eye"></i>
+                        </button>
+                    </div>
+                    <div class="help-text">{{ t('password_help', lang) | default('Minimum 8 characters, must contain letters and numbers') }}</div>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">{{ t('confirm_password', lang) | default('Confirm Password') }} <span class="required">*</span></label>
+                    <div class="password-input-container">
+                        <input type="password" id="confirm_password" name="confirm_password" required minlength="8" autocomplete="new-password" placeholder="{{ t('confirm_password_placeholder', lang) | default('Confirm your password') }}">
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">
+                            <i class="fas fa-eye" id="confirm_password-eye"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="birth_date">{{ t('birth_date', lang) | default('Date of Birth') }} <span class="required">*</span></label>
+                    <input type="date" id="birth_date" name="birth_date" required min="1900-01-01" max="2010-12-31">
+                </div>
+                <div class="form-group">
+                    <label for="nationality">{{ t('nationality', lang) | default('Nationality') }} <span class="required">*</span></label>
+                    <div class="nationality-search-container">
+                        <input type="text" id="nationality_search" placeholder="{{ t('search_nationality', lang) | default('Search nationality...') }}" class="nationality-search">
+                        <i class="fas fa-search nationality-search-icon"></i>
+                    </div>
+                    <select id="nationality" name="nationality" required onchange="toggleOtherField('nationality', 'other_nationality')" class="nationality-select">
+                        <option value="">{{ t('select_nationality', lang) | default('Select Nationality') }}</option>
+                        <!-- All countries sorted alphabetically -->
+                        <option value="AL">{{ t('albanian', lang) | default('Albanian') }}</option>
+                        <option value="DZ">{{ t('algerian', lang) | default('Algerian') }}</option>
+                        <option value="AR">{{ t('argentinian', lang) | default('Argentinian') }}</option>
+                        <option value="AU">{{ t('australian', lang) | default('Australian') }}</option>
+                        <option value="AT">{{ t('austrian', lang) | default('Austrian') }}</option>
+                        <option value="BA">{{ t('bosnian', lang) | default('Bosnian') }}</option>
+                        <option value="BR">{{ t('brazilian', lang) | default('Brazilian') }}</option>
+                        <option value="BG">{{ t('bulgarian', lang) | default('Bulgarian') }}</option>
+                        <option value="BY">{{ t('belarusian', lang) | default('Belarusian') }}</option>
+                        <option value="BE">{{ t('belgian', lang) | default('Belgian') }}</option>
+                        <option value="GB">{{ t('british', lang) | default('British') }}</option>
+                        <option value="CA">{{ t('canadian', lang) | default('Canadian') }}</option>
+                        <option value="CN">{{ t('chinese', lang) | default('Chinese') }}</option>
+                        <option value="HR">{{ t('croatian', lang) | default('Croatian') }}</option>
+                        <option value="CY">{{ t('cypriot', lang) | default('Cypriot') }}</option>
+                        <option value="CZ">{{ t('czech', lang) | default('Czech') }}</option>
+                        <option value="DK">{{ t('danish', lang) | default('Danish') }}</option>
+                        <option value="EG">{{ t('egyptian', lang) | default('Egyptian') }}</option>
+                        <option value="ET">{{ t('ethiopian', lang) | default('Ethiopian') }}</option>
+                        <option value="EE">{{ t('estonian', lang) | default('Estonian') }}</option>
+                        <option value="FI">{{ t('finnish', lang) | default('Finnish') }}</option>
+                        <option value="FR">{{ t('french', lang) | default('French') }}</option>
+                        <option value="DE">{{ t('german', lang) | default('German') }}</option>
+                        <option value="GH">{{ t('ghanaian', lang) | default('Ghanaian') }}</option>
+                        <option value="GR">{{ t('greek', lang) | default('Greek') }}</option>
+                        <option value="HU">{{ t('hungarian', lang) | default('Hungarian') }}</option>
+                        <option value="IS">{{ t('icelandic', lang) | default('Icelandic') }}</option>
+                        <option value="IN">{{ t('indian', lang) | default('Indian') }}</option>
+                        <option value="ID">{{ t('indonesian', lang) | default('Indonesian') }}</option>
+                        <option value="IE">{{ t('irish', lang) | default('Irish') }}</option>
+                        <option value="IT">{{ t('italian', lang) | default('Italian') }}</option>
+                        <option value="JP">{{ t('japanese', lang) | default('Japanese') }}</option>
+                        <option value="KE">{{ t('kenyan', lang) | default('Kenyan') }}</option>
+                        <option value="KR">{{ t('korean', lang) | default('Korean') }}</option>
+                        <option value="LV">{{ t('latvian', lang) | default('Latvian') }}</option>
+                        <option value="LT">{{ t('lithuanian', lang) | default('Lithuanian') }}</option>
+                        <option value="LU">{{ t('luxembourgish', lang) | default('Luxembourgish') }}</option>
+                        <option value="MK">{{ t('macedonian', lang) | default('Macedonian') }}</option>
+                        <option value="MT">{{ t('maltese', lang) | default('Maltese') }}</option>
+                        <option value="MX">{{ t('mexican', lang) | default('Mexican') }}</option>
+                        <option value="MD">{{ t('moldovan', lang) | default('Moldovan') }}</option>
+                        <option value="ME">{{ t('montenegrin', lang) | default('Montenegrin') }}</option>
+                        <option value="MA">{{ t('moroccan', lang) | default('Moroccan') }}</option>
+                        <option value="NL">{{ t('dutch', lang) | default('Dutch') }}</option>
+                        <option value="NZ">{{ t('new_zealand', lang) | default('New Zealand') }}</option>
+                        <option value="NG">{{ t('nigerian', lang) | default('Nigerian') }}</option>
+                        <option value="NO">{{ t('norwegian', lang) | default('Norwegian') }}</option>
+                        <option value="PH">{{ t('filipino', lang) | default('Filipino') }}</option>
+                        <option value="PL">{{ t('polish', lang) | default('Polish') }}</option>
+                        <option value="PT">{{ t('portuguese', lang) | default('Portuguese') }}</option>
+                        <option value="RO">{{ t('romanian', lang) | default('Romanian') }}</option>
+                        <option value="RU">{{ t('russian', lang) | default('Russian') }}</option>
+                        <option value="RS">{{ t('serbian', lang) | default('Serbian') }}</option>
+                        <option value="SG">{{ t('singaporean', lang) | default('Singaporean') }}</option>
+                        <option value="SK">{{ t('slovak', lang) | default('Slovak') }}</option>
+                        <option value="SI">{{ t('slovenian', lang) | default('Slovenian') }}</option>
+                        <option value="ZA">{{ t('south_african', lang) | default('South African') }}</option>
+                        <option value="ES">{{ t('spanish', lang) | default('Spanish') }}</option>
+                        <option value="SE">{{ t('swedish', lang) | default('Swedish') }}</option>
+                        <option value="CH">{{ t('swiss', lang) | default('Swiss') }}</option>
+                        <option value="TH">{{ t('thai', lang) | default('Thai') }}</option>
+                        <option value="TN">{{ t('tunisian', lang) | default('Tunisian') }}</option>
+                        <option value="TR">{{ t('turkish', lang) | default('Turkish') }}</option>
+                        <option value="UA">{{ t('ukrainian', lang) | default('Ukrainian') }}</option>
+                        <option value="US">{{ t('american', lang) | default('American') }}</option>
+                        <option value="VN">{{ t('vietnamese', lang) | default('Vietnamese') }}</option>
+                        <option value="OTHER">{{ t('other', lang) | default('Other') }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" id="other_nationality_group" style="display: none;">
+                <label for="other_nationality">{{ t('specify_nationality', lang) | default('Please specify your nationality') }} <span class="required">*</span></label>
+                <input type="text" id="other_nationality" name="other_nationality" placeholder="{{ t('nationality_placeholder', lang) | default('Enter your nationality') }}">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="gender">{{ t('gender', lang) | default('Gender') }}</label>
+                    <select id="gender" name="gender">
+                        <option value="">{{ t('select_gender', lang) | default('Select Gender') }}</option>
+                        <option value="male">{{ t('male', lang) | default('Male') }}</option>
+                        <option value="female">{{ t('female', lang) | default('Female') }}</option>
+                        <option value="other">{{ t('other', lang) | default('Other') }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Language Certificates Section -->
+        <div class="form-section">
+            <h3><i class="fas fa-language"></i> {{ t('language_certificates', lang) | default('Language Certificates') }}</h3>
+            
+            <div class="form-group">
+                <label for="dutch_level">{{ t('dutch_language_level', lang) | default('Dutch Language Level') }} <span class="required">*</span></label>
+                <select id="dutch_level" name="dutch_level" required>
+                    <option value="">{{ t('select_level', lang) | default('Select Level') }}</option>
+                    <option value="A1">{{ t('a1_basic', lang) | default('A1 - Basic') }}</option>
+                    <option value="A2">{{ t('a2_elementary', lang) | default('A2 - Elementary') }}</option>
+                    <option value="B1">{{ t('b1_intermediate', lang) | default('B1 - Intermediate') }}</option>
+                    <option value="B2">{{ t('b2_upper_intermediate', lang) | default('B2 - Upper Intermediate') }}</option>
+                    <option value="C1">{{ t('c1_advanced', lang) | default('C1 - Advanced') }}</option>
+                    <option value="C2">{{ t('c2_proficient', lang) | default('C2 - Proficient') }}</option>
+                    <option value="native">{{ t('native_speaker', lang) | default('Native Speaker') }}</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="english_level">{{ t('english_language_level', lang) | default('English Language Level') }}</label>
+                <select id="english_level" name="english_level">
+                    <option value="">{{ t('select_level', lang) | default('Select Level') }}</option>
+                    <option value="A1">{{ t('a1_basic', lang) | default('A1 - Basic') }}</option>
+                    <option value="A2">{{ t('a2_elementary', lang) | default('A2 - Elementary') }}</option>
+                    <option value="B1">{{ t('b1_intermediate', lang) | default('B1 - Intermediate') }}</option>
+                    <option value="B2">{{ t('b2_upper_intermediate', lang) | default('B2 - Upper Intermediate') }}</option>
+                    <option value="C1">{{ t('c1_advanced', lang) | default('C1 - Advanced') }}</option>
+                    <option value="C2">{{ t('c2_proficient', lang) | default('C2 - Proficient') }}</option>
+                    <option value="native">{{ t('native_speaker', lang) | default('Native Speaker') }}</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="language_certificates">{{ t('upload_language_certificates', lang) | default('Upload Language Certificates') }}</label>
+                <div class="file-upload">
+                    <input type="file" id="language_certificates" name="language_certificates" multiple accept=".pdf,.jpg,.jpeg,.png">
+                    <label for="language_certificates" class="file-upload-label">
+                        <i class="fas fa-upload"></i> {{ t('upload_files', lang) | default('Upload Files') }}
+                    </label>
+                    <div class="help-text">{{ t('language_certificates_help', lang) | default('Upload your language certificates (PDF, JPG, PNG)') }}</div>
+                </div>
+                <div class="uploaded-files" id="language-certificates-list"></div>
+            </div>
+        </div>
+
+        <!-- Documents Section -->
+        <div class="form-section">
+            <h3><i class="fas fa-file-alt"></i> {{ t('documents', lang) | default('Documents') }}</h3>
+            
+            <!-- Professional Information -->
+            <div class="form-group">
+                <label for="profession">{{ t('profession', lang) | default('Profession') }} <span class="required">*</span></label>
+                <select id="profession" name="profession" required onchange="toggleOtherField('profession', 'other_profession')">
+                    <option value="">{{ t('select_profession', lang) | default('Select Profession') }}</option>
+                    <option value="tandarts">{{ t('dentist', lang) | default('Dentist') }}</option>
+                    <option value="apotheker">{{ t('pharmacist', lang) | default('Pharmacist') }}</option>
+                    <option value="huisarts">{{ t('general_practitioner', lang) | default('General Practitioner') }}</option>
+                    <option value="verpleegkundige">{{ t('nurse', lang) | default('Nurse') }}</option>
+                    <option value="fysiotherapeut">{{ t('physiotherapist', lang) | default('Physiotherapist') }}</option>
+                    <option value="psycholoog">{{ t('psychologist', lang) | default('Psychologist') }}</option>
+                    <option value="dietist">{{ t('dietitian', lang) | default('Dietitian') }}</option>
+                    <option value="logopedist">{{ t('speech_therapist', lang) | default('Speech Therapist') }}</option>
+                    <option value="ergotherapeut">{{ t('occupational_therapist', lang) | default('Occupational Therapist') }}</option>
+                    <option value="podotherapeut">{{ t('podiatrist', lang) | default('Podiatrist') }}</option>
+                    <option value="other">{{ t('other_medical', lang) | default('Other Medical Profession') }}</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="other_profession_group" style="display: none;">
+                <label for="other_profession">{{ t('specify_profession', lang) | default('Please specify your profession') }} <span class="required">*</span></label>
+                <input type="text" id="other_profession" name="other_profession" placeholder="{{ t('profession_placeholder', lang) | default('Enter your medical profession') }}">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="workplace">{{ t('current_workplace', lang) | default('Current Workplace') }}</label>
+                    <input type="text" id="workplace" name="workplace" placeholder="{{ t('workplace_placeholder', lang) | default('Hospital, Clinic, Practice, etc.') }}">
+                </div>
+                <div class="form-group">
+                    <label for="workplace_specialization">{{ t('specialization', lang) | default('Specialization') }}</label>
+                    <input type="text" id="workplace_specialization" name="workplace_specialization" placeholder="{{ t('specialization_placeholder', lang) | default('Your medical specialization') }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="legal_status">{{ t('legal_status', lang) | default('Legal Status in Netherlands') }} <span class="required">*</span></label>
+                <select id="legal_status" name="legal_status" required onchange="toggleOtherField('legal_status', 'other_legal_status')">
+                    <option value="">{{ t('select_legal_status', lang) | default('Select Legal Status') }}</option>
+                    
+                    <!-- EU/EEA Citizens -->
+                    <option value="eu_citizen">{{ t('eu_citizen', lang) | default('EU/EEA Citizen') }}</option>
+                    <option value="eea_citizen">{{ t('eea_citizen', lang) | default('EEA Citizen (Iceland, Liechtenstein, Norway)') }}</option>
+                    <option value="swiss_citizen">{{ t('swiss_citizen', lang) | default('Swiss Citizen') }}</option>
+                    
+                    <!-- Family Members of EU Citizens -->
+                    <option value="eu_family_member">{{ t('eu_family_member', lang) | default('Family Member of EU/EEA Citizen') }}</option>
+                    <option value="eu_partner">{{ t('eu_partner', lang) | default('Partner of EU/EEA Citizen') }}</option>
+                    
+                    <!-- Work Permits -->
+                    <option value="work_permit_highly_skilled">{{ t('work_permit_highly_skilled', lang) | default('Highly Skilled Migrant Permit') }}</option>
+                    <option value="work_permit_regular">{{ t('work_permit_regular', lang) | default('Regular Work Permit') }}</option>
+                    <option value="work_permit_self_employed">{{ t('work_permit_self_employed', lang) | default('Self-Employed Work Permit') }}</option>
+                    <option value="work_permit_artist">{{ t('work_permit_artist', lang) | default('Artist Work Permit') }}</option>
+                    <option value="work_permit_au_pair">{{ t('work_permit_au_pair', lang) | default('Au Pair Work Permit') }}</option>
+                    
+                    <!-- Study Permits -->
+                    <option value="student_visa">{{ t('student_visa', lang) | default('Student Visa/Residence Permit') }}</option>
+                    <option value="exchange_student">{{ t('exchange_student', lang) | default('Exchange Student') }}</option>
+                    <option value="research_visa">{{ t('research_visa', lang) | default('Research Visa') }}</option>
+                    
+                    <!-- Family Reunification -->
+                    <option value="family_reunification">{{ t('family_reunification', lang) | default('Family Reunification') }}</option>
+                    <option value="spouse_visa">{{ t('spouse_visa', lang) | default('Spouse Visa') }}</option>
+                    <option value="partner_visa">{{ t('partner_visa', lang) | default('Partner Visa') }}</option>
+                    
+                    <!-- Asylum and Protection -->
+                    <option value="refugee">{{ t('refugee', lang) | default('Refugee Status') }}</option>
+                    <option value="asylum_seeker">{{ t('asylum_seeker', lang) | default('Asylum Seeker') }}</option>
+                    <option value="subsidiary_protection">{{ t('subsidiary_protection', lang) | default('Subsidiary Protection') }}</option>
+                    <option value="temporary_protection">{{ t('temporary_protection', lang) | default('Temporary Protection') }}</option>
+                    
+                    <!-- Special Categories -->
+                    <option value="ukrainian_temporary_protection">{{ t('ukrainian_temporary_protection', lang) | default('Ukrainian Temporary Protection') }}</option>
+                    <option value="dutch_antilles">{{ t('dutch_antilles', lang) | default('Dutch Antilles/Aruba Citizen') }}</option>
+                    <option value="suriname_citizen">{{ t('suriname_citizen', lang) | default('Suriname Citizen') }}</option>
+                    
+                    <!-- Temporary Stays -->
+                    <option value="tourist_visa">{{ t('tourist_visa', lang) | default('Tourist/Schengen Visa') }}</option>
+                    <option value="business_visa">{{ t('business_visa', lang) | default('Business Visa') }}</option>
+                    <option value="medical_visa">{{ t('medical_visa', lang) | default('Medical Treatment Visa') }}</option>
+                    
+                    <!-- Other -->
+                    <option value="other">{{ t('other_status', lang) | default('Other') }}</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="other_legal_status_group" style="display: none;">
+                <label for="other_legal_status">{{ t('specify_legal_status', lang) | default('Please specify your legal status') }} <span class="required">*</span></label>
+                <input type="text" id="other_legal_status" name="other_legal_status" placeholder="{{ t('legal_status_placeholder', lang) | default('Enter your legal status') }}">
+            </div>
+            
+            <div class="form-group">
+                <label>{{ t('diploma_information', lang) | default('Diploma/Certificate Information') }} <span class="required">*</span></label>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="university_name">{{ t('university_name', lang) | default('University/Institution Name') }} <span class="required">*</span></label>
+                        <input type="text" id="university_name" name="university_name" required placeholder="{{ t('university_placeholder', lang) | default('Enter university or institution name') }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="degree_type">{{ t('degree_type', lang) | default('Degree Type') }} <span class="required">*</span></label>
+                        <select id="degree_type" name="degree_type" required>
+                            <option value="">{{ t('select_degree', lang) | default('Select Degree Type') }}</option>
+                            <option value="bachelor">{{ t('bachelor', lang) | default('Bachelor') }}</option>
+                            <option value="master">{{ t('master', lang) | default('Master') }}</option>
+                            <option value="doctorate">{{ t('doctorate', lang) | default('Doctorate (PhD)') }}</option>
+                            <option value="medical_degree">{{ t('medical_degree', lang) | default('Medical Degree (MD)') }}</option>
+                            <option value="dental_degree">{{ t('dental_degree', lang) | default('Dental Degree (DDS/DMD)') }}</option>
+                            <option value="pharmacy_degree">{{ t('pharmacy_degree', lang) | default('Pharmacy Degree (PharmD)') }}</option>
+                            <option value="nursing_degree">{{ t('nursing_degree', lang) | default('Nursing Degree') }}</option>
+                            <option value="certificate">{{ t('certificate', lang) | default('Professional Certificate') }}</option>
+                            <option value="diploma">{{ t('diploma', lang) | default('Diploma') }}</option>
+                            <option value="other">{{ t('other_degree', lang) | default('Other') }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="study_years">{{ t('study_years', lang) | default('Study Period') }} <span class="required">*</span></label>
+                        <div class="year-range-container">
+                            <input type="number" id="study_start_year" name="study_start_year" required placeholder="{{ t('start_year', lang) | default('Start Year') }}" min="1950" max="2030" class="year-input">
+                            <span class="year-separator">-</span>
+                            <input type="number" id="study_end_year" name="study_end_year" required placeholder="{{ t('end_year', lang) | default('End Year') }}" min="1950" max="2030" class="year-input">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="study_country">{{ t('study_country', lang) | default('Country of Study') }} <span class="required">*</span></label>
+                        <select id="study_country" name="study_country" required onchange="toggleOtherField('study_country', 'other_country_name')">
+                            <option value="">{{ t('select_country', lang) | default('Select Country') }}</option>
+                            <option value="DZ">{{ t('algeria', lang) | default('Algeria') }}</option>
+                            <option value="AR">{{ t('argentina', lang) | default('Argentina') }}</option>
+                            <option value="AU">{{ t('australia', lang) | default('Australia') }}</option>
+                            <option value="AT">{{ t('austria', lang) | default('Austria') }}</option>
+                            <option value="BE">{{ t('belgium', lang) | default('Belgium') }}</option>
+                            <option value="BR">{{ t('brazil', lang) | default('Brazil') }}</option>
+                            <option value="BG">{{ t('bulgaria', lang) | default('Bulgaria') }}</option>
+                            <option value="CA">{{ t('canada', lang) | default('Canada') }}</option>
+                            <option value="CN">{{ t('china', lang) | default('China') }}</option>
+                            <option value="HR">{{ t('croatia', lang) | default('Croatia') }}</option>
+                            <option value="CY">{{ t('cyprus', lang) | default('Cyprus') }}</option>
+                            <option value="CZ">{{ t('czech_republic', lang) | default('Czech Republic') }}</option>
+                            <option value="DK">{{ t('denmark', lang) | default('Denmark') }}</option>
+                            <option value="EG">{{ t('egypt', lang) | default('Egypt') }}</option>
+                            <option value="EE">{{ t('estonia', lang) | default('Estonia') }}</option>
+                            <option value="ET">{{ t('ethiopia', lang) | default('Ethiopia') }}</option>
+                            <option value="FI">{{ t('finland', lang) | default('Finland') }}</option>
+                            <option value="FR">{{ t('france', lang) | default('France') }}</option>
+                            <option value="DE">{{ t('germany', lang) | default('Germany') }}</option>
+                            <option value="GH">{{ t('ghana', lang) | default('Ghana') }}</option>
+                            <option value="GB">{{ t('united_kingdom', lang) | default('United Kingdom') }}</option>
+                            <option value="HU">{{ t('hungary', lang) | default('Hungary') }}</option>
+                            <option value="IS">{{ t('iceland', lang) | default('Iceland') }}</option>
+                            <option value="IN">{{ t('india', lang) | default('India') }}</option>
+                            <option value="IE">{{ t('ireland', lang) | default('Ireland') }}</option>
+                            <option value="IT">{{ t('italy', lang) | default('Italy') }}</option>
+                            <option value="JP">{{ t('japan', lang) | default('Japan') }}</option>
+                            <option value="KE">{{ t('kenya', lang) | default('Kenya') }}</option>
+                            <option value="KR">{{ t('south_korea', lang) | default('South Korea') }}</option>
+                            <option value="LV">{{ t('latvia', lang) | default('Latvia') }}</option>
+                            <option value="LT">{{ t('lithuania', lang) | default('Lithuania') }}</option>
+                            <option value="LU">{{ t('luxembourg', lang) | default('Luxembourg') }}</option>
+                            <option value="MT">{{ t('malta', lang) | default('Malta') }}</option>
+                            <option value="MA">{{ t('morocco', lang) | default('Morocco') }}</option>
+                            <option value="MX">{{ t('mexico', lang) | default('Mexico') }}</option>
+                            <option value="NL">{{ t('netherlands', lang) | default('Netherlands') }}</option>
+                            <option value="NZ">{{ t('new_zealand', lang) | default('New Zealand') }}</option>
+                            <option value="NG">{{ t('nigeria', lang) | default('Nigeria') }}</option>
+                            <option value="NO">{{ t('norway', lang) | default('Norway') }}</option>
+                            <option value="PL">{{ t('poland', lang) | default('Poland') }}</option>
+                            <option value="PT">{{ t('portugal', lang) | default('Portugal') }}</option>
+                            <option value="RO">{{ t('romania', lang) | default('Romania') }}</option>
+                            <option value="RU">{{ t('russia', lang) | default('Russia') }}</option>
+                            <option value="SK">{{ t('slovakia', lang) | default('Slovakia') }}</option>
+                            <option value="SI">{{ t('slovenia', lang) | default('Slovenia') }}</option>
+                            <option value="ZA">{{ t('south_africa', lang) | default('South Africa') }}</option>
+                            <option value="ES">{{ t('spain', lang) | default('Spain') }}</option>
+                            <option value="SE">{{ t('sweden', lang) | default('Sweden') }}</option>
+                            <option value="CH">{{ t('switzerland', lang) | default('Switzerland') }}</option>
+                            <option value="TZ">{{ t('tanzania', lang) | default('Tanzania') }}</option>
+                            <option value="TR">{{ t('turkey', lang) | default('Turkey') }}</option>
+                            <option value="TN">{{ t('tunisia', lang) | default('Tunisia') }}</option>
+                            <option value="UA">{{ t('ukraine', lang) | default('Ukraine') }}</option>
+                            <option value="UG">{{ t('uganda', lang) | default('Uganda') }}</option>
+                            <option value="US">{{ t('united_states', lang) | default('United States') }}</option>
+                            <option value="OTHER">{{ t('other_country', lang) | default('Other') }}</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Поле для ввода другой страны -->
+                <div class="form-group" id="other_country_group" style="display: none;">
+                    <label for="other_country_name">{{ t('other_country_name', lang) | default('Specify Country') }} <span class="required">*</span></label>
+                    <input type="text" id="other_country_name" name="other_country_name" placeholder="{{ t('enter_country_name', lang) | default('Enter country name') }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="medical_specialization">{{ t('medical_specialization', lang) | default('Medical Specialization') }}</label>
+                    <input type="text" id="medical_specialization" name="medical_specialization" placeholder="{{ t('specialization_placeholder', lang) | default('e.g., General Medicine, Dentistry, Pharmacy, Nursing, etc.') }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="additional_education_info">{{ t('additional_education_info', lang) | default('Additional Education Information') }}</label>
+                    <textarea id="additional_education_info" name="additional_education_info" rows="2" placeholder="{{ t('additional_education_placeholder', lang) | default('Any additional information about your education, honors, awards, or special achievements') }}"></textarea>
+                    <div class="help-text">{{ t('additional_education_help', lang) | default('Optional: Include any honors, awards, or special achievements') }}</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="work_experience">{{ t('work_experience', lang) | default('Work Experience') }}</label>
+                <textarea id="work_experience" name="work_experience" rows="3" placeholder="{{ t('work_experience_placeholder', lang) | default('Describe your professional work experience in the medical field') }}"></textarea>
+                <div class="help-text">{{ t('work_experience_help', lang) | default('Include years of experience, positions held, and areas of expertise') }}</div>
+            </div>
+
+            <div class="form-group">
+                <label for="additional_qualifications">{{ t('additional_qualifications', lang) | default('Additional Qualifications') }}</label>
+                <textarea id="additional_qualifications" name="additional_qualifications" rows="2" placeholder="{{ t('additional_qualifications_placeholder', lang) | default('Any additional certifications, courses, or specializations') }}"></textarea>
+                <div class="help-text">{{ t('additional_qualifications_help', lang) | default('List any additional professional qualifications or certifications') }}</div>
+            </div>
+
+            <div class="form-group">
+                <label for="diploma_file">{{ t('upload_diploma_optional', lang) | default('Upload Diploma/Certificate (Optional)') }}</label>
+                <div class="file-upload">
+                    <input type="file" id="diploma_file" name="diploma_file" accept=".pdf,.jpg,.jpeg,.png">
+                    <label for="diploma_file" class="file-upload-label">
+                        <i class="fas fa-upload"></i> {{ t('upload_diploma', lang) | default('Upload Diploma') }}
+                    </label>
+                    <div class="help-text">{{ t('diploma_help', lang) | default('Upload your medical diploma or certificate (PDF, JPG, PNG) - Optional') }}</div>
+                </div>
+                <div class="uploaded-files" id="diploma-list"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="additional_documents">{{ t('additional_documents', lang) | default('Additional Documents (Optional)') }}</label>
+                <div class="file-upload">
+                    <input type="file" id="additional_documents" name="additional_documents" multiple accept=".pdf,.jpg,.jpeg,.png">
+                    <label for="additional_documents" class="file-upload-label">
+                        <i class="fas fa-upload"></i> {{ t('upload_additional', lang) | default('Upload Additional Documents') }}
+                    </label>
+                    <div class="help-text">{{ t('additional_documents_help', lang) | default('Upload any additional relevant documents (CV, work experience certificates, etc.) - Optional') }}</div>
+                </div>
+                <div class="uploaded-files" id="additional-documents-list"></div>
+            </div>
+        </div>
+
+        <!-- BIG Exam Information Section -->
+        <div class="form-section">
+            <h3><i class="fas fa-graduation-cap"></i> {{ t('big_exam_info', lang) | default('BIG Exam Information') }}</h3>
+            
+            <div class="form-group">
+                <label for="idw_assessment">{{ t('idw_assessment', lang) | default('IDW Assessment Status') }}</label>
+                <select id="idw_assessment" name="idw_assessment">
+                    <option value="">{{ t('select_status', lang) | default('Select Status') }}</option>
+                    <option value="completed">{{ t('completed', lang) | default('Completed') }}</option>
+                    <option value="in_progress">{{ t('in_progress', lang) | default('In Progress') }}</option>
+                    <option value="not_started">{{ t('not_started', lang) | default('Not Started') }}</option>
+                    <option value="not_required">{{ t('not_required', lang) | default('Not Required') }}</option>
+                </select>
+                <div class="help-text">{{ t('idw_assessment_help', lang) | default('IDW (Individual Assessment) is required for some professions') }}</div>
+            </div>
+
+            <div class="form-group">
+                <label for="big_exam_registered">{{ t('big_exam_registered', lang) | default('BIG Exam Registration Status') }}</label>
+                <select id="big_exam_registered" name="big_exam_registered">
+                    <option value="">{{ t('select_status', lang) | default('Select Status') }}</option>
+                    <option value="registered">{{ t('registered', lang) | default('Registered') }}</option>
+                    <option value="not_registered">{{ t('not_registered', lang) | default('Not Registered') }}</option>
+                    <option value="planning_to_register">{{ t('planning_to_register', lang) | default('Planning to Register') }}</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="exam_date">{{ t('planned_exam_date', lang) | default('Planned Exam Date') }}</label>
+                    <input type="date" id="exam_date" name="exam_date">
+                </div>
+                <div class="form-group">
+                    <label for="preparation_time">{{ t('preparation_time', lang) | default('Preparation Time Available') }}</label>
+                    <select id="preparation_time" name="preparation_time">
+                        <option value="">{{ t('select_time', lang) | default('Select Time') }}</option>
+                        <option value="1_month">{{ t('1_month', lang) | default('1 Month') }}</option>
+                        <option value="3_months">{{ t('3_months', lang) | default('3 Months') }}</option>
+                        <option value="6_months">{{ t('6_months', lang) | default('6 Months') }}</option>
+                        <option value="1_year">{{ t('1_year', lang) | default('1 Year') }}</option>
+                        <option value="more_than_year">{{ t('more_than_year', lang) | default('More than 1 Year') }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Дополнительная секция: Интересы к программе -->
+        <div class="form-section">
+            <h3><i class="fas fa-heart"></i> {{ t('program_interests', lang)|default('Интересы к программе') }}</h3>
+            
+            <div class="form-group">
+                <label>{{ t('most_interested_in', lang)|default('Что вас больше всего интересует?') }}</label>
+                <div class="interests-checkboxes">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="big_preparation" name="program_interests" value="big_preparation">
+                        <label for="big_preparation">{{ t('big_exam_preparation', lang)|default('Подготовка к BIG экзамену') }}</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="clinical_internships" name="program_interests" value="clinical_internships">
+                        <label for="clinical_internships">{{ t('clinical_internships', lang)|default('Клинические стажировки') }}</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="dutch_language" name="program_interests" value="dutch_language">
+                        <label for="dutch_language">{{ t('medical_dutch', lang)|default('Медицинский голландский язык') }}</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="networking" name="program_interests" value="networking">
+                        <label for="networking">{{ t('professional_networking', lang)|default('Профессиональные связи') }}</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="mentorship" name="program_interests" value="mentorship">
+                        <label for="mentorship">{{ t('mentorship_program', lang)|default('Программа менторства') }}</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="motivation">{{ t('motivation', lang)|default('Расскажите о своей мотивации') }}</label>
+                <textarea id="motivation" name="motivation" rows="3" placeholder="{{ t('motivation_placeholder', lang)|default('Почему вы хотите участвовать в этой программе? Какие у вас цели?') }}"></textarea>
+                <div class="help-text">{{ t('motivation_help', lang)|default('Поделитесь своими целями и ожиданиями от программы (необязательно)') }}</div>
+            </div>
+        </div>
+
+        <!-- Terms and Conditions -->
+        <div class="form-section">
+            <h3><i class="fas fa-shield-alt"></i> {{ t('terms_and_conditions', lang) | default('Terms and Conditions') }}</h3>
+            
+            <!-- Основные согласия -->
+            <div class="consent-block">
+                <h4>{{ t('required_consents', lang)|default('Обязательные согласия') }} <span class="required">*</span></h4>
+                <div class="consent-content">
+                    <p>{{ t('registration_consent_text', lang)|default('Регистрируясь, я подтверждаю согласие с:') }}</p>
+                    <ul>
+                        <li><a href="/{{ lang|default('en') }}/terms" target="_blank">{{ t('terms_conditions', lang)|default('Пользовательским соглашением') }}</a></li>
+                        <li><a href="/{{ lang|default('en') }}/privacy" target="_blank">{{ t('privacy_policy', lang)|default('Политикой конфиденциальности') }}</a></li>
+                        <li>{{ t('data_processing_consent', lang)|default('Обработкой персональных данных') }}</li>
+                    </ul>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="required_consents" name="required_consents" required>
+                    <label for="required_consents">
+                        {{ t('accept_required_consents', lang)|default('Принимаю обязательные условия') }} <span class="required">*</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Согласие на уведомления о программе -->
+            <div class="consent-block early-access-consent">
+                <h4>{{ t('program_notifications', lang)|default('Уведомления о программе') }}</h4>
+                <div class="consent-content">
+                    <p>{{ t('program_notifications_text', lang)|default('Я хочу получать уведомления о:') }}</p>
+                    <ul>
+                        <li>{{ t('program_launch', lang)|default('Запуске программы') }}</li>
+                        <li>{{ t('important_updates', lang)|default('Важных обновлениях') }}</li>
+                        <li>{{ t('internship_opportunities', lang)|default('Возможностях стажировок') }}</li>
+                        <li>{{ t('exclusive_content', lang)|default('Эксклюзивном контенте') }}</li>
+                    </ul>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="program_notifications" name="program_notifications" checked>
+                    <label for="program_notifications">
+                        {{ t('accept_program_notifications', lang)|default('Согласен получать уведомления о программе') }}
+                    </label>
+                </div>
+            </div>
+
+            <!-- reCAPTCHA -->
+            {% if config.RECAPTCHA_PUBLIC_KEY %}
+            <div class="recaptcha-block" style="margin: 20px 0; text-align: center;">
+                <div class="g-recaptcha" data-sitekey="{{ config.RECAPTCHA_PUBLIC_KEY }}" data-action="REGISTER"></div>
+                <div class="recaptcha-help" style="font-size: 12px; color: #666; margin-top: 5px;">
+                    {{ t('recaptcha_help', lang) | default('This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.') }}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Marketing Communications Consent -->
+            <div class="consent-block">
+                <h4>{{ t('marketing_consent', lang) | default('Marketing Communications') }}</h4>
+                <div class="consent-content">
+                    <p>{{ t('marketing_consent_text', lang) | default('I consent to receive marketing communications from Mentora for the following purposes:') }}</p>
+                    <ul>
+                        <li>{{ t('newsletter_consent', lang) | default('Newsletter with updates about the program') }}</li>
+                        <li>{{ t('events_consent', lang) | default('Information about events and webinars') }}</li>
+                        <li>{{ t('promotional_consent', lang) | default('Promotional offers and special announcements') }}</li>
+                    </ul>
+                    <p><strong>{{ t('marketing_consent_important', lang) | default('Important:') }}</strong></p>
+                    <ul>
+                        <li>{{ t('marketing_consent_note', lang) | default('You can unsubscribe at any time by clicking the unsubscribe link in any email.') }}</li>
+                        <li>{{ t('marketing_consent_data', lang) | default('Your email address will be used solely for marketing communications.') }}</li>
+                        <li>{{ t('marketing_consent_privacy', lang) | default('We respect your privacy and will not share your data with third parties.') }}</li>
+                    </ul>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="marketing_consent" name="marketing_consent">
+                    <label for="marketing_consent">
+                        {{ t('accept_marketing_consent', lang) | default('I consent to receive marketing communications from Mentora') }}
+                    </label>
+                </div>
+            </div>
+
+            <!-- Optional Research Consent -->
+            <div class="consent-block">
+                <h4>{{ t('research_consent_title', lang) | default('Research Participation (Optional)') }}</h4>
+                <div class="consent-content">
+                    <p>{{ t('research_consent_text', lang) | default('I would like to participate in research studies to help improve the program:') }}</p>
+                    <ul>
+                        <li>{{ t('research_consent', lang) | default('Invitations to participate in research studies') }}</li>
+                        <li>{{ t('feedback_consent', lang) | default('Surveys and feedback requests') }}</li>
+                    </ul>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="research_consent" name="research_consent">
+                    <label for="research_consent">
+                        {{ t('accept_research_consent', lang) | default('I accept optional research participation') }}
+                    </label>
+                </div>
+            </div>
+
+            <!-- Digital Signature -->
+            <div class="signature-block">
+                <h4>{{ t('digital_signature', lang) | default('Digital Signature') }} <span class="required">*</span></h4>
+                <div class="form-group">
+                    <label for="digital_signature">{{ t('signature_placeholder', lang) | default('Type your full name to sign') }} <span class="required">*</span></label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="digital_signature" name="digital_signature" required placeholder="{{ t('signature_placeholder', lang) | default('Enter your full name as digital signature') }}" style="flex: 1;">
+                        <button type="button" id="autoFillSignature" class="btn-auto-fill" style="background: #3498db; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                            {{ t('auto_fill', lang) | default('Auto Fill') }}
+                        </button>
+                    </div>
+                    <div class="help-text">{{ t('signature_help', lang) | default('By typing your name, you provide a digital signature confirming all the above consents. Click "Auto Fill" to use your name from the form above.') }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Section -->
+        <div class="submit-section">
+            <button type="submit" class="btn-register early-access-btn" id="submitBtn">
+                <i class="bi bi-bell-fill"></i> 
+                {{ t('complete_early_registration', lang)|default('Завершить предварительную регистрацию') }}
+            </button>
+            <p class="submit-note">{{ t('early_access_note', lang)|default('После регистрации вы получите подтверждение на email и будете уведомлены о запуске программы') }}</p>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Translation data for JavaScript -->
+<script>
+    window.translations = {
+        'sending': '{{ t("sending", lang)|default("Отправка...") }}',
+        'complete_early_registration': '{{ t("complete_early_registration", lang)|default("Завершить предварительную регистрацию") }}'
+    };
+    window.currentLang = '{{ lang }}';
+</script>
+
+<!-- External JavaScript file for registration -->
+<script src="{{ url_for('static', filename='js/registration.js') }}"></script>
+
+        <!-- reCAPTCHA Script -->
+        {% if config.RECAPTCHA_PUBLIC_KEY %}
+        <script src="https://www.google.com/recaptcha/api.js?hl={{ lang }}" async defer></script>
+        {% endif %}
+{% endblock %}

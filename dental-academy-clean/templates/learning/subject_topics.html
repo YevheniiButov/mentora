@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}{{ subject.name }} - {{ t('topics', lang) | default('Topics') }}{% endblock %}
+
+{% block head %}
+<!-- Learning Map Styles -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/learning_map.css') }}?v=2">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/category-navigation.css') }}?v=2">
+<style>
+.topics-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0.75rem;
+    padding-top: 80px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    min-height: 100vh;
+    border: 1px solid #e9ecef;
+}
+
+.subject-header {
+    margin-bottom: 1.5rem;
+    text-align: center;
+    padding: 1rem;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+}
+
+.subject-title {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.5px;
+}
+
+.subject-description {
+    font-size: 1.1rem;
+    color: var(--theme-text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.topics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.topic-card {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.topic-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    border-color: #007bff;
+    background: #f8f9fa;
+}
+
+.topic-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+}
+
+.topic-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.topic-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: #007bff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.75rem;
+    color: white;
+    font-size: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.2);
+    position: relative;
+}
+
+.topic-info {
+    flex: 1;
+}
+
+.topic-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.25rem;
+}
+
+.topic-module {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.topic-progress {
+    margin-bottom: 1rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.topic-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.topic-btn {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.topic-btn.primary {
+    background: linear-gradient(135deg, var(--theme-primary), var(--theme-secondary));
+    color: white;
+}
+
+.topic-btn.primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    text-decoration: none;
+    color: white;
+}
+
+.stats-sidebar {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.stats-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.stats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+}
+
+.stat-icon.blue {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.stat-icon.green {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+}
+
+.stat-icon.purple {
+    background: linear-gradient(135deg, #6f42c1, #5a32a3);
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+@media (max-width: 768px) {
+    .topics-container {
+        padding: 0.5rem;
+        padding-top: 70px;
+    }
+    
+    .topics-grid {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .topic-card {
+        padding: 0.5rem;
+    }
+    
+    .stats-sidebar {
+        margin-top: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="topics-container">
+    <!-- Subject Header -->
+    <div class="subject-header">
+        <h1 class="subject-title">{{ subject.name }}</h1>
+        <p class="subject-description">{{ subject.description or t('topics_description', lang) | default('Explore topics and learning materials for this subject') }}</p>
+    </div>
+
+    <!-- Topics Grid -->
+    <div class="topics-grid">
+        {% for topic in topics %}
+        <div class="topic-card">
+            <div class="topic-header">
+                <div class="topic-icon">
+                    {% if topic.content_type == 'learning_card' %}
+                        <i class="bi bi-book"></i>
+                    {% elif topic.content_type == 'quiz' %}
+                        <i class="bi bi-question-circle"></i>
+                    {% else %}
+                        <i class="bi bi-file-text"></i>
+                    {% endif %}
+                </div>
+                <div class="topic-info">
+                    <h3 class="topic-title">
+                        {% if topic.content_type == 'learning_card' %}
+                            {{ t('learning_cards', lang) | default('Learning Cards') }} {{ subject.name }}
+                        {% elif topic.content_type == 'quiz' %}
+                            {{ t('tests', lang) | default('Tests') }} {{ subject.name }}
+                        {% else %}
+                            {{ topic.title }}
+                        {% endif %}
+                    </h3>
+                    <div class="topic-module">
+                        {% if 'Learning Cards' in topic.module_title %}
+                            {{ t('learning_cards', lang) | default('Learning Cards') }}
+                        {% elif 'Tests' in topic.module_title %}
+                            {{ t('tests', lang) | default('Tests') }}
+                        {% else %}
+                            {{ topic.module_title }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="topic-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ topic.progress }}%"></div>
+                </div>
+                <div class="progress-text">
+                    <span>{{ t('progress', lang) | default('Progress') }}</span>
+                    <span>{{ topic.progress }}%</span>
+                </div>
+            </div>
+
+            <div class="topic-actions">
+                <a href="{{ url_for('modules_bp.subtopic_lessons_list', lang=lang, module_id=topic.module_id, slug=topic.slug) }}" 
+                   class="topic-btn primary">
+                    {% if topic.progress == 100 %}
+                        <i class="bi bi-arrow-repeat"></i>
+                        {{ t('repeat', lang) | default('Repeat') }}
+                    {% elif topic.progress > 0 %}
+                        <i class="bi bi-play-circle"></i>
+                        {{ t('continue', lang) | default('Continue') }}
+                    {% else %}
+                        <i class="bi bi-play-fill"></i>
+                        {{ t('start', lang) | default('Start') }}
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Stats Sidebar -->
+    <div class="stats-sidebar">
+        <h3 class="stats-title">{{ t('total_progress', lang) | default('Total Progress') }}</h3>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-icon blue">
+                    <i class="bi bi-collection"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ stats.total_lessons_completed }}/{{ stats.total_lessons }}</div>
+                    <div class="stat-label">{{ t('lessons_completed', lang) | default('Lessons completed') }}</div>
+                </div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-icon green">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ stats.tests_passed }}</div>
+                    <div class="stat-label">{{ t('tests_passed', lang) | default('Tests passed') }}</div>
+                </div>
+            </div>
+            
+            <div class="stat-item">
+                <div class="stat-icon purple">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ "%.1f"|format(stats.total_time_spent / 60) }}h</div>
+                    <div class="stat-label">{{ t('time_spent', lang) | default('Time spent') }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

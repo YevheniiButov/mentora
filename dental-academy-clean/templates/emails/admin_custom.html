@@ -1,0 +1,32 @@
+{% extends "emails/admin_base.html" %}
+
+{% block content %}
+<div class="admin-badge">Письмо от администратора</div>
+
+<div class="greeting">
+    Здравствуйте, {{ user.first_name or 'Уважаемый пользователь' }}!
+</div>
+
+<div class="message">
+    {{ message|safe }}
+</div>
+
+{% if action_url %}
+<div class="button-center">
+    <a href="{{ action_url }}" class="button">{{ action_text or 'Перейти на сайт' }}</a>
+</div>
+{% endif %}
+
+<div class="info">
+    <strong>💡 Важно:</strong> Это письмо отправлено администратором системы Mentora. 
+    Если у вас есть вопросы, обратитесь в службу поддержки.
+</div>
+{% endblock %}
+
+
+
+
+
+
+
+

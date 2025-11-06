@@ -1,0 +1,192 @@
+<div class="visitor-details">
+    <div class="row">
+        <div class="col-md-6">
+            <h6 class="text-muted mb-2">Basic Information</h6>
+            <table class="table table-sm">
+                <tr>
+                    <td><strong>Entry Time:</strong></td>
+                    <td>{{ visitor.entry_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                </tr>
+                <tr>
+                    <td><strong>IP Address:</strong></td>
+                    <td><code>{{ visitor.ip_address }}</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Page Type:</strong></td>
+                    <td><span class="badge bg-info">{{ visitor.page_type.replace('_', ' ').title() }}</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Country:</strong></td>
+                    <td>
+                        {% if visitor.country %}
+                            <span class="badge bg-secondary">{{ visitor.country }}</span>
+                        {% else %}
+                            <span class="text-muted">Unknown</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>User Agent:</strong></td>
+                    <td><small class="text-muted">{{ visitor.user_agent or 'Not available' }}</small></td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="col-md-6">
+            <h6 class="text-muted mb-2">Registration Actions</h6>
+            <table class="table table-sm">
+                <tr>
+                    <td><strong>Name Entered:</strong></td>
+                    <td>
+                        {% if hasattr(visitor, 'first_name_entered') and hasattr(visitor, 'last_name_entered') and (visitor.first_name_entered or visitor.last_name_entered) %}
+                            <span class="badge bg-primary">
+                                {{ visitor.first_name_entered or '' }} {{ visitor.last_name_entered or '' }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">No name entered</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Email Entered:</strong></td>
+                    <td>
+                        {% if visitor.email_entered %}
+                            <span class="badge bg-success">{{ visitor.email_entered }}</span>
+                        {% else %}
+                            <span class="text-muted">No email entered</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Form Started:</strong></td>
+                    <td>
+                        {% if visitor.form_started %}
+                            <i class="bi bi-check-circle text-success"></i> Yes
+                        {% else %}
+                            <i class="bi bi-x-circle text-muted"></i> No
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Form Abandoned:</strong></td>
+                    <td>
+                        {% if visitor.form_abandoned %}
+                            <i class="bi bi-exclamation-triangle text-warning"></i> Yes
+                        {% else %}
+                            <i class="bi bi-x-circle text-muted"></i> No
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Registration Completed:</strong></td>
+                    <td>
+                        {% if visitor.registration_completed %}
+                            <i class="bi bi-check-circle-fill text-success"></i> Yes
+                        {% else %}
+                            <i class="bi bi-x-circle text-muted"></i> No
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Time on Page:</strong></td>
+                    <td>
+                        {% if visitor.time_on_page %}
+                            {{ visitor.time_on_page }} seconds
+                        {% else %}
+                            <span class="text-muted">Not tracked</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    {% if visitor.referrer %}
+    <div class="row mt-3">
+        <div class="col-12">
+            <h6 class="text-muted mb-2">Referrer Information</h6>
+            <p><a href="{{ visitor.referrer }}" target="_blank" class="text-break">{{ visitor.referrer }}</a></p>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if visitor.notes %}
+    <div class="row mt-3">
+        <div class="col-12">
+            <h6 class="text-muted mb-2">Notes</h6>
+            <p class="text-muted">{{ visitor.notes }}</p>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm" onclick="copyVisitorInfo()">
+                    <i class="bi bi-clipboard"></i> Copy Info
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="exportVisitorData()">
+                    <i class="bi bi-download"></i> Export
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyVisitorInfo() {
+    const info = `
+Visitor ID: {{ visitor.id }}
+Entry Time: {{ visitor.entry_time.strftime('%Y-%m-%d %H:%M:%S') }}
+IP Address: {{ visitor.ip_address }}
+Page Type: {{ visitor.page_type }}
+Country: {{ visitor.country or 'Unknown' }}
+Email: {{ visitor.email_entered or 'Not entered' }}
+Form Started: {{ 'Yes' if visitor.form_started else 'No' }}
+Form Abandoned: {{ 'Yes' if visitor.form_abandoned else 'No' }}
+Registration Completed: {{ 'Yes' if visitor.registration_completed else 'No' }}
+    `.trim();
+    
+    navigator.clipboard.writeText(info).then(() => {
+        // Show success message
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check"></i> Copied!';
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-success');
+        
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-primary');
+        }, 2000);
+    });
+}
+
+function exportVisitorData() {
+    const data = {
+        id: {{ visitor.id }},
+        entry_time: '{{ visitor.entry_time.strftime('%Y-%m-%d %H:%M:%S') }}',
+        ip_address: '{{ visitor.ip_address }}',
+        page_type: '{{ visitor.page_type }}',
+        country: '{{ visitor.country or '' }}',
+        email_entered: '{{ visitor.email_entered or '' }}',
+        form_started: {{ 'true' if visitor.form_started else 'false' }},
+        form_abandoned: {{ 'true' if visitor.form_abandoned else 'false' }},
+        registration_completed: {{ 'true' if visitor.registration_completed else 'false' }},
+        time_on_page: {{ visitor.time_on_page or 0 }},
+        referrer: '{{ visitor.referrer or '' }}',
+        user_agent: '{{ visitor.user_agent or '' }}'
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `visitor_${data.id}_${data.entry_time.replace(/[:\s]/g, '_')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+</script>

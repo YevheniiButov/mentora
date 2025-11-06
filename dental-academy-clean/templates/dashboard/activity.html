@@ -1,0 +1,649 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('activity_tracking', lang)|default('Activity Tracking') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    {{ t('activity_tracking', lang)|default('Activity Tracking') }}
+                </h1>
+                <p class="dashboard-subtitle">
+                    {{ t('activity_subtitle', lang)|default('Track your learning progress and study patterns') }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Activity Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card activity-summary-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-calendar-day"></i>
+                        {{ t('today_activity', lang)|default('Today\'s Activity') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if today_activity %}
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="activity-stat">
+                                <div class="stat-number">{{ today_activity.lessons_completed }}</div>
+                                <div class="stat-label">{{ t('lessons_completed', lang)|default('Lessons Completed') }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="activity-stat">
+                                <div class="stat-number">{{ today_activity.time_spent }} {{ t('min', lang)|default('min') }}</div>
+                                <div class="stat-label">{{ t('time_spent', lang)|default('Time Spent') }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="activity-stat">
+                                <div class="stat-number">{{ today_activity.xp_earned }}</div>
+                                <div class="stat-label">{{ t('xp_earned', lang)|default('XP Earned') }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="activity-stat">
+                                <div class="stat-number">{{ today_activity.tests_completed }}</div>
+                                <div class="stat-label">{{ t('tests_completed', lang)|default('Tests Completed') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="no-activity">
+                        <i class="bi bi-calendar-x"></i>
+                        <p>{{ t('no_activity_today', lang)|default('No activity recorded today') }}</p>
+                        <a href="{{ url_for('daily_learning.learning_map', lang=lang, path_id='thk_1') }}" class="btn btn-primary">
+                            {{ t('start_learning', lang)|default('Start Learning') }}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Charts -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up"></i>
+                        {{ t('weekly_activity', lang)|default('Weekly Activity') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="weeklyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        {{ t('monthly_activity', lang)|default('Monthly Activity') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history"></i>
+                        {{ t('recent_activity', lang)|default('Recent Activity') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if week_activities %}
+                    <div class="activity-timeline">
+                        {% for activity in week_activities %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">{{ activity.description }}</div>
+                                <div class="activity-time">{{ activity.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="no-activity">
+                        <i class="bi bi-clock"></i>
+                        <p>{{ t('no_recent_activity', lang)|default('No recent activity') }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Отступ для фиксированной шапки */
+.container-fluid {
+    padding-top: 80px;
+}
+
+.dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.dashboard-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+}
+
+.activity-summary-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.activity-stat {
+    text-align: center;
+    padding: 1rem;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.no-activity {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+
+.no-activity i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.activity-timeline {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    margin-right: 1rem;
+    color: #28a745;
+    font-size: 1.2rem;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.activity-time {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 15px 15px 0 0 !important;
+    padding: 1rem 1.5rem;
+}
+
+.card-title {
+    color: #495057;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Weekly Activity Chart
+const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+const weeklyChart = new Chart(weeklyCtx, {
+    type: 'line',
+    data: {
+        labels: {{ week_chart.labels | tojson }},
+        datasets: [{
+            label: '{{ t("lessons_completed", lang)|default("Lessons Completed") }}',
+            data: {{ week_chart.lessons | tojson }},
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Monthly Activity Chart
+const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+const monthlyChart = new Chart(monthlyCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ month_chart.labels | tojson }},
+        datasets: [{
+            label: '{{ t("time_spent", lang)|default("Time Spent") }}',
+            data: {{ month_chart.time | tojson }},
+            backgroundColor: '#f093fb',
+            borderColor: '#f5576c',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %} 
+
+{% block title %}{{ t('activity_tracking', lang)|default('Activity Tracking') }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    {{ t('activity_tracking', lang)|default('Activity Tracking') }}
+                </h1>
+                <p class="dashboard-subtitle">
+                    {{ t('activity_subtitle', lang)|default('Track your learning progress and study patterns') }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Activity Summary -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card activity-summary-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-calendar-day"></i>
+                        {{ t('today_activity', lang)|default('Today\'s Activity') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if today_activity %}
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="activity-stat">
+                                <div class="stat-number">{{ today_activity.lessons_completed }}</div>
+                                <div class="stat-label">{{ t('lessons_completed', lang)|default('Lessons Completed') }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="activity-stat">
+                                <div class="stat-number">{{ today_activity.time_spent }} {{ t('min', lang)|default('min') }}</div>
+                                <div class="stat-label">{{ t('time_spent', lang)|default('Time Spent') }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="activity-stat">
+                                <div class="stat-number">{{ today_activity.xp_earned }}</div>
+                                <div class="stat-label">{{ t('xp_earned', lang)|default('XP Earned') }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="activity-stat">
+                                <div class="stat-number">{{ today_activity.tests_completed }}</div>
+                                <div class="stat-label">{{ t('tests_completed', lang)|default('Tests Completed') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="no-activity">
+                        <i class="bi bi-calendar-x"></i>
+                        <p>{{ t('no_activity_today', lang)|default('No activity recorded today') }}</p>
+                        <a href="{{ url_for('daily_learning.learning_map', lang=lang, path_id='thk_1') }}" class="btn btn-primary">
+                            {{ t('start_learning', lang)|default('Start Learning') }}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Charts -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up"></i>
+                        {{ t('weekly_activity', lang)|default('Weekly Activity') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="weeklyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        {{ t('monthly_activity', lang)|default('Monthly Activity') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history"></i>
+                        {{ t('recent_activity', lang)|default('Recent Activity') }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if week_activities %}
+                    <div class="activity-timeline">
+                        {% for activity in week_activities %}
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title">{{ activity.description }}</div>
+                                <div class="activity-time">{{ activity.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="no-activity">
+                        <i class="bi bi-clock"></i>
+                        <p>{{ t('no_recent_activity', lang)|default('No recent activity') }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Отступ для фиксированной шапки */
+.container-fluid {
+    padding-top: 80px;
+}
+
+.dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.dashboard-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+}
+
+.activity-summary-card {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+.activity-stat {
+    text-align: center;
+    padding: 1rem;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.no-activity {
+    text-align: center;
+    padding: 3rem;
+    color: #6c757d;
+}
+
+.no-activity i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.activity-timeline {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    margin-right: 1rem;
+    color: #28a745;
+    font-size: 1.2rem;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.activity-time {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 15px 15px 0 0 !important;
+    padding: 1rem 1.5rem;
+}
+
+.card-title {
+    color: #495057;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Weekly Activity Chart
+const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+const weeklyChart = new Chart(weeklyCtx, {
+    type: 'line',
+    data: {
+        labels: {{ week_chart.labels | tojson }},
+        datasets: [{
+            label: '{{ t("lessons_completed", lang)|default("Lessons Completed") }}',
+            data: {{ week_chart.lessons | tojson }},
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Monthly Activity Chart
+const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+const monthlyChart = new Chart(monthlyCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ month_chart.labels | tojson }},
+        datasets: [{
+            label: '{{ t("time_spent", lang)|default("Time Spent") }}',
+            data: {{ month_chart.time | tojson }},
+            backgroundColor: '#f093fb',
+            borderColor: '#f5576c',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %} 

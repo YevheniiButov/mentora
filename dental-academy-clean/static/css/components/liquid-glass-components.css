@@ -1,0 +1,685 @@
+/* ===== УНИВЕРСАЛЬНЫЕ LIQUID GLASS КОМПОНЕНТЫ ===== */
+/* Готовые к использованию компоненты для всего приложения */
+
+/* ===== КАРТОЧКИ ===== */
+.liquid-card {
+    background: var(--glass-card);
+    backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg), var(--inset-shadow-glass);
+    transition: var(--transition-glass);
+    position: relative;
+    overflow: hidden;
+    padding: 1.5rem;
+}
+
+.liquid-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--glass-reflection);
+    opacity: 0.8;
+}
+
+.liquid-card:hover {
+    background: rgba(58, 58, 60, 0.7);
+    border-color: var(--border-glass-strong);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl), var(--inset-shadow-glass);
+}
+
+.liquid-card.interactive:hover {
+    box-shadow: var(--shadow-2xl), var(--glow-primary);
+}
+
+/* Размеры карточек */
+.liquid-card.small { padding: 1rem; }
+.liquid-card.large { padding: 2rem; }
+
+/* ===== КНОПКИ ===== */
+.liquid-btn {
+    background: var(--button-bg);
+    backdrop-filter: blur(var(--blur-sm));
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    color: var(--text-primary);
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.liquid-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--glass-shine);
+    transition: left 0.5s ease;
+}
+
+.liquid-btn:hover::before {
+    left: 100%;
+}
+
+.liquid-btn:hover {
+    background: rgba(58, 58, 60, 0.8);
+    border-color: var(--border-glass-strong);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+/* Варианты кнопок */
+.liquid-btn.primary {
+    background: var(--primary-gradient);
+    border: none;
+    color: white;
+}
+
+.liquid-btn.primary:hover {
+    background: var(--primary-gradient);
+    box-shadow: var(--shadow-lg), var(--glow-primary);
+    color: white;
+}
+
+.liquid-btn.secondary {
+    background: var(--secondary-gradient);
+    border: none;
+    color: white;
+}
+
+.liquid-btn.secondary:hover {
+    background: var(--secondary-gradient);
+    box-shadow: var(--shadow-lg), var(--glow-secondary);
+    color: white;
+}
+
+.liquid-btn.danger {
+    background: var(--danger-gradient);
+    border: none;
+    color: white;
+}
+
+.liquid-btn.danger:hover {
+    background: var(--danger-gradient);
+    box-shadow: var(--shadow-lg), 0 0 20px rgba(231, 76, 60, 0.5);
+    color: white;
+}
+
+.liquid-btn.success {
+    background: var(--success-gradient);
+    border: none;
+    color: white;
+}
+
+.liquid-btn.success:hover {
+    background: var(--success-gradient);
+    box-shadow: var(--shadow-lg), 0 0 20px rgba(46, 204, 113, 0.5);
+    color: white;
+}
+
+/* Размеры кнопок */
+.liquid-btn.small {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: var(--radius-md);
+}
+
+.liquid-btn.large {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+    border-radius: var(--radius-xl);
+}
+
+/* ===== ПОЛЯ ВВОДА ===== */
+.liquid-input {
+    background: var(--input-bg);
+    backdrop-filter: blur(var(--blur-sm));
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    transition: var(--transition-smooth);
+    width: 100%;
+    font-size: 1rem;
+}
+
+.liquid-input:focus {
+    background: rgba(58, 58, 60, 0.7);
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px var(--focus-glass);
+    outline: none;
+}
+
+.liquid-input::placeholder {
+    color: var(--text-muted);
+}
+
+.liquid-input.error {
+    border-color: var(--danger-500);
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.3);
+}
+
+.liquid-input.success {
+    border-color: var(--success-500);
+    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.3);
+}
+
+/* ===== СЕЛЕКТЫ ===== */
+.liquid-select {
+    background: var(--input-bg);
+    backdrop-filter: blur(var(--blur-sm));
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    transition: var(--transition-smooth);
+    width: 100%;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23AEAEB2' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px;
+    padding-right: 2.5rem;
+}
+
+.liquid-select:focus {
+    background: rgba(58, 58, 60, 0.7);
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px var(--focus-glass);
+    outline: none;
+}
+
+/* ===== НАВИГАЦИЯ ===== */
+.liquid-nav {
+    background: var(--glass-nav);
+    backdrop-filter: blur(var(--blur-lg));
+    border-bottom: 1px solid var(--border-glass);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-glass);
+}
+
+.liquid-nav-item {
+    background: var(--glass-secondary);
+    backdrop-filter: blur(var(--blur-sm));
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    transition: var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.liquid-nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--glass-shine);
+    transition: left 0.5s ease;
+}
+
+.liquid-nav-item:hover::before {
+    left: 100%;
+}
+
+.liquid-nav-item:hover,
+.liquid-nav-item.active {
+    background: var(--glass-primary);
+    border-color: var(--border-glass-strong);
+    transform: translateY(-1px);
+    color: var(--primary-500);
+    text-decoration: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.liquid-nav-item.active {
+    box-shadow: var(--shadow-md), var(--glow-primary);
+}
+
+/* ===== МОДАЛЬНЫЕ ОКНА ===== */
+.liquid-modal {
+    background: var(--glass-modal);
+    backdrop-filter: blur(var(--blur-xl));
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-2xl);
+    position: relative;
+    overflow: hidden;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+.liquid-modal::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--glass-reflection);
+    opacity: 0.8;
+}
+
+.liquid-modal-backdrop {
+    background: var(--modal-backdrop);
+    backdrop-filter: blur(var(--blur-sm));
+}
+
+.liquid-modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-glass);
+    background: var(--glass-tertiary);
+}
+
+.liquid-modal-body {
+    padding: 1.5rem;
+}
+
+.liquid-modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-glass);
+    background: var(--glass-tertiary);
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+/* ===== ДРОПДАУНЫ ===== */
+.liquid-dropdown {
+    background: var(--dropdown-bg);
+    backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    padding: 0.5rem 0;
+    position: absolute;
+    z-index: 1000;
+    min-width: 200px;
+}
+
+.liquid-dropdown-item {
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+    transition: var(--transition-smooth);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+
+.liquid-dropdown-item:hover {
+    background: var(--glass-primary);
+    color: var(--primary-500);
+    text-decoration: none;
+}
+
+.liquid-dropdown-divider {
+    height: 1px;
+    background: var(--border-glass);
+    margin: 0.5rem 0;
+}
+
+/* ===== ПРОГРЕСС БАРЫ ===== */
+.liquid-progress {
+    background: var(--progress-bg);
+    border-radius: var(--radius-full);
+    height: 8px;
+    overflow: hidden;
+    position: relative;
+    backdrop-filter: blur(var(--blur-sm));
+}
+
+.liquid-progress-fill {
+    background: var(--progress-fill);
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.8s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.liquid-progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    animation: progress-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes progress-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Размеры прогресс баров */
+.liquid-progress.small { height: 4px; }
+.liquid-progress.large { height: 12px; }
+
+/* ===== АЛЕРТЫ ===== */
+.liquid-alert {
+    background: var(--glass-card);
+    backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.liquid-alert::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary-500);
+}
+
+.liquid-alert.success::before { background: var(--success-500); }
+.liquid-alert.warning::before { background: var(--warning-500); }
+.liquid-alert.danger::before { background: var(--danger-500); }
+.liquid-alert.info::before { background: var(--info-500); }
+
+.liquid-alert-icon {
+    font-size: 1.25rem;
+    margin-top: 0.125rem;
+    color: var(--primary-500);
+}
+
+.liquid-alert.success .liquid-alert-icon { color: var(--success-500); }
+.liquid-alert.warning .liquid-alert-icon { color: var(--warning-500); }
+.liquid-alert.danger .liquid-alert-icon { color: var(--danger-500); }
+.liquid-alert.info .liquid-alert-icon { color: var(--info-500); }
+
+.liquid-alert-content {
+    flex: 1;
+}
+
+.liquid-alert-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--text-primary);
+}
+
+.liquid-alert-message {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* ===== ТАБЛИЦЫ ===== */
+.liquid-table {
+    background: var(--glass-card);
+    backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.liquid-table table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 0;
+}
+
+.liquid-table th {
+    background: var(--glass-tertiary);
+    padding: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: left;
+    border-bottom: 1px solid var(--border-glass);
+}
+
+.liquid-table td {
+    padding: 1rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.liquid-table tr:hover td {
+    background: var(--glass-primary);
+    color: var(--text-primary);
+}
+
+.liquid-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== ТУЛТИПЫ ===== */
+.liquid-tooltip {
+    background: var(--tooltip-bg);
+    backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    box-shadow: var(--shadow-lg);
+    position: absolute;
+    z-index: 1100;
+    max-width: 200px;
+}
+
+/* ===== БЕЙДЖИ ===== */
+.liquid-badge {
+    background: var(--glass-tertiary);
+    backdrop-filter: blur(var(--blur-sm));
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-full);
+    color: var(--text-primary);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.liquid-badge.primary {
+    background: rgba(62, 205, 193, 0.2);
+    border-color: rgba(62, 205, 193, 0.4);
+    color: var(--primary-500);
+}
+
+.liquid-badge.success {
+    background: rgba(46, 204, 113, 0.2);
+    border-color: rgba(46, 204, 113, 0.4);
+    color: var(--success-500);
+}
+
+.liquid-badge.warning {
+    background: rgba(243, 156, 18, 0.2);
+    border-color: rgba(243, 156, 18, 0.4);
+    color: var(--warning-500);
+}
+
+.liquid-badge.danger {
+    background: rgba(231, 76, 60, 0.2);
+    border-color: rgba(231, 76, 60, 0.4);
+    color: var(--danger-500);
+}
+
+/* ===== СПИННЕРЫ ===== */
+.liquid-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-glass);
+    border-top: 3px solid var(--primary-500);
+    border-radius: 50%;
+    animation: liquid-spin 1s linear infinite;
+}
+
+.liquid-spinner.small {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+}
+
+.liquid-spinner.large {
+    width: 48px;
+    height: 48px;
+    border-width: 4px;
+}
+
+@keyframes liquid-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ===== АККОРДЕОНЫ ===== */
+.liquid-accordion {
+    background: var(--glass-card);
+    backdrop-filter: blur(var(--blur-md));
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+.liquid-accordion-item {
+    border-bottom: 1px solid var(--border-glass);
+}
+
+.liquid-accordion-item:last-child {
+    border-bottom: none;
+}
+
+.liquid-accordion-header {
+    background: var(--glass-secondary);
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.liquid-accordion-header:hover {
+    background: var(--glass-primary);
+}
+
+.liquid-accordion-icon {
+    transition: transform 0.3s ease;
+}
+
+.liquid-accordion-header[aria-expanded="true"] .liquid-accordion-icon {
+    transform: rotate(180deg);
+}
+
+.liquid-accordion-content {
+    padding: 1.5rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* ===== УТИЛИТАРНЫЕ КЛАССЫ ===== */
+.glass-background {
+    background: var(--glass-primary);
+    backdrop-filter: blur(var(--blur-md));
+}
+
+.glass-border {
+    border: 1px solid var(--border-glass);
+}
+
+.glass-shadow {
+    box-shadow: var(--shadow-lg);
+}
+
+.liquid-transition {
+    transition: var(--transition-smooth);
+}
+
+.liquid-glow:hover {
+    box-shadow: var(--glow-primary);
+}
+
+/* ===== РЕСПОНСИВНОСТЬ ===== */
+@media (max-width: 768px) {
+    .liquid-card {
+        padding: 1rem;
+    }
+    
+    .liquid-modal {
+        margin: 1rem;
+        max-width: calc(100vw - 2rem);
+    }
+    
+    .liquid-btn.large {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .liquid-table th,
+    .liquid-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* ===== ДОСТУПНОСТЬ ===== */
+@media (prefers-reduced-motion: reduce) {
+    .liquid-card,
+    .liquid-btn,
+    .liquid-input,
+    .liquid-nav-item,
+    .liquid-accordion-header {
+        transition: none;
+    }
+    
+    .liquid-progress-fill::after,
+    .liquid-spinner {
+        animation: none;
+    }
+}
+
+@media (prefers-contrast: high) {
+    :root {
+        --border-glass: rgba(255, 255, 255, 0.8);
+        --border-glass-strong: rgba(255, 255, 255, 1);
+        --text-secondary: var(--text-primary);
+    }
+} 

@@ -1,0 +1,941 @@
+{% extends "digid/base_digid.html" %}
+{% block title %}DigiD Inloggen - Mentora{% endblock %}
+
+{% block head %}
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=RijksoverheidSansWebText:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --digid-blue: #003d82;
+    --digid-orange: #ff6600; 
+    --digid-light-gray: #f5f5f5;
+    --digid-border: #cccccc;
+    --digid-text: #333333;
+    --digid-text-light: #767676;
+    --digid-background: #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'RijksoverheidSansWebText', 'Inter', Arial, sans-serif;
+    background: var(--digid-background);
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+}
+
+.digid-page-container {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+.digid-content-card {
+    max-width: 500px;
+    width: 100%;
+    background: var(--digid-background);
+    border-radius: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Header Section */
+.digid-header {
+    background: var(--digid-background);
+    padding: 24px 32px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.digid-logo-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.digid-logo {
+    width: 32px;
+    height: 32px;
+    background: #000000;
+    color: #ff6619;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: -0.5px;
+}
+
+.digid-main-title {
+    color: var(--digid-text);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.digid-subtitle {
+    color: var(--digid-text);
+    font-size: 18px;
+    font-weight: 400;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* Main Content */
+.digid-main-content {
+    padding: 32px;
+}
+
+.digid-step-indicator {
+    color: var(--digid-text-light);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.digid-section-title {
+    color: var(--digid-orange);
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 24px 0;
+    line-height: 1.4;
+}
+
+.digid-instruction-text {
+    color: var(--digid-text);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.digid-detail-text {
+    color: var(--digid-text);
+    font-size: 14px;
+    font-weight: 400;
+    margin-bottom: 32px;
+    line-height: 1.5;
+}
+
+/* Pincode Input Section */
+.digid-input-section {
+    margin-bottom: 32px;
+}
+
+.digid-code-inputs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.digid-code-input {
+    width: 56px;
+    height: 56px;
+    border: 2px solid var(--digid-border);
+    border-radius: 4px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--digid-text);
+    background: var(--digid-background);
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.digid-code-input:focus {
+    border-color: var(--digid-blue);
+    box-shadow: 0 0 0 2px rgba(0, 61, 130, 0.1);
+}
+
+.digid-code-input.filled {
+    background: #e6f2ff;
+    border-color: var(--digid-blue);
+}
+
+.digid-code-input:first-child.filled {
+    background: #e6f2ff;
+}
+
+/* Demo Option */
+.digid-demo-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 12px;
+    background: rgba(255, 102, 0, 0.05);
+    border: 1px solid rgba(255, 102, 0, 0.2);
+    border-radius: 4px;
+}
+
+.digid-demo-option input[type="checkbox"] {
+    margin: 0;
+}
+
+.digid-demo-option label {
+    color: var(--digid-text);
+    font-size: 14px;
+    cursor: pointer;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Navigation Buttons */
+.digid-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.digid-btn-previous {
+    background: none;
+    border: none;
+    color: var(--digid-text-light);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.digid-btn-previous:hover {
+    color: var(--digid-blue);
+}
+
+.digid-btn-next {
+    background: var(--digid-orange);
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    min-width: 120px;
+}
+
+.digid-btn-next:hover:not(:disabled) {
+    background: #e55a00;
+}
+
+.digid-btn-next:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Help Link */
+.digid-help-section {
+    border-top: 1px solid #e0e0e0;
+    padding-top: 20px;
+}
+
+.digid-help-link {
+    color: var(--digid-blue);
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 1.5;
+    display: inline-block;
+}
+
+.digid-help-link:hover {
+    text-decoration: underline;
+}
+
+/* Illustration Section */
+.digid-illustration {
+    text-align: center;
+    margin-top: 32px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.digid-phone-illustration {
+    max-width: 300px;
+    width: 100%;
+    height: 200px;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200"><rect x="50" y="20" width="80" height="140" rx="12" fill="%23ff6600"/><rect x="60" y="35" width="60" height="100" rx="4" fill="%23ffffff"/><rect x="70" y="45" width="40" height="6" rx="3" fill="%23000000"/><rect x="70" y="60" width="30" height="4" rx="2" fill="%23cccccc"/><rect x="70" y="70" width="35" height="4" rx="2" fill="%23cccccc"/><text x="90" y="100" font-family="Arial" font-size="8" fill="%23000000" text-anchor="middle">CODE</text><rect x="150" y="40" width="100" height="60" rx="8" fill="%23003d82"/><rect x="160" y="50" width="80" height="40" rx="4" fill="%23ffffff"/><text x="200" y="75" font-family="Arial" font-size="10" fill="%23003d82" text-anchor="middle">DigiD</text></svg>') center/contain no-repeat;
+    margin: 0 auto;
+}
+
+/* Error Messages */
+.digid-error-message {
+    background: #ffebee;
+    border: 1px solid #ffcdd2;
+    color: #c62828;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    display: none;
+}
+
+/* Loading State */
+.digid-loading-state {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.digid-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--digid-blue);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: digid-spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes digid-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.digid-loading-text {
+    color: var(--digid-text);
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Password Input Section */
+.digid-password-section {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    align-items: center;
+}
+
+.digid-password-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid var(--digid-border);
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--digid-text);
+    background: var(--digid-background);
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.digid-password-input:focus {
+    border-color: var(--digid-blue);
+    box-shadow: 0 0 0 2px rgba(0, 61, 130, 0.1);
+}
+
+.digid-password-btn {
+    background: var(--digid-blue);
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.digid-password-btn:hover {
+    background: #002a5c;
+    transform: translateY(-1px);
+}
+
+.digid-password-btn:active {
+    transform: translateY(0);
+}
+
+.digid-password-info {
+    text-align: center;
+    color: var(--digid-text-light);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .digid-page-container {
+        padding: 10px;
+    }
+    
+    .digid-main-content {
+        padding: 24px 20px;
+    }
+    
+    .digid-header {
+        padding: 20px;
+    }
+    
+    .digid-code-inputs {
+        gap: 8px;
+    }
+    
+    .digid-code-input {
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+    
+    .digid-navigation {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+    
+    .digid-btn-next {
+        width: 100%;
+    }
+    
+    .digid-password-section {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .digid-password-input {
+        width: 100%;
+        font-size: 16px; /* Предотвращает зум на iOS */
+    }
+    
+    .digid-password-btn {
+        width: 100%;
+        padding: 14px 24px;
+    }
+}
+
+/* Accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus indicators */
+.digid-code-input:focus-visible,
+.digid-btn-next:focus-visible,
+.digid-btn-previous:focus-visible,
+.digid-password-btn:focus-visible {
+    outline: 2px solid var(--digid-blue);
+    outline-offset: 2px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="digid-page-container">
+    <div class="digid-content-card">
+        <!-- Header -->
+        <div class="digid-header">
+            <div class="digid-logo-section">
+                <div class="digid-logo">DigiD</div>
+                <div>
+                    <h1 class="digid-main-title">Inloggen bij</h1>
+                    <p class="digid-subtitle">Mentora.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="digid-main-content">
+            <div class="digid-step-indicator">Stap 1 van 3</div>
+            
+            <h2 class="digid-section-title">Open de DigiD app en voer uw pincode in</h2>
+            
+            <p class="digid-instruction-text">Vul daarna de koppelcode in die u in de DigiD app ziet.</p>
+            
+            <p class="digid-detail-text">De DigiD app laat de koppelcode zien. Deze bestaat uit 4 letters. Vul de code in de 4 invoervelden hieronder in.</p>
+
+            <!-- Pincode Form -->
+            <form id="digid-auth-form" onsubmit="return handleDigiDSubmit(event)">
+                <div class="digid-input-section">
+                    <div class="digid-code-inputs">
+                        <input 
+                            type="text" 
+                            class="digid-code-input" 
+                            maxlength="1" 
+                            id="code1" 
+                            autocomplete="off"
+                            oninput="handleCodeInput(this, 0)" 
+                            onkeydown="handleCodeKeydown(event, 0)"
+                            aria-label="Eerste letter van koppelcode">
+                        <input 
+                            type="text" 
+                            class="digid-code-input" 
+                            maxlength="1" 
+                            id="code2" 
+                            autocomplete="off"
+                            oninput="handleCodeInput(this, 1)" 
+                            onkeydown="handleCodeKeydown(event, 1)"
+                            aria-label="Tweede letter van koppelcode">
+                        <input 
+                            type="text" 
+                            class="digid-code-input" 
+                            maxlength="1" 
+                            id="code3" 
+                            autocomplete="off"
+                            oninput="handleCodeInput(this, 2)" 
+                            onkeydown="handleCodeKeydown(event, 2)"
+                            aria-label="Derde letter van koppelcode">
+                        <input 
+                            type="text" 
+                            class="digid-code-input" 
+                            maxlength="1" 
+                            id="code4" 
+                            autocomplete="off"
+                            oninput="handleCodeInput(this, 3)" 
+                            onkeydown="handleCodeKeydown(event, 3)"
+                            aria-label="Vierde letter van koppelcode">
+                    </div>
+
+                    <div class="digid-error-message" id="error-message" role="alert"></div>
+                </div>
+
+                <!-- Demo Option -->
+                <div class="digid-demo-option">
+                    <input type="checkbox" id="show-registration" name="show-registration" onchange="toggleRegistrationMode()">
+                    <label for="show-registration">Nieuwe gebruiker (toon registratieformulier)</label>
+                </div>
+
+
+
+                <div class="digid-navigation">
+                    <button type="button" class="digid-btn-previous" onclick="goToPreviousStep()" aria-label="Ga terug naar vorige stap">
+                        ← Vorige
+                    </button>
+                    <button type="submit" class="digid-btn-next" id="submit-button" disabled aria-label="Ga naar volgende stap">
+                        Volgende →
+                    </button>
+                </div>
+            </form>
+
+            <!-- Password Form (initially hidden) -->
+            <form id="password-auth-form" style="display: none;" onsubmit="return handlePasswordSubmit(event)">
+                <div class="digid-input-section">
+                    <div class="digid-password-section">
+                        <input 
+                            type="password" 
+                            id="auth-password" 
+                            class="digid-password-input" 
+                            placeholder="Voer wachtwoord in..."
+                            onkeydown="handlePasswordKeydown(event)"
+                            aria-label="Wachtwoord voor authenticatie"
+                            required>
+                        <button 
+                            type="submit" 
+                            class="digid-password-btn" 
+                            id="login-button"
+                            aria-label="Inloggen met wachtwoord">
+                            Inloggen
+                        </button>
+                    </div>
+                    <div class="digid-error-message" id="password-error-message" role="alert"></div>
+                </div>
+
+                <div class="digid-navigation">
+                    <button type="button" class="digid-btn-previous" onclick="goBackToPincode()" aria-label="Ga terug naar pincode">
+                        ← Terug naar pincode
+                    </button>
+                </div>
+            </form>
+
+            <!-- Loading State -->
+            <div class="digid-loading-state" id="loading-state">
+                <div class="digid-spinner" aria-hidden="true"></div>
+                <div class="digid-loading-text">Bezig met verifiëren...</div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="digid-help-section">
+                <a href="#" class="digid-help-link" onclick="showDigiDHelp(); return false;">
+                    Nog geen DigiD app? Lees hoe u de DigiD app kunt installeren en activeren. [opent in een nieuw venster]
+                </a>
+            </div>
+
+            <!-- Phone Illustration -->
+            <div class="digid-illustration">
+                <div class="digid-phone-illustration" aria-hidden="true"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// State management
+let currentCode = ['', '', '', ''];
+let isSubmitting = false;
+let showRegistration = false;
+let currentUser = null;
+
+// Demo users
+const demoUsers = {
+    'DEMO': {
+        code: 'DEMO', 
+        username: 'demo.user', 
+        name: 'Demo Gebruiker', 
+        profession: 'tandarts',
+        bsn: '123456789',
+        role: 'user',
+        email: 'demo@mentora.nl'
+    },
+    'ADMN': {
+        code: 'ADMN', 
+        username: 'demo.admin', 
+        name: 'Admin Beheerder', 
+        profession: 'admin',
+        bsn: '999999999',
+        role: 'admin',
+        email: 'admin@mentora.nl'
+    }
+};
+
+// Single demo user (for backward compatibility)
+const demoUser = demoUsers['DEMO'];
+
+// Toggle registration mode
+function toggleRegistrationMode() {
+    showRegistration = document.getElementById('show-registration').checked;
+    // Registration mode status
+}
+
+// Input handling
+function handleCodeInput(input, index) {
+    const value = input.value.toUpperCase().replace(/[^A-Z]/g, '');
+    
+    if (value.length > 1) {
+        input.value = value.charAt(0);
+        return;
+    }
+    
+    input.value = value;
+    currentCode[index] = value;
+    
+    // Update visual state
+    if (value) {
+        input.classList.add('filled');
+        // Auto-focus next input
+        if (index < 3) {
+            document.getElementById(`code${index + 2}`).focus();
+        }
+    } else {
+        input.classList.remove('filled');
+    }
+    
+    updateSubmitButton();
+    hideError();
+}
+
+function handleCodeKeydown(event, index) {
+    // Handle backspace navigation
+    if (event.key === 'Backspace' && !event.target.value && index > 0) {
+        const prevInput = document.getElementById(`code${index}`);
+        prevInput.focus();
+        prevInput.value = '';
+        prevInput.classList.remove('filled');
+        currentCode[index - 1] = '';
+        updateSubmitButton();
+    }
+    
+    // Handle arrow key navigation
+    if (event.key === 'ArrowLeft' && index > 0) {
+        document.getElementById(`code${index}`).focus();
+    } else if (event.key === 'ArrowRight' && index < 3) {
+        document.getElementById(`code${index + 2}`).focus();
+    }
+}
+
+function updateSubmitButton() {
+    const isComplete = currentCode.every(code => code !== '');
+    const submitButton = document.getElementById('submit-button');
+    submitButton.disabled = !isComplete || isSubmitting;
+}
+
+// Form submission - Step 1: Pincode verification
+function handleDigiDSubmit(event) {
+    event.preventDefault();
+    
+    if (isSubmitting) return false;
+    
+    const code = currentCode.join('');
+    if (code.length !== 4) {
+        showError('{{ t("fill_all_4_letters", lang) }}');
+        return false;
+    }
+    
+    verifyPincode(code);
+    return false;
+}
+
+function verifyPincode(code) {
+    isSubmitting = true;
+    showLoading();
+    hideError();
+    
+    // Simulate verification delay
+    setTimeout(() => {
+        if (demoUsers[code]) {
+            // Pincode is valid - proceed to password step
+            currentUser = demoUsers[code];
+            hideLoading();
+            showPasswordStep();
+        } else {
+            // Invalid pincode
+            hideLoading();
+            showError('{{ t("invalid_coupling_code", lang) }}');
+            isSubmitting = false;
+            updateSubmitButton();
+        }
+    }, 1500);
+}
+
+// Step 2: Show password input
+function showPasswordStep() {
+    document.getElementById('digid-auth-form').style.display = 'none';
+    document.getElementById('password-auth-form').style.display = 'block';
+    
+    // Update step indicator
+    document.querySelector('.digid-step-indicator').textContent = 'Stap 2 van 3';
+    document.querySelector('.digid-section-title').textContent = 'Voer uw wachtwoord in';
+    document.querySelector('.digid-instruction-text').textContent = 'Voer het wachtwoord in om uw identiteit te bevestigen.';
+    document.querySelector('.digid-detail-text').textContent = 'Voor de veiligheid moet u uw wachtwoord invoeren om de aanmelding te voltooien.';
+    
+    // Focus password input
+    document.getElementById('auth-password').focus();
+    
+    isSubmitting = false;
+}
+
+// Step 2: Go back to pincode
+function goBackToPincode() {
+    document.getElementById('password-auth-form').style.display = 'none';
+    document.getElementById('digid-auth-form').style.display = 'block';
+    
+    // Reset step indicator
+    document.querySelector('.digid-step-indicator').textContent = 'Stap 1 van 3';
+    document.querySelector('.digid-section-title').textContent = 'Open de DigiD app en voer uw pincode in';
+    document.querySelector('.digid-instruction-text').textContent = 'Vul daarna de koppelcode in die u in de DigiD app ziet.';
+    document.querySelector('.digid-detail-text').textContent = 'De DigiD app laat de koppelcode zien. Deze bestaat uit 4 letters. Vul de code in de 4 invoervelden hieronder in.';
+    
+    // Clear password
+    document.getElementById('auth-password').value = '';
+    hidePasswordError();
+    
+    // Focus first code input
+    document.getElementById('code1').focus();
+    
+    currentUser = null;
+}
+
+// Step 2: Password submission
+function handlePasswordSubmit(event) {
+    event.preventDefault();
+    
+    if (isSubmitting) return false;
+    
+    const password = document.getElementById('auth-password').value;
+    // Password input received
+    
+    if (!password || !password.trim()) {
+        showPasswordError('{{ t("enter_password", lang) }}');
+        return false;
+    }
+    
+    // Check for "Demonstration" password (case-insensitive, trim whitespace)
+    const cleanPassword = password.toLowerCase().trim();
+    // Password validation completed
+    
+    // Allow any password in debug mode (for deployment testing)
+    const isDebugMode = window.location.hostname.includes('render.com') || 
+                       window.location.hostname.includes('localhost') ||
+                       window.location.hostname.includes('127.0.0.1');
+    
+    if (cleanPassword !== 'demonstration' && !isDebugMode) {
+        showPasswordError('Verkeerd wachtwoord. Gebruik: demonstration');
+        return false;
+    }
+    
+    // Debug mode and password status
+    
+    authenticateWithPassword(password);
+    return false;
+}
+
+// UI state management
+function showError(message) {
+    const errorDiv = document.getElementById('error-message');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function hideError() {
+    document.getElementById('error-message').style.display = 'none';
+}
+
+function showPasswordError(message) {
+    const errorDiv = document.getElementById('password-error-message');
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function hidePasswordError() {
+    document.getElementById('password-error-message').style.display = 'none';
+}
+
+function showLoading() {
+    document.getElementById('digid-auth-form').style.display = 'none';
+    document.getElementById('loading-state').style.display = 'block';
+}
+
+function hideLoading() {
+    document.getElementById('digid-auth-form').style.display = 'block';
+    document.getElementById('loading-state').style.display = 'none';
+}
+
+function getCSRFToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
+
+function goToPreviousStep() {
+    window.history.back();
+}
+
+function showDigiDHelp() {
+    window.open('https://www.digid.nl/digid-app', '_blank');
+}
+
+// Get current language from URL or default to 'nl'
+function getCurrentLanguage() {
+    const pathParts = window.location.pathname.split('/');
+    const langCodes = ['nl', 'en', 'ru', 'uk', 'tr', 'fa', 'ar', 'es', 'pt'];
+    const urlLang = pathParts[1];
+    return langCodes.includes(urlLang) ? urlLang : 'nl';
+}
+
+// Password authentication
+function handlePasswordKeydown(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        document.getElementById('password-auth-form').dispatchEvent(new Event('submit'));
+    }
+}
+
+function authenticateWithPassword(password) {
+    if (!currentUser) {
+        showPasswordError('{{ t("no_user_selected", lang) }}');
+        return;
+    }
+    
+    isSubmitting = true;
+    showPasswordLoading();
+    
+    // Clear password field
+    document.getElementById('auth-password').value = '';
+    
+    // Show user info
+    
+    // Authenticate user
+    authenticateUser(currentUser);
+}
+
+function showPasswordLoading() {
+    document.getElementById('password-auth-form').style.display = 'none';
+    document.getElementById('loading-state').style.display = 'block';
+    document.querySelector('.digid-loading-text').textContent = 'Bezig met inloggen...';
+}
+
+function hidePasswordLoading() {
+    document.getElementById('password-auth-form').style.display = 'block';
+    document.getElementById('loading-state').style.display = 'none';
+}
+
+function authenticateUser(user) {
+    // Send authentication request to backend
+    const authData = {
+        digid_username: user.username,
+        koppelcode: currentCode.join(''),
+        full_name: user.name,
+        bsn: user.bsn,
+        profession: user.profession,
+        email: user.email,
+        role: user.role.toLowerCase(),
+        show_registration: showRegistration
+    };
+    
+    const currentLang = getCurrentLanguage();
+    
+    fetch('/digid/authenticate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(authData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Если это админ — всегда редиректим строго на data.redirect_url
+            if (data.user_info && data.user_info.role === 'admin' && data.redirect_url) {
+                window.location.href = data.redirect_url;
+            } else {
+                // Обычная логика для остальных ролей
+                const professionRedirects = {
+                    'tandarts': `/${currentLang}/learning-map/subject/101/tests`,
+                    'apotheker': `/${currentLang}/learning-map/subject/201/tests`,
+                    'huisarts': `/${currentLang}/learning-map/subject/301/tests`,
+                    'verpleegkundige': `/${currentLang}/learning-map/subject/401/tests`
+                };
+                const redirectUrl = professionRedirects[data.user_info.profession] || data.redirect_url || `/${currentLang}/dashboard`;
+                window.location.href = redirectUrl;
+            }
+        } else {
+            hidePasswordLoading();
+            showPasswordError(data.message || '{{ t("authentication_failed", lang) }}');
+            isSubmitting = false;
+        }
+    })
+    .catch(error => {
+        console.error('Authentication error:', error);
+        hidePasswordLoading();
+        showPasswordError('{{ t("technical_error", lang) }}');
+        isSubmitting = false;
+    });
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Focus first input
+    document.getElementById('code1').focus();
+    
+    // Demo users available for development
+});
+
+// Prevent form resubmission on page refresh
+window.addEventListener('beforeunload', function() {
+    isSubmitting = false;
+});
+</script>
+{% endblock %}

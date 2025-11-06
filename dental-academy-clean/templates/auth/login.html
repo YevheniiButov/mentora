@@ -1,0 +1,418 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('login', lang) | default('Login') }} - Mentora{% endblock %}
+
+{% block description %}{{ t('login_description', lang) | default('Login to your Mentora account') }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+<style>
+.login-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-header h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.login-header p {
+    color: #7f8c8d;
+    font-size: 16px;
+}
+
+.login-form {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ecf0f1;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.btn-login {
+    width: 100%;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+}
+
+.btn-login:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.login-links {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.login-links a {
+    color: #3498db;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+.login-links a:hover {
+    text-decoration: underline;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.success-message {
+    color: #27ae60;
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.register-link {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ecf0f1;
+}
+
+.register-link a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+.password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-container input {
+    padding-right: 45px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #7f8c8d;
+    font-size: 16px;
+    padding: 5px;
+    transition: color 0.3s;
+}
+
+.password-toggle:hover {
+    color: #3498db;
+}
+
+.password-toggle:focus {
+    outline: none;
+    color: #3498db;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-header">
+        <h1>{{ t('login', lang) | default('Login') }}</h1>
+        <p>{{ t('login_subtitle', lang) | default('Welcome back to Mentora') }}</p>
+    </div>
+
+    <form class="login-form" id="loginForm" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <div class="form-group">
+            <label for="email">{{ t('email', lang) | default('Email') }}</label>
+            <input type="email" id="email" name="email" required autocomplete="email">
+        </div>
+
+        <div class="form-group">
+            <label for="password">{{ t('password', lang) | default('Password') }}</label>
+            <div class="password-input-container">
+                <input type="password" id="password" name="password" required autocomplete="current-password">
+                <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                    <i class="fas fa-eye" id="password-eye"></i>
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-login" id="submitBtn">
+            <i class="fas fa-sign-in-alt"></i> {{ t('login', lang) | default('Login') }}
+        </button>
+    </form>
+
+    <div class="login-links">
+        <a href="{{ url_for('auth.forgot_password') }}">{{ t('forgot_password', lang) | default('Forgot Password?') }}</a>
+    </div>
+
+
+    <div class="register-link">
+        <p>{{ t('dont_have_account', lang) | default("Don't have an account?") }} 
+           <a href="{{ url_for('auth.register', lang=lang) }}">{{ t('create_account', lang) | default('Create account') }}</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        submitLogin();
+    });
+    
+    // Real-time validation
+    const emailField = document.getElementById('email');
+    const passwordField = document.getElementById('password');
+    
+    emailField.addEventListener('blur', validateEmail);
+    passwordField.addEventListener('blur', validatePassword);
+});
+
+function validateEmail() {
+    const email = document.getElementById('email');
+    const value = email.value.trim();
+    
+    clearFieldError(email);
+    
+    if (!value) {
+        showFieldError(email, '{{ t("email_required", lang) | default("Email is required") }}');
+        return false;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+        showFieldError(email, '{{ t("invalid_email", lang) | default("Please enter a valid email address") }}');
+        return false;
+    }
+    
+    return true;
+}
+
+function validatePassword() {
+    const password = document.getElementById('password');
+    const value = password.value;
+    
+    clearFieldError(password);
+    
+    if (!value) {
+        showFieldError(password, '{{ t("password_required", lang) | default("Password is required") }}');
+        return false;
+    }
+    
+    if (value.length < 6) {
+        showFieldError(password, '{{ t("password_too_short", lang) | default("Password must be at least 6 characters") }}');
+        return false;
+    }
+    
+    return true;
+}
+
+function showFieldError(field, message) {
+    clearFieldError(field);
+    
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    
+    field.parentNode.appendChild(errorDiv);
+    field.style.borderColor = '#e74c3c';
+}
+
+function clearFieldError(field) {
+    const errorDiv = field.parentNode.querySelector('.error-message');
+    if (errorDiv) {
+        errorDiv.remove();
+    }
+    field.style.borderColor = '#ecf0f1';
+}
+
+async function submitLogin() {
+    const form = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const formData = new FormData(form);
+    
+    // Validate form
+    if (!validateEmail() || !validatePassword()) {
+        return;
+    }
+    
+    // Disable submit button
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ t("logging_in", lang) | default("Logging in...") }}';
+    
+    try {
+        const response = await fetch('{{ url_for("auth.login") }}', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Show success message
+            showSuccessMessage('{{ t("login_success", lang) | default("Login successful!") }}');
+            
+            // Redirect to dashboard
+            setTimeout(() => {
+                window.location.href = result.redirect_url || '{{ url_for("dashboard.index") }}';
+            }, 1000);
+        } else {
+            // Show error message
+            if (result.email_not_confirmed) {
+                showEmailNotConfirmedMessage(result.error);
+            } else {
+                showErrorMessage(result.error || '{{ t("login_error", lang) | default("Login failed. Please try again.") }}');
+            }
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showErrorMessage('{{ t("network_error", lang) | default("Network error. Please check your connection and try again.") }}');
+    } finally {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> {{ t("login", lang) | default("Login") }}';
+    }
+}
+
+function showSuccessMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'success-message';
+    messageDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #27ae60; color: white; padding: 15px 20px; border-radius: 5px; z-index: 1000;';
+    messageDiv.textContent = message;
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+        messageDiv.remove();
+    }, 3000);
+}
+
+function showErrorMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'error-message';
+    messageDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #e74c3c; color: white; padding: 15px 20px; border-radius: 5px; z-index: 1000;';
+    messageDiv.textContent = message;
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+        messageDiv.remove();
+    }, 5000);
+}
+
+function showEmailNotConfirmedMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'error-message';
+    messageDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #f39c12; color: white; padding: 15px 20px; border-radius: 5px; z-index: 1000; max-width: 400px;';
+    
+    const email = document.getElementById('email').value;
+    
+    messageDiv.innerHTML = `
+        <div style="margin-bottom: 10px;">${message}</div>
+        <button onclick="resendConfirmation('${email}')" style="background: #e67e22; color: white; border: none; padding: 8px 15px; border-radius: 3px; cursor: pointer; margin-top: 10px;">
+            {{ t('resend_confirmation', lang) | default('Resend confirmation') }}
+        </button>
+    `;
+    
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+        messageDiv.remove();
+    }, 10000);
+}
+
+async function resendConfirmation(email) {
+    try {
+        const response = await fetch('{{ url_for("auth.resend_confirmation") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showSuccessMessage('{{ t("confirmation_resent", lang) | default("Confirmation email sent again!") }}');
+        } else {
+            showErrorMessage(result.error || '{{ t("email_send_error", lang) | default("Error sending email") }}');
+        }
+    } catch (error) {
+        console.error('Resend confirmation error:', error);
+        showErrorMessage('{{ t("network_error", lang) | default("Network error. Please try again later.") }}');
+    }
+}
+
+function togglePassword(fieldId) {
+    const passwordField = document.getElementById(fieldId);
+    const eyeIcon = document.getElementById(fieldId + '-eye');
+    
+    if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordField.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+    }
+}
+</script>
+{% endblock %}

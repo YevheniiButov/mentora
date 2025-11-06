@@ -1,0 +1,41 @@
+{% extends "emails/professional_base.html" %}
+
+{% block title %}Welcome to Mentora{% endblock %}
+
+{% block content %}
+<div class="greeting">Welcome to Mentora, {{ user.first_name or 'Valued Professional' }}!</div>
+
+<div class="message">
+    We're thrilled to have you join our professional development community. Mentora is designed to help healthcare professionals like you excel in your career and achieve your BIG certification goals.
+</div>
+
+<div class="highlight-box">
+    <h3>🎯 What's Next?</h3>
+    <p>Your account is now active and ready to use. Here's what you can do:</p>
+    <ul style="margin: 15px 0; padding-left: 20px;">
+        <li>Complete your professional profile</li>
+        <li>Take the BIG assessment to evaluate your current knowledge</li>
+        <li>Access our comprehensive learning materials</li>
+        <li>Join our community of healthcare professionals</li>
+    </ul>
+</div>
+
+<div class="message">
+    Our platform offers personalized learning paths, expert guidance, and all the resources you need to succeed in your BIG preparation journey.
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ dashboard_url or 'https://www.bigmentor.nl/dashboard' }}" class="cta-button">Get Started</a>
+</div>
+
+<div class="message">
+    If you have any questions or need assistance, our support team is here to help. Don't hesitate to reach out!
+</div>
+
+<div style="text-align: center; margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-radius: 8px;">
+    <p style="margin: 0; font-size: 14px; color: #666;">
+        <strong>Need help?</strong> Contact us at 
+        <a href="mailto:info@bigmentor.nl" style="color: #667eea;">info@bigmentor.nl</a>
+    </p>
+</div>
+{% endblock %}

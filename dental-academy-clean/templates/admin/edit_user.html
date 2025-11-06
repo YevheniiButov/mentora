@@ -1,0 +1,372 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Редактировать пользователя - {{ user.get_display_name() }}{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('admin.users_list') }}">Пользователи</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('admin.user_detail', user_id=user.id) }}">{{ user.get_display_name() }}</a></li>
+<li class="breadcrumb-item active">Редактировать</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Редактировать пользователя</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад к профилю
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-8 col-lg-10">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Информация о пользователе</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="row">
+                        <!-- Basic Information -->
+                        <div class="col-md-6">
+                            <h6 class="mb-3 text-primary">Основная информация</h6>
+                            
+                            <div class="mb-3">
+                                <label for="first_name" class="form-label">Имя</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" 
+                                       value="{{ user.first_name or '' }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="last_name" class="form-label">Фамилия</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" 
+                                       value="{{ user.last_name or '' }}" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" autocomplete="email" 
+                                       value="{{ user.email }}" required>
+                                <div class="form-text">
+                                    {% if user.email_confirmed %}
+                                    <i class="bi bi-check-circle text-success"></i> Email подтвержден
+                                    {% else %}
+                                    <i class="bi bi-exclamation-circle text-warning"></i> Email не подтвержден
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Телефон</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" 
+                                       value="{{ user.phone or '' }}">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="language" class="form-label">Язык интерфейса</label>
+                                <select class="form-select" id="language" name="language">
+                                    <option value="nl" {% if user.language == 'nl' %}selected{% endif %}>Nederlands</option>
+                                    <option value="en" {% if user.language == 'en' %}selected{% endif %}>English</option>
+                                    <option value="ru" {% if user.language == 'ru' %}selected{% endif %}>Русский</option>
+                                    <option value="es" {% if user.language == 'es' %}selected{% endif %}>Español</option>
+                                    <option value="pt" {% if user.language == 'pt' %}selected{% endif %}>Português</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Professional Information -->
+                        <div class="col-md-6">
+                            <h6 class="mb-3 text-primary">Профессиональная информация</h6>
+                            
+                            <div class="mb-3">
+                                <label for="profession" class="form-label">Профессия</label>
+                                <select class="form-select" id="profession" name="profession">
+                                    <option value="">Выберите профессию</option>
+                                    <option value="tandarts" {% if user.profession == 'tandarts' %}selected{% endif %}>Tandarts</option>
+                                    <option value="apotheker" {% if user.profession == 'apotheker' %}selected{% endif %}>Apotheker</option>
+                                    <option value="huisarts" {% if user.profession == 'huisarts' %}selected{% endif %}>Huisarts</option>
+                                    <option value="verpleegkundige" {% if user.profession == 'verpleegkundige' %}selected{% endif %}>Verpleegkundige</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="workplace" class="form-label">Место работы</label>
+                                <input type="text" class="form-control" id="workplace" name="workplace" 
+                                       value="{{ user.workplace or '' }}" placeholder="Клиника, больница, практика...">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="role" class="form-label">Роль в системе</label>
+                                <select class="form-select" id="role" name="role">
+                                    <option value="user" {% if user.role == 'user' %}selected{% endif %}>Пользователь</option>
+                                    <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Администратор</option>
+                                </select>
+                                {% if user.id == current_user.id %}
+                                <div class="form-text text-warning">
+                                    <i class="bi bi-exclamation-triangle"></i> Вы не можете изменить собственную роль
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                           {% if user.is_active %}checked{% endif %}
+                                           {% if user.id == current_user.id %}disabled{% endif %}>
+                                    <label class="form-check-label" for="is_active">
+                                        Активный пользователь
+                                    </label>
+                                    {% if user.id == current_user.id %}
+                                    <div class="form-text text-warning">
+                                        <i class="bi bi-exclamation-triangle"></i> Вы не можете деактивировать собственный аккаунт
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- DigiD Information (Read-only) -->
+                            {% if user.created_via_digid %}
+                            <div class="mb-3">
+                                <label class="form-label">Аутентификация DigiD</label>
+                                <div class="form-control-plaintext">
+                                    <i class="bi bi-key text-success"></i> 
+                                    Пользователь зарегистрирован через DigiD
+                                    {% if user.bsn %}
+                                    <br><small class="text-muted">BSN: {{ user.bsn }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Account Information -->
+                    <hr class="my-4">
+                    <h6 class="mb-3 text-primary">Информация об аккаунте</h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Дата регистрации</label>
+                                <div class="form-control-plaintext">
+                                    {{ user.created_at.strftime('%d.%m.%Y %H:%M:%S') }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Последний вход</label>
+                                <div class="form-control-plaintext">
+                                    {% if user.last_login %}
+                                    {{ user.last_login.strftime('%d.%m.%Y %H:%M:%S') }}
+                                    {% else %}
+                                    <span class="text-muted">Никогда</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">ID пользователя</label>
+                                <div class="form-control-plaintext">
+                                    {{ user.id }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Метод аутентификации</label>
+                                <div class="form-control-plaintext">
+                                    {% if user.created_via_digid %}
+                                    <span class="badge bg-primary">DigiD</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Пароль</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="d-flex justify-content-between align-items-center pt-3">
+                        <div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> Сохранить изменения
+                            </button>
+                            <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="btn btn-outline-secondary ms-2">
+                                Отмена
+                            </a>
+                        </div>
+                        
+                        <!-- Additional Actions -->
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                Дополнительные действия
+                            </button>
+                            <ul class="dropdown-menu">
+                                {% if not user.created_via_digid %}
+                                <li>
+                                    <form method="POST" action="{{ url_for('admin.reset_user_password', user_id=user.id) }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="dropdown-item" 
+                                                onclick="return confirm('Сбросить пароль пользователя?')">
+                                            <i class="bi bi-key"></i> Сбросить пароль
+                                        </button>
+                                    </form>
+                                </li>
+                                {% endif %}
+                                {% if not user.email_confirmed %}
+                                <li>
+                                    <form method="POST" action="{{ url_for('admin.force_verify_email', user_id=user.id) }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="dropdown-item"
+                                                onclick="return confirm('Принудительно подтвердить email?')">
+                                            <i class="bi bi-envelope-check"></i> Подтвердить email
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form method="POST" action="{{ url_for('admin.resend_verification_email', user_id=user.id) }}" style="display: inline;">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="bi bi-envelope"></i> Отправить письмо подтверждения
+                                        </button>
+                                    </form>
+                                </li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('admin.user_detail', user_id=user.id) }}">
+                                        <i class="bi bi-eye"></i> Просмотр профиля
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Sidebar with Helpful Information -->
+    <div class="col-xl-4 col-lg-2">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Справка</h6>
+            </div>
+            <div class="card-body">
+                <h6>Роли пользователей:</h6>
+                <ul class="list-unstyled">
+                    <li><strong>Пользователь:</strong> Доступ к обучающим материалам</li>
+                    <li><strong>Администратор:</strong> Полный доступ к управлению</li>
+                </ul>
+
+                <h6 class="mt-3">Профессии:</h6>
+                <ul class="list-unstyled">
+                    <li><strong>Tandarts:</strong> Стоматолог</li>
+                    <li>💊 <strong>Apotheker:</strong> Фармацевт</li>
+                    <li>🩺 <strong>Huisarts:</strong> Семейный врач</li>
+                    <li>👩‍⚕️ <strong>Verpleegkundige:</strong> Медсестра</li>
+                </ul>
+
+                <h6 class="mt-3">DigiD:</h6>
+                <p class="small text-muted">
+                    Пользователи DigiD аутентифицируются через голландскую государственную систему. 
+                    Пароль для таких пользователей не требуется.
+                </p>
+            </div>
+        </div>
+
+        <!-- User Statistics -->
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Статистика пользователя</h6>
+            </div>
+            <div class="card-body">
+                <div class="row mb-2">
+                    <div class="col-7">Завершено уроков:</div>
+                    <div class="col-5 text-end"><strong>{{ user.get_progress_stats().completed_lessons }}</strong></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-7">Времени потрачено:</div>
+                    <div class="col-5 text-end"><strong>{{ "%.1f"|format(user.get_progress_stats().total_time_spent) }}</strong> мин</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-7">Дней активности:</div>
+                    <div class="col-5 text-end"><strong>{{ user.get_progress_stats().activity_days }}</strong></div>
+                </div>
+                {% if user.get_dashboard_stats() %}
+                <div class="row mb-2">
+                    <div class="col-7">Уровень:</div>
+                    <div class="col-5 text-end"><strong>{{ user.get_dashboard_stats().level }}</strong></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-7">Опыт (XP):</div>
+                    <div class="col-5 text-end"><strong>{{ user.get_dashboard_stats().xp }}</strong></div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Disable role change for current user
+    {% if user.id == current_user.id %}
+    document.getElementById('role').disabled = true;
+    document.getElementById('is_active').disabled = true;
+    {% endif %}
+
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const firstName = document.getElementById('first_name').value.trim();
+        const lastName = document.getElementById('last_name').value.trim();
+        const email = document.getElementById('email').value.trim();
+
+        if (!firstName || !lastName || !email) {
+            e.preventDefault();
+            alert('Пожалуйста, заполните все обязательные поля');
+            return false;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            e.preventDefault();
+            alert('Пожалуйста, введите корректный email адрес');
+            return false;
+        }
+    });
+
+    // Highlight changed fields
+    const originalValues = {};
+    const formFields = form.querySelectorAll('input, select');
+    
+    formFields.forEach(field => {
+        if (field.type === 'checkbox') {
+            originalValues[field.name] = field.checked;
+        } else {
+            originalValues[field.name] = field.value;
+        }
+
+        field.addEventListener('input', function() {
+            const currentValue = this.type === 'checkbox' ? this.checked : this.value;
+            if (currentValue !== originalValues[this.name]) {
+                this.classList.add('border-warning');
+            } else {
+                this.classList.remove('border-warning');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

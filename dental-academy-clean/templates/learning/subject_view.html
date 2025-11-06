@@ -1,0 +1,802 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_knowledge_base %}{{ t('knowledge_base', lang) | default('Knowledge Base') }}{% else %}{{ t('learning_map', lang) }}{% endif %}{% endblock %}
+
+{% block head %}
+<!-- Knowledge Base Styles -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/learning_map.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/category-navigation.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/knowledge_base.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="learning-map-container">
+    <div class="main-container">
+        <div class="left-column">
+            <!-- ЭТАП 1: До диагностики - показываем только кнопку проверки знаний -->
+            {% if learning_state and learning_state.stage == 'pre_diagnostic' %}
+            <div class="learning-paths pre-diagnostic-stage">
+                <div class="learning-path-item">
+                    <a href="{{ url_for('diagnostic.choose_diagnostic_type') }}" 
+                       class="diagnostic-link">
+                        <div class="diagnostic-link-content">
+                            <i class="bi bi-clipboard-pulse"></i>
+                            <span>{{ t('knowledge_assessment', lang) }}</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- ЭТАП 2: После диагностики - показываем все пункты обучения -->
+            {% else %}
+            <div class="learning-paths post-diagnostic-stage">
+                {% for path in learning_paths %}
+                <div class="learning-path-item">
+                    {% if path.url %}
+                    <a href="{{ path.url }}" class="learning-path-button {{ path.css_class if path.css_class else (path.id == 1 and 'knowledge-center' or path.id == 2 and 'communication' or path.id == 3 and 'preclinical' or path.id == 4 and 'workstation' or path.id == 5 and 'bi-toets' or path.id == 6 and 'virtual-patients' or '') }}">
+                        <div class="path-button-content">
+                            {% if path.css_class %}
+                                <!-- Для фармацевтических путей используем CSS-иконки -->
+                                <div class="icon"></div>
+                            {% elif path.id == 1 %}
+                                <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                </svg>
+                            {% elif path.id == 2 %}
+                                <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                </svg>
+                            {% endif %}
+                            <span class="path-name" 
+                                  title="{{ path.name }}" 
+                                  data-full-name="{{ path.name }}">
+                                {{ path.short_name if path.short_name else path.name }}
+                            </span>
+                        </div>
+                    </a>
+                    {% else %}
+                    <button class="learning-path-button {{ path.css_class if path.css_class else (path.id == 1 and 'knowledge-center' or path.id == 2 and 'communication' or path.id == 3 and 'preclinical' or path.id == 4 and 'workstation' or path.id == 5 and 'bi-toets' or path.id == 6 and 'virtual-patients' or '') }}" data-path="{{ path.id }}">
+                        <div class="path-button-content">
+                            {% if path.css_class %}
+                                <!-- Для фармацевтических путей используем CSS-иконки -->
+                                <div class="icon"></div>
+                            {% elif path.id == 1 %}
+                                <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                </svg>
+                            {% elif path.id == 2 %}
+                                <svg class="icon" width="20" height="20" viewBox="0 0 24 24">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                </svg>
+                            {% endif %}
+                            <span class="path-name" 
+                                  title="{{ path.name }}" 
+                                  data-full-name="{{ path.name }}">
+                                {{ path.short_name if path.short_name else path.name }}
+                            </span>
+                        </div>
+                    </button>
+                    {% endif %}
+                    
+                    <div class="subject-list {% if selected_subject and selected_subject.learning_path_id == path.id %}expanded{% endif %}" id="path-{{ path.id }}-subjects">
+                        {% if path.id == 6 %}
+                            <a href="{{ url_for('virtual_patient.list_scenarios', lang=lang) }}" class="subject-item">
+                                <span class="subject-name">{{ t('clinical_cases', lang) | default('Клинические случаи') }}</span>
+                                <div class="subject-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {{ path.vp_stats.percentage if path.vp_stats else 0 }}%"></div>
+                                    </div>
+                                    <span class="progress-percent">
+                                        {% if path.vp_stats %}
+                                            {{ path.vp_stats.completed }}/{{ path.vp_stats.total }}
+                                        {% else %}
+                                            {{ t('view_all', lang) | default('Показать все') }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </a>
+                        {% else %}
+                            {% for subject in path.subjects %}
+                            <a href="{{ url_for('learning_map_bp.subject_topics', lang=lang, subject_id=subject.id) }}" class="subject-item {% if selected_subject and selected_subject.id == subject.id %}active{% endif %}">
+                                <span class="subject-name">{{ subject.name }}</span>
+                                <div class="subject-progress">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: {{ subject.progress|default(0) }}%"></div>
+                                    </div>
+                                    <span class="progress-percent">{{ subject.progress|default(0) }}%</span>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="middle-column">
+
+            {% if is_knowledge_base %}
+            <!-- Knowledge Base Header -->
+            <div class="knowledge-base-header">
+                <h1>{{ t('knowledge_base', lang) | default('Knowledge Base') }}</h1>
+                <p>{{ t('knowledge_base_description', lang) | default('Все предметы для свободного изучения') }}</p>
+            </div>
+            
+            <!-- Interesting Fact -->
+            {% if random_fact %}
+            <div class="interesting-fact-card">
+                <div class="fact-icon">
+                    <i class="bi bi-lightbulb"></i>
+                </div>
+                <div class="fact-content">
+                    <h4>{{ t('interesting_fact', lang) | default('Интересный факт') }}</h4>
+                    <p>{{ random_fact.text }}</p>
+                    <small class="fact-source">{{ random_fact.source }}</small>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Dynamic Content Area -->
+            <div id="knowledge-base-content">
+                <!-- Default State - Select a category -->
+                <div id="default-content" class="knowledge-base-default">
+                    <div class="select-category-message">
+                        <i class="bi bi-arrow-left-circle"></i>
+                        <h3>{{ t('select_category', lang) | default('Выберите категорию') }}</h3>
+                        <p>{{ t('select_category_description', lang) | default('Выберите категорию слева, чтобы увидеть доступные предметы') }}</p>
+                    </div>
+                </div>
+                
+                <!-- Dynamic Subject Content -->
+                <div id="subject-content" class="knowledge-base-subject" style="display: none;">
+                    <div class="subject-header">
+                        <h2 id="selected-subject-name"></h2>
+                        <div class="subject-progress-overview">
+                            <div class="progress-circle">
+                                <div class="progress-ring">
+                                    <div class="progress-fill" id="subject-progress-fill"></div>
+                                </div>
+                                <div class="progress-text">
+                                    <span id="subject-progress-percent">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="subject-stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="bi bi-book"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="total-lessons">0</span>
+                                <span class="stat-label">{{ t('total_lessons', lang) | default('Всего уроков') }}</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="completed-lessons">0</span>
+                                <span class="stat-label">{{ t('completed_lessons', lang) | default('Завершено') }}</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="bi bi-clock"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="estimated-time">0h</span>
+                                <span class="stat-label">{{ t('estimated_time', lang) | default('Время') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="subject-modules" id="subject-modules">
+                        <!-- Modules will be loaded here dynamically -->
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if selected_subject %}
+            <div class="subject-content">
+                {% if subject_modules %}
+                <!-- Компактные модули без статистики -->
+                <div class="modules-grid-compact">
+                    {% for module in subject_modules %}
+                    <div class="module-card-compact" data-module-id="{{ module.id }}">
+                        <div class="module-icon-compact">
+                            <i class="bi bi-book"></i>
+                        </div>
+                        <div class="module-info-compact">
+                            <h3>{{ module.title }}</h3>
+                            {% if module.is_premium and not user.has_subscription %}
+                                <span class="badge premium-badge">{{ t('premium', lang) }}</span>
+                            {% endif %}
+                        </div>
+                        <a href="{{ url_for('learning_map_bp.start_module_redirect', lang=lang, module_id=module.id) }}" 
+                           class="module-btn-compact">
+                            {% if module.progress == 100 %}{{ t('repeat', lang) }}
+                            {% elif module.progress > 0 %}{{ t('continue', lang) }}
+                            {% else %}{{ t('start', lang) }}{% endif %}
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if virtual_patients %}
+                <div class="virtual-patients-section">
+                    <h3 class="virtual-patients-title">
+                        <div class="vp-icon">
+                            <i class="bi bi-person-hearts"></i>
+                        </div>
+                        {{ t('virtual_patients_title', lang) | default('Виртуальные пациенты') }}
+                    </h3>
+                    
+                    <div class="virtual-patients-grid">
+                        {% for scenario in virtual_patients %}
+                        <div class="vp-card">
+                            <div>
+                                <div class="vp-card-header">
+                                    <div class="vp-title">{{ scenario.title }}</div>
+                                    <div class="vp-difficulty difficulty-{{ scenario.difficulty|default('medium')|lower }}">
+                                        {{ scenario.difficulty|default('medium')|title }}
+                                    </div>
+                                </div>
+                                
+                                <div class="vp-description">
+                                    {{ scenario.description|default('')|truncate(120) }}
+                                </div>
+                                
+                                {% if scenario.user_progress and scenario.user_progress.attempts_count > 0 %}
+                                <div class="vp-progress">
+                                    <div class="vp-progress-bar">
+                                        <div class="vp-progress-fill" style="width: {{ scenario.user_progress.percentage|default(0) }}%"></div>
+                                    </div>
+                                    <div class="vp-progress-text">
+                                        <span>
+                                            {% if scenario.user_progress.completed %}
+                                                {{ t('completed', lang) }}
+                                            {% else %}
+                                                {{ t('in_progress_attempts', lang, count=scenario.user_progress.attempts_count) | default(scenario.user_progress.attempts_count ~ " " ~ t('attempts_short', lang)) }}
+                                            {% endif %}
+                                        </span>
+                                        <span>{{ scenario.user_progress.score|default(0) }}/{{ scenario.user_progress.max_score|default(100) }}</span>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="vp-actions">
+                                {% if scenario.is_premium and not user.has_subscription %}
+                                <a href="{{ url_for('main.subscribe', lang=lang) }}" class="vp-btn premium">
+                                    <i class="bi bi-star-fill me-1"></i> {{ t('premium', lang) }}
+                                </a>
+                                {% else %}
+                                <a href="{{ url_for('virtual_patient.start_scenario', lang=lang, scenario_id=scenario.id) }}" 
+                                   class="vp-btn {% if scenario.user_progress and scenario.user_progress.completed %}completed{% endif %}">
+                                    <i class="bi bi-play-fill me-1"></i>
+                                    {% if scenario.user_progress and scenario.user_progress.completed %}
+                                        {{ t('try_again', lang) }}
+                                    {% elif scenario.user_progress and scenario.user_progress.attempts_count > 0 %}
+                                        {{ t('continue_vp', lang) | default(t('continue', lang)) }}
+                                    {% else %}
+                                        {{ t('start', lang) }}
+                                    {% endif %}
+                                </a>
+                                {% endif %}
+                                
+                                {% if scenario.user_progress and scenario.user_progress.completed and scenario.user_progress.best_attempt_id %}
+                                <a href="{{ url_for('virtual_patient.scenario_results', lang=lang, attempt_id=scenario.user_progress.best_attempt_id) }}" 
+                                   class="vp-btn results">
+                                    <i class="bi bi-graph-up me-1"></i> {{ t('results', lang) }}
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if selected_subject and selected_subject.id == 101 %}
+                <div class="test-section mt-4">
+                    <h3>{{ t('big_toets_preparation', lang) }}</h3>
+                    <p>{{ t('big_toets_description', lang) }}</p>
+                    <a href="{{ url_for('learning_map_bp.subject_tests', lang=lang, subject_id=selected_subject.id) }}" class="btn btn-primary">
+                        <i class="bi bi-journal-check"></i> {{ t('go_to_tests', lang) }}
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% elif selected_path %}
+            <div class="subjects-grid">
+                {% set filtered_subjects = subjects|selectattr("learning_path_id", "equalto", selected_path.id)|list %}
+                {% if filtered_subjects %}
+                    {% for subject_item_path_filtered in filtered_subjects %}
+                    <div class="subject-card">
+                        <a href="{{ url_for('subject_view_bp.view_subject', lang=lang, subject_id=subject_item_path_filtered.id) }}" class="subject-link">
+                            <div class="card-content">
+                                <div class="card-icon">
+                                    <svg class="icon" width="24" height="24" viewBox="0 0 24 24">
+                                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                    </svg>
+                                </div>
+                                <div class="card-info">
+                                    <h3>{{ subject_item_path_filtered.name }}</h3>
+                                    <p>{{ subject_item_path_filtered.description|default('')|truncate(80) }}</p>
+                                    <div class="card-footer">
+                                        <div class="progress-bar-container"><div class="progress-bar-fill" style="width: {{ subject_item_path_filtered.progress|default(0) }}%;"></div></div>
+                                        <span>{{ subject_item_path_filtered.progress|default(0) }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="welcome-screen">
+              <div class="welcome-header">
+                <div class="welcome-icon">
+                  <img src="{{ url_for('static', filename='favicon.png') }}" alt="Mentora" class="static-favicon-logo">
+                </div>
+                <h2>{{ t('welcome_title', lang)|default('Добро пожаловать в Mentora!') }}</h2>
+                <p class="welcome-subtitle">{{ t('welcome_subtitle', lang)|default('Ваш путь к успешной подготовке к BIG экзамену') }}</p>
+              </div>
+              
+              <div class="welcome-content">
+                {% if learning_state and learning_state.stage == 'pre_diagnostic' %}
+                <!-- ЭТАП 1: До диагностики -->
+                <div class="welcome-description">
+                  <p>{{ t('welcome_description', lang)|default('Ons interactieve platform helpt u effectief voorbereiden op het examen.') }}</p>
+                  <div class="diagnostic-explanation">
+                    <p>{{ t('diagnostic_explanation', lang)|default('Om te beginnen met leren, moet u eerst een kennistest afleggen om uw huidige niveau te bepalen.') }}</p>
+                  </div>
+                </div>
+                {% else %}
+                <!-- ЭТАП 2: После диагностики -->
+                <div class="welcome-description">
+                  {% if learning_state and not learning_state.learning_progress %}
+                    <p>{{ t('diagnostic_completed_no_progress_explanation', lang)|default('U heeft de kennistest succesvol afgerond. Tijd om te beginnen met leren!') }}</p>
+                    <button class="btn-start-learning" onclick="window.location.href='{{ url_for('learning_map_bp.start_diagnostic_learning', lang=lang) }}'">
+                      {{ t('start_learning', lang)|default('Begin met leren') }}
+                    </button>
+                  {% else %}
+                    <p>{{ t('learning_in_progress_explanation', lang)|default('U bent al bezig met uw leertraject. Ga verder waar u gebleven bent!') }}</p>
+                    <button class="btn-continue-learning" onclick="window.location.href='{{ url_for('daily_learning.learning_map', lang=lang) }}'">
+                      {{ t('continue_learning', lang)|default('Ga verder met leren') }}
+                    </button>
+                  {% endif %}
+                </div>
+                
+                <!-- Полный интерфейс с рекомендациями и прогрессом -->
+                <div class="welcome-steps">
+                  <h3>{{ t('getting_started', lang)|default('С чего начать?') }}</h3>
+                  <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                            </svg>
+                        </div>
+                        <div class="step-content">
+                            <h4>{{ t('knowledge_center', lang)|default('Центр знаний') }}</h4>
+                            <p>{{ t('knowledge_center_desc', lang)|default('Теоретические основы и ключевые концепции') }}</p>
+                            <button class="btn-start" data-path="1">{{ t('start', lang)|default('Начать') }}</button>
+                        </div>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                            </svg>
+                        </div>
+                        <div class="step-content">
+                            <h4>{{ t('communication', lang)|default('Коммуникация') }}</h4>
+                            <p>{{ t('communication_desc', lang)|default('Отработка навыков общения с пациентами') }}</p>
+                            <button class="btn-start" data-path="2">{{ t('start', lang)|default('Начать') }}</button>
+                        </div>
+                    </div>
+                    
+                    <div class="step-card">
+                        <div class="step-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M9 3h6v2H9zM8 3h8l-1 9-2 2h-2l-2-2z" fill="none" stroke="currentColor" stroke-width="2"></path>
+                                <path d="M8 14v.5A5.5 5.5 0 0 0 13.5 20h1a5.5 5.5 0 0 0 5.5-5.5V14" fill="none" stroke="currentColor" stroke-width="2"></path>
+                            </svg>
+                        </div>
+                        <div class="step-content">
+                            <h4>{{ t('preclinical_skills', lang)|default('Доклинические навыки') }}</h4>
+                            <p>{{ t('preclinical_desc', lang)|default('Базовые стоматологические процедуры') }}</p>
+                            <button class="btn-start" data-path="3">{{ t('start', lang)|default('Начать') }}</button>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+                
+                {% if not is_knowledge_base and current_user.is_authenticated and stats and stats.completed_lessons > 0 %}
+                <div class="welcome-stats">
+                  <h3>{{ t('your_progress', lang)|default('Ваш прогресс') }}</h3>
+                  <div class="stats-summary">
+                    <div class="stat-item"><div class="stat-value">{{ stats.completed_lessons }}</div><div class="stat-label">{{ t('lessons_completed', lang)|default('уроков завершено') }}</div></div>
+                    <div class="stat-item"><div class="stat-value">{{ stats.overall_progress }}%</div><div class="stat-label">{{ t('overall_progress', lang)|default('общий прогресс') }}</div></div>
+                    <div class="stat-item"><div class="stat-value">{{ stats.active_days }}</div><div class="stat-label">{{ t('days_active', lang)|default('дней активности') }}</div></div>
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if not is_knowledge_base %}
+        <div class="right-column">
+            <div class="stats-section">
+                <h2>{{ t('overall_progress', lang) }}</h2>
+                <div class="progress-circle-container">
+                    <div class="progress-circle" 
+                         data-progress="{{ stats.overall_progress|default(0) }}"
+                         role="progressbar" 
+                         aria-valuenow="{{ stats.overall_progress|default(0) }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100"
+                         aria-label="Overall progress">
+                        <div class="circle-background"></div>
+                        <div class="circle-progress" style="transform: rotate({{ stats.overall_progress|default(0) * 1.8 }}deg)"></div>
+                        <div class="progress-circle-text">{{ stats.overall_progress|default(0) }}%</div>
+                    </div>
+                </div>
+                <div class="stats-cards">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="8" r="7"></circle>
+                                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">{{ t('lessons_completed', lang) }}</div>
+                            <div class="stat-value">{{ stats.completed_lessons|default(0) }}/{{ stats.total_lessons|default(0) }}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">{{ t('tests_passed', lang) }}</div>
+                            <div class="stat-value">{{ stats.tests_passed|default(0) }}</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polygon points="10,8 16,12 10,16 10,8"></polygon>
+                            </svg>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-label">{{ t('time_spent', lang) }}</div>
+                            <div class="stat-value">{{ stats.total_time_spent|default(0)|round(1) }}h</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/subject_view.js') }}"></script>
+<script src="{{ url_for('static', filename='js/universal-category-system.js') }}"></script>
+<script src="{{ url_for('static', filename='js/subject-navigation.js') }}"></script>
+
+<script>
+// Кастомные tooltip'ы для путей обучения
+document.addEventListener('DOMContentLoaded', function() {
+    const pathNames = document.querySelectorAll('.path-name[title]');
+    
+    pathNames.forEach(function(element) {
+        let tooltip = null;
+        let tooltipArrow = null;
+        
+        element.addEventListener('mouseenter', function(e) {
+            // Удаляем существующие tooltip'ы
+            if (tooltip) {
+                tooltip.remove();
+                tooltipArrow.remove();
+            }
+            
+            const title = this.getAttribute('title');
+            if (!title) return;
+            
+            // Создаем tooltip
+            tooltip = document.createElement('div');
+            tooltip.className = 'custom-tooltip';
+            tooltip.textContent = title;
+            tooltip.style.cssText = `
+                position: absolute;
+                background: rgba(0, 0, 0, 0.95);
+                color: white;
+                padding: 12px 16px;
+                border-radius: 8px;
+                font-size: 0.875rem;
+                font-weight: 500;
+                white-space: nowrap;
+                z-index: 10000;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(15px);
+                -webkit-backdrop-filter: blur(15px);
+                pointer-events: none;
+                max-width: 300px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                opacity: 0;
+                transform: translateY(10px);
+                transition: all 0.3s ease;
+            `;
+            
+            // Создаем стрелку
+            tooltipArrow = document.createElement('div');
+            tooltipArrow.className = 'custom-tooltip-arrow';
+            tooltipArrow.style.cssText = `
+                position: absolute;
+                border: 6px solid transparent;
+                border-top-color: rgba(0, 0, 0, 0.95);
+                z-index: 10000;
+                pointer-events: none;
+                opacity: 0;
+                transform: translateY(10px);
+                transition: all 0.3s ease;
+            `;
+            
+            // Добавляем в DOM
+            document.body.appendChild(tooltip);
+            document.body.appendChild(tooltipArrow);
+            
+            // Позиционируем
+            const rect = this.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+            
+            tooltip.style.left = rect.left + (rect.width / 2) - (tooltipRect.width / 2) + 'px';
+            tooltip.style.top = rect.top - tooltipRect.height - 10 + 'px';
+            
+            tooltipArrow.style.left = rect.left + (rect.width / 2) - 6 + 'px';
+            tooltipArrow.style.top = rect.top - 6 + 'px';
+            
+            // Показываем с анимацией
+            setTimeout(() => {
+                tooltip.style.opacity = '1';
+                tooltip.style.transform = 'translateY(0)';
+                tooltipArrow.style.opacity = '1';
+                tooltipArrow.style.transform = 'translateY(0)';
+            }, 10);
+        });
+        
+        element.addEventListener('mouseleave', function() {
+            if (tooltip) {
+                tooltip.style.opacity = '0';
+                tooltip.style.transform = 'translateY(10px)';
+                tooltipArrow.style.opacity = '0';
+                tooltipArrow.style.transform = 'translateY(10px)';
+                
+                setTimeout(() => {
+                    if (tooltip && tooltip.parentNode) {
+                        tooltip.remove();
+                        tooltipArrow.remove();
+                        tooltip = null;
+                        tooltipArrow = null;
+                    }
+                }, 300);
+            }
+        });
+    });
+    
+    // Daily Plan Functions
+    function startContent(contentType, contentId) {// Определяем URL в зависимости от типа контента
+        let url = '';
+        
+        switch(contentType) {
+            case 'lesson':
+                url = `/{{ lang }}/modules/${contentId}/lesson/0`;
+                break;
+            case 'question':
+                url = `/{{ lang }}/simple-learning/question/${contentId}`;
+                break;
+            case 'spaced_repetition':
+                url = `/{{ lang }}/simple-learning/spaced-repetition/review/${contentId}`;
+                break;
+            default:
+                console.error('Unknown content type:', contentType);
+                return;
+        }
+        
+        // Перенаправляем на контент
+        window.location.href = url;
+    }
+    
+    function startReview(contentId, contentType) {// Для повторений используем специальный URL
+        const url = `/{{ lang }}/simple-learning/spaced-repetition/review/${contentId}`;
+        window.location.href = url;
+    }
+    
+    // Обновление прогресса Daily Plan
+    function updateDailyPlanProgress() {
+        // Здесь можно добавить логику обновления прогресса
+        // например, отправку AJAX запроса для отметки выполнения}
+    
+    // Отметить элемент как выполненный
+    function markItemCompleted(contentId, contentType) {
+        fetch(`/{{ lang }}/daily-learning/api/daily-plan/mark-completed`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                content_id: contentId,
+                content_type: contentType
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Обновляем UI
+                const item = document.querySelector(`[data-content-id="${contentId}"]`);
+                if (item) {
+                    item.classList.add('completed');
+                }
+                updateDailyPlanProgress();
+            }
+        })
+        .catch(error => {
+            console.error('Error marking item as completed:', error);
+        });
+    }
+    
+    // Knowledge Base Interactive Functions
+    {% if is_knowledge_base %}
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработчики для предметов в левой колонке
+        const subjectItems = document.querySelectorAll('.subject-item');
+        
+        subjectItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Убираем активный класс у всех предметов
+                subjectItems.forEach(subj => subj.classList.remove('active'));
+                
+                // Добавляем активный класс к выбранному предмету
+                this.classList.add('active');
+                
+                // Получаем данные о предмете
+                const subjectId = this.getAttribute('href').split('/').pop();
+                const subjectName = this.querySelector('.subject-name').textContent;
+                
+                // Загружаем контент предмета
+                loadSubjectContent(subjectId, subjectName);
+            });
+        });
+    });
+    
+    function loadSubjectContent(subjectId, subjectName) {
+        // Показываем контент предмета
+        document.getElementById('default-content').style.display = 'none';
+        document.getElementById('subject-content').style.display = 'block';
+        
+        // Обновляем заголовок
+        document.getElementById('selected-subject-name').textContent = subjectName;
+        
+        // Загружаем данные предмета через AJAX
+        fetch(`/{{ lang }}/api/subject/${subjectId}/stats`)
+            .then(response => response.json())
+            .then(data => {
+                updateSubjectStats(data);
+                loadSubjectModules(subjectId);
+            })
+            .catch(error => {
+                console.error('Error loading subject data:', error);
+                // Показываем заглушку
+                showDefaultStats();
+            });
+    }
+    
+    function updateSubjectStats(data) {
+        // Обновляем статистику
+        document.getElementById('total-lessons').textContent = data.total_lessons || 0;
+        document.getElementById('completed-lessons').textContent = data.completed_lessons || 0;
+        document.getElementById('estimated-time').textContent = data.estimated_time || '0h';
+        
+        // Обновляем прогресс
+        const progressPercent = data.progress_percentage || 0;
+        document.getElementById('subject-progress-percent').textContent = progressPercent + '%';
+        
+        // Обновляем круговой прогресс
+        const progressRing = document.querySelector('.progress-ring');
+        if (progressRing) {
+            progressRing.style.background = `conic-gradient(var(--primary-color) 0% ${progressPercent}%, var(--border-color) ${progressPercent}% 100%)`;
+        }
+    }
+    
+    function showDefaultStats() {
+        document.getElementById('total-lessons').textContent = '0';
+        document.getElementById('completed-lessons').textContent = '0';
+        document.getElementById('estimated-time').textContent = '0h';
+        document.getElementById('subject-progress-percent').textContent = '0%';
+    }
+    
+    function loadSubjectModules(subjectId) {
+        const modulesContainer = document.getElementById('subject-modules');
+        
+        // Загружаем модули предмета
+        fetch(`/{{ lang }}/api/subject/${subjectId}/modules`)
+            .then(response => response.json())
+            .then(data => {
+                modulesContainer.innerHTML = '';
+                
+                if (data.modules && data.modules.length > 0) {
+                    data.modules.forEach(module => {
+                        const moduleElement = createModuleElement(module);
+                        modulesContainer.appendChild(moduleElement);
+                    });
+                } else {
+                    modulesContainer.innerHTML = '<p class="no-modules">Модули не найдены</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading modules:', error);
+                modulesContainer.innerHTML = '<p class="no-modules">Ошибка загрузки модулей</p>';
+            });
+    }
+    
+    function createModuleElement(module) {
+        const moduleDiv = document.createElement('div');
+        moduleDiv.className = 'module-card';
+        moduleDiv.innerHTML = `
+            <div class="module-header">
+                <h3>${module.title}</h3>
+                <div class="module-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${module.progress || 0}%"></div>
+                    </div>
+                    <span class="progress-text">${module.progress || 0}%</span>
+                </div>
+            </div>
+            <div class="module-content">
+                <p>${module.description || ''}</p>
+                <div class="module-stats">
+                    <span>${module.lessons_count || 0} уроков</span>
+                    <span>${module.estimated_time || '0h'}</span>
+                </div>
+            </div>
+            <div class="module-actions">
+                <a href="/{{ lang }}/modules/${module.id}" class="module-btn">
+                    ${module.progress === 100 ? 'Повторить' : module.progress > 0 ? 'Продолжить' : 'Начать'}
+                </a>
+            </div>
+        `;
+        return moduleDiv;
+    }
+    {% endif %}
+});
+</script>
+{% endblock %} 

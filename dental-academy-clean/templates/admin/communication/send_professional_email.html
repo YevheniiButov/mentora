@@ -1,0 +1,672 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Send Professional Email - Communication Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Communication Hub Styles */
+.send-email-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.email-form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.form-section h3 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+/* Template selection */
+.template-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.template-card {
+    border: 2px solid #e0e6ed;
+    border-radius: 10px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.template-card:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+}
+
+.template-card input[type="radio"] {
+    display: none;
+}
+
+.template-card input[type="radio"]:checked + .template-content {
+    color: #667eea;
+}
+
+.template-card input[type="radio"]:checked {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
+}
+
+.template-content {
+    text-align: center;
+}
+
+.template-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.template-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.template-description {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* Recipients section */
+.recipients-container {
+    margin-top: 15px;
+}
+
+.user-search {
+    margin-bottom: 15px;
+}
+
+.users-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #e0e6ed;
+    border-radius: 8px;
+    background: #f8f9fa;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.user-item:hover {
+    background: #e3f2fd;
+}
+
+.user-item:last-child {
+    border-bottom: none;
+}
+
+.user-item input[type="checkbox"] {
+    margin-right: 12px;
+    transform: scale(1.2);
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    display: block;
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.user-email {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.user-type {
+    display: inline-block;
+    background: #e9ecef;
+    color: #495057;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    margin-left: 10px;
+}
+
+/* Form controls */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+.btn-info {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #138496;
+    transform: translateY(-2px);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    font-size: 1.1rem;
+    padding: 15px 30px;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+/* Preview section */
+.preview-container {
+    border: 1px solid #e0e6ed;
+    border-radius: 8px;
+    padding: 20px;
+    background: #f8f9fa;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.preview-container iframe {
+    width: 100%;
+    height: 400px;
+    border: none;
+    border-radius: 5px;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    display: none;
+    text-align: center;
+    padding: 20px;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Selected count */
+.selected-count {
+    background: #667eea;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+/* Alert messages */
+.alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .email-form-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .template-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="send-email-container">
+    <div class="email-form-header">
+        <h1><i class="fas fa-paper-plane"></i> Send Professional Email</h1>
+        <a href="{{ url_for('communication.hub') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Hub
+        </a>
+    </div>
+    
+    <form method="POST" id="emailForm">
+        <!-- 1. Выбор шаблона -->
+        <div class="form-section">
+            <h3>1. Choose Email Template</h3>
+            <p style="color: #6c757d; margin-bottom: 20px;">Select a professional template for your email</p>
+            
+            <div class="template-grid">
+                <label class="template-card">
+                    <input type="radio" name="template_type" value="welcome" required>
+                    <div class="template-content">
+                        <div class="template-icon">👋</div>
+                        <div class="template-title">Welcome Email</div>
+                        <div class="template-description">For new users and registrations</div>
+                    </div>
+                </label>
+                
+                <label class="template-card">
+                    <input type="radio" name="template_type" value="followup" required>
+                    <div class="template-content">
+                        <div class="template-icon">🔄</div>
+                        <div class="template-title">Follow-up Email</div>
+                        <div class="template-description">Continue conversations with clients</div>
+                    </div>
+                </label>
+                
+                <label class="template-card">
+                    <input type="radio" name="template_type" value="reminder" required>
+                    <div class="template-content">
+                        <div class="template-icon">⏰</div>
+                        <div class="template-title">Reminder</div>
+                        <div class="template-description">Deadlines and class reminders</div>
+                    </div>
+                </label>
+                
+                <label class="template-card">
+                    <input type="radio" name="template_type" value="notification" required>
+                    <div class="template-content">
+                        <div class="template-icon">🔔</div>
+                        <div class="template-title">Notification</div>
+                        <div class="template-description">System notifications</div>
+                    </div>
+                </label>
+                
+                <label class="template-card">
+                    <input type="radio" name="template_type" value="marketing" required>
+                    <div class="template-content">
+                        <div class="template-icon">📢</div>
+                        <div class="template-title">Marketing Campaign</div>
+                        <div class="template-description">Mass marketing emails</div>
+                    </div>
+                </label>
+            </div>
+        </div>
+        
+        <!-- 2. Выбор получателей -->
+        <div class="form-section">
+            <h3>2. Select Recipients</h3>
+            <p style="color: #6c757d; margin-bottom: 20px;">Choose who will receive this email</p>
+            
+            <div class="recipients-container">
+                <div class="user-search">
+                    <input type="text" id="userSearch" placeholder="🔍 Search users by name or email..." class="form-control">
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <span class="selected-count" id="selectedCount">0 selected</span>
+                    </div>
+                </div>
+                
+                <div id="usersList" class="users-list">
+                    {% for user in users %}
+                    <label class="user-item">
+                        <input type="checkbox" name="recipients" value="{{ user.email }}">
+                        <div class="user-info">
+                            <span class="user-name">{{ user.first_name }} {{ user.last_name }}</span>
+                            <span class="user-email">{{ user.email }}</span>
+                        </div>
+                        <span class="user-type">👤 User</span>
+                    </label>
+                    {% endfor %}
+                    
+                    {% for contact in contacts %}
+                    <label class="user-item">
+                        <input type="checkbox" name="recipients" value="{{ contact.email }}">
+                        <div class="user-info">
+                            <span class="user-name">{{ contact.first_name }} {{ contact.last_name }}</span>
+                            <span class="user-email">{{ contact.email }}</span>
+                        </div>
+                        <span class="user-type">📇 Contact</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- 3. Настройка email -->
+        <div class="form-section">
+            <h3>3. Configure Email</h3>
+            
+            <div class="form-group">
+                <label for="subject" class="form-label">Email Subject:</label>
+                <input type="text" id="subject" name="subject" class="form-control" 
+                       placeholder="Enter email subject..." required>
+            </div>
+            
+            <div class="form-group">
+                <label for="additional_data" class="form-label">Additional Information (Optional):</label>
+                <textarea id="additional_data" name="additional_data" class="form-control" 
+                          rows="4" placeholder="Enter any additional information to include in the email..."></textarea>
+            </div>
+            
+            <button type="button" id="previewBtn" class="btn btn-info">
+                <i class="fas fa-eye"></i> Preview Email
+            </button>
+        </div>
+        
+        <!-- 4. Предварительный просмотр -->
+        <div id="emailPreview" class="form-section" style="display: none;">
+            <h3>4. Email Preview</h3>
+            <div class="loading-spinner" id="previewLoading">
+                <div class="spinner"></div>
+                <p>Loading preview...</p>
+            </div>
+            <div class="preview-container" id="previewContent">
+                <!-- Здесь будет предварительный просмотр -->
+            </div>
+        </div>
+        
+        <!-- 5. Отправка -->
+        <div class="form-section">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-paper-plane"></i> Send Email
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Глобальные переменные
+let selectedRecipients = [];
+
+// Инициализация
+document.addEventListener('DOMContentLoaded', function() {
+    updateSelectedCount();
+    setupEventListeners();
+});
+
+// Настройка обработчиков событий
+function setupEventListeners() {
+    // Поиск пользователей
+    document.getElementById('userSearch').addEventListener('input', searchUsers);
+    
+    // Выбор получателей
+    document.querySelectorAll('input[name="recipients"]').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+    
+    // Предварительный просмотр
+    document.getElementById('previewBtn').addEventListener('click', previewEmail);
+    
+    // Отправка формы
+    document.getElementById('emailForm').addEventListener('submit', validateForm);
+}
+
+// Поиск пользователей
+function searchUsers() {
+    const query = document.getElementById('userSearch').value.trim();
+    
+    if (query.length < 2) {
+        // Показываем всех пользователей
+        showAllUsers();
+        return;
+    }
+    
+    fetch(`{{ url_for('communication.search_users') }}?query=${encodeURIComponent(query)}`)
+        .then(response => response.json())
+        .then(users => {
+            renderUsers(users);
+        })
+        .catch(error => {
+            console.error('Search error:', error);
+        });
+}
+
+// Показать всех пользователей
+function showAllUsers() {
+    const usersList = document.getElementById('usersList');
+    usersList.innerHTML = `
+        {% for user in users %}
+        <label class="user-item">
+            <input type="checkbox" name="recipients" value="{{ user.email }}">
+            <div class="user-info">
+                <span class="user-name">{{ user.first_name }} {{ user.last_name }}</span>
+                <span class="user-email">{{ user.email }}</span>
+            </div>
+            <span class="user-type">👤 User</span>
+        </label>
+        {% endfor %}
+        
+        {% for contact in contacts %}
+        <label class="user-item">
+            <input type="checkbox" name="recipients" value="{{ contact.email }}">
+            <div class="user-info">
+                <span class="user-name">{{ contact.first_name }} {{ contact.last_name }}</span>
+                <span class="user-email">{{ contact.email }}</span>
+            </div>
+            <span class="user-type">📇 Contact</span>
+        </label>
+        {% endfor %}
+    `;
+    
+    // Добавляем обработчики для новых элементов
+    document.querySelectorAll('input[name="recipients"]').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+}
+
+// Отображение результатов поиска
+function renderUsers(users) {
+    const usersList = document.getElementById('usersList');
+    
+    if (users.length === 0) {
+        usersList.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;">No users found</div>';
+        return;
+    }
+    
+    usersList.innerHTML = users.map(user => `
+        <label class="user-item">
+            <input type="checkbox" name="recipients" value="${user.email}">
+            <div class="user-info">
+                <span class="user-name">${user.name}</span>
+                <span class="user-email">${user.email}</span>
+            </div>
+            <span class="user-type">${user.type_icon} ${user.type}</span>
+        </label>
+    `).join('');
+    
+    // Добавляем обработчики для новых элементов
+    document.querySelectorAll('input[name="recipients"]').forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+}
+
+// Обновление счетчика выбранных
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('input[name="recipients"]:checked');
+    const count = checkboxes.length;
+    document.getElementById('selectedCount').textContent = `${count} selected`;
+}
+
+// Предварительный просмотр
+function previewEmail() {
+    const templateType = document.querySelector('input[name="template_type"]:checked')?.value;
+    const additionalData = document.getElementById('additional_data').value;
+    
+    if (!templateType) {
+        alert('Please select a template first');
+        return;
+    }
+    
+    const previewSection = document.getElementById('emailPreview');
+    const previewLoading = document.getElementById('previewLoading');
+    const previewContent = document.getElementById('previewContent');
+    
+    previewSection.style.display = 'block';
+    previewLoading.style.display = 'block';
+    previewContent.style.display = 'none';
+    
+    fetch(`{{ url_for('communication.preview_template') }}?template_type=${templateType}&additional_data=${encodeURIComponent(additionalData)}`)
+        .then(response => response.json())
+        .then(data => {
+            previewLoading.style.display = 'none';
+            
+            if (data.success) {
+                previewContent.innerHTML = data.html;
+                previewContent.style.display = 'block';
+            } else {
+                previewContent.innerHTML = `<div class="alert alert-error">Preview failed: ${data.error}</div>`;
+                previewContent.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            previewLoading.style.display = 'none';
+            previewContent.innerHTML = `<div class="alert alert-error">Preview failed: ${error.message}</div>`;
+            previewContent.style.display = 'block';
+        });
+}
+
+// Валидация формы
+function validateForm(event) {
+    const templateType = document.querySelector('input[name="template_type"]:checked');
+    const recipients = document.querySelectorAll('input[name="recipients"]:checked');
+    const subject = document.getElementById('subject').value.trim();
+    
+    if (!templateType) {
+        event.preventDefault();
+        alert('Please select a template');
+        return false;
+    }
+    
+    if (recipients.length === 0) {
+        event.preventDefault();
+        alert('Please select at least one recipient');
+        return false;
+    }
+    
+    if (!subject) {
+        event.preventDefault();
+        alert('Please enter email subject');
+        return false;
+    }
+    
+    // Показываем подтверждение
+    const confirmed = confirm(`Are you sure you want to send this email to ${recipients.length} recipient(s)?`);
+    if (!confirmed) {
+        event.preventDefault();
+        return false;
+    }
+    
+    return true;
+}
+</script>
+{% endblock %}

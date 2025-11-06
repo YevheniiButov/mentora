@@ -1,0 +1,856 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('quick_registration', lang) | default('Quick Registration') }} - Mentora{% endblock %}
+
+{% block description %}{{ t('quick_registration_description', lang) | default('Quick registration for Mentora BIG preparation program') }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+<style>
+/* Fix cookie notice overlay issue on registration page */
+#cookie-notice {
+    z-index: 1000 !important;
+}
+
+/* Ensure registration form is above cookie notice */
+.quick-register-container {
+    position: relative;
+    z-index: 1001;
+}
+
+/* Add bottom padding to prevent overlap */
+.quick-register-form {
+    margin-bottom: 100px;
+}
+
+/* Mobile responsive fixes */
+@media (max-width: 768px) {
+    .quick-register-container {
+        padding: 15px;
+        padding-top: 80px;
+    }
+    
+    .quick-register-form {
+        padding: 30px 20px;
+        margin-bottom: 120px; /* Extra space for mobile cookie notice */
+    }
+    
+    /* Ensure form elements are clickable on mobile */
+    .form-control, .btn, input, select, textarea {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+}
+.quick-register-container {
+    max-width: 550px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-top: 100px;
+}
+
+@media (max-width: 768px) {
+    .quick-register-header h1 {
+        font-size: 2rem;
+    }
+    
+    .quick-register-form {
+        padding: 30px 25px;
+    }
+}
+
+.quick-register-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.quick-register-header h1 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 15px;
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.quick-register-header p {
+    color: #6b7280;
+    font-size: 17px;
+    line-height: 1.6;
+    max-width: 450px;
+    margin: 0 auto;
+}
+
+.quick-register-form {
+    background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08), 0 2px 10px rgba(0, 0, 0, 0.04);
+    padding: 45px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    transition: all 0.3s ease;
+}
+
+.quick-register-form:hover {
+    box-shadow: 0 15px 50px rgba(102, 126, 234, 0.12), 0 5px 15px rgba(0, 0, 0, 0.06);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 15px;
+    letter-spacing: 0.2px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: #ffffff;
+    color: #111827;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-control:hover {
+    border-color: #d1d5db;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 5px;
+    display: none;
+}
+
+.success-message {
+    color: #28a745;
+    font-size: 14px;
+    margin-top: 5px;
+    display: none;
+}
+
+.btn-submit {
+    width: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 30px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-submit:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+.btn-submit:active {
+    transform: translateY(-1px);
+}
+
+.btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.back-link {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.back-link a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.back-link a:hover {
+    color: #764ba2;
+    transform: translateX(-3px);
+}
+
+.back-link a i {
+    transition: transform 0.3s ease;
+}
+
+.back-link a:hover i {
+    transform: translateX(-3px);
+}
+
+.recaptcha-container {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.recaptcha-help {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+.consent-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.consent-checkbox input[type="checkbox"] {
+    margin-top: 3px;
+}
+
+.consent-checkbox label {
+    font-size: 14px;
+    line-height: 1.4;
+    color: #495057;
+}
+
+.consent-checkbox a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.consent-checkbox a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .quick-register-container {
+        padding: 15px;
+        padding-top: 80px;
+    }
+    
+    .quick-register-form {
+        padding: 25px;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .quick-register-header h1 {
+        font-size: 1.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="quick-register-container">
+    <div class="quick-register-header">
+        <h1>
+            {{ t('quick_registration', lang) | default('Быстрая регистрация') }}
+        </h1>
+        <p>{{ t('quick_registration_subtitle', lang) | default('Заполните основные данные для быстрого доступа к программе') }}</p>
+    </div>
+
+    <form id="quickRegisterForm" class="quick-register-form">
+        <!-- Имя и Фамилия -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="firstName">{{ t('first_name', lang) | default('Имя') }} *</label>
+                <input type="text" id="firstName" name="firstName" class="form-control" required>
+                <div class="error-message" id="firstNameError"></div>
+            </div>
+            <div class="form-group">
+                <label for="lastName">{{ t('last_name', lang) | default('Фамилия') }} *</label>
+                <input type="text" id="lastName" name="lastName" class="form-control" required>
+                <div class="error-message" id="lastNameError"></div>
+            </div>
+        </div>
+
+        <!-- Дата рождения -->
+        <div class="form-group">
+            <label for="birthDate">{{ t('birth_date', lang) | default('Дата рождения') }} *</label>
+            <input type="date" id="birthDate" name="birthDate" class="form-control" required min="1900-01-01" max="2010-12-31">
+            <div class="error-message" id="birthDateError"></div>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+            <label for="email">{{ t('email', lang) | default('Email') }} *</label>
+            <input type="email" id="email" name="email" class="form-control" required autocomplete="username">
+            <div class="error-message" id="emailError"></div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-row">
+            <div class="form-group">
+                <label for="password">{{ t('password', lang) | default('Password') }} *</label>
+                <input type="password" id="password" name="password" class="form-control" required minlength="8" autocomplete="new-password">
+                <div class="error-message" id="passwordError"></div>
+                <div style="font-size: 12px; color: #6c757d; margin-top: 5px;">
+                    {{ t('password_help', lang) | default('Minimum 8 characters') }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">{{ t('confirm_password', lang) | default('Confirm Password') }} *</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required minlength="8" autocomplete="new-password">
+                <div class="error-message" id="confirmPasswordError"></div>
+            </div>
+        </div>
+
+        <!-- Профессия -->
+        <div class="form-group">
+            <label for="profession">{{ t('profession', lang) | default('Профессия') }} *</label>
+            <select id="profession" name="profession" class="form-control" required>
+                <option value="">{{ t('select_profession', lang) | default('Выберите профессию') }}</option>
+                <option value="dentist">{{ t('dentist', lang) | default('Стоматолог') }}</option>
+                <option value="pharmacist">{{ t('pharmacist', lang) | default('Фармацевт') }}</option>
+                <option value="family_doctor">{{ t('family_doctor', lang) | default('Семейный врач') }}</option>
+                <option value="nurse">{{ t('nurse', lang) | default('Медсестра') }}</option>
+                <option value="other">{{ t('other', lang) | default('Другое') }}</option>
+            </select>
+            <div class="error-message" id="professionError"></div>
+        </div>
+
+        <!-- Поле для другой профессии -->
+        <div class="form-group" id="otherProfessionGroup" style="display: none;">
+            <label for="otherProfession">{{ t('other_profession', lang) | default('Укажите вашу профессию') }} *</label>
+            <input type="text" id="otherProfession" name="otherProfession" class="form-control" placeholder="{{ t('enter_profession', lang) | default('Введите вашу профессию') }}">
+            <div class="error-message" id="otherProfessionError"></div>
+        </div>
+
+        <!-- reCAPTCHA -->
+        {% if config.RECAPTCHA_PUBLIC_KEY %}
+        <div class="recaptcha-container">
+            <div class="g-recaptcha" data-sitekey="{{ config.RECAPTCHA_PUBLIC_KEY }}" data-action="QUICK_REGISTER"></div>
+            <div class="recaptcha-help">
+                {{ t('recaptcha_help', lang) | default('This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.') }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Согласия -->
+        <div class="consent-checkbox">
+            <input type="checkbox" id="privacyConsent" name="privacyConsent" required>
+            <label for="privacyConsent">
+                {{ t('privacy_consent', lang) | default('Я согласен с') }} 
+                <a href="/{{ lang|default('en') }}/privacy" target="_blank">
+                    {{ t('privacy_policy', lang) | default('Политикой конфиденциальности') }}
+                </a>
+            </label>
+        </div>
+
+        <div class="consent-checkbox">
+            <input type="checkbox" id="termsConsent" name="termsConsent" required>
+            <label for="termsConsent">
+                {{ t('terms_consent', lang) | default('Я согласен с') }} 
+                <a href="/{{ lang|default('en') }}/terms" target="_blank">
+                    {{ t('terms_of_service', lang) | default('Условиями использования') }}
+                </a>
+            </label>
+        </div>
+
+        <div class="consent-checkbox">
+            <input type="checkbox" id="marketingConsent" name="marketingConsent">
+            <label for="marketingConsent">
+                {{ t('marketing_consent', lang) | default('Я хочу получать информацию о новых курсах и предложениях') }}
+            </label>
+        </div>
+
+        <!-- Кнопка отправки -->
+        <button type="submit" class="btn-submit" id="submitBtn">
+            <i class="bi bi-check-circle"></i>
+            {{ t('complete_registration', lang) | default('Завершить регистрацию') }}
+        </button>
+    </form>
+
+    <div class="back-link">
+        <a href="{{ url_for('auth.register', lang=lang) if lang != 'en' else url_for('auth.register') }}">
+            <i class="bi bi-arrow-left"></i>
+            {{ t('back_to_full_registration', lang) | default('Вернуться к полной регистрации') }}
+        </a>
+    </div>
+</div>
+
+<!-- reCAPTCHA Script -->
+{% if config.RECAPTCHA_PUBLIC_KEY %}
+<script src="https://www.google.com/recaptcha/api.js?hl={{ lang }}" async defer></script>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('quickRegisterForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    // Устанавливаем значение по умолчанию для даты рождения (2000 год)
+    const birthDateInput = document.getElementById('birthDate');
+    if (birthDateInput && !birthDateInput.value) {
+        birthDateInput.value = '2000-01-01';
+    }
+    
+    // Трекинг начала заполнения формы
+    let formStarted = false;
+    let emailTracked = false;
+    let nameTracked = false;
+    
+    // Отслеживаем начало заполнения формы
+    const inputs = form.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (!formStarted) {
+                formStarted = true;
+                trackFormStart();
+            }
+        });
+    });
+    
+    // Отслеживаем ввод email
+    const emailInput = document.getElementById('email');
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            const email = this.value.trim();
+            if (email && email.includes('@') && !emailTracked) {
+                emailTracked = true;
+                trackEmailEntry(email);
+            }
+        });
+    }
+    
+    // Отслеживаем ввод имени и фамилии
+    const firstNameInput = document.getElementById('firstName');
+    const lastNameInput = document.getElementById('lastName');
+    
+    if (firstNameInput) {
+        firstNameInput.addEventListener('input', function() {
+            const firstName = this.value.trim();
+            const lastName = lastNameInput ? lastNameInput.value.trim() : '';
+            if (firstName && lastName && !nameTracked) {
+                nameTracked = true;
+                trackNameEntry(firstName, lastName);
+            }
+        });
+    }
+    
+    if (lastNameInput) {
+        lastNameInput.addEventListener('input', function() {
+            const firstName = firstNameInput ? firstNameInput.value.trim() : '';
+            const lastName = this.value.trim();
+            if (firstName && lastName && !nameTracked) {
+                nameTracked = true;
+                trackNameEntry(firstName, lastName);
+            }
+        });
+    }
+    
+    // Функции трекинга
+    function trackFormStart() {
+        fetch('/track-form-start', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                page_type: 'quick_register',
+                timestamp: new Date().toISOString()
+            })
+        }).catch(err => console.log('Form start tracking error:', err));
+    }
+    
+    function trackEmailEntry(email) {
+        fetch('/track-email-entry', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                page_type: 'quick_register',
+                timestamp: new Date().toISOString()
+            })
+        }).catch(err => console.log('Email tracking error:', err));
+    }
+    
+    function trackNameEntry(firstName, lastName) {
+        fetch('/track-name-entry', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                first_name: firstName,
+                last_name: lastName,
+                page_type: 'quick_register',
+                timestamp: new Date().toISOString()
+            })
+        }).catch(err => console.log('Name tracking error:', err));
+    }
+    
+    // Обработка изменения профессии
+    const professionSelect = document.getElementById('profession');
+    const otherProfessionGroup = document.getElementById('otherProfessionGroup');
+    const otherProfessionInput = document.getElementById('otherProfession');
+    
+    professionSelect.addEventListener('change', function() {
+        if (this.value === 'other') {
+            otherProfessionGroup.style.display = 'block';
+            otherProfessionInput.required = true;
+        } else {
+            otherProfessionGroup.style.display = 'none';
+            otherProfessionInput.required = false;
+            otherProfessionInput.value = '';
+        }
+    });
+    
+    // Валидация формы
+    function validateForm() {
+        let isValid = true;
+        
+        // Очистка предыдущих ошибок
+        document.querySelectorAll('.error-message').forEach(error => {
+            error.style.display = 'none';
+        });
+        
+        // Валидация имени
+        const firstName = document.getElementById('firstName').value.trim();
+        if (!firstName) {
+            showError('firstNameError', '{{ t("first_name_required", lang) | default("Имя обязательно") }}');
+            isValid = false;
+        }
+        
+        // Валидация фамилии
+        const lastName = document.getElementById('lastName').value.trim();
+        if (!lastName) {
+            showError('lastNameError', '{{ t("last_name_required", lang) | default("Фамилия обязательна") }}');
+            isValid = false;
+        }
+        
+        // Валидация даты рождения
+        const birthDate = document.getElementById('birthDate').value;
+        if (!birthDate) {
+            showError('birthDateError', '{{ t("birth_date_required", lang) | default("Дата рождения обязательна") }}');
+            isValid = false;
+        } else {
+            const birthYear = new Date(birthDate).getFullYear();
+            const currentYear = new Date().getFullYear();
+            if (currentYear - birthYear < 16) {
+                showError('birthDateError', '{{ t("age_restriction", lang) | default("Вам должно быть не менее 16 лет") }}');
+                isValid = false;
+            }
+        }
+        
+        // Валидация email
+        const email = document.getElementById('email').value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) {
+            showError('emailError', '{{ t("email_required", lang) | default("Email обязателен") }}');
+            isValid = false;
+        } else if (!emailRegex.test(email)) {
+            showError('emailError', '{{ t("email_invalid", lang) | default("Неверный формат email") }}');
+            isValid = false;
+        }
+        
+        // Валидация пароля
+        const password = document.getElementById('password').value;
+        if (!password) {
+            showError('passwordError', '{{ t("password_required", lang) | default("Пароль обязателен") }}');
+            isValid = false;
+        } else if (password.length < 8) {
+            showError('passwordError', '{{ t("password_too_short", lang) | default("Пароль должен содержать минимум 8 символов") }}');
+            isValid = false;
+        }
+        
+        // Валидация подтверждения пароля
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        if (!confirmPassword) {
+            showError('confirmPasswordError', '{{ t("confirm_password_required", lang) | default("Подтверждение пароля обязательно") }}');
+            isValid = false;
+        } else if (password !== confirmPassword) {
+            showError('confirmPasswordError', '{{ t("passwords_dont_match", lang) | default("Пароли не совпадают") }}');
+            isValid = false;
+        }
+        
+        // Валидация профессии
+        const profession = document.getElementById('profession').value;
+        if (!profession) {
+            showError('professionError', '{{ t("profession_required", lang) | default("Профессия обязательна") }}');
+            isValid = false;
+        } else if (profession === 'other') {
+            // Если выбрано "другое", проверяем поле для ввода
+            const otherProfession = document.getElementById('otherProfession').value.trim();
+            if (!otherProfession) {
+                showError('otherProfessionError', '{{ t("other_profession_required", lang) | default("Укажите вашу профессию") }}');
+                isValid = false;
+            }
+        }
+        
+        // Валидация reCAPTCHA
+        {% if config.RECAPTCHA_PUBLIC_KEY %}
+        if (typeof grecaptcha !== 'undefined') {
+            const recaptchaResponse = grecaptcha.getResponse();
+            if (recaptchaResponse.length === 0) {
+                alert('{{ t("recaptcha_required", lang) | default("Пожалуйста, пройдите проверку reCAPTCHA") }}');
+                isValid = false;
+            }
+        }
+        {% endif %}
+        
+        // Валидация согласий
+        const privacyConsent = document.getElementById('privacyConsent').checked;
+        const termsConsent = document.getElementById('termsConsent').checked;
+        
+        if (!privacyConsent || !termsConsent) {
+            alert('{{ t("consent_required", lang) | default("Необходимо согласиться с условиями использования и политикой конфиденциальности") }}');
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+    
+    function showError(elementId, message) {
+        const errorElement = document.getElementById(elementId);
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
+    
+    // Обработка отправки формы
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!validateForm()) {
+            return;
+        }
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> {{ t("processing", lang) | default("Обработка...") }}';
+        
+        try {
+            // Собираем данные формы вручную для правильной обработки checkbox'ов
+            const data = {
+                firstName: document.getElementById('firstName').value.trim(),
+                lastName: document.getElementById('lastName').value.trim(),
+                birthDate: document.getElementById('birthDate').value,
+                email: document.getElementById('email').value.trim(),
+                password: document.getElementById('password').value,
+                confirmPassword: document.getElementById('confirmPassword').value,
+                profession: document.getElementById('profession').value,
+                otherProfession: document.getElementById('otherProfession').value.trim(),
+                privacyConsent: document.getElementById('privacyConsent').checked,
+                termsConsent: document.getElementById('termsConsent').checked,
+                marketingConsent: document.getElementById('marketingConsent').checked
+            };
+            
+            // Добавляем reCAPTCHA response
+            {% if config.RECAPTCHA_PUBLIC_KEY %}
+            if (typeof grecaptcha !== 'undefined') {
+                data['g-recaptcha-response'] = grecaptcha.getResponse();
+            }
+            {% endif %}
+            
+            console.log('Sending data:', data);
+            
+            const response = await fetch('{{ url_for("auth.quick_register") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify(data)
+            });
+            
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+            
+            const result = await response.json();
+            console.log('Response result:', result);
+            
+            if (result.success) {
+                // Показываем подробное сообщение об успехе на английском
+                const userEmail = data.email || 'your email';
+                const successMessage = `
+                    <div style="text-align: left; line-height: 1.8;">
+                        <p><strong>✅ Registration Successful!</strong></p>
+                        <p><strong>📧 Email:</strong> ${userEmail}</p>
+                        <p><strong>🔑 Password:</strong> The password you just created</p>
+                        <p><strong>🚀 Next steps:</strong> You can now log in with your email and password to access your account.</p>
+                        <p style="margin-top: 20px; font-size: 14px; opacity: 0.9;">
+                            <em>Welcome to Mentora! You'll receive updates about our program.</em>
+                        </p>
+                    </div>
+                `;
+                
+                showSuccessMessage(successMessage);
+                
+                // Перенаправляем через 5 секунд (больше времени для чтения)
+                setTimeout(() => {
+                    window.location.href = '/auth/login';
+                }, 5000);
+            } else {
+                console.error('Registration failed:', result.error);
+                showErrorMessage(result.error || '{{ t("registration_error", lang) | default("Ошибка регистрации") }}');
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            showErrorMessage('{{ t("network_error", lang) | default("Ошибка сети. Попробуйте еще раз.") }}');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-check-circle"></i> {{ t("complete_registration", lang) | default("Завершить регистрацию") }}';
+        }
+    });
+    
+    function showSuccessMessage(message) {
+        // Создаем большое модальное окно с сообщением об успехе
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        `;
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.style.cssText = `
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.5s ease-out;
+        `;
+        
+        // Добавляем CSS анимацию
+        if (!document.getElementById('success-animation-style')) {
+            const style = document.createElement('style');
+            style.id = 'success-animation-style';
+            style.textContent = `
+                @keyframes slideIn {
+                    from {
+                        transform: translateY(-50px);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateY(0);
+                        opacity: 1;
+                    }
+                }
+                
+                .success-icon {
+                    font-size: 60px;
+                    margin-bottom: 20px;
+                    animation: bounce 0.6s ease-in-out;
+                }
+                
+                @keyframes bounce {
+                    0%, 20%, 50%, 80%, 100% {
+                        transform: translateY(0);
+                    }
+                    40% {
+                        transform: translateY(-10px);
+                    }
+                    60% {
+                        transform: translateY(-5px);
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        messageDiv.innerHTML = `
+            <button onclick="this.closest('.success-overlay').remove()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 24px; cursor: pointer; opacity: 0.7; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">×</button>
+            <div class="success-icon">✅</div>
+            <h2 style="margin: 0 0 20px 0; font-size: 24px;">Registration Successful!</h2>
+            <div style="font-size: 16px; line-height: 1.6;">
+                ${message}
+            </div>
+            <div style="margin-top: 20px; font-size: 14px; opacity: 0.9;">
+                Redirecting to login page in a few seconds...
+            </div>
+        `;
+        
+        // Добавляем класс для стилизации
+        messageDiv.classList.add('success-overlay');
+        
+        overlay.appendChild(messageDiv);
+        document.body.appendChild(overlay);
+        
+        // Убираем уведомление через 5 секунд
+        setTimeout(() => {
+            if (overlay && overlay.parentNode) {
+                overlay.remove();
+            }
+        }, 5000);
+        
+        // Также добавляем возможность закрыть по клику на overlay
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.remove();
+            }
+        });
+    }
+    
+    function showErrorMessage(message) {
+        // Создаем уведомление об ошибке
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-danger';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 400px;
+        `;
+        notification.innerHTML = `
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            ${message}
+        `;
+        document.body.appendChild(notification);
+        
+        // Убираем уведомление через 5 секунд
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}

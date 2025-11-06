@@ -1,0 +1,798 @@
+{% extends "admin/base.html" %}
+
+{% block title %}CRM Users - Mentora{% endblock %}
+
+{% block extra_css %}
+<style>
+.user-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-left: 4px solid #007bff;
+    transition: all 0.3s ease;
+}
+
+.user-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.user-card.digid-user {
+    border-left-color: #28a745;
+}
+
+.user-card.inactive-user {
+    border-left-color: #dc3545;
+    opacity: 0.8;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-active { background: #28a745; color: white; }
+.status-inactive { background: #dc3545; color: white; }
+.status-confirmed { background: #17a2b8; color: white; }
+.status-unconfirmed { background: #ffc107; color: #000; }
+.status-digid { background: #6f42c1; color: white; }
+
+.filter-section {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.stats-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-top: 4px solid #007bff;
+}
+
+.stats-card.success { border-top-color: #28a745; }
+.stats-card.warning { border-top-color: #ffc107; }
+.stats-card.info { border-top-color: #17a2b8; }
+.stats-card.danger { border-top-color: #dc3545; }
+
+.profession-badge {
+    background: #e3f2fd;
+    color: #1976d2;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.nationality-badge {
+    background: #f3e5f5;
+    color: #7b1fa2;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.legal-status-badge {
+    background: #e8f5e8;
+    color: #2e7d32;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.sortable-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+.sortable-header:hover {
+    background-color: #f8f9fa;
+}
+
+.export-buttons {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.bulk-actions {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: none;
+}
+
+.bulk-actions.show {
+    display: block;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">👥 CRM Users Management</h1>
+            <p class="text-muted">Complete user database with registration data, filtering, and export capabilities</p>
+        </div>
+        <div>
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-primary">
+                <i class="bi bi-graph-up"></i> Dashboard
+            </a>
+            <a href="{{ url_for('admin.crm_contacts') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-people"></i> CRM Contacts
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <h3 class="text-primary">{{ stats.total_users }}</h3>
+                <p class="mb-0">Total Users</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card success">
+                <h3 class="text-success">{{ stats.active_users }}</h3>
+                <p class="mb-0">Active Users</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card info">
+                <h3 class="text-info">{{ stats.confirmed_users }}</h3>
+                <p class="mb-0">Email Confirmed</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card warning">
+                <h3 class="text-warning">{{ stats.digid_users }}</h3>
+                <p class="mb-0">DigiD Users</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export and Bulk Actions -->
+    <div class="export-buttons">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h6 class="mb-0">Export & Actions</h6>
+                <small class="text-muted">Export user data or perform bulk actions</small>
+            </div>
+            <div class="col-md-6 text-end">
+                <button class="btn btn-outline-success me-2" onclick="exportUsers('csv')">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+                </button>
+                <button class="btn btn-outline-primary me-2" onclick="exportUsers('excel')">
+                    <i class="bi bi-file-earmark-excel"></i> Export Excel
+                </button>
+                <button class="btn btn-outline-info" onclick="showBulkActions()">
+                    <i class="bi bi-check2-square"></i> Bulk Actions
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Actions Panel -->
+    <div class="bulk-actions" id="bulkActions">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                    <label class="form-check-label" for="selectAll">
+                        Select All Users
+                    </label>
+                </div>
+            </div>
+            <div class="col-md-6 text-end">
+                <button class="btn btn-primary me-2" onclick="sendBulkEmail()">
+                    <i class="bi bi-envelope"></i> Send Email
+                </button>
+                <button class="btn btn-warning me-2" onclick="exportSelected()">
+                    <i class="bi bi-download"></i> Export Selected
+                </button>
+                <button class="btn btn-secondary" onclick="hideBulkActions()">
+                    <i class="bi bi-x"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-section">
+        <form method="GET" class="row g-3">
+            <div class="col-md-2">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ search_query }}" placeholder="Name, email, phone...">
+            </div>
+            <div class="col-md-2">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                    <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Email Confirmed</option>
+                    <option value="unconfirmed" {% if status_filter == 'unconfirmed' %}selected{% endif %}>Unconfirmed</option>
+                    <option value="digid" {% if status_filter == 'digid' %}selected{% endif %}>DigiD Users</option>
+                    <option value="regular" {% if status_filter == 'regular' %}selected{% endif %}>Regular Users</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="profession" class="form-label">Profession</label>
+                <select class="form-select" id="profession" name="profession">
+                    <option value="all" {% if profession_filter == 'all' %}selected{% endif %}>All Professions</option>
+                    {% for profession in professions %}
+                    <option value="{{ profession }}" {% if profession_filter == profession %}selected{% endif %}>
+                        {{ profession.title() }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="nationality" class="form-label">Nationality</label>
+                <select class="form-select" id="nationality" name="nationality">
+                    <option value="all" {% if nationality_filter == 'all' %}selected{% endif %}>All Nationalities</option>
+                    {% for nationality in nationalities %}
+                    <option value="{{ nationality }}" {% if nationality_filter == nationality %}selected{% endif %}>
+                        {{ nationality }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="legal_status" class="form-label">Legal Status</label>
+                <select class="form-select" id="legal_status" name="legal_status">
+                    <option value="all" {% if legal_status_filter == 'all' %}selected{% endif %}>All Status</option>
+                    {% for status in legal_statuses %}
+                    <option value="{{ status }}" {% if legal_status_filter == status %}selected{% endif %}>
+                        {{ status.replace('_', ' ').title() }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="dutch_level" class="form-label">Dutch Level</label>
+                <select class="form-select" id="dutch_level" name="dutch_level">
+                    <option value="all" {% if dutch_level_filter == 'all' %}selected{% endif %}>All Levels</option>
+                    <option value="A1" {% if dutch_level_filter == 'A1' %}selected{% endif %}>A1</option>
+                    <option value="A2" {% if dutch_level_filter == 'A2' %}selected{% endif %}>A2</option>
+                    <option value="B1" {% if dutch_level_filter == 'B1' %}selected{% endif %}>B1</option>
+                    <option value="B2" {% if dutch_level_filter == 'B2' %}selected{% endif %}>B2</option>
+                    <option value="C1" {% if dutch_level_filter == 'C1' %}selected{% endif %}>C1</option>
+                    <option value="C2" {% if dutch_level_filter == 'C2' %}selected{% endif %}>C2</option>
+                    <option value="native" {% if dutch_level_filter == 'native' %}selected{% endif %}>Native</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="english_level" class="form-label">English Level</label>
+                <select class="form-select" id="english_level" name="english_level">
+                    <option value="all" {% if english_level_filter == 'all' %}selected{% endif %}>All Levels</option>
+                    <option value="A1" {% if english_level_filter == 'A1' %}selected{% endif %}>A1</option>
+                    <option value="A2" {% if english_level_filter == 'A2' %}selected{% endif %}>A2</option>
+                    <option value="B1" {% if english_level_filter == 'B1' %}selected{% endif %}>B1</option>
+                    <option value="B2" {% if english_level_filter == 'B2' %}selected{% endif %}>B2</option>
+                    <option value="C1" {% if english_level_filter == 'C1' %}selected{% endif %}>C1</option>
+                    <option value="C2" {% if english_level_filter == 'C2' %}selected{% endif %}>C2</option>
+                    <option value="native" {% if english_level_filter == 'native' %}selected{% endif %}>Native</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Filter
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Users List -->
+    {% if users and users.items %}
+        <!-- Table Header -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Showing {{ users.items|length }} of {{ users.total }} users</h6>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-secondary" onclick="changeView('cards')">
+                            <i class="bi bi-grid-3x3-gap"></i> Cards
+                        </button>
+                        <button class="btn btn-outline-secondary active" onclick="changeView('table')">
+                            <i class="bi bi-table"></i> Table
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table View -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th width="50">
+                            <input type="checkbox" class="form-check-input" onchange="toggleSelectAll()">
+                        </th>
+                        <th class="sortable-header" onclick="sortTable('name')">
+                            User <i class="bi bi-arrow-down-up"></i>
+                        </th>
+                        <th class="sortable-header" onclick="sortTable('email')">
+                            Contact <i class="bi bi-arrow-down-up"></i>
+                        </th>
+                        <th class="sortable-header" onclick="sortTable('profession')">
+                            Profession <i class="bi bi-arrow-down-up"></i>
+                        </th>
+                        <th>Nationality</th>
+                        <th>Legal Status</th>
+                        <th class="sortable-header" onclick="sortTable('dutch_level')">
+                            Dutch Level <i class="bi bi-arrow-down-up"></i>
+                        </th>
+                        <th class="sortable-header" onclick="sortTable('english_level')">
+                            English Level <i class="bi bi-arrow-down-up"></i>
+                        </th>
+                        <th>Program Interests</th>
+                        <th>Consents</th>
+                        <th>Education</th>
+                        <th>Status</th>
+                        <th class="sortable-header" onclick="sortTable('created_at')">
+                            Registered <i class="bi bi-arrow-down-up"></i>
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users.items %}
+                    <tr class="user-row" data-user-id="{{ user.id }}">
+                        <td>
+                            <input type="checkbox" class="form-check-input user-checkbox" value="{{ user.id }}">
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar me-3">
+                                    {{ user.get_display_name()[0].upper() }}
+                                </div>
+                                <div>
+                                    <div class="fw-medium">{{ user.get_display_name() }}</div>
+                                    {% if user.is_digid_user() %}
+                                    <small class="text-success">
+                                        <i class="bi bi-shield-check"></i> DigiD Verified
+                                    </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <div>{{ user.email }}</div>
+                                {% if user.phone %}
+                                <small class="text-muted">{{ user.country_code }}{{ user.phone }}</small>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if user.profession %}
+                            <span class="profession-badge">{{ user.get_profession_display() }}</span>
+                            {% if user.workplace %}
+                            <br><small class="text-muted">{{ user.workplace }}</small>
+                            {% endif %}
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.nationality %}
+                            <span class="nationality-badge">{{ user.nationality }}</span>
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.legal_status %}
+                            <span class="legal-status-badge">{{ user.legal_status.replace('_', ' ').title() }}</span>
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.dutch_level %}
+                            <span class="badge bg-info">{{ user.dutch_level.upper() }}</span>
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.english_level %}
+                            <span class="badge bg-success">{{ user.english_level.upper() }}</span>
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.program_interests %}
+                            {% set interests = user.program_interests | from_json %}
+                            {% if interests %}
+                            <div class="d-flex flex-wrap gap-1">
+                                {% for interest in interests[:3] %}
+                                <span class="badge bg-primary">{{ interest }}</span>
+                                {% endfor %}
+                                {% if interests|length > 3 %}
+                                <span class="badge bg-secondary">+{{ interests|length - 3 }}</span>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex flex-column gap-1">
+                                {% if user.required_consents %}
+                                <span class="badge bg-success" title="Required Consents">✓ Required</span>
+                                {% endif %}
+                                {% if user.optional_consents %}
+                                <span class="badge bg-info" title="Optional Consents">✓ Optional</span>
+                                {% endif %}
+                                {% if user.program_notifications %}
+                                <span class="badge bg-warning" title="Program Notifications">✓ Program</span>
+                                {% endif %}
+                                {% if not user.required_consents and not user.optional_consents and not user.program_notifications %}
+                                <span class="text-muted">No consents</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            {% if user.university_name %}
+                            <div>
+                                <small class="fw-medium">{{ user.university_name }}</small>
+                                {% if user.degree_type %}
+                                <br><small class="text-muted">{{ user.degree_type.title() }}</small>
+                                {% endif %}
+                                {% if user.study_country %}
+                                <br><small class="text-muted">{{ user.study_country }}</small>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <span class="text-muted">Not specified</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex flex-column gap-1">
+                                {% if user.is_active %}
+                                <span class="status-badge status-active">Active</span>
+                                {% else %}
+                                <span class="status-badge status-inactive">Inactive</span>
+                                {% endif %}
+                                
+                                {% if user.email_confirmed %}
+                                <span class="status-badge status-confirmed">Confirmed</span>
+                                {% else %}
+                                <span class="status-badge status-unconfirmed">Unconfirmed</span>
+                                {% endif %}
+                                
+                                {% if user.created_via_digid %}
+                                <span class="status-badge status-digid">DigiD</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ user.created_at.strftime('%d.%m.%Y') }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
+                                   class="btn btn-outline-primary" title="Edit User">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <button class="btn btn-outline-info" onclick="viewUserDetails({{ user.id }})" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-success" onclick="sendEmail({{ user.id }})" title="Send Email">
+                                    <i class="bi bi-envelope"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if users.pages > 1 %}
+        <nav aria-label="Users pagination" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if users.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.crm_users', page=users.prev_num, status=status_filter, profession=profession_filter, nationality=nationality_filter, legal_status=legal_status_filter, search=search_query, sort=sort_by, order=sort_order) }}">
+                        Previous
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in users.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != users.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.crm_users', page=page_num, status=status_filter, profession=profession_filter, nationality=nationality_filter, legal_status=legal_status_filter, search=search_query, sort=sort_by, order=sort_order) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if users.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.crm_users', page=users.next_num, status=status_filter, profession=profession_filter, nationality=nationality_filter, legal_status=legal_status_filter, search=search_query, sort=sort_by, order=sort_order) }}">
+                        Next
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-people" style="font-size: 4rem; color: #dee2e6;"></i>
+            <h4 class="text-muted mt-3">No users found</h4>
+            <p class="text-muted">Try adjusting your filters or check if users are registered</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- User Details Modal -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">User Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="userDetailsContent">
+                <!-- User details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Send Email Modal -->
+<div class="modal fade" id="sendEmailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Email</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="emailForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="emailSubject" class="form-label">Subject</label>
+                        <input type="text" class="form-control" id="emailSubject" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailMessage" class="form-label">Message</label>
+                        <textarea class="form-control" id="emailMessage" rows="10" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Send Email</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+// Sorting functionality
+function sortTable(column) {
+    const currentSort = '{{ sort_by }}';
+    const currentOrder = '{{ sort_order }}';
+    
+    let newOrder = 'asc';
+    if (currentSort === column && currentOrder === 'asc') {
+        newOrder = 'desc';
+    }
+    
+    const url = new URL(window.location);
+    url.searchParams.set('sort', column);
+    url.searchParams.set('order', newOrder);
+    window.location.href = url.toString();
+}
+
+// Bulk actions
+function showBulkActions() {
+    document.getElementById('bulkActions').classList.add('show');
+}
+
+function hideBulkActions() {
+    document.getElementById('bulkActions').classList.remove('show');
+    document.getElementById('selectAll').checked = false;
+    document.querySelectorAll('.user-checkbox').forEach(cb => cb.checked = false);
+}
+
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.user-checkbox');
+    
+    checkboxes.forEach(cb => {
+        cb.checked = selectAll.checked;
+    });
+}
+
+// Export functionality
+function exportUsers(format) {
+    const url = new URL(window.location);
+    url.searchParams.set('export', format);
+    window.open(url.toString(), '_blank');
+}
+
+function exportSelected() {
+    const selectedUsers = Array.from(document.querySelectorAll('.user-checkbox:checked'))
+        .map(cb => cb.value);
+    
+    if (selectedUsers.length === 0) {
+        alert('Please select users to export');
+        return;
+    }
+    
+    const url = new URL(window.location);
+    url.searchParams.set('export', 'selected');
+    url.searchParams.set('user_ids', selectedUsers.join(','));
+    window.open(url.toString(), '_blank');
+}
+
+// User actions
+function viewUserDetails(userId) {
+    // Load user details via AJAX
+    fetch(`/admin/crm/users/${userId}/details`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('userDetailsContent').innerHTML = html;
+            new bootstrap.Modal(document.getElementById('userDetailsModal')).show();
+        })
+        .catch(error => {
+            console.error('Error loading user details:', error);
+            alert('Error loading user details');
+        });
+}
+
+function sendEmail(userId) {
+    console.log('sendEmail called with userId:', userId);
+    // Set user ID for email form
+    const emailForm = document.getElementById('emailForm');
+    if (!emailForm) {
+        console.error('emailForm not found');
+        alert('Email form not found');
+        return;
+    }
+    emailForm.dataset.userId = userId;
+    const modal = new bootstrap.Modal(document.getElementById('sendEmailModal'));
+    modal.show();
+}
+
+function sendBulkEmail() {
+    console.log('sendBulkEmail called');
+    const selectedUsers = Array.from(document.querySelectorAll('.user-checkbox:checked'))
+        .map(cb => cb.value);
+    
+    console.log('Selected users:', selectedUsers);
+    
+    if (selectedUsers.length === 0) {
+        alert('Please select users to send email to');
+        return;
+    }
+    
+    // Set bulk user IDs for email form
+    const emailForm = document.getElementById('emailForm');
+    if (!emailForm) {
+        console.error('emailForm not found');
+        alert('Email form not found');
+        return;
+    }
+    emailForm.dataset.userIds = selectedUsers.join(',');
+    const modal = new bootstrap.Modal(document.getElementById('sendEmailModal'));
+    modal.show();
+}
+
+// Email form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const emailForm = document.getElementById('emailForm');
+    if (emailForm) {
+        emailForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const userId = this.dataset.userId;
+    const userIds = this.dataset.userIds;
+    const subject = document.getElementById('emailSubject').value;
+    const message = document.getElementById('emailMessage').value;
+    
+    const data = {
+        subject: subject,
+        message: message
+    };
+    
+    if (userId) {
+        data.user_id = userId;
+    } else if (userIds) {
+        data.user_ids = userIds;
+    }
+    
+    fetch('/admin/crm/users/send-email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Email sent successfully!');
+            bootstrap.Modal.getInstance(document.getElementById('sendEmailModal')).hide();
+        } else {
+            alert('Error sending email: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error sending email');
+    });
+        });
+    } else {
+        console.error('emailForm not found for event listener');
+    }
+});
+
+// View switching
+function changeView(view) {
+    // This would switch between table and card views
+    // For now, we only have table view
+}
+</script>
+{% endblock %}

@@ -1,0 +1,332 @@
+/* ============================================================
+   VIRTUAL PATIENT - MEDICAL PROFESSIONAL EDITION
+   Mobile-First | WhatsApp-style Dialogs | Minimalist Design
+   ============================================================ */
+
+/* ============================================================
+   CSS VARIABLES - Medical Pro Palette
+   ============================================================ */
+:root {
+  /* Primary - Medical Blue */
+  --color-primary: #1E40AF;
+  --color-primary-light: #3B82F6;
+  --color-primary-lighter: #DBEAFE;
+  
+  /* Accents */
+  --color-success: #059669;
+  --color-success-light: #D1FAE5;
+  --color-warning: #D97706;
+  --color-warning-light: #FEF3C7;
+  --color-error: #DC2626;
+  --color-error-light: #FEE2E2;
+  
+  /* Neutrals - Medical Gray */
+  --color-bg-primary: #FFFFFF;
+  --color-bg-secondary: #F9FAFB;
+  --color-bg-tertiary: #F3F4F6;
+  --color-text-primary: #111827;
+  --color-text-secondary: #374151;
+  --color-text-muted: #6B7280;
+  --color-border: #E5E7EB;
+  --color-border-light: #F3F4F6;
+  
+  /* Fonts - Professional */
+  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+  --font-mono: 'Monaco', 'Courier New', monospace;
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 0.75rem;
+  --spacing-lg: 1rem;
+  --spacing-xl: 1.5rem;
+  --spacing-2xl: 2rem;
+  --spacing-3xl: 3rem;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 16px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+body { font-family: var(--font-primary); background-color: var(--color-bg-secondary); color: var(--color-text-primary); line-height: 1.6; }
+
+/* ============================================================
+   MAIN CONTAINER
+   ============================================================ */
+.vp-container { width: 100%; height: 100vh; display: flex; flex-direction: column; background: var(--color-bg-secondary); overflow: hidden; }
+.vp-loading { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-lg); }
+.loading-spinner { width: 48px; height: 48px; border: 3px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.vp-interface { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ============================================================
+   PROGRESS HEADER - Medical Professional
+   ============================================================ */
+.vp-progress-header { width: 100%; padding: 12px 16px; background: var(--color-bg-primary); border-bottom: 1px solid var(--color-border); flex-shrink: 0; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); }
+.progress-bar { width: 100%; height: 4px; background-color: var(--color-border-light); border-radius: 2px; overflow: hidden; margin-bottom: 8px; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light)); border-radius: 2px; transition: width 400ms ease-out; }
+.progress-info { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 13px; }
+.progress-text { color: var(--color-text-muted); font-weight: 500; }
+.progress-score { color: var(--color-primary); font-weight: 600; }
+.progress-time { display: flex; align-items: center; gap: 6px; color: var(--color-text-secondary); font-weight: 500; }
+.progress-time .text-xs { font-size: 11px; }
+
+/* ============================================================
+   LAYOUT - Mobile First
+   ============================================================ */
+.vp-layout { display: grid; grid-template-columns: 1fr; gap: 0; flex: 1; overflow: hidden; }
+.vp-patient-sidebar, .vp-tools-sidebar { display: none !important; }
+.vp-dialogue-area { display: flex; flex-direction: column; overflow: hidden; background: var(--color-bg-primary); }
+
+/* ============================================================
+   DIALOGUE THREAD - WhatsApp Style
+   ============================================================ */
+.dialogue-thread { flex: 1; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; overflow-x: hidden; padding: 16px 12px 140px 12px; background: var(--color-bg-primary); }
+.dialogue-message { display: flex; gap: 8px; margin-bottom: 4px; animation: slideInUp 300ms ease-out; }
+.dialogue-message.from-patient { justify-content: flex-start; }
+.dialogue-message.from-doctor { justify-content: flex-end; }
+.message-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light)); display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.message-wrapper { display: flex; flex-direction: column; gap: 2px; }
+.message-content { max-width: 85%; padding: 10px 14px; border-radius: 16px; font-size: 15px; line-height: 1.4; word-wrap: break-word; }
+.dialogue-message.from-patient .message-content { background: var(--color-bg-tertiary); color: var(--color-text-primary); border-bottom-left-radius: 4px; }
+.dialogue-message.from-doctor .message-content { background: var(--color-primary-light); color: white; border-bottom-right-radius: 4px; }
+.message-timestamp { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; text-align: right; }
+.dialogue-message.from-patient .message-timestamp { text-align: left; }
+
+/* ============================================================
+   INTERACTION AREA - Fixed Bottom on Mobile
+   ============================================================ */
+.interaction-area { position: fixed; bottom: 0; left: 0; right: 0; padding: 12px; background: linear-gradient(to top, var(--color-bg-primary) 90%, rgba(255, 255, 255, 0)); border-top: 1px solid var(--color-border); max-height: 140px; overflow-y: auto; z-index: 50; }
+.interaction-area.loading { display: flex; align-items: center; justify-content: center; }
+.loading-spinner-small { display: inline-block; width: 28px; height: 28px; border: 2px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; }
+.options-container { display: flex; flex-direction: column; gap: 8px; }
+.option-button { padding: 12px 14px; background: var(--color-bg-primary); border: 1px solid var(--color-border); border-radius: 8px; font-size: 14px; color: var(--color-text-secondary); cursor: pointer; transition: all 200ms ease-out; text-align: left; font-family: var(--font-primary); min-height: 44px; display: flex; align-items: center; font-weight: 500; }
+.option-button:active { border-color: var(--color-primary); background: var(--color-primary-lighter); color: var(--color-primary); }
+.option-button:disabled { opacity: 0.5; cursor: not-allowed; }
+.option-button.correct { border-color: var(--color-success); background: var(--color-success-light); color: var(--color-success); animation: slideInRight 300ms ease-out; }
+.option-button.incorrect { border-color: var(--color-error); background: var(--color-error-light); color: var(--color-error); animation: shake 300ms ease-in-out; }
+
+/* FILL-IN */
+.fill-in-container { display: flex; flex-direction: column; gap: 12px; }
+.fill-in-text { font-size: 14px; color: var(--color-text-primary); line-height: 1.5; margin: 0; padding: 12px 14px; background: var(--color-bg-tertiary); border-radius: 8px; border-left: 3px solid var(--color-primary); }
+.fill-in-text .blank { display: inline-block; padding: 0 4px; background: var(--color-primary-lighter); border-bottom: 2px dashed var(--color-primary); font-weight: 600; color: var(--color-primary); border-radius: 2px; }
+.fill-in-input-group { display: flex; flex-direction: column; gap: 10px; }
+.fill-in-input { padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 6px; font-size: 14px; font-family: var(--font-mono); transition: all 200ms ease-out; width: 100%; background: var(--color-bg-primary); }
+.fill-in-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1); background: var(--color-bg-primary); }
+.fill-in-input.error { border-color: var(--color-error); animation: shake 300ms ease-in-out; }
+.fill-in-input.success { border-color: var(--color-success); background: rgba(5, 150, 105, 0.02); }
+.fill-in-actions { display: flex; gap: 8px; flex-direction: column; }
+.btn-submit { width: 100%; padding: 10px 14px; background: var(--color-primary); color: white; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 200ms ease-out; min-height: 44px; }
+.btn-submit:active { opacity: 0.9; transform: scale(0.98); }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+.hint-message { padding: 10px 12px; background: var(--color-warning-light); border-left: 3px solid var(--color-warning); border-radius: 4px; color: #92400E; font-size: 13px; font-weight: 500; animation: slideInUp 300ms ease-out; }
+
+/* ============================================================
+   PATIENT CARD - Mobile
+   ============================================================ */
+.patient-card { background: var(--color-bg-primary); border: 1px solid var(--color-border); border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); }
+.patient-header { display: flex; gap: 12px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--color-border); }
+.patient-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; flex-shrink: 0; }
+.patient-basic-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.patient-name { font-size: 15px; font-weight: 600; color: var(--color-text-primary); margin: 0; }
+.patient-meta { font-size: 13px; color: var(--color-text-muted); margin: 0; margin-top: 2px; }
+.patient-details { display: flex; flex-direction: column; gap: 12px; }
+.detail-section { border-bottom: 1px solid var(--color-border); padding-bottom: 12px; }
+.detail-section:last-child { border-bottom: none; padding-bottom: 0; }
+.detail-toggle { width: 100%; background: none; border: none; padding: 0; display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 8px; font-size: 0; }
+.toggle-label { font-size: 13px; font-weight: 600; color: var(--color-text-primary); text-align: left; }
+.toggle-icon { font-size: 11px; color: var(--color-text-muted); transition: transform 200ms ease-out; }
+.detail-toggle.active .toggle-icon { transform: rotate(180deg); }
+.detail-content { margin-top: 8px; font-size: 13px; color: var(--color-text-secondary); line-height: 1.5; }
+.allergy-tag { display: inline-block; background: var(--color-error-light); color: var(--color-error); padding: 4px 10px; border-radius: 16px; font-size: 12px; font-weight: 600; margin-right: 6px; margin-bottom: 4px; }
+.symptoms-list { display: flex; flex-direction: column; gap: 8px; }
+.symptom-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--color-warning-light); border-radius: 6px; font-size: 13px; border-left: 3px solid var(--color-warning); }
+.vitals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.vital-item { text-align: center; padding: 10px; background: var(--color-success-light); border-radius: 6px; }
+.vital-label { display: block; font-size: 11px; color: var(--color-text-muted); margin-bottom: 4px; font-weight: 600; }
+.vital-value { display: block; font-size: 14px; font-weight: 600; color: var(--color-success); }
+
+/* ============================================================
+   PATIENT CARD MOBILE
+   ============================================================ */
+.patient-card-mobile { margin-bottom: var(--spacing-lg); background: var(--color-bg-primary); border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; }
+.card-toggle { width: 100%; background: none; border: none; padding: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 12px; font-size: 0; }
+.card-header { display: flex; align-items: center; gap: 12px; flex: 1; }
+.patient-avatar-sm { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; flex-shrink: 0; }
+.patient-name-sm { font-size: 13px; font-weight: 600; margin: 0; }
+.toggle-arrow { transition: transform 200ms ease-out; color: var(--color-text-muted); font-size: 12px; }
+.card-toggle.active .toggle-arrow { transform: rotate(180deg); }
+.card-expanded { padding: 12px; border-top: 1px solid var(--color-border); background: var(--color-bg-tertiary); }
+
+/* ============================================================
+   TOOLS SIDEBAR - Hidden on Mobile
+   ============================================================ */
+.vp-tools-sidebar { display: none !important; }
+.tools-widget { background: var(--color-bg-primary); border: 1px solid var(--color-border); border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); }
+.widget-title { font-size: 11px; font-weight: 600; color: var(--color-text-primary); text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 12px 0; }
+.score-display { display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px; }
+.score-value { font-size: 28px; font-weight: 700; color: var(--color-primary); }
+.score-label { font-size: 13px; color: var(--color-text-muted); }
+.score-breakdown { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--color-border); }
+.score-item { display: flex; justify-content: space-between; font-size: 12px; color: var(--color-text-muted); }
+.score-item-value { font-weight: 600; color: var(--color-primary); }
+.progress-circle { position: relative; width: 140px; height: 140px; margin: 0 auto var(--spacing-lg); }
+.progress-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.progress-bg { fill: none; stroke: var(--color-border); stroke-width: 3; }
+.progress-ring { fill: none; stroke: var(--color-primary); stroke-width: 3; stroke-dasharray: 282.7; stroke-dashoffset: 282.7; transition: stroke-dashoffset 500ms ease-out; stroke-linecap: round; }
+.progress-text-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+.progress-percent { display: block; font-size: 20px; font-weight: 700; color: var(--color-primary); }
+.notes-textarea { width: 100%; padding: 10px; border: 1px solid var(--color-border); border-radius: 6px; font-family: var(--font-primary); font-size: 13px; color: var(--color-text-primary); resize: vertical; min-height: 80px; }
+.notes-textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1); }
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.vp-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.modal-backdrop { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); animation: fadeIn 300ms ease-out; }
+.modal-content { position: relative; z-index: 10; background: var(--color-bg-primary); border-radius: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; animation: slideInUp 300ms ease-out; }
+.modal-header { padding: 18px 16px; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; }
+.modal-header h2 { font-size: 16px; font-weight: 600; margin: 0; color: var(--color-text-primary); }
+.modal-close { background: none; border: none; font-size: 20px; color: var(--color-text-muted); cursor: pointer; padding: 0; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; transition: color 200ms ease-out; }
+.modal-close:active { color: var(--color-text-primary); }
+.modal-body { padding: 16px; }
+.modal-footer { padding: 16px; border-top: 1px solid var(--color-border); display: flex; gap: 8px; justify-content: flex-end; flex-direction: column-reverse; }
+.completion-modal .modal-body { text-align: center; }
+.result-badge { margin-bottom: 20px; }
+.badge-icon { width: 72px; height: 72px; margin: 0 auto 12px; border-radius: 50%; background: var(--color-success); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; animation: scaleIn 300ms ease-out; }
+.badge-icon.good { background: var(--color-primary); }
+.badge-icon.needs-improvement { background: var(--color-warning); }
+.badge-icon.poor { background: var(--color-error); }
+.badge-label { font-size: 16px; font-weight: 600; color: var(--color-text-primary); }
+.result-scores { background: var(--color-bg-tertiary); border-radius: 8px; padding: 12px; margin-bottom: 16px; text-align: left; }
+.score-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: 13px; }
+.score-row:last-child { border-bottom: none; }
+.score-highlight { font-weight: 700; color: var(--color-primary); }
+.result-feedback { margin-bottom: 16px; }
+.result-feedback p { font-size: 13px; color: var(--color-text-secondary); margin: 0; }
+.result-timeline { margin-top: 20px; text-align: left; }
+.result-timeline h4 { font-size: 14px; font-weight: 600; color: var(--color-text-primary); margin-bottom: 12px; }
+.timeline { position: relative; padding-left: 24px; }
+.timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--color-border); }
+.timeline-item { position: relative; margin-bottom: 16px; }
+.timeline-marker { position: absolute; left: -20px; top: 4px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--color-bg-primary); }
+.timeline-marker.success { background: var(--color-success); }
+.timeline-marker.warning { background: var(--color-warning); }
+.timeline-content { background: var(--color-bg-tertiary); padding: 12px; border-radius: 8px; border-left: 3px solid var(--color-border); }
+.timeline-content h5 { font-size: 13px; font-weight: 600; color: var(--color-text-primary); margin: 0 0 6px 0; }
+.timeline-content p { font-size: 12px; color: var(--color-text-secondary); margin: 0; line-height: 1.5; }
+.timeline-item.good .timeline-content { border-left-color: var(--color-success); }
+.timeline-item.poor .timeline-content { border-left-color: var(--color-warning); }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn { padding: 10px 14px; border: 1px solid var(--color-border); border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 200ms ease-out; font-family: var(--font-primary); display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; }
+.btn-primary { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+.btn-primary:active { opacity: 0.9; }
+.btn-outline { background: transparent; color: var(--color-primary); border-color: var(--color-border); }
+.btn-outline:active { background: var(--color-bg-tertiary); }
+.btn-sm { padding: 8px 12px; font-size: 12px; min-height: 32px; }
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes slideInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes slideInRight { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-3px); } 20%, 40%, 60%, 80% { transform: translateX(3px); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+.hide-mobile { display: none; }
+.show-mobile { display: block; }
+.text-muted { color: var(--color-text-muted); }
+.text-xs { font-size: 11px; }
+.text-sm { font-size: 13px; }
+.text-center { text-align: center; }
+.mb-md { margin-bottom: var(--spacing-md); }
+.mt-md { margin-top: var(--spacing-md); }
+
+/* ============================================================
+   TABLET: 640px - 1023px
+   ============================================================ */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .vp-progress-header { padding: 16px 20px; }
+  .vp-layout { grid-template-columns: 240px 1fr; gap: var(--spacing-lg); padding: var(--spacing-lg); }
+  .vp-patient-sidebar { display: flex !important; flex-direction: column; gap: var(--spacing-lg); }
+  .vp-tools-sidebar { grid-column: 1 / -1; display: grid !important; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-lg); padding: 0; }
+  .interaction-area { position: static; padding: var(--spacing-lg); background: var(--color-bg-tertiary); border-radius: 8px; border: 1px solid var(--color-border); max-height: none; }
+  .dialogue-thread { padding: 20px; gap: 10px; }
+}
+
+/* ============================================================
+   DESKTOP: >= 1024px - MEDICAL PROFESSIONAL PREMIUM
+   ============================================================ */
+@media (min-width: 1024px) {
+  /* HEADER */
+  .vp-progress-header { padding: 18px 24px; border-bottom: 2px solid var(--color-border); }
+  .progress-bar { height: 6px; margin-bottom: 12px; }
+  .progress-fill { transition: width 500ms cubic-bezier(0.4, 0, 0.2, 1); }
+  /* LAYOUT */
+  .vp-layout { grid-template-columns: 300px 1fr; gap: 20px; padding: 20px; }
+  .vp-patient-sidebar { display: flex !important; flex-direction: column; gap: 20px; overflow-y: auto; overflow-x: hidden; }
+  .vp-tools-sidebar { display: none !important; }
+  /* PATIENT SIDEBAR - Premium Cards with Gradients */
+  .patient-card { background: linear-gradient(135deg, var(--color-bg-primary) 0%, #F9FAFB 100%); border: 1px solid var(--color-border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); transition: all 300ms ease-out; }
+  .patient-card:hover { box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); }
+  .patient-header { gap: 16px; margin-bottom: 18px; padding-bottom: 18px; }
+  .patient-avatar { width: 56px; height: 56px; font-size: 20px; }
+  .patient-name { font-size: 16px; }
+  .allergy-tag { padding: 5px 12px; font-size: 11px; }
+  .symptom-item { padding: 10px 12px; font-size: 13px; }
+  .vital-item { padding: 14px; }
+  .vital-label { font-size: 10px; }
+  .vital-value { font-size: 16px; }
+  /* DIALOGUE AREA - Premium */
+  .vp-dialogue-area { gap: 20px; background: var(--color-bg-primary); border-radius: 12px; border: 1px solid var(--color-border); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); overflow: hidden; }
+  .dialogue-thread { flex: 1; gap: 10px; padding: 24px; overflow-y: auto; }
+  .message-content { max-width: 60%; padding: 11px 16px; font-size: 14px; }
+  .message-avatar { width: 36px; height: 36px; font-size: 13px; }
+  /* INTERACTION AREA - Desktop */
+  .interaction-area { position: static; padding: 20px; background: var(--color-bg-tertiary); border-radius: 12px; border: 1px solid var(--color-border); max-height: none; }
+  .options-container { gap: 10px; }
+  .option-button { padding: 12px 16px; border-radius: 8px; font-size: 14px; min-height: 44px; transition: all 250ms ease-out; }
+  .option-button:hover:not(:disabled) { border-color: var(--color-primary); background: var(--color-primary-lighter); color: var(--color-primary); }
+  .fill-in-text { padding: 14px 16px; border-radius: 8px; }
+  .fill-in-input { border-radius: 8px; padding: 12px 14px; }
+  /* TOOLS SIDEBAR - Premium Widgets */
+  .tools-widget { background: linear-gradient(135deg, var(--color-bg-primary) 0%, #F9FAFB 100%); border: 1px solid var(--color-border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); transition: all 300ms ease-out; }
+  .tools-widget:hover { box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); }
+  .widget-title { font-size: 11px; letter-spacing: 0.8px; margin: 0 0 14px 0; }
+  .score-display { gap: 8px; margin-bottom: 16px; }
+  .score-value { font-size: 32px; }
+  .score-breakdown { gap: 10px; padding-top: 14px; }
+  .progress-circle { width: 160px; height: 160px; }
+  .progress-percent { font-size: 22px; }
+  .notes-textarea { min-height: 100px; padding: 12px; }
+  /* MODAL - Premium */
+  .modal-content { border-radius: 16px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12); }
+  .modal-header { padding: 20px; font-size: 18px; }
+  .modal-body { padding: 20px; }
+  .badge-icon { width: 80px; height: 80px; font-size: 36px; }
+  .result-scores { padding: 16px; }
+  .score-row { padding: 10px 0; font-size: 14px; }
+}
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
+
+

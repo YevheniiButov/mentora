@@ -1,0 +1,656 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('security', lang) | default('Безопасность') }} - Mentora{% endblock %}
+
+{% block extra_css %}
+<style>
+    .security-container {
+        min-height: 80vh;
+        padding: 2rem 0;
+        margin-top: 60px; /* Отступ под шапку */
+    }
+    
+    .security-header {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 16px 16px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .security-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+        opacity: 0.3;
+    }
+    
+    .security-header-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+    }
+    
+    .security-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        margin: 0 auto 1rem;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .security-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .security-subtitle {
+        font-size: 1rem;
+        opacity: 0.9;
+        font-weight: 500;
+    }
+    
+    .security-content {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .security-section {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: white;
+    }
+    
+    .section-icon.password {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+    
+    .section-icon.twofa {
+        background: linear-gradient(135deg, #f093fb, #f5576c);
+    }
+    
+    .section-icon.sessions {
+        background: linear-gradient(135deg, #4facfe, #00f2fe);
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: #f8fafc;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-back {
+        background: #f1f5f9;
+        color: #4a5568;
+        border: 2px solid #e2e8f0;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-right: 1rem;
+    }
+    
+    .btn-back:hover {
+        background: #e2e8f0;
+        color: #2d3748;
+        text-decoration: none;
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.3);
+    }
+    
+    .coming-soon-notice {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #92400e;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        text-align: center;
+        border: 1px solid #f59e0b;
+    }
+    
+    .coming-soon-notice h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+    
+    .coming-soon-notice p {
+        margin: 0;
+        opacity: 0.9;
+    }
+    
+    .password-strength {
+        margin-top: 0.5rem;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .password-strength.weak {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+    
+    .password-strength.medium {
+        background: #fffbeb;
+        color: #d97706;
+        border: 1px solid #fed7aa;
+    }
+    
+    .password-strength.strong {
+        background: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+    }
+    
+    .security-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-weight: 500;
+    }
+    
+    .security-status.secure {
+        background: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+    }
+    
+    .security-status.warning {
+        background: #fffbeb;
+        color: #d97706;
+        border: 1px solid #fed7aa;
+    }
+    
+    .security-status.danger {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+    
+    .session-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+        background: #f8fafc;
+    }
+    
+    .session-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .session-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.2rem;
+    }
+    
+    .session-details h4 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2d3748;
+    }
+    
+    .session-details p {
+        margin: 0;
+        font-size: 0.85rem;
+        color: #718096;
+    }
+    
+    .current-session {
+        border-color: #667eea;
+        background: #f0f4ff;
+    }
+    
+    @media (max-width: 768px) {
+        .security-container {
+            margin-top: 50px; /* Мобильный отступ под шапку */
+        }
+        
+        .security-header {
+            padding: 1.5rem 0;
+        }
+        
+        .security-icon {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+        
+        .security-title {
+            font-size: 1.5rem;
+        }
+        
+        .security-section {
+            padding: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+        }
+        
+        .session-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="security-container">
+    <!-- Заголовок безопасности -->
+    <div class="security-header">
+        <div class="container">
+            <div class="security-header-content">
+                <div class="security-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h1 class="security-title">
+                    {{ t('security', lang) | default('Безопасность') }}
+                </h1>
+                <p class="security-subtitle">
+                    {{ t('security_subtitle', lang) | default('Управление паролем и настройками безопасности') }}
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="security-content">
+            <!-- Уведомление о разработке убрано по запросу пользователя -->
+            
+            <!-- Статус безопасности -->
+            <div class="security-section">
+                <h2 class="section-title">
+                    <div class="section-icon password">
+                        <i class="fas fa-shield-check"></i>
+                    </div>
+                    {{ t('security_status', lang) | default('Статус безопасности') }}
+                </h2>
+                
+                <div class="security-status secure">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ t('account_secure', lang) | default('Ваш аккаунт защищен') }}</span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                    <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+                        <i class="fas fa-key" style="font-size: 1.5rem; color: #16a34a; margin-bottom: 0.5rem;"></i>
+                        <div style="font-weight: 600; color: #2d3748;">{{ t('password_set', lang) | default('Пароль установлен') }}</div>
+                        <div style="font-size: 0.85rem; color: #718096;">{{ t('strong_password', lang) | default('Надежный пароль') }}</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+                        <i class="fas fa-envelope" style="font-size: 1.5rem; color: #16a34a; margin-bottom: 0.5rem;"></i>
+                        <div style="font-weight: 600; color: #2d3748;">{{ t('email_verified', lang) | default('Email подтвержден') }}</div>
+                        <div style="font-size: 0.85rem; color: #718096;">{{ t('secure_communication', lang) | default('Безопасная связь') }}</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+                        <i class="fas fa-clock" style="font-size: 1.5rem; color: #d97706; margin-bottom: 0.5rem;"></i>
+                        <div style="font-weight: 600; color: #2d3748;">{{ t('last_login', lang) | default('Последний вход') }}</div>
+                        <div style="font-size: 0.85rem; color: #718096;">{{ user.last_login.strftime('%d.%m.%Y %H:%M') if user.last_login else t('never', lang) | default('Никогда') }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Смена email -->
+            <div class="security-section">
+                <h2 class="section-title">
+                    <div class="section-icon password">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    {{ t('change_email', lang) | default('Смена email') }}
+                </h2>
+                
+                <form method="POST" action="{{ url_for('profile.security', lang=lang) }}">
+                    <input type="hidden" name="action" value="change_email">
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ t('current_email', lang) | default('Текущий email') }}
+                        </label>
+                        <input type="email" value="{{ user.email }}" class="form-control" readonly style="background: #f1f5f9;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ t('new_email', lang) | default('Новый email') }}
+                        </label>
+                        <input type="email" name="new_email" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ t('confirm_new_email', lang) | default('Подтвердите новый email') }}
+                        </label>
+                        <input type="email" name="confirm_new_email" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ t('current_password', lang) | default('Текущий пароль') }}
+                        </label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-save">
+                        <i class="fas fa-envelope"></i>
+                        {{ t('change_email', lang) | default('Изменить email') }}
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Смена пароля -->
+            <div class="security-section">
+                <h2 class="section-title">
+                    <div class="section-icon password">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    {{ t('change_password', lang) | default('Смена пароля') }}
+                </h2>
+                
+                <form method="POST" action="{{ url_for('profile.security', lang=lang) }}">
+                    <input type="hidden" name="action" value="change_password">
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ t('current_password', lang) | default('Текущий пароль') }}
+                        </label>
+                        <input type="password" name="current_password" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ t('new_password', lang) | default('Новый пароль') }}
+                        </label>
+                        <input type="password" name="new_password" id="newPassword" class="form-control" required minlength="8">
+                        <div id="passwordStrength" class="password-strength" style="display: none;"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            {{ t('confirm_password', lang) | default('Подтвердите пароль') }}
+                        </label>
+                        <input type="password" name="confirm_password" class="form-control" required minlength="8">
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <a href="{{ url_for('profile.profile', lang=lang) }}" class="btn-back">
+                            <i class="fas fa-arrow-left"></i>
+                            {{ t('back_to_profile', lang) | default('Назад к профилю') }}
+                        </a>
+                        <button type="submit" class="btn-save">
+                            <i class="fas fa-save"></i>
+                            {{ t('change_password', lang) | default('Изменить пароль') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Двухфакторная аутентификация -->
+            <div class="security-section">
+                <h2 class="section-title">
+                    <div class="section-icon twofa">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    {{ t('two_factor_auth', lang) | default('Двухфакторная аутентификация') }}
+                </h2>
+                
+                <div class="security-status warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>{{ t('twofa_not_enabled', lang) | default('Двухфакторная аутентификация не включена') }}</span>
+                </div>
+                
+                <p style="color: #718096; margin-bottom: 1.5rem;">
+                    {{ t('twofa_description', lang) | default('Добавьте дополнительный уровень безопасности к вашему аккаунту с помощью двухфакторной аутентификации.') }}
+                </p>
+                
+                <button class="btn-save" disabled>
+                    <i class="fas fa-mobile-alt"></i>
+                    {{ t('enable_twofa', lang) | default('Включить 2FA') }}
+                </button>
+                <small style="display: block; margin-top: 0.5rem; color: #718096;">
+                    {{ t('coming_soon', lang) | default('Скоро будет доступно') }}
+                </small>
+            </div>
+            
+            <!-- Активные сессии -->
+            <div class="security-section">
+                <h2 class="section-title">
+                    <div class="section-icon sessions">
+                        <i class="fas fa-desktop"></i>
+                    </div>
+                    {{ t('active_sessions', lang) | default('Активные сессии') }}
+                </h2>
+                
+                <div class="session-item current-session">
+                    <div class="session-info">
+                        <div class="session-icon">
+                            <i class="fas fa-desktop"></i>
+                        </div>
+                        <div class="session-details">
+                            <h4>{{ t('current_session', lang) | default('Текущая сессия') }}</h4>
+                            <p>{{ t('this_device', lang) | default('Это устройство') }} • {{ t('now', lang) | default('Сейчас') }}</p>
+                        </div>
+                    </div>
+                    <div style="color: #16a34a; font-weight: 600; font-size: 0.9rem;">
+                        {{ t('active', lang) | default('Активна') }}
+                    </div>
+                </div>
+                
+                <div class="session-item">
+                    <div class="session-info">
+                        <div class="session-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <div class="session-details">
+                            <h4>{{ t('mobile_device', lang) | default('Мобильное устройство') }}</h4>
+                            <p>iPhone 13 • {{ t('yesterday', lang) | default('Вчера') }} 14:30</p>
+                        </div>
+                    </div>
+                    <button class="btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        {{ t('terminate', lang) | default('Завершить') }}
+                    </button>
+                </div>
+                
+                <div class="session-item">
+                    <div class="session-info">
+                        <div class="session-icon">
+                            <i class="fas fa-laptop"></i>
+                        </div>
+                        <div class="session-details">
+                            <h4>{{ t('laptop_device', lang) | default('Ноутбук') }}</h4>
+                            <p>MacBook Pro • {{ t('last_week', lang) | default('На прошлой неделе') }}</p>
+                        </div>
+                    </div>
+                    <button class="btn-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        {{ t('terminate', lang) | default('Завершить') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const newPasswordInput = document.getElementById('newPassword');
+    const passwordStrength = document.getElementById('passwordStrength');
+    
+    newPasswordInput.addEventListener('input', function() {
+        const password = this.value;
+        const strength = checkPasswordStrength(password);
+        
+        if (password.length > 0) {
+            passwordStrength.style.display = 'block';
+            passwordStrength.className = 'password-strength ' + strength.level;
+            passwordStrength.textContent = strength.text;
+        } else {
+            passwordStrength.style.display = 'none';
+        }
+    });
+    
+    function checkPasswordStrength(password) {
+        let score = 0;
+        let feedback = [];
+        
+        // Длина пароля
+        if (password.length >= 8) score += 1;
+        else feedback.push('Минимум 8 символов');
+        
+        // Содержит строчные буквы
+        if (/[a-z]/.test(password)) score += 1;
+        else feedback.push('Строчные буквы');
+        
+        // Содержит заглавные буквы
+        if (/[A-Z]/.test(password)) score += 1;
+        else feedback.push('Заглавные буквы');
+        
+        // Содержит цифры
+        if (/\d/.test(password)) score += 1;
+        else feedback.push('Цифры');
+        
+        // Содержит специальные символы
+        if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 1;
+        else feedback.push('Специальные символы');
+        
+        if (score < 3) {
+            return {
+                level: 'weak',
+                text: '{{ t("weak_password", lang) | default("Слабый пароль") }}: ' + feedback.join(', ')
+            };
+        } else if (score < 5) {
+            return {
+                level: 'medium',
+                text: '{{ t("medium_password", lang) | default("Средний пароль") }}: ' + feedback.join(', ')
+            };
+        } else {
+            return {
+                level: 'strong',
+                text: '{{ t("strong_password", lang) | default("Надежный пароль") }}'
+            };
+        }
+    }
+});
+</script>
+{% endblock %}

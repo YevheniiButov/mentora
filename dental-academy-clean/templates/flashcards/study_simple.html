@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Nederlandse Termen - Sessie</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" />
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/flashcards_simple.css') }}">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+    <div class="flashcard-container" x-data="flashcardState()" @keydown.window="handleKeyboard($event)">
+        
+        <!-- PROGRESS HEADER -->
+        <div class="progress-header">
+            <button class="btn-back" @click="goBack()">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+            
+            <div class="progress-info">
+                <span class="progress-text">
+                    Woord <span x-text="currentIndex + 1"></span> van <span x-text="totalTerms"></span>
+                </span>
+                <div class="progress-bar">
+                    <div class="progress-fill" :style="{ width: ((currentIndex + 1) / totalTerms * 100) + '%' }"></div>
+                </div>
+            </div>
+            
+            <span class="xp-counter">
+                <i class="bi bi-star-fill"></i> 
+                <span x-text="xpEarned" @change="$watch('xpEarned', value => $el.classList.add('pop'))"></span> XP
+            </span>
+        </div>
+
+        <!-- STUDY AREA -->
+        <div class="study-area">
+            
+            <!-- FLASHCARD -->
+            <div class="flashcard" 
+                 @click="flipCard()" 
+                 :class="{ 'flipped': isFlipped }"
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:leave="transition ease-in duration-200">
+                
+                <div class="card-inner">
+                    <!-- FRONT -->
+                    <div class="card-front" x-show="!isFlipped" x-transition>
+                        <div class="term-text" x-text="currentTerm.term"></div>
+                        <div class="card-hint">Klik om te draaien</div>
+                    </div>
+                    
+                    <!-- BACK -->
+                    <div class="card-back" x-show="isFlipped" x-transition>
+                        <div class="translation-text" x-text="currentTerm.translation"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="button-group">
+                <button class="btn btn-again" 
+                        @click="submitAnswer(1)" 
+                        :disabled="isAnswering"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:leave="transition ease-in duration-100">
+                    <span class="label">Opnieuw</span>
+                    <span class="shortcut">1</span>
+                </button>
+                
+                <button class="btn btn-hard" 
+                        @click="submitAnswer(2)" 
+                        :disabled="isAnswering"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:leave="transition ease-in duration-100">
+                    <span class="label">Lastig</span>
+                    <span class="shortcut">2</span>
+                </button>
+                
+                <button class="btn btn-good" 
+                        @click="submitAnswer(3)" 
+                        :disabled="isAnswering"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:leave="transition ease-in duration-100">
+                    <span class="label">Goed</span>
+                    <span class="shortcut">3</span>
+                </button>
+                
+                <button class="btn btn-easy" 
+                        @click="submitAnswer(4)" 
+                        :disabled="isAnswering"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:leave="transition ease-in duration-100">
+                    <span class="label">Makkelijk</span>
+                    <span class="shortcut">4</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- RESULTS MODAL -->
+        <div class="results-modal" 
+             x-show="showResults" 
+             x-transition
+             @click.self="returnToPlanning()"
+             style="display: none;">
+            
+            <div class="modal-backdrop"></div>
+            
+            <div class="modal-content" 
+                 x-transition:enter="transition ease-out duration-300"
+                 x-transition:leave="transition ease-in duration-200">
+                
+                <div class="results-header">
+                    <div class="results-icon">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <h2>Sessie voltooid</h2>
+                </div>
+                
+                <div class="results-stats">
+                    <div class="stat-box" x-transition:enter="transition ease-out duration-300" x-transition:enter.delay="100">
+                        <span class="stat-value" x-text="totalTerms"></span>
+                        <span class="stat-label">Woorden geleerd</span>
+                    </div>
+                    <div class="stat-box" x-transition:enter="transition ease-out duration-300" x-transition:enter.delay="200">
+                        <span class="stat-value" x-text="xpEarned"></span>
+                        <span class="stat-label">XP verdiend</span>
+                    </div>
+                    <div class="stat-box" x-transition:enter="transition ease-out duration-300" x-transition:enter.delay="300">
+                        <span class="stat-value" x-text="timeSpent"></span>
+                        <span class="stat-label">Minuten</span>
+                    </div>
+                </div>
+                <button class="btn-primary" @click="returnToPlanning()">
+                    Terug naar plan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alpine.js Component -->
+    <script>
+        function flashcardState() {
+            return {
+                termsData: {{ terms | tojson }},
+                currentIndex: 0,
+                totalTerms: {{ total_terms }},
+                isFlipped: false,
+                isAnswering: false,
+                showResults: false,
+                xpEarned: 0,
+                sessionStart: Date.now(),
+                timeSpent: 0,
+                
+                get currentTerm() {
+                    if (this.currentIndex >= this.termsData.length) {
+                        return { id: 0, term: '', translation: '' };
+                    }
+                    const term = this.termsData[this.currentIndex];
+                    return {
+                        id: term.id,
+                        term: term.term_nl,
+                        translation: term.term_translated
+                    };
+                },
+                
+                // Flip card animation
+                flipCard() {
+                    if (!this.isAnswering) {
+                        this.isFlipped = !this.isFlipped;
+                    }
+                },
+                
+                // Submit answer
+                async submitAnswer(quality) {
+                    if (this.isAnswering) return;
+                    
+                    this.isAnswering = true;
+                    
+                    try {
+                        const csrfToken = (document.querySelector('meta[name="csrf-token"]') || {}).content;
+                        const response = await fetch(
+                            `/flashcards/review/${this.currentTerm.id}`,
+                            {
+                                method: 'POST',
+                                headers: { 
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrfToken || ''
+                                },
+                                body: JSON.stringify({ quality: quality })
+                            }
+                        );
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            // Animate XP increase
+                            this.xpEarned += data.xp_earned;
+                            
+                            // Move to next term or finish
+                            setTimeout(() => {
+                                this.currentIndex++;
+                                console.log('Moved to next term, currentIndex:', this.currentIndex);
+                                this.isFlipped = false;
+                                this.isAnswering = false;
+                                
+                                if (this.currentIndex >= this.totalTerms) {
+                                    console.log('Session completed, currentIndex:', this.currentIndex);
+                                    this.completeSession();
+                                }
+                            }, 300);
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        this.isAnswering = false;
+                    }
+                },
+                
+                // Complete session
+                async completeSession() {
+                    console.log('Completing session, currentIndex:', this.currentIndex, 'totalTerms:', this.totalTerms);
+                    this.timeSpent = Math.round((Date.now() - this.sessionStart) / 60000);
+                    
+                    try {
+                        const csrfToken = (document.querySelector('meta[name="csrf-token"]') || {}).content;
+                        const response = await fetch('/flashcards/api/session-complete', {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken || ''
+                            },
+                            body: JSON.stringify({
+                                terms_studied: this.totalTerms,
+                                total_xp: this.xpEarned,
+                                time_spent: this.timeSpent
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        console.log('Session complete response:', data);
+                        this.showResults = true;
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                },
+                
+                // Keyboard shortcuts
+                handleKeyboard(event) {
+                    if (event.key === '1') this.submitAnswer(1);
+                    if (event.key === '2') this.submitAnswer(2);
+                    if (event.key === '3') this.submitAnswer(3);
+                    if (event.key === '4') this.submitAnswer(4);
+                },
+                
+                // Go back
+                goBack() {
+                    if (confirm('Weet je zeker dat je wilt stoppen?')) {
+                        const lang = '{{ session.get("lang", "nl") }}';
+                        window.location.href = `/${lang}/learning-map/irt`;
+                    }
+                },
+                
+                // Return to planning
+                async returnToPlanning() {
+                    try {
+                        console.log('Returning to planning, currentIndex:', this.currentIndex, 'totalTerms:', this.totalTerms);
+                        console.log('Sending progress update:', {
+                            type: 'terms',
+                            status: 'completed',
+                            score: this.xpEarned,
+                            terms_studied: this.currentIndex + 1
+                        });
+                        
+                        const csrfToken = (document.querySelector('meta[name="csrf-token"]') || {}).content;
+                        const response = await fetch('/api/daily-progress/update', {
+                            method: 'POST',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': csrfToken || ''
+                            },
+                            body: JSON.stringify({
+                                type: 'terms',
+                                status: 'completed',
+                                score: this.xpEarned,
+                                terms_studied: Math.min(this.currentIndex + 1, this.totalTerms)  // Number of terms actually studied (cap at totalTerms)
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        console.log('Progress update response:', result);
+                    } catch (error) {
+                        console.error('Error updating progress:', error);
+                    }
+                    
+                    // Redirect to learning map
+                        const lang = '{{ session.get("lang", "nl") }}';
+                        console.log('Redirecting to learning map:', `/${lang}/learning-map/irt`);
+                        window.location.href = `/${lang}/learning-map/irt`;
+                }
+            };
+        }
+    </script>
+</body>
+</html>

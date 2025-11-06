@@ -1,0 +1,513 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('new_topic', lang) | default('New Topic') }} - {{ t('community', lang) | default('Community') }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.new-topic-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.new-topic-form {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e1e5e9;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.9rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3ECDC1;
+    box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.1);
+}
+
+.form-control.large {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3ECDC1, #2dd4bf);
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(62, 205, 193, 0.3);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+    margin-right: 1rem;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-1px);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e1e5e9;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+.required {
+    color: #e74c3c;
+}
+
+.help-text {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Poll form styles */
+.poll-form {
+    background: #f8f9fa;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    display: none;
+}
+
+.poll-form.show {
+    display: block;
+}
+
+.poll-question-group {
+    margin-bottom: 1rem;
+}
+
+.poll-options-container {
+    margin-bottom: 1rem;
+}
+
+.poll-option-input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    align-items: center;
+}
+
+.poll-option-input {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.poll-remove-option {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.poll-remove-option:hover {
+    background: #c82333;
+}
+
+.poll-add-option {
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.poll-add-option:hover {
+    background: #218838;
+}
+
+.poll-duration-group {
+    margin-bottom: 1rem;
+}
+
+.poll-duration-input {
+    width: 100px;
+    padding: 0.5rem;
+    border: 1px solid #e1e5e9;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.btn-poll {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.btn-poll:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+@media (max-width: 768px) {
+    .new-topic-container {
+        margin: 1rem auto;
+        padding: 0 0.5rem;
+    }
+    
+    .new-topic-form {
+        padding: 1.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .btn-secondary {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="new-topic-container">
+    <div class="page-header">
+        <h1 class="page-title">{{ t('new_topic', lang) | default('New Topic') }}</h1>
+        <p class="page-subtitle">{{ t('create_new_topic_description', lang) | default('Create a new discussion topic in the community') }}</p>
+    </div>
+
+    <div class="new-topic-form">
+        <form id="new-topic-form" onsubmit="submitNewTopic(event)">
+            <div class="form-group">
+                <label for="category" class="form-label">
+                    {{ t('category', lang) | default('Category') }} <span class="required">*</span>
+                </label>
+                <select id="category" name="category" class="form-control" required>
+                    <option value="">{{ t('select_category', lang) | default('Select a category') }}</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                    {% endfor %}
+                </select>
+                <div class="help-text">{{ t('category_help', lang) | default('Choose the most appropriate category for your topic') }}</div>
+            </div>
+
+            <div class="form-group">
+                <label for="title" class="form-label">
+                    {{ t('topic_title', lang) | default('Topic Title') }} <span class="required">*</span>
+                </label>
+                <input type="text" id="title" name="title" class="form-control" required 
+                       placeholder="{{ t('topic_title_placeholder', lang) | default('Enter a clear and descriptive title') }}"
+                       maxlength="200">
+                <div class="help-text">{{ t('title_help', lang) | default('Make your title clear and descriptive (max 200 characters)') }}</div>
+            </div>
+
+            <div class="form-group">
+                <label for="content" class="form-label">
+                    {{ t('topic_content', lang) | default('Topic Content') }} <span class="required">*</span>
+                </label>
+                <textarea id="content" name="content" class="form-control large" required 
+                          placeholder="{{ t('topic_content_placeholder', lang) | default('Describe your topic in detail. Be specific and provide context.') }}"
+                          minlength="10"></textarea>
+                <div class="help-text">{{ t('content_help', lang) | default('Provide detailed information about your topic. Minimum 10 characters.') }}</div>
+            </div>
+
+            <!-- Poll Section -->
+            <div class="form-group">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <button type="button" class="btn-poll" onclick="togglePollForm()">
+                        🗳️ {{ t('add_poll', lang) | default('Add Poll') }}
+                    </button>
+                    <span class="help-text">{{ t('poll_help', lang) | default('Optional: Add a poll to your topic') }}</span>
+                </div>
+                
+                <div id="poll-form" class="poll-form">
+                    <div class="poll-question-group">
+                        <label for="poll-question" class="form-label">
+                            {{ t('poll_question', lang) | default('Poll Question') }}
+                        </label>
+                        <input type="text" id="poll-question" class="form-control" 
+                               placeholder="{{ t('poll_question_placeholder', lang) | default('Enter your poll question') }}">
+                    </div>
+                    
+                    <div class="poll-options-container">
+                        <label class="form-label">{{ t('poll_options', lang) | default('Poll Options') }}</label>
+                        <div class="poll-option-input-group">
+                            <input type="text" class="poll-option-input" placeholder="Option 1">
+                            <button type="button" class="poll-remove-option" onclick="removePollOption(this)" style="display: none;">×</button>
+                        </div>
+                        <div class="poll-option-input-group">
+                            <input type="text" class="poll-option-input" placeholder="Option 2">
+                            <button type="button" class="poll-remove-option" onclick="removePollOption(this)" style="display: none;">×</button>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="poll-add-option" onclick="addPollOption()">
+                        + {{ t('add_option', lang) | default('Add Option') }}
+                    </button>
+                    
+                    <div class="poll-duration-group">
+                        <label for="poll-duration" class="form-label">
+                            {{ t('poll_duration', lang) | default('Poll Duration (days)') }}
+                        </label>
+                        <input type="number" id="poll-duration" class="poll-duration-input" value="7" min="1" max="365">
+                        <span class="help-text">{{ t('poll_duration_help', lang) | default('How long should the poll be active?') }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-secondary" onclick="goBack()">
+                    {{ t('cancel', lang) | default('Cancel') }}
+                </button>
+                <button type="submit" class="btn-primary" id="submit-btn">
+                    {{ t('create_topic', lang) | default('Create Topic') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function submitNewTopic(event) {
+    event.preventDefault();
+    
+    const form = document.getElementById('new-topic-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const originalText = submitBtn.textContent;
+    
+    // Get form data
+    const formData = new FormData(form);
+    const data = {
+        category_id: formData.get('category'),
+        title: formData.get('title').trim(),
+        content: formData.get('content').trim(),
+        poll: getPollData()
+    };
+    
+    // Validation
+    if (!data.category_id || !data.title || !data.content) {
+        alert('{{ t("fill_all_fields", lang) | default("Please fill in all required fields") }}');
+        return;
+    }
+    
+    if (data.title.length < 5) {
+        alert('{{ t("title_too_short", lang) | default("Title must be at least 5 characters long") }}');
+        return;
+    }
+    
+    if (data.content.length < 10) {
+        alert('{{ t("content_too_short", lang) | default("Content must be at least 10 characters long") }}');
+        return;
+    }
+    
+    // Show loading state
+    form.classList.add('loading');
+    submitBtn.textContent = '{{ t("creating", lang) | default("Creating...") }}';
+    submitBtn.disabled = true;
+    
+    // Send request
+    fetch('/{{ lang }}/community/create-topic', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name=csrf-token]').getAttribute('content')
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Success - redirect to the new topic
+            window.location.href = data.redirect_url;
+        } else {
+            // Error
+            alert('{{ t("error_creating_topic", lang) | default("Error creating topic") }}: ' + (data.error || '{{ t("unknown_error", lang) | default("Unknown error") }}'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('{{ t("error_creating_topic", lang) | default("Error creating topic") }}: {{ t("network_error", lang) | default("Network error") }}');
+    })
+    .finally(() => {
+        // Reset loading state
+        form.classList.remove('loading');
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    });
+}
+
+function goBack() {
+    window.history.back();
+}
+
+// Poll form functions
+function togglePollForm() {
+    const pollForm = document.getElementById('poll-form');
+    const isVisible = pollForm.classList.contains('show');
+    
+    if (isVisible) {
+        pollForm.classList.remove('show');
+    } else {
+        pollForm.classList.add('show');
+    }
+}
+
+function addPollOption() {
+    const container = document.querySelector('.poll-options-container');
+    const optionCount = container.querySelectorAll('.poll-option-input-group').length;
+    
+    if (optionCount >= 10) {
+        alert('{{ t("max_options_reached", lang) | default("Maximum 10 options allowed") }}');
+        return;
+    }
+    
+    const optionGroup = document.createElement('div');
+    optionGroup.className = 'poll-option-input-group';
+    optionGroup.innerHTML = `
+        <input type="text" class="poll-option-input" placeholder="Option ${optionCount + 1}">
+        <button type="button" class="poll-remove-option" onclick="removePollOption(this)">×</button>
+    `;
+    
+    container.appendChild(optionGroup);
+    updateRemoveButtons();
+}
+
+function removePollOption(button) {
+    const optionGroup = button.parentElement;
+    const container = document.querySelector('.poll-options-container');
+    
+    if (container.querySelectorAll('.poll-option-input-group').length > 2) {
+        optionGroup.remove();
+        updateRemoveButtons();
+    }
+}
+
+function updateRemoveButtons() {
+    const container = document.querySelector('.poll-options-container');
+    const removeButtons = container.querySelectorAll('.poll-remove-option');
+    
+    removeButtons.forEach(btn => {
+        btn.style.display = container.children.length > 2 ? 'block' : 'none';
+    });
+}
+
+function getPollData() {
+    const pollForm = document.getElementById('poll-form');
+    if (!pollForm.classList.contains('show')) {
+        return null;
+    }
+    
+    const question = document.getElementById('poll-question').value.trim();
+    const duration = parseInt(document.getElementById('poll-duration').value) || 7;
+    const options = [];
+    
+    const optionInputs = pollForm.querySelectorAll('.poll-option-input');
+    optionInputs.forEach(input => {
+        const value = input.value.trim();
+        if (value) {
+            options.push(value);
+        }
+    });
+    
+    if (!question || options.length < 2) {
+        return null;
+    }
+    
+    return {
+        question: question,
+        options: options,
+        duration: duration
+    };
+}
+
+// Auto-resize textarea
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('content');
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 300) + 'px';
+    });
+});
+</script>
+{% endblock %}
+

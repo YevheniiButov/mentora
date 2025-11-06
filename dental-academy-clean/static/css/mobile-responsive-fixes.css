@@ -1,0 +1,659 @@
+/* ===== MOBILE RESPONSIVENESS FIXES ===== */
+/* Комплексные исправления для мобильной адаптивности */
+
+/* === ОСНОВНЫЕ МОБИЛЬНЫЕ ИСПРАВЛЕНИЯ === */
+
+/* 1. Улучшенная навигация для мобильных */
+@media (max-width: 768px) {
+  /* Улучшенный мобильный header */
+  .modern-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  /* Улучшенный hamburger menu */
+  .navbar-toggler {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .navbar-toggler span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--text-primary);
+    margin: 2px 0;
+    transition: all 0.3s ease;
+    border-radius: 1px;
+  }
+
+  .navbar-toggler[aria-expanded="true"] span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+
+  .navbar-toggler[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .navbar-toggler[aria-expanded="true"] span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
+  }
+
+  /* Улучшенное мобильное меню */
+  .navbar-collapse {
+    position: fixed;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-height: calc(100vh - 100%);
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  .navbar-nav {
+    gap: 0.5rem;
+  }
+
+  .nav-link {
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+
+  .nav-link:hover,
+  .nav-link.active {
+    background: rgba(102, 126, 234, 0.1);
+    transform: translateX(5px);
+  }
+
+  /* Улучшенные действия в навигации */
+  .navbar-actions {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    gap: 0.75rem;
+  }
+
+  .language-dropdown .btn {
+    width: 100%;
+    justify-content: space-between;
+    padding: 1rem;
+    min-height: 44px;
+  }
+
+  .dropdown-menu {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .dropdown-item {
+    padding: 1rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* 2. Исправления для Learning Map на мобильных */
+@media (max-width: 768px) {
+  /* Основной контейнер Learning Map */
+  .learning-map-container {
+    margin-top: 80px; /* Отступ для фиксированного header */
+    padding: 1rem;
+    min-height: calc(100vh - 80px);
+    overflow-x: hidden;
+  }
+
+  /* Скрываем левую колонку и адаптируем layout */
+  .left-column {
+    display: none !important;
+  }
+
+  /* Улучшенная средняя колонка */
+  .middle-column {
+    width: 100% !important;
+    padding: 1rem !important;
+    margin: 0 !important;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Улучшенная правая колонка */
+  .right-column {
+    width: 100% !important;
+    padding: 1rem !important;
+    margin: 0 !important;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Адаптация сеток */
+  .subjects-grid,
+  .modules-grid,
+  .modules-grid-compact {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* Улучшенные карточки */
+  .subject-card,
+  .module-card-compact {
+    padding: 1.5rem !important;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  /* Улучшенные кнопки путей обучения */
+  .learning-path-button {
+    padding: 1.25rem !important;
+    min-height: 80px !important;
+    font-size: 1rem !important;
+    border-radius: 16px !important;
+  }
+
+  .learning-path-button .path-name {
+    font-size: 1rem !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Улучшенные заголовки */
+  .page-header h1,
+  .welcome-header h2 {
+    font-size: 1.75rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .welcome-subtitle {
+    font-size: 1rem !important;
+  }
+
+  /* Улучшенные шаги */
+  .steps-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .step-card {
+    padding: 1.5rem !important;
+    min-height: 120px;
+  }
+
+  /* Улучшенные виртуальные пациенты */
+  .virtual-patients-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .vp-card {
+    padding: 1.5rem !important;
+    min-height: 120px;
+  }
+
+  /* Улучшенная статистика */
+  .stats-cards {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .stat-card {
+    padding: 1.5rem !important;
+    min-height: 100px;
+  }
+
+  /* Улучшенные рекомендации */
+  .recommendations-list {
+    gap: 1rem !important;
+  }
+
+  .recommendation-item {
+    padding: 1.25rem !important;
+    min-height: 80px;
+  }
+}
+
+/* 3. Исправления для очень маленьких экранов */
+@media (max-width: 480px) {
+  .learning-map-container {
+    padding: 0.75rem !important;
+    margin-top: 70px !important;
+  }
+
+  .middle-column,
+  .right-column {
+    padding: 0.75rem !important;
+  }
+
+  .page-header h1,
+  .welcome-header h2 {
+    font-size: 1.5rem !important;
+  }
+
+  .learning-path-button {
+    padding: 1rem !important;
+    min-height: 70px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .subject-card,
+  .module-card-compact,
+  .step-card,
+  .vp-card,
+  .stat-card {
+    padding: 1.25rem !important;
+  }
+
+  .recommendation-item {
+    padding: 1rem !important;
+  }
+}
+
+/* 4. Улучшенные touch targets */
+@media (max-width: 768px) {
+  /* Минимальный размер для всех интерактивных элементов */
+  button,
+  .btn,
+  .nav-link,
+  .dropdown-item,
+  .learning-path-button,
+  .subject-card,
+  .module-card-compact,
+  .step-card,
+  .vp-card,
+  .stat-card,
+  .recommendation-item {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+
+  /* Улучшенные отступы для touch */
+  .nav-link,
+  .dropdown-item,
+  .learning-path-button {
+    padding: 1rem !important;
+  }
+
+  /* Улучшенные hover эффекты для touch */
+  .learning-path-button:active,
+  .subject-card:active,
+  .module-card-compact:active {
+    transform: scale(0.98) !important;
+    transition: transform 0.1s ease !important;
+  }
+}
+
+/* 5. Исправления для горизонтального скролла */
+@media (max-width: 768px) {
+  /* Предотвращаем горизонтальный скролл */
+  body,
+  .learning-map-container,
+  .main-container,
+  .middle-column,
+  .right-column {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+
+  /* Убеждаемся, что контент не выходит за границы */
+  .subjects-grid,
+  .modules-grid,
+  .modules-grid-compact,
+  .steps-grid,
+  .virtual-patients-grid,
+  .stats-cards,
+  .recommendations-list {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Исправляем длинный текст */
+  .path-name,
+  .card-info h3,
+  .step-content h4,
+  .vp-title,
+  .stat-label {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    hyphens: auto !important;
+  }
+}
+
+/* 6. Улучшенная доступность */
+@media (max-width: 768px) {
+  /* Улучшенный фокус для мобильных */
+  .nav-link:focus,
+  .btn:focus,
+  .learning-path-button:focus,
+  .dropdown-item:focus {
+    outline: 2px solid #3ECDC1 !important;
+    outline-offset: 2px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Улучшенная читаемость */
+  .path-name,
+  .card-info h3,
+  .step-content h4,
+  .vp-title,
+  .stat-label,
+  .recommendation-item h4 {
+    font-size: 1rem !important;
+    line-height: 1.4 !important;
+    color: var(--text-primary) !important;
+  }
+
+  /* Улучшенные контрасты */
+  .learning-path-button,
+  .subject-card,
+  .module-card-compact,
+  .step-card,
+  .vp-card,
+  .stat-card,
+  .recommendation-item {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    color: var(--text-primary) !important;
+  }
+}
+
+/* 7. Исправления для iOS Safari */
+@media (max-width: 768px) {
+  /* Улучшенный скроллинг для iOS */
+  .middle-column,
+  .right-column,
+  .navbar-collapse {
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth !important;
+  }
+
+  /* Исправления для viewport на iOS */
+  .learning-map-container {
+    min-height: -webkit-fill-available !important;
+  }
+
+  /* Исправления для фиксированного header на iOS */
+  .modern-header {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+  }
+}
+
+/* 8. Исправления для Android Chrome */
+@media (max-width: 768px) {
+  /* Улучшенная производительность на Android */
+  .learning-path-button,
+  .subject-card,
+  .module-card-compact,
+  .step-card,
+  .vp-card,
+  .stat-card,
+  .recommendation-item {
+    will-change: transform !important;
+    transform: translateZ(0) !important;
+  }
+
+  /* Исправления для touch events на Android */
+  .nav-link,
+  .btn,
+  .learning-path-button {
+    touch-action: manipulation !important;
+  }
+}
+
+/* 9. Исправления для планшетов */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .learning-map-container {
+    grid-template-columns: 280px 1fr 280px !important;
+    gap: 1.5rem !important;
+    padding: 1.5rem !important;
+  }
+
+  .subjects-grid,
+  .modules-grid,
+  .modules-grid-compact {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+
+  .virtual-patients-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+
+  .stats-cards {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+}
+
+/* 10. Исправления для ландшафтной ориентации на мобильных */
+@media (max-width: 768px) and (orientation: landscape) {
+  .learning-map-container {
+    margin-top: 60px !important;
+    padding: 0.75rem !important;
+  }
+
+  .navbar-collapse {
+    max-height: 60vh !important;
+  }
+
+  .learning-path-button,
+  .subject-card,
+  .module-card-compact {
+    min-height: 60px !important;
+    padding: 0.75rem !important;
+  }
+}
+
+/* 11. Улучшенные анимации для мобильных */
+@media (max-width: 768px) {
+  /* Уменьшаем анимации для лучшей производительности */
+  .learning-path-button,
+  .subject-card,
+  .module-card-compact,
+  .step-card,
+  .vp-card,
+  .stat-card,
+  .recommendation-item {
+    transition: transform 0.2s ease, background-color 0.2s ease !important;
+  }
+
+  /* Убираем сложные анимации на мобильных */
+  .learning-path-button::before,
+  .subject-card::before,
+  .module-card-compact::before,
+  .step-card::before,
+  .vp-card::before,
+  .stat-card::before {
+    display: none !important;
+  }
+}
+
+/* 12. Исправления для темной темы на мобильных */
+@media (max-width: 768px) {
+  [data-theme="dark"] .learning-path-button,
+  [data-theme="dark"] .subject-card,
+  [data-theme="dark"] .module-card-compact,
+  [data-theme="dark"] .step-card,
+  [data-theme="dark"] .vp-card,
+  [data-theme="dark"] .stat-card,
+  [data-theme="dark"] .recommendation-item {
+    background: rgba(0, 0, 0, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+  }
+
+  [data-theme="dark"] .modern-header {
+    background: rgba(0, 0, 0, 0.95) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  [data-theme="dark"] .navbar-collapse {
+    background: rgba(0, 0, 0, 0.95) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+}
+
+/* 13. BIG Info Page Mobile Optimizations */
+@media (max-width: 768px) {
+  .nav-buttons {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .nav-buttons::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-button {
+    min-width: 120px;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    border-radius: 8px;
+    border: 2px solid var(--primary-color, #3b82f6);
+    background: transparent;
+    color: var(--primary-color, #3b82f6);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .nav-button.active {
+    background: var(--primary-color, #3b82f6);
+    color: white;
+  }
+
+  .nav-button:hover {
+    background: var(--primary-color, #3b82f6);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  .nav-button:active {
+    transform: scale(0.98);
+  }
+
+  .content-section {
+    padding: 1rem;
+    margin-top: 1rem;
+  }
+
+  .content-section:not(.active) {
+    display: none;
+  }
+
+  .registration-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .step {
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+  }
+
+  .step-number {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--primary-color, #3b82f6);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+
+  .specialisms-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .specialism-card {
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+  }
+
+  .document-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .document-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    background: #f9fafb;
+  }
+
+  .useful-links-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .link-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f9fafb;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+  }
+
+  .link-card:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+  }
+}

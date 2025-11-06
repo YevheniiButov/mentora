@@ -1,0 +1,224 @@
+<!-- templates/admin/lessons.html -->
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Уроки модуля{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<style>
+    .lesson-list {
+        margin-top: 20px;
+    }
+    
+    .lesson-item {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f8f9fa;
+    }
+    
+    .lesson-actions {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .content-preview {
+        max-height: 200px;
+        overflow-y: auto;
+        background-color: #f0f0f0;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+        font-family: monospace;
+        font-size: 12px;
+    }
+    
+    .type-badge {
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+    }
+    
+    .type-learning_card {
+        background-color: #e7f5ff;
+        color: #1864ab;
+    }
+    
+    .type-video {
+        background-color: #fff3bf;
+        color: #e67700;
+    }
+    
+    .type-quiz {
+        background-color: #f3f0ff;
+        color: #5f3dc4;
+    }
+    
+    .type-interactive {
+        background-color: #ebfbee;
+        color: #2b8a3e;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid my-4">
+    <!-- Заголовок и кнопки -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">Уроки модуля "{{ module.title }}"</h1>
+            <p class="text-muted">Всего уроков: {{ lessons|length }}</p>
+        </div>
+        <div>
+            <a href="{{ url_for('admin_bp.modules', lang=lang) }}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left"></i> К списку модулей
+            </a>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLessonModal">
+                <i class="bi bi-plus-circle"></i> Добавить урок
+            </button>
+        </div>
+    </div>
+    
+    <!-- Список уроков -->
+    <div class="lesson-list">
+        {% if lessons %}
+            {% for lesson in lessons %}
+            <div class="lesson-item" id="lesson-{{ lesson.id }}">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h5 class="mb-1">{{ lesson.title }}</h5>
+                        <div class="mb-2">
+                            <span class="type-badge type-{{ lesson.content_type }}">{{ lesson.content_type }}</span>
+                            <span class="text-muted ms-3">Порядок: {{ lesson.order }}</span>
+                        </div>
+                    </div>
+                    <div class="lesson-actions">
+                        <button class="btn btn-sm btn-outline-primary edit-lesson-btn" 
+                                data-id="{{ lesson.id }}"
+                                data-title="{{ lesson.title }}"
+                                data-module="{{ lesson.module_id }}"
+                                data-type="{{ lesson.content_type }}"
+                                data-order="{{ lesson.order }}">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger delete-lesson-btn" 
+                                data-id="{{ lesson.id }}"
+                                data-title="{{ lesson.title }}">
+                            <i class="bi bi-trash"></i> Удалить
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Превью контента -->
+                <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-secondary toggle-content-btn" data-target="content-{{ lesson.id }}">
+                        <i class="bi bi-code-slash"></i> Показать/скрыть содержимое
+                    </button>
+                    <div class="content-preview" id="content-{{ lesson.id }}" style="display: none;">
+                        <pre>{{ lesson.content }}</pre>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i> У этого модуля пока нет уроков. Используйте кнопку "Добавить урок" для создания.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Включаем модальные окна для добавления/редактирования уроков -->
+{% include "admin/modals/lesson_modal.html" %}
+{% endblock %}
+
+{% block body_scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Обработчики для кнопок редактирования
+        document.querySelectorAll('.edit-lesson-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const lessonId = this.dataset.id;
+                const title = this.dataset.title;
+                const moduleId = this.dataset.module;
+                const contentType = this.dataset.type;
+                const order = this.dataset.order;
+                
+                // Получаем контент через AJAX
+                fetch(`/{{ lang }}/admin/api/get-lesson-content/${lessonId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Заполняем форму редактирования
+                        document.getElementById('edit-lesson-id').value = lessonId;
+                        document.getElementById('edit-lesson-title').value = title;
+                        document.getElementById('edit-lesson-module').value = moduleId;
+                        document.getElementById('edit-lesson-content-type').value = contentType;
+                        document.getElementById('edit-lesson-order').value = order;
+                        
+                        // Заполняем контент, если получили его
+                        if (data.success && data.content) {
+                            document.getElementById('edit-lesson-content').value = data.content;
+                        } else {
+                            document.getElementById('edit-lesson-content').value = '';
+                        }
+                        
+                        // Открываем модальное окно
+                        const modal = new bootstrap.Modal(document.getElementById('editLessonModal'));
+                        modal.show();
+                    })
+                    .catch(error => {
+                        console.error('Error fetching lesson content:', error);
+                        alert('Ошибка при получении содержимого урока');
+                    });
+            });
+        });
+        
+        // Обработчики для кнопок удаления
+        document.querySelectorAll('.delete-lesson-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const lessonId = this.dataset.id;
+                const title = this.dataset.title;
+                
+                if (confirm(`Вы уверены, что хотите удалить урок "${title}"?`)) {
+                    fetch(`/{{ lang }}/admin/api/delete-lesson/${lessonId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Удаляем элемент из DOM
+                            document.getElementById(`lesson-${lessonId}`).remove();
+                            alert(data.message);
+                        } else {
+                            alert('Ошибка: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Произошла ошибка при удалении урока');
+                    });
+                }
+            });
+        });
+        
+        // Обработчики для кнопок показа/скрытия контента
+        document.querySelectorAll('.toggle-content-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const contentId = this.dataset.target;
+                const contentElement = document.getElementById(contentId);
+                
+                if (contentElement.style.display === 'none') {
+                    contentElement.style.display = 'block';
+                } else {
+                    contentElement.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

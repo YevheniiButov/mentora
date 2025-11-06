@@ -1,0 +1,367 @@
+<div class="user-details">
+    <div class="row">
+        <!-- Personal Information -->
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-person"></i> Personal Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Name:</strong></div>
+                        <div class="col-8">{{ user.get_display_name() }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Email:</strong></div>
+                        <div class="col-8">{{ user.email }}</div>
+                    </div>
+                    {% if user.phone %}
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Phone:</strong></div>
+                        <div class="col-8">{{ user.country_code }}{{ user.phone }}</div>
+                    </div>
+                    {% endif %}
+                    {% if user.birth_date %}
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Birth Date:</strong></div>
+                        <div class="col-8">{{ user.birth_date.strftime('%B %d, %Y') }}</div>
+                    </div>
+                    {% endif %}
+                    {% if user.gender %}
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Gender:</strong></div>
+                        <div class="col-8">{{ user.gender.title() }}</div>
+                    </div>
+                    {% endif %}
+                    {% if user.nationality %}
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Nationality:</strong></div>
+                        <div class="col-8">{{ user.nationality }}
+                            {% if user.other_nationality %}({{ user.other_nationality }}){% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if user.legal_status %}
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Legal Status:</strong></div>
+                        <div class="col-8">{{ user.legal_status.replace('_', ' ').title() }}
+                            {% if user.other_legal_status %}({{ user.other_legal_status }}){% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Information -->
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-briefcase"></i> Professional Information</h6>
+                </div>
+                <div class="card-body">
+                    {% if user.profession %}
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Profession:</strong></div>
+                        <div class="col-8">{{ user.get_profession_display() }}
+                            {% if user.other_profession %}({{ user.other_profession }}){% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if user.workplace %}
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Workplace:</strong></div>
+                        <div class="col-8">{{ user.workplace }}</div>
+                    </div>
+                    {% endif %}
+                    {% if user.specialization %}
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Specialization:</strong></div>
+                        <div class="col-8">{{ user.specialization }}</div>
+                    </div>
+                    {% endif %}
+                    {% if user.dutch_level %}
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>Dutch Level:</strong></div>
+                        <div class="col-8">{{ user.dutch_level.upper() }}</div>
+                    </div>
+                    {% endif %}
+                    {% if user.english_level %}
+                    <div class="row mb-2">
+                        <div class="col-4"><strong>English Level:</strong></div>
+                        <div class="col-8">{{ user.english_level.upper() }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Program Interests & Consents -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-heart"></i> Program Interests</h6>
+                </div>
+                <div class="card-body">
+                    {% if user.program_interests %}
+                    {% set interests = user.program_interests | from_json %}
+                    {% if interests %}
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for interest in interests %}
+                        <span class="badge bg-primary">{{ interest }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No interests specified</p>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-muted">No interests specified</p>
+                    {% endif %}
+                    
+                    {% if user.motivation %}
+                    <div class="mt-3">
+                        <strong>Motivation:</strong>
+                        <p class="mt-1">{{ user.motivation }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-check-circle"></i> Consents & Notifications</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-column gap-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Required Consents:</span>
+                            <span class="badge bg-{{ 'success' if user.required_consents else 'danger' }}">
+                                {{ 'Yes' if user.required_consents else 'No' }}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Optional Consents:</span>
+                            <span class="badge bg-{{ 'success' if user.optional_consents else 'danger' }}">
+                                {{ 'Yes' if user.optional_consents else 'No' }}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Program Notifications:</span>
+                            <span class="badge bg-{{ 'success' if user.program_notifications else 'danger' }}">
+                                {{ 'Yes' if user.program_notifications else 'No' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exam Information -->
+    {% if user.idw_assessment or user.big_exam_registered or user.exam_date %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-clipboard-check"></i> Exam Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if user.idw_assessment %}
+                        <div class="col-md-4">
+                            <div class="row mb-2">
+                                <div class="col-6"><strong>IDW Assessment:</strong></div>
+                                <div class="col-6">{{ user.idw_assessment.replace('_', ' ').title() }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if user.big_exam_registered %}
+                        <div class="col-md-4">
+                            <div class="row mb-2">
+                                <div class="col-6"><strong>Big Exam:</strong></div>
+                                <div class="col-6">{{ user.big_exam_registered.replace('_', ' ').title() }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if user.exam_date %}
+                        <div class="col-md-4">
+                            <div class="row mb-2">
+                                <div class="col-6"><strong>Exam Date:</strong></div>
+                                <div class="col-6">{{ user.exam_date.strftime('%d.%m.%Y') }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Education Information -->
+    {% if user.university_name or user.degree_type or user.study_country %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-mortarboard"></i> Education Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if user.university_name %}
+                        <div class="col-md-6">
+                            <div class="row mb-2">
+                                <div class="col-4"><strong>University:</strong></div>
+                                <div class="col-8">{{ user.university_name }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if user.degree_type %}
+                        <div class="col-md-6">
+                            <div class="row mb-2">
+                                <div class="col-4"><strong>Degree Type:</strong></div>
+                                <div class="col-8">{{ user.degree_type.title() }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if user.study_start_year and user.study_end_year %}
+                        <div class="col-md-6">
+                            <div class="row mb-2">
+                                <div class="col-4"><strong>Study Period:</strong></div>
+                                <div class="col-8">{{ user.study_start_year }} - {{ user.study_end_year }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if user.study_country %}
+                        <div class="col-md-6">
+                            <div class="row mb-2">
+                                <div class="col-4"><strong>Study Country:</strong></div>
+                                <div class="col-8">{{ user.study_country }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if user.medical_specialization %}
+                        <div class="col-md-6">
+                            <div class="row mb-2">
+                                <div class="col-4"><strong>Medical Specialization:</strong></div>
+                                <div class="col-8">{{ user.medical_specialization }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if user.additional_education_info %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <strong>Additional Education Info:</strong>
+                            <p class="mt-1">{{ user.additional_education_info }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Additional Information -->
+    {% if user.work_experience or user.additional_qualifications %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Additional Information</h6>
+                </div>
+                <div class="card-body">
+                    {% if user.work_experience %}
+                    <div class="mb-3">
+                        <strong>Work Experience:</strong>
+                        <p class="mt-1">{{ user.work_experience }}</p>
+                    </div>
+                    {% endif %}
+                    {% if user.additional_qualifications %}
+                    <div class="mb-3">
+                        <strong>Additional Qualifications:</strong>
+                        <p class="mt-1">{{ user.additional_qualifications }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Account Status -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="bi bi-gear"></i> Account Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="badge bg-{{ 'success' if user.is_active else 'danger' }} fs-6">
+                                    {{ 'Active' if user.is_active else 'Inactive' }}
+                                </div>
+                                <div class="small text-muted mt-1">Account Status</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="badge bg-{{ 'success' if user.email_confirmed else 'warning' }} fs-6">
+                                    {{ 'Confirmed' if user.email_confirmed else 'Unconfirmed' }}
+                                </div>
+                                <div class="small text-muted mt-1">Email Status</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="badge bg-{{ 'info' if user.created_via_digid else 'secondary' }} fs-6">
+                                    {{ 'DigiD User' if user.created_via_digid else 'Regular User' }}
+                                </div>
+                                <div class="small text-muted mt-1">Registration Type</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="badge bg-primary fs-6">
+                                    {{ user.created_at.strftime('%d.%m.%Y') if user.created_at else 'Unknown' }}
+                                </div>
+                                <div class="small text-muted mt-1">Registration Date</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if user.last_login %}
+                    <div class="row mt-3">
+                        <div class="col-12 text-center">
+                            <small class="text-muted">Last Login: {{ user.last_login.strftime('%d.%m.%Y %H:%M') }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i> Edit User
+                </a>
+                <button class="btn btn-success" onclick="sendEmail({{ user.id }})">
+                    <i class="bi bi-envelope"></i> Send Email
+                </button>
+                <button class="btn btn-info" onclick="viewUserProfile({{ user.id }})">
+                    <i class="bi bi-person"></i> View Profile
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
