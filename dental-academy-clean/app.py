@@ -42,6 +42,7 @@ import os
 template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
 app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
+app.url_map.strict_slashes = False  # Allow routes with and without trailing slash
 setup_json_serialization(app)
 
 # Configure logging
@@ -146,8 +147,21 @@ except AttributeError:
 @app.before_request
 def before_request():
     """Set up global variables before each request"""
-    g.locale = str(get_locale())
-    g.lang = g.locale  # Добавляем g.lang для совместимости с шаблонами
+    # Логируем ВСЕ запросы для диагностики
+    path = request.path
+    if path in ['/en/', '/uk/', '/ru/', '/nl/', '/en', '/uk', '/ru', '/nl']:
+        logger.info(f"🌐 BEFORE_REQUEST: path={path}, method={request.method}, host={request.host}")
+    
+    # Специальная обработка для /learning-map/big-info без языка - используем нидерландский
+    if '/learning-map/big-info' in path or path == '/learning-map/big-info':
+        g.locale = 'nl'
+        g.lang = 'nl'
+        session['lang'] = 'nl'
+        session['language'] = 'nl'
+    else:
+        g.locale = str(get_locale())
+        g.lang = g.locale  # Добавляем g.lang для совместимости с шаблонами
+    
     g.supported_languages = SUPPORTED_LANGUAGES
     g.current_language = g.locale
     
@@ -302,22 +316,33 @@ def from_json_filter(value):
 @app.before_request
 def route_by_domain():
     host = request.host.lower()
+    path = request.path
+    
+    # Логируем для диагностики языковых путей
+    if path in ['/en/', '/uk/', '/ru/', '/nl/', '/en', '/uk', '/ru', '/nl']:
+        logger.info(f"🔍 route_by_domain: path={path}, host={host}")
     
     # Для mentora.com.in - разрешаем главную страницу и языковые роуты
+    # ВАЖНО: Этот обработчик НЕ должен блокировать запросы для localhost
     if 'mentora.com.in' in host:
-        # Разрешенные пути
+        # Разрешенные пути (включая языковые с завершающим слэшем)
         allowed_paths = ['/', '/nl', '/en', '/ru', '/uk', '/es', '/pt', '/tr', '/fa', '/mentora-login']
+        allowed_paths_with_slash = ['/nl/', '/en/', '/ru/', '/uk/', '/es/', '/pt/', '/tr/', '/fa/']
         allowed_prefixes = ['/admin', '/api', '/analytics', '/static']
         
         # Проверяем, разрешен ли текущий путь
         path_allowed = (
             request.path in allowed_paths or 
-            any(request.path.startswith(prefix) for prefix in allowed_prefixes)
+            request.path in allowed_paths_with_slash or
+            any(request.path.startswith(prefix) for prefix in allowed_prefixes) or
+            # Разрешаем языковые пути с любыми путями после /<lang>/
+            any(request.path.startswith(f'/{lang}/') for lang in ['nl', 'en', 'ru', 'uk', 'es', 'pt', 'tr', 'fa'])
         )
         
         # Если путь не разрешен - редирект на главную
         if not path_allowed:
             return redirect('/')
+    # Для всех остальных хостов (localhost, 127.0.0.1 и т.д.) - ничего не делаем
 
 # ========================================
 # MAIN ROUTES (always available)
@@ -333,6 +358,11 @@ def root_redirect():
     if 'mentora.com.in' in host:
         return render_template('mentora_landing.html')
     return redirect('/nl')
+
+@app.route('/learning-map/big-info', strict_slashes=False)
+def learning_map_big_info_redirect():
+    """Редирект для /learning-map/big-info на /nl/big-info (нидерландский по умолчанию)"""
+    return redirect('/nl/big-info')
 
 @app.route('/debug-mentora-login', methods=['GET', 'POST'])
 def debug_mentora_login():
@@ -465,6 +495,11 @@ try:
     
     # Импорт новых Learning роутов
     from routes.learning_routes_new import daily_learning_bp
+    from routes.learning import daily_tasks_bp
+    
+    # Импорт English Reading роутов
+    from routes.english_routes import english_bp
+    from routes.english_reading_routes import english_reading_bp
     
     # Импорт Calendar Plan API роутов
     from routes.calendar_plan_api import calendar_plan_bp
@@ -480,8 +515,24 @@ try:
 
     
     # Register blueprints
+    # IMPORTANT: Register blueprints with more specific routes FIRST
+    # to avoid route conflicts. More specific routes must be registered before less specific ones.
+    
     app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(main_bp)
+    
+    # Register main_bp FIRST to handle root paths like /<lang>/
+    # This ensures /<lang>/ routes are handled by main_bp.index BEFORE other blueprints
+    app.register_blueprint(main_bp)  # /<lang>/* (catch-all for lang routes)
+    
+    # Register more specific blueprints AFTER main_bp (with /<lang>/path)
+    app.register_blueprint(learning_map_bp)  # /<lang>/learning-map (most specific)
+    
+    # Then register daily_learning_bp (specific paths like /<lang>/knowledge-base)
+    # IMPORTANT: daily_learning_bp has the same url_prefix='/<string:lang>', 
+    # but it only handles specific paths like /knowledge-base, so Flask will match main_bp first
+    # for root paths like /<lang>/ because main_bp is registered first
+    app.register_blueprint(daily_learning_bp)  # /<lang>/knowledge-base (specific)
+    
     app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
     app.register_blueprint(learning_bp, url_prefix='/learning')  # ВКЛЮЧЕНО с декораторами блокировки
     # app.register_blueprint(test_bp, url_prefix='/tests')  # ОТКЛЮЧЕНО для предварительного запуска
@@ -490,7 +541,7 @@ try:
     
     # Регистрация новых blueprint-ов системы обучения
     app.register_blueprint(subject_view_bp)
-    app.register_blueprint(learning_map_bp)  # Профессиональные карты обучения
+    # learning_map_bp moved above to register before main_bp
     # app.register_blueprint(lesson_bp, url_prefix='/lesson')  # ОТКЛЮЧЕНО для предварительного запуска
     # app.register_blueprint(modules_bp)  # ОТКЛЮЧЕНО для предварительного запуска
     # app.register_blueprint(content_nav_bp, url_prefix='/content')  # ОТКЛЮЧЕНО для предварительного запуска
@@ -525,7 +576,15 @@ try:
     app.register_blueprint(api_bp)
     
     # Регистрация новых Learning blueprint
-    app.register_blueprint(daily_learning_bp)
+    # daily_learning_bp moved above to register before main_bp
+    
+    # Регистрация Daily Tasks API blueprint
+    app.register_blueprint(daily_tasks_bp)
+    
+    # Регистрация English Reading blueprints (BEFORE main_bp to avoid conflicts)
+    # These have specific prefixes (/api/english and /english) so they won't conflict
+    app.register_blueprint(english_bp)  # /api/english
+    app.register_blueprint(english_reading_bp)  # /english
     
     # Регистрация Calendar Plan API blueprint
     app.register_blueprint(calendar_plan_bp)
@@ -854,6 +913,7 @@ def demo_learning_map_modern():
     """Demo страница - Alpine.js версия карты обучения (стиль как главная страница)"""
     return render_template('learning/learning_map_modern_style.html')
 
+
 # ========================================
 # ERROR HANDLERS
 # ========================================
@@ -861,6 +921,15 @@ def demo_learning_map_modern():
 @app.errorhandler(404)
 def not_found_error(error):
     """Handle 404 errors"""
+    # Логируем 404 для диагностики
+    path = request.path
+    if path in ['/en/', '/uk/', '/ru/', '/nl/', '/en', '/uk', '/ru', '/nl']:
+        logger.error(f"❌ 404 ERROR for {path}")
+        logger.error(f"   Method: {request.method}, Host: {request.host}")
+        logger.error(f"   Endpoint: {request.endpoint}, View args: {request.view_args}")
+        # Проверяем, какие маршруты доступны
+        lang_routes = [r.rule for r in app.url_map.iter_rules() if '<string:lang>' in r.rule][:5]
+        logger.error(f"   Available lang routes: {lang_routes}")
     return render_template('errors/404.html'), 404
 
 @app.errorhandler(500)

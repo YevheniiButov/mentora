@@ -165,6 +165,9 @@ class User(db.Model, UserMixin):
     streak = db.relationship('UserStreak', backref='user', uselist=False, cascade='all, delete-orphan')
     reminders = db.relationship('UserReminder', backref='user', lazy='dynamic', cascade='all, delete-orphan')
     
+    # English learning relationships
+    english_progress = db.relationship('UserEnglishProgress', backref='user', lazy='dynamic', cascade='all, delete-orphan')
+    
     def set_password(self, password):
         """Hash and set password"""
         self.password_hash = generate_password_hash(password)
@@ -633,6 +636,21 @@ class User(db.Model, UserMixin):
         }
         
         return dashboard_stats
+    
+    def get_english_band_estimate(self):
+        """Estimate IELTS band based on accuracy"""
+        recent_attempts = self.english_progress.order_by(UserEnglishProgress.completed_at.desc()).limit(10).all()
+        if not recent_attempts:
+            return 0.0
+        
+        avg_accuracy = sum(a.score / a.total_questions * 100 for a in recent_attempts if a.total_questions > 0) / len(recent_attempts)
+        
+        # Simple band estimation
+        if avg_accuracy >= 90: return 8.5
+        elif avg_accuracy >= 80: return 7.5
+        elif avg_accuracy >= 70: return 6.5
+        elif avg_accuracy >= 60: return 5.5
+        else: return 5.0
     
     def get_next_recommended_modules(self, limit=5):
         """Get next recommended modules based on progress"""
@@ -6404,3 +6422,130 @@ class DailyFlashcardProgress(db.Model):
     
     def __repr__(self):
         return f'<DailyFlashcardProgress User:{self.user_id} Date:{self.date} Completed:{self.terms_completed}>'
+
+
+# ========================================
+# ENGLISH LEARNING (IELTS)
+# ========================================
+
+class EnglishPassage(db.Model):
+    """English reading passages for IELTS preparation"""
+    __tablename__ = 'english_passages'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    text = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(100))  # 'science', 'history', 'technology', etc.
+    difficulty = db.Column(db.Integer, default=7)  # IELTS band level
+    word_count = db.Column(db.Integer)
+    image_url = db.Column(db.String(500), nullable=True)  # URL or path to thematic image
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    questions = db.relationship('EnglishQuestion', backref='passage', lazy='dynamic', cascade='all, delete-orphan')
+    
+    def __repr__(self):
+        return f'<EnglishPassage {self.id}: {self.title}>'
+
+
+class EnglishQuestion(db.Model):
+    """Questions for English passages - IELTS format"""
+    __tablename__ = 'english_questions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    passage_id = db.Column(db.Integer, db.ForeignKey('english_passages.id'), nullable=False)
+    question_number = db.Column(db.Integer)
+    question_type = db.Column(db.String(50))  # 'matching', 'true_false_ng', 'fill_blank', 'multiple_choice'
+    question_text = db.Column(db.Text, nullable=False)
+    correct_answer = db.Column(db.String(500))
+    options = db.Column(db.Text)  # JSON stored as Text: {"A": "...", "B": "...", "C": "...", "D": "..."}
+    explanation = db.Column(db.Text)  # Why this answer is correct
+    
+    def get_options(self):
+        """Get options as dict"""
+        if self.options:
+            try:
+                return json.loads(self.options)
+            except:
+                pass
+        return {}
+    
+    def set_options(self, options_dict):
+        """Set options from dict"""
+        self.options = safe_json_dumps(options_dict) if options_dict else None
+    
+    def __repr__(self):
+        return f'<EnglishQuestion {self.id}: Q{self.question_number} ({self.question_type})>'
+
+
+class UserEnglishProgress(db.Model):
+    """Track user progress in English reading"""
+    __tablename__ = 'user_english_progress'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    passage_id = db.Column(db.Integer, db.ForeignKey('english_passages.id'), nullable=False)
+    completed_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    score = db.Column(db.Integer)  # Correct answers out of total
+    total_questions = db.Column(db.Integer)
+    time_spent = db.Column(db.Integer)  # seconds
+    
+    # Relationships
+    passage = db.relationship('EnglishPassage', backref='user_progresses', lazy=True)
+    
+    def __repr__(self):
+        return f'<UserEnglishProgress User:{self.user_id} Passage:{self.passage_id} Score:{self.score}/{self.total_questions}>'
+
+
+# ========================================
+# DAILY ASSIGNMENTS
+# ========================================
+
+class DailyAssignment(db.Model):
+    """
+    Модель для фиксации дневных заданий в индивидуальном плане.
+    Хранит конкретные вопросы, термины, ВП и English Reading, назначенные на день.
+    """
+    __tablename__ = 'daily_assignments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    assignment_date = db.Column(db.Date, nullable=False, index=True)
+    
+    # Тип задания: 'test', 'terms', 'virtual_patient', 'english'
+    assignment_type = db.Column(db.String(20), nullable=False, index=True)
+    
+    # ID элементов (JSON массив): [1, 2, 3] для вопросов/терминов/ВП
+    item_ids = db.Column(db.Text, nullable=False)  # JSON array
+    
+    # Статус выполнения
+    completed = db.Column(db.Boolean, default=False)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    
+    # Количество попыток (для повторного прохождения тех же заданий)
+    attempts = db.Column(db.Integer, default=0)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    
+    # Relationships
+    user = db.relationship('User', backref='daily_assignments')
+    
+    # Уникальное ограничение: один тип задания на день для пользователя
+    __table_args__ = (db.UniqueConstraint('user_id', 'assignment_date', 'assignment_type', name='_user_date_type_uc'),)
+    
+    def get_item_ids(self):
+        """Получить список ID из JSON"""
+        if self.item_ids:
+            try:
+                return json.loads(self.item_ids)
+            except (json.JSONDecodeError, TypeError):
+                return []
+        return []
+    
+    def set_item_ids(self, ids_list):
+        """Установить список ID в JSON"""
+        self.item_ids = json.dumps(ids_list, ensure_ascii=False)
+    
+    def __repr__(self):
+        return f'<DailyAssignment User:{self.user_id} Date:{self.assignment_date} Type:{self.assignment_type} Items:{len(self.get_item_ids())}>'
