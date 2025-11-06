@@ -1,0 +1,287 @@
+{
+  "title": {
+    "nl": "Complexe Tandheelkundige Probleem: Acute Pijn en Angst (Enhanced v2)"
+  },
+  "description": {
+    "nl": "Realistische simulatie met emotionele dynamiek, tijdsdruk en complexe keuzes"
+  },
+  "scenario_data": {
+    "translations": {
+      "nl": {
+        "patient_info": {
+          "name": "Maria van den Berg",
+          "age": 42,
+          "gender": "female",
+          "medical_history": "Hypertensie (gecontroleerd), penicilline allergie, negatieve tandheelkundige ervaring in kindertijd",
+          "dental_history": "Vermijdt tandarts bezoeken gedurende 5 jaar, zelfmedicatie met pijnstillers",
+          "allergies": ["Penicilline"],
+          "symptoms": [
+            "Acute kiespijn (3 dagen)",
+            "Nachtelijke pijnverergering",
+            "Pijn bij kauwen",
+            "Verhoogde angst"
+          ]
+        },
+        
+        "emotional_state": {
+          "trust": 35,
+          "anxiety": 78,
+          "pain": 85,
+          "cooperation": 50,
+          "time_pressure": 60
+        },
+        
+        "hidden_information": [
+          {
+            "id": "financial_concern",
+            "content": "Heeft financiële zorgen - recent werkloos",
+            "reveals_when": ["trust >= 60", "direct_question_about_cost"],
+            "affects": ["treatment_choice", "urgent_need_for_cheap_solution"]
+          },
+          {
+            "id": "work_pressure",
+            "content": "Moet morgen belangrijk sollicitatiegesprek voeren",
+            "reveals_when": ["trust >= 50", "question_about_time"],
+            "affects": ["prefers_quick_solution", "cannot_return_tomorrow"]
+          },
+          {
+            "id": "lidocaine_reaction",
+            "content": "Vader had slechte reactie op lidocaïne (niet vermeld bij intake)",
+            "reveals_when": ["anxiety < 60", "detailed_medical_history"],
+            "affects": ["anesthesia_choice"]
+          }
+        ],
+        
+        "scenario_constraints": {
+          "time_available": 25,
+          "next_patient_waiting": true,
+          "resources": {
+            "xray_available": true,
+            "xray_wait_time": 15,
+            "specialist_available": false,
+            "specialist_next_available": "morgen 14:00"
+          },
+          "patient_budget": "beperkt"
+        },
+        
+        "initial_state": {
+          "patient_statement": "Goedendag dokter... Ik weet dat ik al lang niet bij de tandarts ben geweest, maar nu heb ik zulke erge pijn dat ik het gewoon niet meer kan verdragen. Mijn tand doet al drie dagen pijn, vooral 's nachts. Ik neem ibuprofen, maar het helpt nauwelijks.",
+          "patient_emotion": "anxious",
+          "body_language": "Handen trillen licht, vermijdt oogcontact, zit op het puntje van de stoel",
+          "clinical_phase": "initial_assessment",
+          "notes_dentist": "Patiënte toont tekenen van tandheelkundige angst: tremor van handen, snelle ademhaling, gespannen houding. Klachten over acute pijn gedurende 3 dagen met nachtelijke verergering - klassieke symptomen van pulpitis.",
+          "diagnostic_hints": "Nachtelijke pijn + ineffectiviteit van NSAID's = verdenking op irreversibele pulpitis. Zorgvuldige diagnostiek volgens NMT-protocol vereist."
+        },
+        
+        "dialogue_nodes": [
+          {
+            "id": "initial_response",
+            "title": "Eerste reactie op patiënt",
+            "patient_statement": "De pijn is echt ondraaglijk... Ik heb bijna niet geslapen vannacht.",
+            "patient_emotion": "anxious",
+            "clinical_phase": "initial_contact",
+            "options": [
+              {
+                "text": "Ik begrijp dat de pijn zwaar is. Laten we eerst uw situatie grondig bespreken - wanneer begon het, wat maakt het erger of beter? Dit helpt me de beste behandeling te kiezen.",
+                "next_node": "detailed_anamnesis",
+                "trade_offs": {
+                  "empathy": "+20",
+                  "trust": "+15",
+                  "time_cost": "-8 min",
+                  "diagnostic_quality": "+high",
+                  "patient_satisfaction": "+15"
+                },
+                "consequences": {
+                  "immediate": "Patiënt voelt zich gehoord",
+                  "delayed": "Betere diagnose, maar tijdsdruk neemt toe"
+                },
+                "body_language_reaction": "Schouders ontspannen iets, maakt oogcontact",
+                "clinical_notes": "Goede anamnese volgens protocol, maar kost tijd",
+                "hidden_info_unlock": ["work_pressure"]
+              },
+              {
+                "text": "Die pijn moeten we snel aanpakken. Ik zie dat u lijdt. Laten we direct kijken en röntgenfoto maken, dan kunnen we meteen starten met pijnbestrijding.",
+                "next_node": "quick_action_path",
+                "trade_offs": {
+                  "empathy": "+10",
+                  "trust": "+5",
+                  "time_cost": "-3 min",
+                  "diagnostic_quality": "medium",
+                  "pain_relief_speed": "+fast",
+                  "patient_satisfaction": "+10"
+                },
+                "consequences": {
+                  "immediate": "Patiënt waardeert snelheid",
+                  "delayed": "Mogelijk gemiste details in anamnese"
+                },
+                "body_language_reaction": "Knikt opgelucht, maar blijft gespannen",
+                "clinical_notes": "Actiegericht, risico op gemiste informatie",
+                "hidden_info_unlock": []
+              },
+              {
+                "text": "Ik merk dat u veel pijn heeft én gespannen bent. Ik wil beide aanpakken. Mag ik eerst vragen: bent u nerveus voor de tandarts? Dit is belangrijk voor hoe we verder gaan.",
+                "next_node": "anxiety_first_approach",
+                "trade_offs": {
+                  "empathy": "+25",
+                  "trust": "+20",
+                  "anxiety": "-15",
+                  "time_cost": "-10 min",
+                  "diagnostic_quality": "medium",
+                  "patient_satisfaction": "+20"
+                },
+                "consequences": {
+                  "immediate": "Diepe emotionele band, patiënt opent zich",
+                  "delayed": "Excellente samenwerking, maar meer tijd nodig"
+                },
+                "body_language_reaction": "Ogen worden vochtig, knikt langzaam, begint te praten over angst",
+                "clinical_notes": "Trauma-informed care, optimaal voor angstige patiënten",
+                "hidden_info_unlock": ["lidocaine_reaction", "financial_concern"]
+              }
+            ]
+          },
+          
+          {
+            "id": "detailed_anamnesis",
+            "title": "Gedetailleerde anamnese",
+            "patient_statement": "De pijn begon drie dagen geleden met een koud drankje. Eerst was het draaglijk, maar nu... het klopt constant en wordt erger bij liggen of kauwen.",
+            "patient_emotion": "focused_but_anxious",
+            "body_language": "Houdt hand tegen wang, leunt voorover",
+            "clinical_phase": "anamnesis",
+            "time_elapsed": 8,
+            "emotional_state_changes": {
+              "trust": "+15",
+              "anxiety": "-5"
+            },
+            "options": [
+              {
+                "text": "Klassieke tekenen van pulpitis. Laten we direct een röntgenfoto maken voor zekerheid, en dan stel ik een behandelplan op. Dit kan endodontie of extractie betekenen.",
+                "next_node": "direct_xray_path",
+                "trade_offs": {
+                  "efficiency": "+high",
+                  "time_cost": "-15 min wachttijd",
+                  "diagnostic_quality": "+excellent",
+                  "trust": "+5",
+                  "anxiety": "+10"
+                },
+                "consequences": {
+                  "immediate": "Efficiënt, maar röntgen is 15 min wachten",
+                  "delayed": "Beste diagnose, maar patiënt wordt nerveus tijdens wachten"
+                },
+                "body_language_reaction": "Verstijft bij horen 'endodontie of extractie'",
+                "hidden_info_unlock": []
+              },
+              {
+                "text": "Dit klinkt naar ontsteking van de zenuw. Voordat we röntgen maken, wil ik even kijken en testen in uw mond - dat geeft al veel informatie en bespaart wachttijd.",
+                "next_node": "clinical_exam_first",
+                "trade_offs": {
+                  "efficiency": "+medium",
+                  "time_cost": "-5 min",
+                  "diagnostic_quality": "good",
+                  "trust": "+10",
+                  "anxiety": "+5"
+                },
+                "consequences": {
+                  "immediate": "Sneller, maar minder zekerheid",
+                  "delayed": "Mogelijk later alsnog röntgen nodig"
+                },
+                "body_language_reaction": "Knikt, opent mond voorzichtig",
+                "hidden_info_unlock": []
+              },
+              {
+                "text": "Dat klinkt pijnlijk. Ik hoor ook dat u lang niet bij de tandarts bent geweest - klopt dat? En is er een reden daarvoor? Dit helpt me u beter te behandelen.",
+                "next_node": "psychological_exploration",
+                "trade_offs": {
+                  "empathy": "+20",
+                  "trust": "+25",
+                  "anxiety": "-20",
+                  "time_cost": "-12 min",
+                  "diagnostic_quality": "medium",
+                  "patient_satisfaction": "+25"
+                },
+                "consequences": {
+                  "immediate": "Diepe vertrouwensband, alle verborgen info onthuld",
+                  "delayed": "Excellente samenwerking, maar tijdsdruk zeer hoog"
+                },
+                "body_language_reaction": "Begint te huilen, vertelt over kindertijd trauma",
+                "hidden_info_unlock": ["lidocaine_reaction", "financial_concern", "work_pressure"]
+              }
+            ]
+          },
+          
+          {
+            "id": "quick_action_path",
+            "title": "Snelle actie route",
+            "patient_statement": "Dank u. Kunt u de pijn echt snel stoppen? Ik moet morgen... eh, ik moet gewoon snel beter zijn.",
+            "patient_emotion": "hopeful_but_stressed",
+            "body_language": "Klemt kaken op elkaar, kijkt naar de klok",
+            "clinical_phase": "rapid_assessment",
+            "time_elapsed": 3,
+            "emotional_state_changes": {
+              "trust": "+5",
+              "pain": "0",
+              "time_pressure": "+10"
+            },
+            "revealed_hidden_info": ["work_pressure"],
+            "patient_additional_statement": "Eerlijk gezegd... ik heb morgen een belangrijk sollicitatiegesprek. Ik kan echt niet met deze pijn verschijnen.",
+            "options": [
+              {
+                "text": "Ah, ik begrijp de urgentie. Ik kan vandaag direct de pijn stoppen met noodpulpectomie en sterke pijnstillers. Volgende week afmaken. Dat kost 45 minuten.",
+                "next_node": "emergency_pulpectomy",
+                "trade_offs": {
+                  "pain_relief": "+immediate",
+                  "time_cost": "-45 min (overtime)",
+                  "clinical_quality": "good",
+                  "next_patient_delayed": true,
+                  "trust": "+15"
+                },
+                "consequences": {
+                  "immediate": "Pijn gestopt, patiënt opgelucht",
+                  "delayed": "Volgende patiënt wacht, u loopt uit schema"
+                },
+                "body_language_reaction": "Grote opluchting, glimlacht dankbaar",
+                "requires_resources": ["extra_tijd", "assistent_overtime"]
+              },
+              {
+                "text": "Ik snap de druk. Ik kan nu snel de tand verdoven en open maken voor drainage - dat stopt ergste pijn in 20 min. Morgen na uw gesprek verdere behandeling. Akkoord?",
+                "next_node": "quick_drainage",
+                "trade_offs": {
+                  "pain_relief": "+good",
+                  "time_cost": "-20 min",
+                  "clinical_quality": "medium",
+                  "next_patient_delayed": false,
+                  "trust": "+10",
+                  "follow_up_required": true
+                },
+                "consequences": {
+                  "immediate": "Pijn vermindert 70%, patiënt kan functioneren",
+                  "delayed": "Moet morgenavond terugkomen (risico op no-show)"
+                },
+                "body_language_reaction": "Knikt opgelucht, iets minder gespannen",
+                "requires_resources": []
+              },
+              {
+                "text": "Ik begrijp het. Voor uw gesprek geef ik sterke pijnstilling (combinatie) en uitleg over zelfzorg. Overmorgen de tand behandelen. Dit is veilig voor 48 uur.",
+                "next_node": "pain_management_only",
+                "trade_offs": {
+                  "pain_relief": "+moderate",
+                  "time_cost": "-10 min",
+                  "clinical_quality": "low",
+                  "trust": "+5",
+                  "risk": "+infection_spread"
+                },
+                "consequences": {
+                  "immediate": "Patiënt kan functioneren morgen",
+                  "delayed": "Risico op verergering, mogelijk nood afspraak nodig"
+                },
+                "body_language_reaction": "Lijkt aarzelend, vraagt 'Is dit veilig?'",
+                "requires_resources": []
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
+
+
