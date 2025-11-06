@@ -9,11 +9,16 @@ This module provides functions to:
 - Select questions for study sessions
 """
 
-from models import PersonalLearningPlan, SpacedRepetitionItem, Question, BIGDomain, DomainCategory
+from models import (
+    PersonalLearningPlan, SpacedRepetitionItem, Question, BIGDomain, DomainCategory,
+    DiagnosticSession, TestAttempt, UserTermProgress, DailyFlashcardProgress,
+    UserEnglishProgress, VirtualPatientAttempt, EnglishPassage, MedicalTerm,
+    VirtualPatientScenario, DailyAssignment
+)
 from utils.helpers import get_user_profession_code
 from utils.domain_helpers import get_categories_for_profession, calculate_category_progress
 from extensions import db
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, timezone
 from sqlalchemy import func
 import json
 
@@ -87,6 +92,32 @@ def get_daily_tasks(user):
     # Estimate time (assuming 1.5 min per question)
     estimated_time = int((reviews_due + new_questions_needed) * 1.5)
     
+    # Get fixed assignments for today
+    today = date.today()
+    assignments = {}
+    for assignment_type in ['test', 'terms', 'virtual_patient', 'english']:
+        assignment = DailyAssignment.query.filter_by(
+            user_id=user.id,
+            assignment_date=today,
+            assignment_type=assignment_type
+        ).first()
+        
+        if assignment:
+            item_ids = assignment.get_item_ids()
+            assignments[assignment_type] = {
+                'exists': True,
+                'item_count': len(item_ids),
+                'completed': assignment.completed,
+                'attempts': assignment.attempts
+            }
+        else:
+            assignments[assignment_type] = {
+                'exists': False,
+                'item_count': 0,
+                'completed': False,
+                'attempts': 0
+            }
+    
     return {
         'new_questions': new_questions_needed,
         'reviews_due': reviews_due,
@@ -95,7 +126,8 @@ def get_daily_tasks(user):
         'sr_items': sr_items_due,
         'weak_categories': weak_categories,
         'goal': daily_goal,
-        'time_goal': plan.daily_time_goal or 30
+        'time_goal': plan.daily_time_goal or 30,
+        'assignments': assignments  # New: fixed assignments info
     }
 
 
@@ -181,6 +213,187 @@ def update_plan_from_diagnostic(user, diagnostic_results):
     print(f"✅ Plan updated: overall_progress={plan.overall_progress}%, time_invested={plan.time_invested}, retention_rate={plan.retention_rate}")
     
     return plan
+
+
+def get_category_progress(user):
+    """
+    Get progress statistics for all learning categories:
+    - Tests (DiagnosticSession, TestAttempt)
+    - Terms (UserTermProgress, DailyFlashcardProgress)
+    - English Reading (UserEnglishProgress)
+    - Virtual Patients (VirtualPatientAttempt)
+    
+    Returns:
+        dict: {
+            'tests': {...},
+            'terms': {...},
+            'english': {...},
+            'virtual_patients': {...}
+        }
+    """
+    from datetime import datetime, timezone, timedelta
+    
+    now = datetime.now(timezone.utc)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # 1. TESTS Progress
+    # Total completed tests
+    total_tests = DiagnosticSession.query.filter(
+        DiagnosticSession.user_id == user.id,
+        DiagnosticSession.status == 'completed',
+        DiagnosticSession.questions_answered > 0
+    ).count()
+    
+    # Tests today
+    tests_today = DiagnosticSession.query.filter(
+        DiagnosticSession.user_id == user.id,
+        DiagnosticSession.status == 'completed',
+        DiagnosticSession.completed_at >= today_start,
+        DiagnosticSession.questions_answered > 0
+    ).count()
+    
+    # Average score
+    avg_score = db.session.query(
+        func.avg(DiagnosticSession.correct_answers / DiagnosticSession.questions_answered * 100)
+    ).filter(
+        DiagnosticSession.user_id == user.id,
+        DiagnosticSession.status == 'completed',
+        DiagnosticSession.questions_answered > 0
+    ).scalar() or 0
+    
+    # Total questions answered in tests
+    total_test_questions = db.session.query(
+        func.sum(DiagnosticSession.questions_answered)
+    ).filter(
+        DiagnosticSession.user_id == user.id,
+        DiagnosticSession.status == 'completed'
+    ).scalar() or 0
+    
+    tests_progress = {
+        'name': 'Тесты',
+        'name_en': 'Tests',
+        'icon': 'bi-lightning-charge-fill',
+        'color': '#667eea',
+        'total_completed': total_tests,
+        'completed_today': tests_today,
+        'avg_score': round(avg_score, 1),
+        'total_questions': int(total_test_questions),
+        'progress_percent': min(100, round((total_tests / 10) * 100, 1)) if total_tests > 0 else 0  # Assuming 10 tests as goal
+    }
+    
+    # 2. TERMS Progress
+    # Total terms studied (from UserTermProgress)
+    total_terms_studied = UserTermProgress.query.filter(
+        UserTermProgress.user_id == user.id
+    ).count()
+    
+    # Terms studied today (from DailyFlashcardProgress)
+    daily_flashcard = DailyFlashcardProgress.query.filter_by(
+        user_id=user.id,
+        date=now.date()
+    ).first()
+    
+    terms_today = daily_flashcard.terms_studied if daily_flashcard and daily_flashcard.terms_studied else 0
+    
+    # Total terms mastered (ease_factor >= 2.5 or similar criteria)
+    mastered_terms = UserTermProgress.query.filter(
+        UserTermProgress.user_id == user.id,
+        UserTermProgress.next_review > now  # Terms that are mastered (no review needed soon)
+    ).count()
+    
+    # Total terms available (from MedicalTerm table)
+    total_terms_available = MedicalTerm.query.count() or 1000  # Fallback estimate
+    
+    terms_progress = {
+        'name': 'Термины',
+        'name_en': 'Terms',
+        'icon': 'bi-journal-text',
+        'color': '#f093fb',
+        'total_studied': total_terms_studied,
+        'studied_today': terms_today,
+        'mastered': mastered_terms,
+        'total_available': total_terms_available,
+        'progress_percent': min(100, round((total_terms_studied / min(total_terms_available, 500)) * 100, 1)) if total_terms_studied > 0 else 0
+    }
+    
+    # 3. ENGLISH READING Progress
+    # Total passages completed
+    total_passages = UserEnglishProgress.query.filter(
+        UserEnglishProgress.user_id == user.id
+    ).count()
+    
+    # Passages completed today
+    passages_today = UserEnglishProgress.query.filter(
+        UserEnglishProgress.user_id == user.id,
+        UserEnglishProgress.completed_at >= today_start
+    ).count()
+    
+    # Average score
+    avg_english_score = db.session.query(
+        func.avg(UserEnglishProgress.score / UserEnglishProgress.total_questions * 100)
+    ).filter(
+        UserEnglishProgress.user_id == user.id,
+        UserEnglishProgress.total_questions > 0
+    ).scalar() or 0
+    
+    # Total passages available
+    total_passages_available = EnglishPassage.query.count() or 50  # Fallback estimate
+    
+    english_progress = {
+        'name': 'Английский',
+        'name_en': 'English Reading',
+        'icon': 'bi-book',
+        'color': '#4facfe',
+        'total_completed': total_passages,
+        'completed_today': passages_today,
+        'avg_score': round(avg_english_score, 1),
+        'total_available': total_passages_available,
+        'progress_percent': min(100, round((total_passages / total_passages_available) * 100, 1)) if total_passages > 0 else 0
+    }
+    
+    # 4. VIRTUAL PATIENTS Progress
+    # Total VP attempts completed
+    total_vp_completed = VirtualPatientAttempt.query.filter(
+        VirtualPatientAttempt.user_id == user.id,
+        VirtualPatientAttempt.completed == True
+    ).count()
+    
+    # VP completed today
+    vp_today = VirtualPatientAttempt.query.filter(
+        VirtualPatientAttempt.user_id == user.id,
+        VirtualPatientAttempt.started_at >= today_start,
+        VirtualPatientAttempt.completed == True
+    ).count()
+    
+    # Average score
+    avg_vp_score = db.session.query(
+        func.avg(VirtualPatientAttempt.score)
+    ).filter(
+        VirtualPatientAttempt.user_id == user.id,
+        VirtualPatientAttempt.completed == True
+    ).scalar() or 0
+    
+    # Total VP scenarios available
+    total_vp_available = VirtualPatientScenario.query.filter_by(is_published=True).count() or 20  # Fallback estimate
+    
+    vp_progress = {
+        'name': 'Виртуальные пациенты',
+        'name_en': 'Virtual Patients',
+        'icon': 'bi-heart-pulse-fill',
+        'color': '#fa709a',
+        'total_completed': total_vp_completed,
+        'completed_today': vp_today,
+        'avg_score': round(avg_vp_score, 1),
+        'total_available': total_vp_available,
+        'progress_percent': min(100, round((total_vp_completed / total_vp_available) * 100, 1)) if total_vp_completed > 0 else 0
+    }
+    
+    return {
+        'tests': tests_progress,
+        'terms': terms_progress,
+        'english': english_progress,
+        'virtual_patients': vp_progress
+    }
 
 
 def get_progress_summary(user):
@@ -385,6 +598,9 @@ def get_progress_summary(user):
             if session.actual_duration:
                 total_time_minutes += session.actual_duration
     
+    # Get category progress (Tests, Terms, English, VP)
+    category_progress = get_category_progress(user)
+    
     return {
         'overall_progress': overall_progress,
         'daily_streak': streak if streak > 0 else (plan.daily_streak or 0),
@@ -396,6 +612,7 @@ def get_progress_summary(user):
         'time_goal': plan.daily_time_goal,
         'categories': categories,
         'weak_categories': [c for c in categories if c['percentage'] < 60],
+        'category_progress': category_progress,  # New: detailed progress by learning category
         'sr_stats': {
             'total_items': total_sr_items,
             'mastered_items': mastered_items,
@@ -414,16 +631,63 @@ def get_progress_summary(user):
     }
 
 
-def select_questions_for_today(user, count=20):
+def get_or_create_daily_assignment(user, assignment_type, item_ids_func, default_count=10):
+    """
+    Получить или создать дневное задание для пользователя.
+    
+    Args:
+        user: User object
+        assignment_type: 'test', 'terms', 'virtual_patient', 'english'
+        item_ids_func: Функция для генерации новых ID элементов (если задания нет)
+        default_count: Количество элементов по умолчанию
+    
+    Returns:
+        tuple: (DailyAssignment object, list of item IDs)
+    """
+    today = date.today()
+    
+    # Проверяем, есть ли уже задание на сегодня
+    assignment = DailyAssignment.query.filter_by(
+        user_id=user.id,
+        assignment_date=today,
+        assignment_type=assignment_type
+    ).first()
+    
+    if assignment:
+        # Задание уже есть - возвращаем те же самые ID
+        item_ids = assignment.get_item_ids()
+        return assignment, item_ids
+    
+    # Задания нет - создаем новое
+    # Генерируем ID элементов через функцию
+    item_ids = item_ids_func(default_count) if item_ids_func else []
+    
+    # Создаем новое задание
+    assignment = DailyAssignment(
+        user_id=user.id,
+        assignment_date=today,
+        assignment_type=assignment_type
+    )
+    assignment.set_item_ids(item_ids)
+    
+    db.session.add(assignment)
+    db.session.commit()
+    
+    return assignment, item_ids
+
+
+def select_questions_for_today(user, count=20, use_fixed_assignments=True):
     """
     Select questions for today's study session.
     Mix of: SR reviews + new questions from weak categories.
     
-    IMPORTANT: Excludes questions already answered today.
+    IMPORTANT: If use_fixed_assignments=True, returns FIXED questions for today
+    (same questions every time user starts session on the same day).
     
     Args:
         user: User object
         count: Total questions to select
+        use_fixed_assignments: If True, use fixed daily assignments
         
     Returns:
         list: Question objects
@@ -431,10 +695,97 @@ def select_questions_for_today(user, count=20):
     plan = get_or_create_learning_plan(user)
     profession = get_user_profession_code(user)
     
+    # Если используем фиксированные задания - проверяем/создаем их
+    if use_fixed_assignments:
+        def generate_question_ids(target_count):
+            """Генерирует ID вопросов для нового задания"""
+            selected_ids = []
+            
+            # Get questions already answered today
+            from datetime import datetime, timezone
+            today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+            
+            from models import DiagnosticSession, DiagnosticResponse
+            today_responses = DiagnosticResponse.query.join(DiagnosticSession).filter(
+                DiagnosticSession.user_id == user.id,
+                DiagnosticSession.completed_at >= today_start
+            ).all()
+            
+            answered_today_ids = set([r.question_id for r in today_responses])
+            
+            # 1. Get SR reviews due (приоритет - вопросы из Spaced Repetition)
+            sr_items_due = SpacedRepetitionItem.query.filter(
+                SpacedRepetitionItem.user_id == user.id,
+                SpacedRepetitionItem.next_review <= date.today()
+            ).limit(target_count // 2).all()
+            
+            # Добавляем ID из SR
+            for sr_item in sr_items_due:
+                if sr_item.question_id not in answered_today_ids:
+                    selected_ids.append(sr_item.question_id)
+                    if len(selected_ids) >= target_count:
+                        return selected_ids[:target_count]
+            
+            # 2. Get new questions from weak categories
+            remaining = target_count - len(selected_ids)
+            
+            if remaining > 0:
+                weak_cat_ids = plan.get_weak_categories()
+                
+                if weak_cat_ids:
+                    # Get domains from weak categories
+                    weak_domains = BIGDomain.query.filter(
+                        BIGDomain.category_id.in_(weak_cat_ids),
+                        BIGDomain.profession == profession
+                    ).all()
+                    
+                    domain_ids = [d.id for d in weak_domains]
+                    
+                    if domain_ids:
+                        # Get questions from these domains
+                        sr_question_ids = [item.question_id for item in sr_items_due]
+                        used_question_ids = list(answered_today_ids) + sr_question_ids + selected_ids
+                        
+                        new_questions = Question.query.filter(
+                            Question.profession == profession,
+                            Question.big_domain_id.in_(domain_ids),
+                            ~Question.id.in_(used_question_ids) if used_question_ids else True
+                        ).order_by(func.random()).limit(remaining).all()
+                        
+                        selected_ids.extend([q.id for q in new_questions])
+            
+            # 3. Если все еще нужно больше - добавляем случайные вопросы
+            if len(selected_ids) < target_count:
+                remaining = target_count - len(selected_ids)
+                used_ids = selected_ids.copy()
+                used_ids.extend(answered_today_ids)
+                
+                random_questions = Question.query.filter(
+                    Question.profession == profession,
+                    ~Question.id.in_(used_ids) if used_ids else True
+                ).order_by(func.random()).limit(remaining).all()
+                
+                selected_ids.extend([q.id for q in random_questions])
+            
+            return selected_ids[:target_count]
+        
+        # Получаем или создаем задание
+        assignment, question_ids = get_or_create_daily_assignment(
+            user, 
+            'test', 
+            generate_question_ids, 
+            default_count=count
+        )
+        
+        # Возвращаем вопросы по ID
+        selected_questions = Question.query.filter(Question.id.in_(question_ids)).all()
+        return selected_questions
+    
+    # Старая логика (без фиксации) - для обратной совместимости
     selected_questions = []
     
     # Get questions already answered today
-    from datetime import datetime, timezone, date
+    from datetime import datetime, timezone
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     
     from models import DiagnosticSession, DiagnosticResponse
@@ -449,7 +800,7 @@ def select_questions_for_today(user, count=20):
     sr_items_due = SpacedRepetitionItem.query.filter(
         SpacedRepetitionItem.user_id == user.id,
         SpacedRepetitionItem.next_review <= date.today()
-    ).limit(count // 2).all()  # Max 50% of daily questions from SR
+    ).limit(count // 2).all()
     
     # Get questions for these SR items (exclude already answered)
     for sr_item in sr_items_due:
@@ -475,7 +826,6 @@ def select_questions_for_today(user, count=20):
             
             if domain_ids:
                 # Get questions from these domains
-                # Exclude questions already in SR AND already answered today
                 sr_question_ids = [item.question_id for item in sr_items_due]
                 used_question_ids = list(answered_today_ids) + sr_question_ids + [q.id for q in selected_questions]
                 
@@ -501,6 +851,256 @@ def select_questions_for_today(user, count=20):
             selected_questions.extend(random_questions)
     
     return selected_questions
+
+
+def select_terms_for_today(user, count=10, use_fixed_assignments=True):
+    """
+    Select terms for today's study session.
+    
+    Args:
+        user: User object
+        count: Total terms to select
+        use_fixed_assignments: If True, use fixed daily assignments
+        
+    Returns:
+        list: MedicalTerm objects
+    """
+    if use_fixed_assignments:
+        def generate_term_ids(target_count):
+            """Генерирует ID терминов для нового задания"""
+            selected_ids = []
+            
+            # Get terms studied today
+            today = date.today()
+            daily_flashcard = DailyFlashcardProgress.query.filter_by(
+                user_id=user.id,
+                date=today
+            ).first()
+            
+            studied_today_ids = set()
+            if daily_flashcard and hasattr(daily_flashcard, 'studied_term_ids'):
+                # Если есть поле с изученными терминами сегодня
+                studied_today_ids = set(json.loads(daily_flashcard.studied_term_ids) if daily_flashcard.studied_term_ids else [])
+            
+            # 1. Get terms from SR (UserTermProgress with next_review <= today)
+            sr_terms = UserTermProgress.query.filter(
+                UserTermProgress.user_id == user.id,
+                UserTermProgress.next_review <= datetime.now(timezone.utc)
+            ).limit(target_count // 2).all()
+            
+            for sr_term in sr_terms:
+                if sr_term.term_id not in studied_today_ids:
+                    selected_ids.append(sr_term.term_id)
+                    if len(selected_ids) >= target_count:
+                        return selected_ids[:target_count]
+            
+            # 2. Get new random terms
+            remaining = target_count - len(selected_ids)
+            if remaining > 0:
+                used_ids = selected_ids.copy()
+                used_ids.extend(studied_today_ids)
+                
+                random_terms = MedicalTerm.query.filter(
+                    ~MedicalTerm.id.in_(used_ids) if used_ids else True
+                ).order_by(func.random()).limit(remaining).all()
+                
+                selected_ids.extend([t.id for t in random_terms])
+            
+            return selected_ids[:target_count]
+        
+        # Получаем или создаем задание
+        assignment, term_ids = get_or_create_daily_assignment(
+            user,
+            'terms',
+            generate_term_ids,
+            default_count=count
+        )
+        
+        # Возвращаем термины по ID
+        selected_terms = MedicalTerm.query.filter(MedicalTerm.id.in_(term_ids)).all()
+        return selected_terms
+    
+    # Старая логика (без фиксации)
+    # Get terms from SR
+    sr_terms = UserTermProgress.query.filter(
+        UserTermProgress.user_id == user.id,
+        UserTermProgress.next_review <= datetime.now(timezone.utc)
+    ).limit(count).all()
+    
+    selected_terms = [MedicalTerm.query.get(sr.term_id) for sr in sr_terms if sr.term_id]
+    
+    # Если нужно больше - добавляем случайные
+    if len(selected_terms) < count:
+        remaining = count - len(selected_terms)
+        used_ids = [t.id for t in selected_terms]
+        random_terms = MedicalTerm.query.filter(
+            ~MedicalTerm.id.in_(used_ids) if used_ids else True
+        ).order_by(func.random()).limit(remaining).all()
+        selected_terms.extend(random_terms)
+    
+    return selected_terms[:count]
+
+
+def select_vp_for_today(user, use_fixed_assignments=True):
+    """
+    Select virtual patient scenario for today.
+    
+    Args:
+        user: User object
+        use_fixed_assignments: If True, use fixed daily assignments
+        
+    Returns:
+        VirtualPatientScenario object or None
+    """
+    if use_fixed_assignments:
+        def generate_vp_id():
+            """Генерирует ID ВП для нового задания"""
+            # Get VP completed today
+            today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+            completed_today = VirtualPatientAttempt.query.filter(
+                VirtualPatientAttempt.user_id == user.id,
+                VirtualPatientAttempt.started_at >= today_start,
+                VirtualPatientAttempt.completed == True
+            ).all()
+            
+            completed_vp_ids = set([v.scenario_id for v in completed_today if v.scenario_id])
+            
+            # Get random VP that user hasn't completed today
+            random_vp = VirtualPatientScenario.query.filter(
+                VirtualPatientScenario.is_published == True,
+                ~VirtualPatientScenario.id.in_(completed_vp_ids) if completed_vp_ids else True
+            ).order_by(func.random()).first()
+            
+            return [random_vp.id] if random_vp else []
+        
+        # Получаем или создаем задание
+        assignment, vp_ids = get_or_create_daily_assignment(
+            user,
+            'virtual_patient',
+            generate_vp_id,
+            default_count=1
+        )
+        
+        if vp_ids:
+            return VirtualPatientScenario.query.get(vp_ids[0])
+        return None
+    
+    # Старая логика (без фиксации)
+    # Get random published VP
+    random_vp = VirtualPatientScenario.query.filter_by(
+        is_published=True
+    ).order_by(func.random()).first()
+    
+    return random_vp
+
+
+def get_daily_assignment_items(user, assignment_type):
+    """
+    Получить элементы дневного задания для пользователя.
+    
+    Args:
+        user: User object
+        assignment_type: 'test', 'terms', 'virtual_patient', 'english'
+    
+    Returns:
+        list: ID элементов или None если задания нет
+    """
+    today = date.today()
+    
+    assignment = DailyAssignment.query.filter_by(
+        user_id=user.id,
+        assignment_date=today,
+        assignment_type=assignment_type
+    ).first()
+    
+    if assignment:
+        return assignment.get_item_ids()
+    
+    return None
+
+
+def select_english_passage_for_today(user, use_fixed_assignments=True):
+    """
+    Select English reading passage for today.
+    
+    Args:
+        user: User object
+        use_fixed_assignments: If True, use fixed daily assignments
+        
+    Returns:
+        EnglishPassage object or None
+    """
+    if use_fixed_assignments:
+        def generate_passage_id():
+            """Генерирует ID текста для нового задания"""
+            # Get passages completed today
+            today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+            completed_today = UserEnglishProgress.query.filter(
+                UserEnglishProgress.user_id == user.id,
+                UserEnglishProgress.completed_at >= today_start
+            ).all()
+            
+            completed_passage_ids = set([p.passage_id for p in completed_today if p.passage_id])
+            
+            # Get random passage that user hasn't completed today
+            random_passage = EnglishPassage.query.filter(
+                ~EnglishPassage.id.in_(completed_passage_ids) if completed_passage_ids else True
+            ).order_by(func.random()).first()
+            
+            return [random_passage.id] if random_passage else []
+        
+        # Получаем или создаем задание
+        assignment, passage_ids = get_or_create_daily_assignment(
+            user,
+            'english',
+            generate_passage_id,
+            default_count=1
+        )
+        
+        if passage_ids:
+            return EnglishPassage.query.get(passage_ids[0])
+        return None
+    
+    # Старая логика (без фиксации)
+    # Get random passage
+    random_passage = EnglishPassage.query.order_by(func.random()).first()
+    return random_passage
+
+
+def add_to_spaced_repetition(user_id, question_id, was_correct):
+    """
+    Добавить вопрос в Spaced Repetition при неправильном ответе.
+    
+    Args:
+        user_id: ID пользователя
+        question_id: ID вопроса
+        was_correct: bool - правильный ли ответ
+    """
+    from utils.simple_spaced_repetition import SimpleSpacedRepetition
+    
+    try:
+        sr_system = SimpleSpacedRepetition()
+        # Конвертируем boolean в quality (0-5)
+        # Если неправильно - добавляем с низким качеством для повторения
+        # Если правильно - тоже добавляем, но с высоким качеством
+        quality = 5 if was_correct else 2  # 2 = нужно повторить, но не критично
+        
+        # Если ответ неправильный - добавляем с качеством 0 для обязательного повторения
+        if not was_correct:
+            quality = 0
+        
+        sr_system.calculate_next_review(
+            user_id=user_id,
+            question_id=question_id,
+            quality=quality
+        )
+        
+        db.session.commit()
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error adding to spaced repetition: {e}")
+        db.session.rollback()
 
 
 def update_daily_progress(user, questions_answered, time_spent_minutes):
