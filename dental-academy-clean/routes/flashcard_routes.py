@@ -105,8 +105,12 @@ def daily_session():
             if not user_lang or user_lang == '':
                 user_lang = 'en'
             
+            # Если выбран нидерландский, используем английский для перевода
+            # (так как карточки уже на нидерландском)
+            translation_lang = 'en' if user_lang == 'nl' else user_lang
+            
             # Get translated term or fallback to English
-            term_translated = getattr(term, f'term_{user_lang}', None) or term.term_en
+            term_translated = getattr(term, f'term_{translation_lang}', None) or term.term_en
             
             terms_data.append({
                 'id': term.id,
@@ -250,8 +254,12 @@ def study_category(category):
             if not user_lang or user_lang == '':
                 user_lang = 'en'
             
+            # Если выбран нидерландский, используем английский для перевода
+            # (так как карточки уже на нидерландском)
+            translation_lang = 'en' if user_lang == 'nl' else user_lang
+            
             # Get translated term or fallback to English
-            term_translated = getattr(term, f'term_{user_lang}', None) or term.term_en
+            term_translated = getattr(term, f'term_{translation_lang}', None) or term.term_en
             
             terms_data.append({
                 'id': term.id,
@@ -330,8 +338,12 @@ def study_simple(category):
             if not user_lang or user_lang == '':
                 user_lang = 'en'
             
+            # Если выбран нидерландский, используем английский для перевода
+            # (так как карточки уже на нидерландском)
+            translation_lang = 'en' if user_lang == 'nl' else user_lang
+            
             # Get translated term or fallback to English
-            term_translated = getattr(term, f'term_{user_lang}', None) or term.term_en
+            term_translated = getattr(term, f'term_{translation_lang}', None) or term.term_en
             
             terms_data.append({
                 'id': term.id,
@@ -387,8 +399,12 @@ def study_single_term(term_id):
         if not user_lang or user_lang == '':
             user_lang = 'en'
         
+        # Если выбран нидерландский, используем английский для перевода
+        # (так как карточки уже на нидерландском)
+        translation_lang = 'en' if user_lang == 'nl' else user_lang
+        
         # Get translated term or fallback to English
-        term_translated = getattr(term, f'term_{user_lang}', None) or term.term_en
+        term_translated = getattr(term, f'term_{translation_lang}', None) or term.term_en
         
         # Prepare single term for display
         terms_data = [{
@@ -677,15 +693,44 @@ def api_session_complete():
     Used by the simplified study interface
     """
     try:
+        from models import DailyFlashcardProgress
+        
         data = request.get_json()
         terms_studied = data.get('terms_studied', 0)
         total_xp = data.get('total_xp', 0)
-        time_spent = data.get('time_spent', 0)
+        time_spent = data.get('time_spent', 0)  # Время в минутах
         
         current_app.logger.info(f"Session completed: user={current_user.id}, terms={terms_studied}, xp={total_xp}, time={time_spent}")
         
-        # Here you could add additional session tracking logic
-        # For now, just return success
+        # Обновляем или создаем запись о прогрессе за сегодня
+        today = datetime.now(timezone.utc).date()
+        daily_progress = DailyFlashcardProgress.query.filter_by(
+            user_id=current_user.id,
+            date=today
+        ).first()
+        
+        if not daily_progress:
+            daily_progress = DailyFlashcardProgress(
+                user_id=current_user.id,
+                date=today
+            )
+            db.session.add(daily_progress)
+        
+        # Обновляем прогресс
+        current_terms_studied = daily_progress.terms_studied or 0
+        current_xp = daily_progress.xp_earned or 0
+        current_time = daily_progress.time_spent or 0.0
+        current_sessions = daily_progress.session_count or 0
+        
+        daily_progress.terms_studied = min(current_terms_studied + terms_studied, 10)
+        daily_progress.xp_earned = current_xp + total_xp
+        daily_progress.time_spent = current_time + time_spent
+        daily_progress.session_count = current_sessions + 1
+        daily_progress.last_session = datetime.now(timezone.utc)
+        
+        db.session.commit()
+        
+        current_app.logger.info(f"Updated daily progress: user={current_user.id}, time_spent={daily_progress.time_spent}")
         
         return jsonify({
             'success': True,
@@ -694,4 +739,5 @@ def api_session_complete():
     
     except Exception as e:
         current_app.logger.error(f"Error completing session: {e}")
+        db.session.rollback()
         return jsonify({'error': 'Failed to complete session'}), 500

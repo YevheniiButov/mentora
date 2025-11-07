@@ -278,6 +278,9 @@
                         });
                         
                         const csrfToken = (document.querySelector('meta[name="csrf-token"]') || {}).content;
+                        // Вычисляем время учебы в минутах
+                        const timeSpent = Math.round((Date.now() - this.sessionStart) / 60000);
+                        
                         const response = await fetch('/api/daily-progress/update', {
                             method: 'POST',
                             headers: { 
@@ -288,7 +291,8 @@
                                 type: 'terms',
                                 status: 'completed',
                                 score: this.xpEarned,
-                                terms_studied: Math.min(this.currentIndex + 1, this.totalTerms)  // Number of terms actually studied (cap at totalTerms)
+                                terms_studied: Math.min(this.currentIndex + 1, this.totalTerms),  // Number of terms actually studied (cap at totalTerms)
+                                time_spent: timeSpent  // Время в минутах
                             })
                         });
                         

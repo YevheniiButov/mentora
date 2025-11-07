@@ -763,6 +763,12 @@ def complete_automated_session():
                 diagnostic_session.correct_answers = correct_answers
                 diagnostic_session.completed_at = datetime.now(timezone.utc)
                 diagnostic_session.status = 'completed'
+                if time_spent is not None:
+                    try:
+                        current_time_spent = diagnostic_session.time_spent or 0.0
+                        diagnostic_session.time_spent = current_time_spent + float(time_spent)
+                    except Exception as e:
+                        current_app.logger.warning(f"Failed to update diagnostic_session time_spent: {e}")
                 current_app.logger.info(f"✅ Updated DiagnosticSession {diagnostic_session_id}: questions={questions_answered}, correct={correct_answers}")
                 db.session.commit()
         

@@ -159,6 +159,11 @@
     .category-selector {
         margin-bottom: 1.5rem;
         text-align: center;
+        transition: opacity 0.3s;
+    }
+    
+    .category-selector.hidden {
+        display: none;
     }
     
     .category-selector h5 {
@@ -166,6 +171,33 @@
         color: var(--game-text);
         margin-bottom: 1rem;
         font-size: 0.95rem;
+    }
+    
+    .game-stats {
+        transition: opacity 0.3s;
+    }
+    
+    .game-stats.hidden {
+        display: none;
+    }
+    
+    .toggle-hud-btn {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        padding: 0.5rem 1rem;
+        background: var(--game-primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        box-shadow: var(--game-shadow);
+    }
+    
+    .toggle-hud-btn:hover {
+        background: var(--game-secondary);
     }
     
     .category-btn {
@@ -383,6 +415,11 @@
             <div class="stats-label">Streak</div>
         </div>
     </div>
+    
+    <!-- Toggle HUD Button -->
+    <button class="toggle-hud-btn hidden" id="toggleHudBtn" onclick="toggleHUD()">
+        <i class="bi bi-eye"></i> Show Controls
+    </button>
     
     <!-- Start Screen -->
     <div class="game-card text-center" id="startScreen">
@@ -1102,10 +1139,31 @@ function startQuiz() {
     gameState.timerInterval = setInterval(updateTimer, 1000);
     
     document.getElementById('startScreen').style.display = 'none';
-    document.getElementById('categorySelector').style.display = 'none';
+    document.getElementById('categorySelector').classList.add('hidden');
     document.getElementById('quizScreen').style.display = 'block';
     
+    // Скрыть HUD после начала игры
+    document.querySelector('.game-stats')?.classList.add('hidden');
+    const toggleBtn = document.getElementById('toggleHudBtn');
+    if (toggleBtn) toggleBtn.classList.remove('hidden');
+    
     loadQuestion();
+}
+
+function toggleHUD() {
+    const selector = document.getElementById('categorySelector');
+    const stats = document.querySelector('.game-stats');
+    const toggleBtn = document.getElementById('toggleHudBtn');
+    
+    if (selector && selector.classList.contains('hidden')) {
+        selector.classList.remove('hidden');
+        if (stats) stats.classList.remove('hidden');
+        if (toggleBtn) toggleBtn.innerHTML = '<i class="bi bi-eye-slash"></i> Hide Controls';
+    } else {
+        if (selector) selector.classList.add('hidden');
+        if (stats) stats.classList.add('hidden');
+        if (toggleBtn) toggleBtn.innerHTML = '<i class="bi bi-eye"></i> Show Controls';
+    }
 }
 
 function loadQuestion() {

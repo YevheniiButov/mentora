@@ -72,7 +72,9 @@ def get_daily_progress():
         # Time from tests (DiagnosticSession)
         tests_time = 0
         for t in tests_today:
-            duration = getattr(t, 'actual_duration', 0) or 0
+            duration = getattr(t, 'time_spent', None)
+            if duration is None or duration == 0:
+                duration = getattr(t, 'actual_duration', 0) or 0
             tests_time += duration
         study_time += tests_time
         
@@ -89,13 +91,17 @@ def get_daily_progress():
         # Time from terms (DailyFlashcardProgress)
         terms_time = 0
         if daily_flashcard:
+            # Используем реальное время, если оно сохранено
             # Проверяем, есть ли поле time_spent в DailyFlashcardProgress
-            terms_duration = getattr(daily_flashcard, 'time_spent', 0) or 0
-            if terms_duration == 0:
-                # Fallback: вычисляем примерное время на основе количества изученных терминов
-                # Среднее время на термин ~ 1 минута
-                terms_duration = terms_completed * 1
-            terms_time = terms_duration
+            if hasattr(daily_flashcard, 'time_spent'):
+                terms_duration = daily_flashcard.time_spent
+                # Используем реальное время только если оно больше 0
+                # Если 0, значит время еще не было сохранено (старые записи)
+                if terms_duration and terms_duration > 0:
+                    terms_time = terms_duration
+                # Если time_spent = 0 или None, не используем fallback - просто 0
+                # (fallback был неточным и давал неправильные значения)
+            # Если поля нет (старая версия БД), используем 0
         study_time += terms_time
         
         # Логирование для диагностики
@@ -209,12 +215,13 @@ def update_daily_progress():
             # Сохраняем время, если поле существует
             if hasattr(daily_progress, 'time_spent'):
                 daily_progress.time_spent = current_time_spent + time_spent
+                current_app.logger.info(f"Updated time_spent: user={current_user.id}, current={current_time_spent}, added={time_spent}, total={daily_progress.time_spent}")
             else:
                 # Если поля нет, используем fallback вычисление позже
-                pass
+                current_app.logger.warning(f"time_spent field not found in DailyFlashcardProgress for user={current_user.id}")
             
             # Log the update
-            print(f"Updated daily progress: user={current_user.id}, terms_studied={daily_progress.terms_studied}, terms_completed={daily_progress.terms_completed}")
+            current_app.logger.info(f"Updated daily progress: user={current_user.id}, terms_studied={daily_progress.terms_studied}, terms_completed={daily_progress.terms_completed}, time_spent={getattr(daily_progress, 'time_spent', 'N/A')}")
         
         db.session.commit()
         

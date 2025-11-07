@@ -2,16 +2,38 @@
 
 {% block title %}Medical Memory Game{% endblock %}
 
-{% block game_title %}
-    <i class="bi bi-bullseye"></i> Medical Memory
-{% endblock %}
-
-{% block game_subtitle %}
-    Match Dutch medical terms with their meanings
-{% endblock %}
+{% block game_title %}{% endblock %}
+{% block game_subtitle %}{% endblock %}
 
 {% block extra_css %}
 <style>
+    /* Скрыть большой header */
+    .game-header {
+        display: none !important;
+    }
+    
+    /* Компактный контейнер */
+    .game-container {
+        padding: 0.5rem !important;
+        max-width: 100% !important;
+    }
+    
+    body {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .game-card {
+        padding: 0.75rem !important;
+        margin: 0 !important;
+        border-radius: 12px !important;
+    }
+    
+    @media (max-width: 767px) {
+        .game-card {
+            padding: 0.5rem !important;
+        }
+    }
     /* LinkedIn-inspired Professional Design */
     :root {
         --game-primary: #0a66c2;
@@ -25,17 +47,76 @@
         --game-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
     }
     
-    /* Compact layout - no scrolling needed */
-    .game-card {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 1.5rem;
+    /* Компактная верхняя панель */
+    .game-top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.4rem 0.75rem;
+        background: var(--game-bg);
+        border-bottom: 1px solid var(--game-border);
+        margin-bottom: 0.5rem;
+        border-radius: 6px;
+        min-height: 36px;
     }
     
-    @media (max-width: 767px) {
-        .game-card {
-            padding: 1rem;
-        }
+    .game-top-bar-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .game-timer {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--game-text);
+    }
+    
+    .game-top-bar-right {
+        display: flex;
+        gap: 0.4rem;
+    }
+    
+    .game-top-btn {
+        padding: 0.35rem 0.6rem;
+        border: 1px solid var(--game-border);
+        background: var(--game-bg);
+        color: var(--game-text);
+        border-radius: 4px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        line-height: 1.2;
+    }
+    
+    .game-top-btn:hover {
+        background: var(--game-light);
+        border-color: var(--game-primary);
+    }
+    
+    /* Кнопка назад - компактная */
+    .compact-back-btn {
+        position: fixed;
+        top: 0.5rem;
+        left: 0.5rem;
+        z-index: 1000;
+        padding: 0.4rem 0.6rem;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid var(--game-border);
+        border-radius: 6px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        box-shadow: var(--game-shadow);
+        text-decoration: none;
+        color: var(--game-text);
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .compact-back-btn:hover {
+        background: white;
+        border-color: var(--game-primary);
     }
     
     /* Hide difficulty selector when auto_start */
@@ -59,7 +140,7 @@
         grid-template-columns: repeat(4, 1fr);
         gap: 0.75rem;
         margin: 0 auto;
-        max-width: 700px;
+        max-width: 900px;
         padding: 0.5rem 0;
     }
     
@@ -80,6 +161,13 @@
         transition: all 0.3s ease;
         box-shadow: var(--game-shadow);
         border: 1px solid var(--game-border);
+        min-height: 100px;
+    }
+    
+    @media (min-width: 768px) {
+        .memory-card {
+            min-height: 120px;
+        }
     }
     
     .memory-card:hover:not(.flipped):not(.matched) {
@@ -236,15 +324,63 @@
     }
     
     .difficulty-selector {
-        margin-bottom: 1rem;
+        margin-bottom: 0.75rem;
         text-align: center;
+        transition: opacity 0.3s;
+        padding: 0.5rem;
+    }
+    
+    .difficulty-selector.hidden {
+        display: none;
+    }
+    
+    .difficulty-selector h5 {
+        font-size: 0.85rem;
+        margin-bottom: 0.5rem;
     }
     
     {% if auto_start %}
     .difficulty-selector {
-        display: none;
+        display: none !important;
     }
     {% endif %}
+    
+    .game-stats {
+        transition: opacity 0.3s;
+        margin-bottom: 0.5rem;
+    }
+    
+    .game-stats.hidden {
+        display: none;
+    }
+    
+    .control-buttons {
+        transition: opacity 0.3s;
+        margin-bottom: 0.5rem;
+    }
+    
+    .control-buttons.hidden {
+        display: none;
+    }
+    
+    .toggle-hud-btn {
+        position: fixed;
+        top: 0.5rem;
+        right: 0.5rem;
+        z-index: 1000;
+        padding: 0.4rem 0.6rem;
+        background: var(--game-primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.75rem;
+        box-shadow: var(--game-shadow);
+    }
+    
+    .toggle-hud-btn:hover {
+        background: var(--game-secondary);
+    }
     
     .difficulty-selector h5 {
         font-weight: 600;
@@ -326,7 +462,24 @@
 {% endblock %}
 
 {% block content %}
+<!-- Компактная кнопка назад -->
+<a href="javascript:history.back()" class="compact-back-btn">
+    <i class="bi bi-arrow-left"></i> <span class="d-none d-sm-inline">Back</span>
+</a>
+
 <div class="game-card">
+    <!-- LinkedIn-style Top Bar -->
+    <div class="game-top-bar hidden" id="gameTopBar">
+        <div class="game-top-bar-left">
+            <div class="game-timer" id="topTimer">0:00</div>
+        </div>
+        <div class="game-top-bar-right">
+            <button class="game-top-btn" id="resetTopBtn" onclick="resetGame()">
+                <i class="bi bi-arrow-clockwise"></i> Reset
+            </button>
+        </div>
+    </div>
+    
     <!-- Difficulty Selector -->
     <div class="difficulty-selector">
         <h5>Select Difficulty:</h5>
@@ -368,6 +521,11 @@
             <i class="bi bi-arrow-clockwise"></i> Reset
         </button>
     </div>
+    
+    <!-- Toggle HUD Button -->
+    <button class="toggle-hud-btn hidden" id="toggleHudBtn" onclick="toggleHUD()">
+        <i class="bi bi-eye"></i> Show Controls
+    </button>
     
     <!-- Memory Board -->
     <div class="memory-board" id="memoryBoard"></div>
@@ -676,12 +834,43 @@ function startGame() {
     document.getElementById('startBtn').style.display = 'none';
     document.getElementById('resetBtn').style.display = 'inline-block';
     
+    // Скрыть HUD после начала игры
+    document.querySelector('.difficulty-selector')?.classList.add('hidden');
+    document.querySelector('.game-stats')?.classList.add('hidden');
+    document.querySelector('.control-buttons')?.classList.add('hidden');
+    
+    // Показать компактную верхнюю панель
+    const gameTopBar = document.getElementById('gameTopBar');
+    if (gameTopBar) gameTopBar.classList.remove('hidden');
+    
+    const toggleBtn = document.getElementById('toggleHudBtn');
+    if (toggleBtn) toggleBtn.classList.remove('hidden');
+    
     createCards();
     
     gameState.startTime = Date.now();
     gameState.timerInterval = setInterval(updateTimer, 1000);
     
     updateStats();
+}
+
+function toggleHUD() {
+    const selector = document.querySelector('.difficulty-selector');
+    const stats = document.querySelector('.game-stats');
+    const controls = document.querySelector('.control-buttons');
+    const toggleBtn = document.getElementById('toggleHudBtn');
+    
+    if (selector && selector.classList.contains('hidden')) {
+        selector.classList.remove('hidden');
+        if (stats) stats.classList.remove('hidden');
+        if (controls) controls.classList.remove('hidden');
+        if (toggleBtn) toggleBtn.innerHTML = '<i class="bi bi-eye-slash"></i> Hide Controls';
+    } else {
+        if (selector) selector.classList.add('hidden');
+        if (stats) stats.classList.add('hidden');
+        if (controls) controls.classList.add('hidden');
+        if (toggleBtn) toggleBtn.innerHTML = '<i class="bi bi-eye"></i> Show Controls';
+    }
 }
 
 function createCards() {
@@ -773,8 +962,14 @@ function checkMatch() {
 }
 
 function updateStats() {
-    document.getElementById('moves').textContent = gameState.moves;
-    document.getElementById('matches').textContent = gameState.matchedPairs;
+    const movesEl = document.getElementById('moves');
+    if (movesEl) movesEl.textContent = gameState.moves;
+    
+    const matchesEl = document.getElementById('matches');
+    if (matchesEl) {
+        const totalPairs = gameState.totalPairs || 0;
+        matchesEl.textContent = `${gameState.matchedPairs}/${totalPairs}`;
+    }
 }
 
 function updateTimer() {
@@ -783,7 +978,13 @@ function updateTimer() {
     const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
     const minutes = Math.floor(elapsed / 60);
     const seconds = elapsed % 60;
-    document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    
+    const timerEl = document.getElementById('timer');
+    if (timerEl) timerEl.textContent = timeStr;
+    
+    const topTimerEl = document.getElementById('topTimer');
+    if (topTimerEl) topTimerEl.textContent = timeStr;
 }
 
 function showVictory() {
@@ -829,13 +1030,40 @@ function resetGame() {
         totalPauseTime: 0
     };
     
-    document.getElementById('memoryBoard').innerHTML = '';
-    document.getElementById('moves').textContent = '0';
-    document.getElementById('matches').textContent = '0';
-    document.getElementById('timer').textContent = '0:00';
+    // Сброс UI
     document.getElementById('startBtn').style.display = 'inline-block';
     document.getElementById('resetBtn').style.display = 'none';
-    document.getElementById('victoryModal').classList.remove('show');
+    
+    // Скрыть верхнюю панель и показать элементы выбора
+    const gameTopBar = document.getElementById('gameTopBar');
+    if (gameTopBar) gameTopBar.classList.add('hidden');
+    
+    document.querySelector('.difficulty-selector')?.classList.remove('hidden');
+    document.querySelector('.game-stats')?.classList.remove('hidden');
+    document.querySelector('.control-buttons')?.classList.remove('hidden');
+    
+    const toggleBtn = document.getElementById('toggleHudBtn');
+    if (toggleBtn) toggleBtn.classList.add('hidden');
+    
+    // Очистить доску
+    const board = document.getElementById('memoryBoard');
+    if (board) board.innerHTML = '';
+    
+    // Сброс статистики
+    const movesEl = document.getElementById('moves');
+    if (movesEl) movesEl.textContent = '0';
+    
+    const matchesEl = document.getElementById('matches');
+    if (matchesEl) matchesEl.textContent = '0';
+    
+    const timerEl = document.getElementById('timer');
+    if (timerEl) timerEl.textContent = '0:00';
+    
+    const topTimerEl = document.getElementById('topTimer');
+    if (topTimerEl) topTimerEl.textContent = '0:00';
+    
+    const victoryModal = document.getElementById('victoryModal');
+    if (victoryModal) victoryModal.classList.remove('show');
 }
 
 // Auto-pause functionality
@@ -984,7 +1212,13 @@ function updateTimer() {
     const elapsed = Math.floor((Date.now() - gameState.startTime - gameState.totalPauseTime) / 1000);
     const minutes = Math.floor(elapsed / 60);
     const seconds = elapsed % 60;
-    document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    
+    const timerEl = document.getElementById('timer');
+    if (timerEl) timerEl.textContent = timeStr;
+    
+    const topTimerEl = document.getElementById('topTimer');
+    if (topTimerEl) topTimerEl.textContent = timeStr;
 }
 </script>
 {% endblock %}

@@ -11,6 +11,7 @@ class VirtualPatientDialogue {
     this.state = 'loading'; // loading, playing, complete
     this.dialogueHistory = [];
     this.notes = '';
+    this.visitedNodes = new Map(); // Отслеживание посещенных узлов: nodeId -> count
     
     // DOM elements
     this.container = document.getElementById('vpContainer');
@@ -88,6 +89,8 @@ class VirtualPatientDialogue {
       const nodes = this.scenario.scenario_data.dialogue_nodes;
       if (nodes && nodes.length > 0) {
         this.currentNodeId = nodes[0].id;
+        // Отмечаем первый узел как посещенный
+        this.visitedNodes.set(this.currentNodeId, 1);
         // Не показываем patient_statement первого узла, если уже показали initial_state
         await this.displayNode(this.currentNodeId, !hasInitialState);
       } else {
@@ -901,6 +904,10 @@ class VirtualPatientDialogue {
           option_text: option.text.substring(0, 50) + '...'
         });
         
+        // Защита от циклов: проверяем посещенные узлы
+        const visitCount = this.visitedNodes.get(nextNodeId) || 0;
+        const MAX_VISITS = 2; // Максимум 2 посещения одного узла
+        
         // Проверяем, что next_node не указывает на текущий узел (дополнительная защита)
         if (nextNodeId && nextNodeId === node.id) {
           console.error('❌ Blocked infinite loop: next_node === current_node');
@@ -915,12 +922,43 @@ class VirtualPatientDialogue {
             return;
           }
         } else if (nextNodeId && nextNodeId !== 'end') {
-          this.currentNodeId = nextNodeId;
+          // Проверяем, не посещали ли мы этот узел слишком много раз
+          if (visitCount >= MAX_VISITS) {
+            console.warn(`⚠️ Node ${nextNodeId} visited ${visitCount} times, preventing cycle`);
+            // Ищем следующий узел по порядку, который еще не посещали слишком много раз
+            const nodes = this.scenario.scenario_data.dialogue_nodes || [];
+            const currentIndex = nodes.findIndex(n => n.id === node.id);
+            let foundNext = false;
+            
+            for (let i = currentIndex + 1; i < nodes.length; i++) {
+              const candidateNode = nodes[i];
+              const candidateVisits = this.visitedNodes.get(candidateNode.id) || 0;
+              if (candidateVisits < MAX_VISITS) {
+                this.currentNodeId = candidateNode.id;
+                foundNext = true;
+                console.log(`✅ Using next unvisited node: ${this.currentNodeId}`);
+                break;
+              }
+            }
+            
+            if (!foundNext) {
+              console.log('✅ No more nodes available, completing scenario');
+              this.completeScenario();
+              return;
+            }
+          } else {
+            this.currentNodeId = nextNodeId;
+          }
         } else {
           // Сценарий завершен
           this.completeScenario();
           return;
         }
+        
+        // Увеличиваем счетчик посещений
+        const currentCount = this.visitedNodes.get(this.currentNodeId) || 0;
+        this.visitedNodes.set(this.currentNodeId, currentCount + 1);
+        console.log(`📊 Node ${this.currentNodeId} visited ${currentCount + 1} time(s)`);
         
         // Всегда показываем patient_statement для следующих узлов
         this.displayNode(this.currentNodeId, true);
@@ -1116,11 +1154,44 @@ class VirtualPatientDialogue {
       }
     }
     
+    // Защита от циклов: проверяем посещенные узлы
+    const visitCount = this.visitedNodes.get(nextNodeId) || 0;
+    const MAX_VISITS = 2; // Максимум 2 посещения одного узла
+    
+    if (nextNodeId && nextNodeId !== 'end' && visitCount >= MAX_VISITS) {
+      console.warn(`⚠️ Node ${nextNodeId} visited ${visitCount} times, preventing cycle`);
+      // Ищем следующий узел по порядку, который еще не посещали слишком много раз
+      const nodes = this.scenario.scenario_data.dialogue_nodes || [];
+      const currentIndex = nodes.findIndex(n => n.id === node.id);
+      let foundNext = false;
+      
+      for (let i = currentIndex + 1; i < nodes.length; i++) {
+        const candidateNode = nodes[i];
+        const candidateVisits = this.visitedNodes.get(candidateNode.id) || 0;
+        if (candidateVisits < MAX_VISITS) {
+          nextNodeId = candidateNode.id;
+          foundNext = true;
+          console.log(`✅ Using next unvisited node: ${nextNodeId}`);
+          break;
+        }
+      }
+      
+      if (!foundNext) {
+        console.log('✅ No more nodes available, completing scenario');
+        nextNodeId = 'end';
+      }
+    }
+    
     this.currentNodeId = nextNodeId;
     
     if (this.currentNodeId === 'end') {
       this.completeScenario();
     } else {
+      // Увеличиваем счетчик посещений
+      const currentCount = this.visitedNodes.get(this.currentNodeId) || 0;
+      this.visitedNodes.set(this.currentNodeId, currentCount + 1);
+      console.log(`📊 Node ${this.currentNodeId} visited ${currentCount + 1} time(s)`);
+      
       // Всегда показываем patient_statement для следующих узлов
       this.displayNode(this.currentNodeId, true);
     }

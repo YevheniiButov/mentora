@@ -3125,6 +3125,7 @@ class DiagnosticSession(db.Model):
     questions_answered = db.Column(db.Integer, default=0)
     correct_answers = db.Column(db.Integer, default=0)
     current_question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=True)
+    time_spent = db.Column(db.Float, default=0.0)  # Minutes spent in this session
     
     # Session data (JSON)
     session_data = db.Column(db.Text, nullable=True)  # JSON with response history
@@ -6412,6 +6413,7 @@ class DailyFlashcardProgress(db.Model):
     terms_completed = db.Column(db.Integer, default=0)
     xp_earned = db.Column(db.Integer, default=0)
     session_count = db.Column(db.Integer, default=0)
+    time_spent = db.Column(db.Float, default=0.0)  # Время в минутах
     last_session = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     # Relationships

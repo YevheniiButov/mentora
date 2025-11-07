@@ -117,7 +117,10 @@ def start_lesson(category):
             
             # Get translation in user's language
             user_lang = current_user.language or 'en'
-            term_translated = term.to_dict(lang=user_lang)
+            # Если выбран нидерландский, используем английский для перевода
+            # (так как карточки уже на нидерландском)
+            translation_lang = 'en' if user_lang == 'nl' else user_lang
+            term_translated = term.to_dict(lang=translation_lang)
             
             terms_data.append({
                 'id': term.id,
