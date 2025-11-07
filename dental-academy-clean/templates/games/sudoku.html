@@ -631,30 +631,42 @@ function fillBox6x6(board) {
     // Fill 2x3 boxes for 6x6 grid
     const numbers = [1, 2, 3, 4, 5, 6];
     
-    // Box 1: rows 0-1, cols 0-2
-    fillBoxWithNumbers(board, 0, 0, 2, 2, shuffle([...numbers]));
+    // Box 1: rows 0-1 (2 rows), cols 0-2 (3 cols) = 2x3 box
+    fillBoxWithNumbers(board, 0, 0, 2, 3, shuffle([...numbers]));
     
-    // Box 2: rows 0-1, cols 3-5
-    fillBoxWithNumbers(board, 0, 3, 2, 2, shuffle([...numbers]));
+    // Box 2: rows 0-1 (2 rows), cols 3-5 (3 cols) = 2x3 box
+    fillBoxWithNumbers(board, 0, 3, 2, 3, shuffle([...numbers]));
     
-    // Box 3: rows 2-3, cols 0-2
-    fillBoxWithNumbers(board, 2, 0, 2, 2, shuffle([...numbers]));
+    // Box 3: rows 2-3 (2 rows), cols 0-2 (3 cols) = 2x3 box
+    fillBoxWithNumbers(board, 2, 0, 2, 3, shuffle([...numbers]));
     
-    // Box 4: rows 2-3, cols 3-5
-    fillBoxWithNumbers(board, 2, 3, 2, 2, shuffle([...numbers]));
+    // Box 4: rows 2-3 (2 rows), cols 3-5 (3 cols) = 2x3 box
+    fillBoxWithNumbers(board, 2, 3, 2, 3, shuffle([...numbers]));
     
-    // Box 5: rows 4-5, cols 0-2
-    fillBoxWithNumbers(board, 4, 0, 2, 2, shuffle([...numbers]));
+    // Box 5: rows 4-5 (2 rows), cols 0-2 (3 cols) = 2x3 box
+    fillBoxWithNumbers(board, 4, 0, 2, 3, shuffle([...numbers]));
     
-    // Box 6: rows 4-5, cols 3-5
-    fillBoxWithNumbers(board, 4, 3, 2, 2, shuffle([...numbers]));
+    // Box 6: rows 4-5 (2 rows), cols 3-5 (3 cols) = 2x3 box
+    fillBoxWithNumbers(board, 4, 3, 2, 3, shuffle([...numbers]));
 }
 
 function fillBoxWithNumbers(board, startRow, startCol, rows, cols, numbers) {
+    // Safety check
+    if (!board || !numbers || numbers.length < rows * cols) {
+        console.error('Invalid parameters for fillBoxWithNumbers');
+        return;
+    }
+    
     let num = 0;
     for (let i = 0; i < rows; i++) {
+        if (!board[startRow + i]) {
+            console.error(`Row ${startRow + i} is undefined`);
+            return;
+        }
         for (let j = 0; j < cols; j++) {
-            board[startRow + i][startCol + j] = numbers[num++];
+            if (num < numbers.length) {
+                board[startRow + i][startCol + j] = numbers[num++];
+            }
         }
     }
 }
