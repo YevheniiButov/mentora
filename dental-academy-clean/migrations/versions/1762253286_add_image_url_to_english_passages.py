@@ -18,14 +18,21 @@ depends_on = None
 
 def upgrade():
     # Add image_url column to english_passages table
-    # Используем прямой SQL для проверки существования колонки
-    from sqlalchemy import inspect, text
+    # Используем прямой SQL для проверки существования колонки (избегаем проблем с транзакциями)
+    from sqlalchemy import text
     
     conn = op.get_bind()
-    inspector = inspect(conn)
-    columns = [col['name'] for col in inspector.get_columns('english_passages')]
     
-    if 'image_url' not in columns:
+    # Проверяем существование колонки через raw SQL
+    result = conn.execute(text("""
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'english_passages' 
+        AND column_name = 'image_url'
+    """))
+    
+    if result.fetchone() is None:
+        # Колонка не существует, добавляем её
         op.add_column('english_passages', 
             sa.Column('image_url', sa.String(length=500), nullable=True)
         )
