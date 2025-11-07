@@ -75,8 +75,8 @@ def get_daily_tasks(user_id):
         'tasks': []
     }
     
-    if cycle_day in [1, 2]:
-        # Regular day: Tests + Flashcards + VP
+    if cycle_day == 1:
+        # Day 1: Tests + Flashcards + VP + English Reading
         tasks['tasks'] = [
             {
                 'type': 'diagnostic_test',
@@ -101,10 +101,46 @@ def get_daily_tasks(user_id):
                 'icon': 'person-badge',
                 'completed': vp_completed,
                 'progress': 1 if vp_completed else 0
+            },
+            {
+                'type': 'english_reading',
+                'title': 'English Reading',
+                'target': 1,
+                'icon': 'book',
+                'completed': english_completed,
+                'progress': 1 if english_completed else 0
+            }
+        ]
+    elif cycle_day == 2:
+        # Day 2: Tests + Flashcards + English Reading
+        tasks['tasks'] = [
+            {
+                'type': 'diagnostic_test',
+                'title': 'Diagnostische Test',
+                'target': 10,
+                'icon': 'clipboard-check',
+                'completed': tests_completed > 0,
+                'progress': min(tests_completed, 10)
+            },
+            {
+                'type': 'flashcards',
+                'title': 'Medische Termen',
+                'target': 20,
+                'icon': 'card-text',
+                'completed': flashcards_completed,
+                'progress': flashcard_today.terms_studied if flashcard_today and flashcard_today.terms_studied else 0
+            },
+            {
+                'type': 'english_reading',
+                'title': 'English Reading',
+                'target': 1,
+                'icon': 'book',
+                'completed': english_completed,
+                'progress': 1 if english_completed else 0
             }
         ]
     else:  # cycle_day == 3
-        # Intensive day: More tests + English
+        # Day 3 (Intensive): More tests + English Reading
         tasks['tasks'] = [
             {
                 'type': 'diagnostic_test',
