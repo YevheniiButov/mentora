@@ -49,54 +49,144 @@ def upgrade():
         # Таблица может не существовать, игнорируем ошибку
         pass
     
-    with op.batch_alter_table('big_domain', schema=None) as batch_op:
-        batch_op.alter_column('code',
-               existing_type=sa.VARCHAR(length=20),
-               type_=sa.String(length=50),
-               existing_nullable=False)
-        batch_op.create_foreign_key('fk_big_domain_category_id', 'domain_category', ['category_id'], ['id'])
+    # Check if big_domain table exists and what changes are needed
+    from sqlalchemy import inspect
+    inspector = inspect(op.get_bind())
+    tables = inspector.get_table_names()
+    
+    if 'big_domain' in tables:
+        columns = {col['name']: col for col in inspector.get_columns('big_domain')}
+        constraints = [c['name'] for c in inspector.get_foreign_keys('big_domain')]
+        
+        # Check if code column needs to be altered (only if it's still VARCHAR(20))
+        code_needs_update = False
+        if 'code' in columns:
+            code_type = str(columns['code']['type'])
+            if 'VARCHAR(20)' in code_type or 'character varying(20)' in code_type.lower():
+                code_needs_update = True
+        
+        # Check if foreign key already exists
+        fk_exists = 'fk_big_domain_category_id' in constraints
+        
+        if code_needs_update or not fk_exists:
+            with op.batch_alter_table('big_domain', schema=None) as batch_op:
+                if code_needs_update:
+                    batch_op.alter_column('code',
+                           existing_type=sa.VARCHAR(length=20),
+                           type_=sa.String(length=50),
+                           existing_nullable=False)
+                if not fk_exists:
+                    batch_op.create_foreign_key('fk_big_domain_category_id', 'domain_category', ['category_id'], ['id'])
 
-    with op.batch_alter_table('forum_topics', schema=None) as batch_op:
-        batch_op.create_foreign_key(None, 'user', ['deleted_by'], ['id'])
+    # Check if forum_topics table exists and foreign key is needed
+    if 'forum_topics' in tables:
+        forum_fks = [c['name'] for c in inspector.get_foreign_keys('forum_topics')]
+        if 'fk_forum_topics_deleted_by' not in forum_fks:
+            with op.batch_alter_table('forum_topics', schema=None) as batch_op:
+                batch_op.create_foreign_key('fk_forum_topics_deleted_by', 'user', ['deleted_by'], ['id'])
 
-    with op.batch_alter_table('incoming_emails', schema=None) as batch_op:
-        batch_op.alter_column('source_account',
-               existing_type=sa.VARCHAR(length=50),
-               nullable=False,
-               existing_server_default=sa.text("'info'"))
+    # Check if incoming_emails table exists and source_account column needs update
+    if 'incoming_emails' in tables:
+        email_columns = {col['name']: col for col in inspector.get_columns('incoming_emails')}
+        if 'source_account' in email_columns:
+            # Check if column is nullable
+            if email_columns['source_account']['nullable']:
+                with op.batch_alter_table('incoming_emails', schema=None) as batch_op:
+                    batch_op.alter_column('source_account',
+                           existing_type=sa.VARCHAR(length=50),
+                           nullable=False,
+                           existing_server_default=sa.text("'info'"))
 
-    with op.batch_alter_table('learning_path', schema=None) as batch_op:
-        batch_op.alter_column('id',
-               existing_type=sa.VARCHAR(length=50),
-               type_=sa.Integer(),
-               existing_nullable=False,
-               autoincrement=True)
+    # Check if learning_path table exists and id column needs update
+    if 'learning_path' in tables:
+        lp_columns = {col['name']: col for col in inspector.get_columns('learning_path')}
+        if 'id' in lp_columns:
+            id_type = str(lp_columns['id']['type'])
+            # Only alter if it's still VARCHAR
+            if 'VARCHAR' in id_type or 'character varying' in id_type.lower():
+                with op.batch_alter_table('learning_path', schema=None) as batch_op:
+                    batch_op.alter_column('id',
+                           existing_type=sa.VARCHAR(length=50),
+                           type_=sa.Integer(),
+                           existing_nullable=False,
+                           autoincrement=True)
 
-    with op.batch_alter_table('page_views', schema=None) as batch_op:
-        batch_op.create_foreign_key(None, 'user_sessions', ['session_id'], ['session_id'])
+    # Check if page_views table exists and foreign key is needed
+    if 'page_views' in tables:
+        pv_fks = [c['name'] for c in inspector.get_foreign_keys('page_views')]
+        if 'fk_page_views_session_id' not in pv_fks:
+            with op.batch_alter_table('page_views', schema=None) as batch_op:
+                batch_op.create_foreign_key('fk_page_views_session_id', 'user_sessions', ['session_id'], ['session_id'])
 
-    with op.batch_alter_table('registration_logs', schema=None) as batch_op:
-        batch_op.drop_column('field')
-        batch_op.drop_column('error_message')
-        batch_op.drop_column('form_data')
-        batch_op.drop_column('error_code')
+    # Check if registration_logs table exists and columns need to be dropped
+    if 'registration_logs' in tables:
+        rl_columns = {col['name']: col for col in inspector.get_columns('registration_logs')}
+        columns_to_drop = []
+        if 'field' in rl_columns:
+            columns_to_drop.append('field')
+        if 'error_message' in rl_columns:
+            columns_to_drop.append('error_message')
+        if 'form_data' in rl_columns:
+            columns_to_drop.append('form_data')
+        if 'error_code' in rl_columns:
+            columns_to_drop.append('error_code')
+        
+        if columns_to_drop:
+            with op.batch_alter_table('registration_logs', schema=None) as batch_op:
+                for col in columns_to_drop:
+                    batch_op.drop_column(col)
 
-    with op.batch_alter_table('user', schema=None) as batch_op:
-        batch_op.alter_column('deleted_at',
-               existing_type=sa.TIMESTAMP(),
-               type_=sa.DateTime(),
-               existing_nullable=True)
-        batch_op.alter_column('profile_public',
-               existing_type=sa.BOOLEAN(),
-               nullable=True,
-               existing_server_default=sa.text("'1'"))
-        batch_op.create_index(batch_op.f('ix_user_member_id'), ['member_id'], unique=True)
+    # Check if user table exists and what changes are needed
+    if 'user' in tables:
+        user_columns = {col['name']: col for col in inspector.get_columns('user')}
+        user_indexes = [idx['name'] for idx in inspector.get_indexes('user')]
+        
+        needs_changes = False
+        changes = {}
+        
+        # Check deleted_at column
+        if 'deleted_at' in user_columns:
+            deleted_at_type = str(user_columns['deleted_at']['type'])
+            if 'TIMESTAMP' in deleted_at_type and 'DateTime' not in deleted_at_type:
+                changes['deleted_at'] = True
+                needs_changes = True
+        
+        # Check profile_public column
+        if 'profile_public' in user_columns:
+            if user_columns['profile_public']['nullable'] == False:
+                changes['profile_public'] = True
+                needs_changes = True
+        
+        # Check index
+        index_needed = 'ix_user_member_id' not in user_indexes
+        
+        if needs_changes or index_needed:
+            with op.batch_alter_table('user', schema=None) as batch_op:
+                if changes.get('deleted_at'):
+                    batch_op.alter_column('deleted_at',
+                           existing_type=sa.TIMESTAMP(),
+                           type_=sa.DateTime(),
+                           existing_nullable=True)
+                if changes.get('profile_public'):
+                    batch_op.alter_column('profile_public',
+                           existing_type=sa.BOOLEAN(),
+                           nullable=True,
+                           existing_server_default=sa.text("'1'"))
+                if index_needed:
+                    batch_op.create_index(batch_op.f('ix_user_member_id'), ['member_id'], unique=True)
 
-    with op.batch_alter_table('user_learning_progress', schema=None) as batch_op:
-        batch_op.alter_column('learning_path_id',
-               existing_type=sa.VARCHAR(length=50),
-               type_=sa.Integer(),
-               existing_nullable=False)
+    # Check if user_learning_progress table exists and learning_path_id needs update
+    if 'user_learning_progress' in tables:
+        ulp_columns = {col['name']: col for col in inspector.get_columns('user_learning_progress')}
+        if 'learning_path_id' in ulp_columns:
+            lp_id_type = str(ulp_columns['learning_path_id']['type'])
+            # Only alter if it's still VARCHAR
+            if 'VARCHAR' in lp_id_type or 'character varying' in lp_id_type.lower():
+                with op.batch_alter_table('user_learning_progress', schema=None) as batch_op:
+                    batch_op.alter_column('learning_path_id',
+                           existing_type=sa.VARCHAR(length=50),
+                           type_=sa.Integer(),
+                           existing_nullable=False)
 
     # ### end Alembic commands ###
 
