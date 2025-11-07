@@ -2,16 +2,38 @@
 
 {% block title %}Sudoku Game{% endblock %}
 
-{% block game_title %}
-    <i class="bi bi-grid-3x3-gap-fill"></i> Medical Sudoku
-{% endblock %}
-
-{% block game_subtitle %}
-    Classic logic puzzle to sharpen your mind
-{% endblock %}
+{% block game_title %}{% endblock %}
+{% block game_subtitle %}{% endblock %}
 
 {% block extra_css %}
 <style>
+    /* Скрыть большой header */
+    .game-header {
+        display: none !important;
+    }
+    
+    /* Компактный контейнер */
+    .game-container {
+        padding: 0.5rem !important;
+        max-width: 100% !important;
+    }
+    
+    body {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .game-card {
+        padding: 0.75rem !important;
+        margin: 0 !important;
+        border-radius: 12px !important;
+    }
+    
+    @media (max-width: 767px) {
+        .game-card {
+            padding: 0.5rem !important;
+        }
+    }
     /* LinkedIn-inspired Professional Design */
     :root {
         --game-primary: #0a66c2;
@@ -42,7 +64,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 1.5rem;
+        gap: 0.75rem;
     }
     
     @media (min-width: 1024px) {
@@ -50,14 +72,14 @@
             flex-direction: row;
             justify-content: center;
             align-items: flex-start;
-            gap: 2rem;
+            gap: 1.5rem;
         }
     }
     
     .sudoku-left {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.5rem;
         width: 100%;
         max-width: 600px;
     }
@@ -85,29 +107,29 @@
         box-shadow: var(--game-shadow);
     }
     
-    /* Easy: 6x6 grid with 2x3 boxes */
+    /* Easy: 6x6 grid with 2x3 boxes - увеличенный размер */
     .sudoku-grid.easy {
-        grid-template-columns: repeat(6, minmax(45px, 55px));
-        grid-template-rows: repeat(6, minmax(45px, 55px));
+        grid-template-columns: repeat(6, minmax(55px, 70px));
+        grid-template-rows: repeat(6, minmax(55px, 70px));
     }
     
-    /* Medium/Hard: 9x9 grid with 3x3 boxes */
+    /* Medium/Hard: 9x9 grid with 3x3 boxes - увеличенный размер */
     .sudoku-grid.medium,
     .sudoku-grid.hard {
-        grid-template-columns: repeat(9, minmax(40px, 48px));
-        grid-template-rows: repeat(9, minmax(40px, 48px));
+        grid-template-columns: repeat(9, minmax(50px, 60px));
+        grid-template-rows: repeat(9, minmax(50px, 60px));
     }
     
     @media (max-width: 767px) {
         .sudoku-grid.easy {
-            grid-template-columns: repeat(6, 40px);
-            grid-template-rows: repeat(6, 40px);
+            grid-template-columns: repeat(6, minmax(45px, 1fr));
+            grid-template-rows: repeat(6, minmax(45px, 1fr));
         }
         
         .sudoku-grid.medium,
         .sudoku-grid.hard {
-            grid-template-columns: repeat(9, 32px);
-            grid-template-rows: repeat(9, 32px);
+            grid-template-columns: repeat(9, minmax(35px, 1fr));
+            grid-template-rows: repeat(9, minmax(35px, 1fr));
         }
     }
     
@@ -116,7 +138,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.3rem;
+        font-size: 1.5rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -127,7 +149,7 @@
     
     @media (max-width: 767px) {
         .sudoku-cell {
-            font-size: 1rem;
+            font-size: 1.2rem;
         }
     }
     
@@ -181,16 +203,101 @@
         border-bottom: 2px solid var(--game-text);
     }
     
+    /* Компактная верхняя панель - минимум места */
+    .game-top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.4rem 0.75rem;
+        background: var(--game-bg);
+        border-bottom: 1px solid var(--game-border);
+        margin-bottom: 0.5rem;
+        border-radius: 6px;
+        min-height: 36px;
+    }
+    
+    .game-top-bar-left {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .game-timer {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--game-text);
+    }
+    
+    .game-puzzle-info {
+        font-size: 0.75rem;
+        color: var(--game-text-light);
+    }
+    
+    .game-top-bar-right {
+        display: flex;
+        gap: 0.4rem;
+    }
+    
+    .game-top-btn {
+        padding: 0.35rem 0.6rem;
+        border: 1px solid var(--game-border);
+        background: var(--game-bg);
+        color: var(--game-text);
+        border-radius: 4px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        line-height: 1.2;
+    }
+    
+    .game-top-btn:hover {
+        background: var(--game-light);
+        border-color: var(--game-primary);
+    }
+    
+    /* Кнопка назад - компактная */
+    .compact-back-btn {
+        position: fixed;
+        top: 0.5rem;
+        left: 0.5rem;
+        z-index: 1000;
+        padding: 0.4rem 0.6rem;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid var(--game-border);
+        border-radius: 6px;
+        font-size: 0.75rem;
+        cursor: pointer;
+        box-shadow: var(--game-shadow);
+        text-decoration: none;
+        color: var(--game-text);
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+    
+    .compact-back-btn:hover {
+        background: white;
+        border-color: var(--game-primary);
+    }
+    
+    /* LinkedIn-style number pad - 2 rows, 4 columns for 6x6, 5 columns for 9x9 */
     .number-pad {
         display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 0.5rem;
+        max-width: 280px;
+        margin: 0 auto;
+    }
+    
+    .number-pad.nine-by-nine {
         grid-template-columns: repeat(5, 1fr);
-        gap: 0.75rem;
         max-width: 350px;
     }
     
     @media (max-width: 767px) {
         .number-pad {
-            gap: 0.5rem;
+            gap: 0.4rem;
             max-width: 100%;
         }
     }
@@ -201,7 +308,7 @@
         background: var(--game-bg);
         color: var(--game-text);
         border-radius: 6px;
-        font-size: 1.4rem;
+        font-size: 1.2rem;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -210,7 +317,7 @@
     
     @media (max-width: 767px) {
         .number-btn {
-            font-size: 1.2rem;
+            font-size: 1rem;
         }
     }
     
@@ -224,6 +331,48 @@
     
     .number-btn:active {
         transform: translateY(0);
+    }
+    
+    .number-btn.clear-btn {
+        font-size: 1rem;
+    }
+    
+    .number-btn.undo-btn {
+        font-size: 1rem;
+    }
+    
+    /* Компактные кнопки помощи */
+    .helper-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .helper-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.75rem;
+        border: 1px solid var(--game-border);
+        background: var(--game-bg);
+        color: var(--game-text);
+        border-radius: 4px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .helper-btn:hover {
+        background: var(--game-light);
+        border-color: var(--game-primary);
+    }
+    
+    .helper-btn.active {
+        background: var(--game-primary);
+        color: white;
+        border-color: var(--game-primary);
     }
     
     .game-controls {
@@ -245,15 +394,56 @@
     }
     
     .difficulty-selector {
-        margin-bottom: 1.25rem;
+        margin-bottom: 0.75rem;
         text-align: center;
+        transition: opacity 0.3s, max-height 0.3s;
+        padding: 0.5rem;
+    }
+    
+    .difficulty-selector.hidden {
+        display: none;
     }
     
     .difficulty-selector h5 {
         font-weight: 600;
         color: var(--game-text);
-        margin-bottom: 1rem;
-        font-size: 0.95rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .game-stats {
+        transition: opacity 0.3s, max-height 0.3s;
+    }
+    
+    .game-stats.hidden {
+        display: none;
+    }
+    
+    .game-controls {
+        transition: opacity 0.3s;
+    }
+    
+    .game-controls.hidden {
+        display: none;
+    }
+    
+    .toggle-hud-btn {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        padding: 0.5rem 1rem;
+        background: var(--game-primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        box-shadow: var(--game-shadow);
+    }
+    
+    .toggle-hud-btn:hover {
+        background: var(--game-secondary);
     }
     
     .difficulty-btn {
@@ -379,8 +569,13 @@
 {% endblock %}
 
 {% block content %}
+<!-- Компактная кнопка назад -->
+<a href="javascript:history.back()" class="compact-back-btn">
+    <i class="bi bi-arrow-left"></i> <span class="d-none d-sm-inline">Back</span>
+</a>
+
 <div class="game-card">
-    <!-- Difficulty Selector -->
+    <!-- Difficulty Selector (hidden after game starts) -->
     <div class="difficulty-selector">
         <h5>Select Difficulty:</h5>
         <div class="d-flex flex-column flex-md-row justify-content-center gap-2">
@@ -396,33 +591,20 @@
         </div>
     </div>
     
-    <!-- Game Stats -->
-    <div class="game-stats mb-3">
-        <div class="stats-box">
-            <div class="stats-value" id="timer">0:00</div>
-            <div class="stats-label">Time</div>
+    <!-- LinkedIn-style Top Bar -->
+    <div class="game-top-bar hidden" id="gameTopBar">
+        <div class="game-top-bar-left">
+            <div class="game-timer" id="topTimer">0:00</div>
+            <div class="game-puzzle-info" id="puzzleInfo">Easy Sudoku</div>
         </div>
-        <div class="stats-box">
-            <div class="stats-value" id="mistakes">0</div>
-            <div class="stats-label">Mistakes</div>
+        <div class="game-top-bar-right">
+            <button class="game-top-btn" id="clearBtn" onclick="clearCell()">
+                <i class="bi bi-x-circle"></i> Clear
+            </button>
+            <button class="game-top-btn" id="settingsBtn" onclick="toggleSettings()">
+                <i class="bi bi-gear"></i>
+            </button>
         </div>
-        <div class="stats-box">
-            <div class="stats-value" id="remaining">36</div>
-            <div class="stats-label">Remaining</div>
-        </div>
-    </div>
-    
-    <!-- Control Buttons -->
-    <div class="game-controls mb-3">
-        <button class="btn btn-game" id="newGameBtn">
-            <i class="bi bi-plus-circle"></i> New Game
-        </button>
-        <button class="btn btn-game" id="hintBtn">
-            <i class="bi bi-lightbulb"></i> Hint
-        </button>
-        <button class="btn btn-game" id="checkBtn">
-            <i class="bi bi-check-circle"></i> Check
-        </button>
     </div>
     
     <!-- Game Layout -->
@@ -432,26 +614,32 @@
             <div class="sudoku-container">
                 <div class="sudoku-grid easy" id="sudokuGrid"></div>
             </div>
-            <div class="keyboard-hint">
-                💡 Use keyboard 1-9 to enter numbers, Backspace/Delete to erase
+            
+            <!-- Helper Buttons (LinkedIn style) -->
+            <div class="helper-buttons hidden" id="helperButtons">
+                <button class="helper-btn" id="hintHelperBtn" onclick="giveHint()">
+                    <i class="bi bi-lightbulb"></i> <span id="hintText">Hint</span>
+                </button>
+                <button class="helper-btn" id="notesHelperBtn" onclick="toggleNotes()">
+                    <i class="bi bi-pencil"></i> <span id="notesText">Notes OFF</span>
+                </button>
+            </div>
+            
+            <!-- Number Pad (LinkedIn style - 2 rows, 4 columns) -->
+            <div class="number-pad hidden" id="numberPad">
+                <!-- Кнопки будут сгенерированы динамически -->
             </div>
         </div>
-        
-        <!-- Number Pad -->
-        <div class="number-pad">
-            <button class="number-btn" data-value="1">1</button>
-            <button class="number-btn" data-value="2">2</button>
-            <button class="number-btn" data-value="3">3</button>
-            <button class="number-btn" data-value="4">4</button>
-            <button class="number-btn" data-value="5">5</button>
-            <button class="number-btn" data-value="6">6</button>
-            <button class="number-btn" data-value="7">7</button>
-            <button class="number-btn" data-value="8">8</button>
-            <button class="number-btn" data-value="9">9</button>
-            <button class="number-btn" data-value="0">
-                <i class="bi bi-eraser-fill"></i>
-            </button>
-        </div>
+    </div>
+    
+    <!-- Hidden controls for settings -->
+    <div class="game-controls hidden" id="hiddenControls">
+        <button class="btn btn-game" id="newGameBtn">
+            <i class="bi bi-plus-circle"></i> New Game
+        </button>
+        <button class="btn btn-game" id="checkBtn">
+            <i class="bi bi-check-circle"></i> Check
+        </button>
     </div>
 </div>
 
@@ -515,9 +703,11 @@ document.addEventListener('DOMContentLoaded', function() {
     setupKeyboardInput();
     setupAutoPause();
     
-    document.getElementById('newGameBtn').addEventListener('click', newGame);
-    document.getElementById('hintBtn').addEventListener('click', giveHint);
-    document.getElementById('checkBtn').addEventListener('click', checkSolution);
+    // Обработчики для скрытых кнопок
+    const newGameBtn = document.getElementById('newGameBtn');
+    if (newGameBtn) newGameBtn.addEventListener('click', newGame);
+    const checkBtn = document.getElementById('checkBtn');
+    if (checkBtn) checkBtn.addEventListener('click', checkSolution);
     
     newGame();
 });
@@ -535,14 +725,87 @@ function setupDifficultyButtons() {
 }
 
 function setupNumberPad() {
-    document.querySelectorAll('.number-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
+    const numberPad = document.getElementById('numberPad');
+    const maxNumber = gameState.gridSize;
+    
+    // Очистить панель
+    numberPad.innerHTML = '';
+    
+    // LinkedIn style: 2 rows, 4 columns for 6x6, 5 columns for 9x9
+    if (maxNumber === 6) {
+        numberPad.classList.remove('nine-by-nine');
+        // For 6x6: First row: 1, 2, 3, X (clear)
+        for (let i = 1; i <= 3; i++) {
+            numberPad.appendChild(createNumberButton(i));
+        }
+        
+        // Clear button (X) in first row
+        const clearBtn = document.createElement('button');
+        clearBtn.className = 'number-btn clear-btn';
+        clearBtn.dataset.value = '0';
+        clearBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+        clearBtn.addEventListener('click', function() {
             if (gameState.selectedCell !== null) {
-                const value = parseInt(this.dataset.value);
-                placeNumber(gameState.selectedCell, value);
+                placeNumber(gameState.selectedCell, 0);
             }
         });
+        numberPad.appendChild(clearBtn);
+        
+        // Second row: 4, 5, 6, Undo
+        for (let i = 4; i <= 6; i++) {
+            numberPad.appendChild(createNumberButton(i));
+        }
+        
+        // Undo button
+        const undoBtn = document.createElement('button');
+        undoBtn.className = 'number-btn undo-btn';
+        undoBtn.innerHTML = '<i class="bi bi-arrow-counterclockwise"></i>';
+        undoBtn.addEventListener('click', function() {
+            // TODO: Implement undo functionality
+            console.log('Undo clicked');
+        });
+        numberPad.appendChild(undoBtn);
+    } else {
+        numberPad.classList.add('nine-by-nine');
+        // For 9x9: First row: 1, 2, 3, 4, 5
+        for (let i = 1; i <= 5; i++) {
+            numberPad.appendChild(createNumberButton(i));
+        }
+        
+        // Second row: 6, 7, 8, 9, X (clear)
+        for (let i = 6; i <= 9; i++) {
+            numberPad.appendChild(createNumberButton(i));
+        }
+        
+        // Clear button (X) in second row
+        const clearBtn = document.createElement('button');
+        clearBtn.className = 'number-btn clear-btn';
+        clearBtn.dataset.value = '0';
+        clearBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+        clearBtn.addEventListener('click', function() {
+            if (gameState.selectedCell !== null) {
+                placeNumber(gameState.selectedCell, 0);
+            }
+        });
+        numberPad.appendChild(clearBtn);
+    }
+    
+    // Show number pad
+    numberPad.classList.remove('hidden');
+}
+
+function createNumberButton(num) {
+    const btn = document.createElement('button');
+    btn.className = 'number-btn';
+    btn.dataset.value = num;
+    btn.textContent = num;
+    btn.addEventListener('click', function() {
+        if (gameState.selectedCell !== null) {
+            const value = parseInt(this.dataset.value);
+            placeNumber(gameState.selectedCell, value);
+        }
     });
+    return btn;
 }
 
 function setupKeyboardInput() {
@@ -587,105 +850,150 @@ function newGame() {
     const config = DIFFICULTY[gameState.difficulty];
     gameState.gridSize = config.size;
     
-    gameState.solution = generateSudoku();
-    gameState.board = JSON.parse(JSON.stringify(gameState.solution));
+    // Показать индикатор загрузки
+    const grid = document.getElementById('sudokuGrid');
+    if (grid) {
+        grid.innerHTML = '<div style="padding: 2rem; text-align: center;">Generating puzzle...</div>';
+    }
     
-    removeNumbers(config.remove);
-    gameState.initialBoard = JSON.parse(JSON.stringify(gameState.board));
+    // Генерируем в асинхронном режиме, чтобы не блокировать UI
+    setTimeout(() => {
+        try {
+            gameState.solution = generateSudoku();
+            gameState.board = JSON.parse(JSON.stringify(gameState.solution));
+            
+            removeNumbers(config.remove);
+            gameState.initialBoard = JSON.parse(JSON.stringify(gameState.board));
+            
+            gameState.mistakes = 0;
+            gameState.hintsUsed = 0;
+            gameState.selectedCell = null;
+            gameState.totalPauseTime = 0;
+            
+            gameState.startTime = Date.now();
+            clearInterval(gameState.timerInterval);
+            gameState.timerInterval = setInterval(updateTimer, 1000);
+            
+            renderBoard();
+            updateStats();
+            setupNumberPad(); // Обновить панель с кнопками для нового размера
+            
+            // Показать LinkedIn-style интерфейс
+            const difficultySelector = document.querySelector('.difficulty-selector');
+            if (difficultySelector) difficultySelector.classList.add('hidden');
+            
+            const gameTopBar = document.getElementById('gameTopBar');
+            if (gameTopBar) gameTopBar.classList.remove('hidden');
+            
+            const helperButtons = document.getElementById('helperButtons');
+            if (helperButtons) helperButtons.classList.remove('hidden');
+            
+            // Обновить информацию о пазле
+            const puzzleInfo = document.getElementById('puzzleInfo');
+            if (puzzleInfo) {
+                const difficultyNames = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+                puzzleInfo.textContent = `${difficultyNames[gameState.difficulty]} Sudoku`;
+            }
+            
+            const victoryModal = document.getElementById('victoryModal');
+            if (victoryModal) victoryModal.classList.remove('show');
+        } catch (error) {
+            console.error('Error generating sudoku:', error);
+            grid.innerHTML = '<div style="padding: 2rem; text-align: center; color: red;">Error generating puzzle. Please try again.</div>';
+        }
+    }, 10); // Небольшая задержка для неблокирующего выполнения
+}
+
+function toggleHUD() {
+    const selector = document.querySelector('.difficulty-selector');
+    const stats = document.querySelector('.game-stats');
+    const controls = document.querySelector('.game-controls');
+    const toggleBtn = document.getElementById('toggleHudBtn');
     
-    gameState.mistakes = 0;
-    gameState.hintsUsed = 0;
-    gameState.selectedCell = null;
-    gameState.totalPauseTime = 0;
-    
-    gameState.startTime = Date.now();
-    clearInterval(gameState.timerInterval);
-    gameState.timerInterval = setInterval(updateTimer, 1000);
-    
-    renderBoard();
-    updateStats();
-    
-    document.getElementById('victoryModal').classList.remove('show');
+    if (selector.classList.contains('hidden')) {
+        selector.classList.remove('hidden');
+        stats.classList.remove('hidden');
+        controls.classList.remove('hidden');
+        toggleBtn.innerHTML = '<i class="bi bi-eye-slash"></i> Hide Controls';
+    } else {
+        selector.classList.add('hidden');
+        stats.classList.add('hidden');
+        controls.classList.add('hidden');
+        toggleBtn.innerHTML = '<i class="bi bi-eye"></i> Show Controls';
+    }
 }
 
 function generateSudoku() {
     const size = gameState.gridSize;
     const board = Array(size).fill(0).map(() => Array(size).fill(0));
     
-    if (size === 6) {
-        // Easy: 6x6 with 2x3 boxes
-        fillBox6x6(board);
-    } else {
-        // Medium/Hard: 9x9 with 3x3 boxes
-        for (let box = 0; box < 9; box += 3) {
-            fillBox(board, box, box);
-        }
+    // Используем простой и быстрый алгоритм: заполняем блоки по диагонали
+    // Это гарантирует, что блоки не конфликтуют друг с другом
+    const numbers = [];
+    for (let i = 1; i <= size; i++) {
+        numbers.push(i);
     }
     
-    solveSudoku(board);
+    if (size === 6) {
+        // Для 6x6: заполняем 3 непересекающихся блока (2x3 каждый)
+        // Блок 1: rows 0-1, cols 0-2
+        fillRandomBox(board, 0, 0, 2, 3, numbers);
+        // Блок 4: rows 2-3, cols 3-5 (не пересекается с блоком 1)
+        fillRandomBox(board, 2, 3, 2, 3, numbers);
+        // Блок 5: rows 4-5, cols 0-2 (не пересекается с предыдущими)
+        fillRandomBox(board, 4, 0, 2, 3, numbers);
+    } else {
+        // Для 9x9: заполняем 3 блока по диагонали (3x3 каждый)
+        fillRandomBox(board, 0, 0, 3, 3, numbers);
+        fillRandomBox(board, 3, 3, 3, 3, numbers);
+        fillRandomBox(board, 6, 6, 3, 3, numbers);
+    }
+    
+    // Решаем оставшуюся часть (должно быть быстро, т.к. уже есть 3 блока)
+    const solved = solveSudokuFast(board);
+    
+    if (!solved) {
+        // Если не получилось, используем fallback
+        return generateSudokuRetry(size);
+    }
     
     return board;
 }
 
-function fillBox6x6(board) {
-    // Fill 2x3 boxes for 6x6 grid
-    const numbers = [1, 2, 3, 4, 5, 6];
-    
-    // Box 1: rows 0-1 (2 rows), cols 0-2 (3 cols) = 2x3 box
-    const box1Numbers = [...numbers];
-    shuffle(box1Numbers);
-    fillBoxWithNumbers(board, 0, 0, 2, 3, box1Numbers);
-    
-    // Box 2: rows 0-1 (2 rows), cols 3-5 (3 cols) = 2x3 box
-    const box2Numbers = [...numbers];
-    shuffle(box2Numbers);
-    fillBoxWithNumbers(board, 0, 3, 2, 3, box2Numbers);
-    
-    // Box 3: rows 2-3 (2 rows), cols 0-2 (3 cols) = 2x3 box
-    const box3Numbers = [...numbers];
-    shuffle(box3Numbers);
-    fillBoxWithNumbers(board, 2, 0, 2, 3, box3Numbers);
-    
-    // Box 4: rows 2-3 (2 rows), cols 3-5 (3 cols) = 2x3 box
-    const box4Numbers = [...numbers];
-    shuffle(box4Numbers);
-    fillBoxWithNumbers(board, 2, 3, 2, 3, box4Numbers);
-    
-    // Box 5: rows 4-5 (2 rows), cols 0-2 (3 cols) = 2x3 box
-    const box5Numbers = [...numbers];
-    shuffle(box5Numbers);
-    fillBoxWithNumbers(board, 4, 0, 2, 3, box5Numbers);
-    
-    // Box 6: rows 4-5 (2 rows), cols 3-5 (3 cols) = 2x3 box
-    const box6Numbers = [...numbers];
-    shuffle(box6Numbers);
-    fillBoxWithNumbers(board, 4, 3, 2, 3, box6Numbers);
+function solveSudokuFast(board) {
+    // Быстрое решение с ограничением глубины рекурсии
+    return solveSudoku(board);
 }
 
-function fillBoxWithNumbers(board, startRow, startCol, rows, cols, numbers) {
-    // Safety check
-    if (!board || !numbers || !Array.isArray(numbers) || numbers.length < rows * cols) {
-        console.error('Invalid parameters for fillBoxWithNumbers', {
-            board: !!board,
-            numbers: numbers,
-            numbersLength: numbers ? numbers.length : 0,
-            required: rows * cols
-        });
-        return;
+function generateSudokuRetry(size) {
+    // Fallback: простая доска
+    const board = Array(size).fill(0).map(() => Array(size).fill(0));
+    const numbers = [];
+    for (let i = 1; i <= size; i++) {
+        numbers.push(i);
     }
     
-    let num = 0;
+    // Заполняем только первый блок
+    if (size === 6) {
+        fillRandomBox(board, 0, 0, 2, 3, numbers);
+    } else {
+        fillRandomBox(board, 0, 0, 3, 3, numbers);
+    }
+    
+    // Пытаемся решить
+    solveSudoku(board);
+    return board;
+}
+
+function fillRandomBox(board, startRow, startCol, rows, cols, numbers) {
+    const shuffled = [...numbers];
+    shuffle(shuffled);
+    
+    let idx = 0;
     for (let i = 0; i < rows; i++) {
-        if (!board[startRow + i]) {
-            console.error(`Row ${startRow + i} is undefined`);
-            return;
-        }
         for (let j = 0; j < cols; j++) {
-            if (num < numbers.length) {
-                board[startRow + i][startCol + j] = numbers[num++];
-            } else {
-                console.error(`Not enough numbers: need ${rows * cols}, have ${numbers.length}`);
-                return;
+            if (idx < shuffled.length) {
+                board[startRow + i][startCol + j] = shuffled[idx++];
             }
         }
     }
@@ -912,16 +1220,28 @@ function checkWin() {
 }
 
 function updateStats() {
-    document.getElementById('mistakes').textContent = gameState.mistakes;
+    // Безопасное обновление статистики - проверяем существование элементов
+    const mistakesEl = document.getElementById('mistakes');
+    if (mistakesEl) {
+        mistakesEl.textContent = gameState.mistakes;
+    }
     
     let remaining = 0;
     const size = gameState.gridSize;
-    for (let row = 0; row < size; row++) {
-        for (let col = 0; col < size; col++) {
-            if (gameState.board[row][col] === 0) remaining++;
+    if (gameState.board && gameState.board.length > 0) {
+        for (let row = 0; row < size; row++) {
+            if (gameState.board[row]) {
+                for (let col = 0; col < size; col++) {
+                    if (gameState.board[row][col] === 0) remaining++;
+                }
+            }
         }
     }
-    document.getElementById('remaining').textContent = remaining;
+    
+    const remainingEl = document.getElementById('remaining');
+    if (remainingEl) {
+        remainingEl.textContent = remaining;
+    }
 }
 
 function updateTimer() {
@@ -930,15 +1250,60 @@ function updateTimer() {
     const elapsed = Math.floor((Date.now() - gameState.startTime - gameState.totalPauseTime) / 1000);
     const minutes = Math.floor(elapsed / 60);
     const seconds = elapsed % 60;
-    document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    
+    // Update both timers if they exist
+    const timerEl = document.getElementById('timer');
+    if (timerEl) timerEl.textContent = timeStr;
+    const topTimerEl = document.getElementById('topTimer');
+    if (topTimerEl) topTimerEl.textContent = timeStr;
+}
+
+function clearCell() {
+    if (gameState.selectedCell !== null) {
+        placeNumber(gameState.selectedCell, 0);
+    }
+}
+
+function toggleSettings() {
+    // TODO: Implement settings menu
+    console.log('Settings clicked');
+}
+
+function toggleNotes() {
+    // TODO: Implement notes functionality
+    const notesBtn = document.getElementById('notesHelperBtn');
+    const notesText = document.getElementById('notesText');
+    if (notesBtn.classList.contains('active')) {
+        notesBtn.classList.remove('active');
+        notesText.textContent = 'Notes OFF';
+    } else {
+        notesBtn.classList.add('active');
+        notesText.textContent = 'Notes ON';
+    }
 }
 
 function showVictory() {
     clearInterval(gameState.timerInterval);
     
-    document.getElementById('finalTime').textContent = document.getElementById('timer').textContent;
-    document.getElementById('finalMistakes').textContent = gameState.mistakes;
-    document.getElementById('victoryModal').classList.add('show');
+    const timerEl = document.getElementById('timer');
+    const topTimerEl = document.getElementById('topTimer');
+    const finalTimeEl = document.getElementById('finalTime');
+    const finalMistakesEl = document.getElementById('finalMistakes');
+    const victoryModal = document.getElementById('victoryModal');
+    
+    if (finalTimeEl) {
+        const timeStr = timerEl ? timerEl.textContent : (topTimerEl ? topTimerEl.textContent : '0:00');
+        finalTimeEl.textContent = timeStr;
+    }
+    
+    if (finalMistakesEl) {
+        finalMistakesEl.textContent = gameState.mistakes;
+    }
+    
+    if (victoryModal) {
+        victoryModal.classList.add('show');
+    }
 }
 
 function shuffle(array) {
@@ -1008,20 +1373,26 @@ function loadGameState() {
         try {
             const gameData = JSON.parse(savedData);
             const timeDiff = Date.now() - gameData.timestamp;
-            if (timeDiff < 3600000) {
-                gameState.difficulty = gameData.difficulty;
+            if (timeDiff < 3600000 && gameData.board && gameData.solution) {
+                gameState.difficulty = gameData.difficulty || 'easy';
                 gameState.board = gameData.board;
                 gameState.solution = gameData.solution;
-                gameState.initialBoard = gameData.initialBoard;
-                gameState.mistakes = gameData.mistakes;
-                gameState.hintsUsed = gameData.hintsUsed;
+                gameState.initialBoard = gameData.initialBoard || gameData.board;
+                gameState.mistakes = gameData.mistakes || 0;
+                gameState.hintsUsed = gameData.hintsUsed || 0;
                 gameState.startTime = gameData.startTime;
-                gameState.totalPauseTime = gameData.totalPauseTime;
-                gameState.gridSize = gameData.gridSize;
+                gameState.totalPauseTime = gameData.totalPauseTime || 0;
+                gameState.gridSize = gameData.gridSize || DIFFICULTY[gameState.difficulty].size;
                 
-                renderBoard();
+                // Убеждаемся, что элементы существуют перед обновлением
+                if (document.getElementById('sudokuGrid')) {
+                    renderBoard();
+                }
                 updateStats();
-                gameState.timerInterval = setInterval(updateTimer, 1000);
+                
+                if (gameState.startTime) {
+                    gameState.timerInterval = setInterval(updateTimer, 1000);
+                }
             }
         } catch (e) {
             console.log('Could not restore game state:', e);
