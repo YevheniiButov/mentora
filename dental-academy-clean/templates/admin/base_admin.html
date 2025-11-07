@@ -45,6 +45,11 @@
                 <span>Virtual Patients</span>
             </a>
             
+            <a href="{{ url_for('admin.flashcards_manager') }}" class="menu-item {% if request.endpoint and ('flashcards_manager' in request.endpoint or 'flashcards_update' in request.endpoint) %}active{% endif %}">
+                <i class="bi bi-collection"></i>
+                <span>Flashcards</span>
+            </a>
+            
             <a href="{{ url_for('analytics.profession_clicks') }}" class="menu-item {% if request.endpoint and 'profession_clicks' in request.endpoint %}active{% endif %}">
                 <i class="fas fa-mouse-pointer"></i>
                 <span>Profession Clicks</span>
@@ -84,7 +89,11 @@
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="{{ url_for('profile_bp.profile', lang=lang) if 'profile_bp.profile' in url_for.__globals__ else '#' }}">Profile</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{{ url_for('digid.logout') }}">Logout</a></li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('auth.digid_logout') }}">
+                                Logout
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>

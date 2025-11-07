@@ -5,7 +5,44 @@ from flask import Blueprint, render_template, request, jsonify, redirect, url_fo
 from flask_login import login_required, current_user
 from extensions import csrf
 from utils.decorators import admin_required
-from models import db, User, LearningPath, Subject, Module, Lesson, UserProgress, Question, QuestionCategory, VirtualPatientScenario, VirtualPatientAttempt, DiagnosticSession, BIGDomain, PersonalLearningPlan, IRTParameters, DiagnosticResponse, WebsiteVisit, PageView, UserSession, ProfileAuditLog, Profession, ProfessionSpecialization, Contact, CountryAnalytics, DeviceAnalytics, ProfessionAnalytics, AnalyticsEvent, AdminAuditLog, SystemHealthLog, DatabaseBackup, EmailTemplate, CommunicationCampaign, SystemNotification, ForumTopic, ForumPost
+from models import (
+    db,
+    User,
+    LearningPath,
+    Subject,
+    Module,
+    Lesson,
+    MedicalTerm,
+    UserProgress,
+    Question,
+    QuestionCategory,
+    VirtualPatientScenario,
+    VirtualPatientAttempt,
+    DiagnosticSession,
+    BIGDomain,
+    PersonalLearningPlan,
+    IRTParameters,
+    DiagnosticResponse,
+    WebsiteVisit,
+    PageView,
+    UserSession,
+    ProfileAuditLog,
+    Profession,
+    ProfessionSpecialization,
+    Contact,
+    CountryAnalytics,
+    DeviceAnalytics,
+    ProfessionAnalytics,
+    AnalyticsEvent,
+    AdminAuditLog,
+    SystemHealthLog,
+    DatabaseBackup,
+    EmailTemplate,
+    CommunicationCampaign,
+    SystemNotification,
+    ForumTopic,
+    ForumPost,
+)
 from datetime import datetime, timedelta, date
 import json
 from sqlalchemy import func, and_, or_, distinct
@@ -38,6 +75,151 @@ def safe_date_query(query, date_column, target_date):
         return query.filter(func.date(date_column) == target_date)
 
 admin_bp = Blueprint('admin', __name__)
+
+
+# ========================================
+# FLASHCARDS (MEDICAL TERMS) MANAGEMENT
+# ========================================
+
+
+@admin_bp.route('/flashcards/manage')
+@login_required
+@admin_required
+def flashcards_manager():
+    """Просмотр и фильтрация медицинских терминов для флешкарт."""
+    search = (request.args.get('search') or '').strip()
+    selected_category = (request.args.get('category') or '').strip()
+    page = request.args.get('page', default=1, type=int)
+    per_page = request.args.get('per_page', default=25, type=int)
+
+    per_page = max(5, min(per_page, 100))
+    query = MedicalTerm.query
+
+    if search:
+        pattern = f"%{search}%"
+        query = query.filter(
+            or_(
+                MedicalTerm.term_nl.ilike(pattern),
+                MedicalTerm.term_en.ilike(pattern),
+                MedicalTerm.definition_nl.ilike(pattern),
+            )
+        )
+
+    if selected_category:
+        query = query.filter(MedicalTerm.category == selected_category)
+
+    query = query.order_by(MedicalTerm.term_nl.asc())
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+    categories = [
+        row[0]
+        for row in db.session.query(MedicalTerm.category)
+        .distinct()
+        .order_by(MedicalTerm.category.asc())
+        .all()
+        if row[0]
+    ]
+
+    return render_template(
+        'admin/flashcards_manager.html',
+        terms=pagination.items,
+        pagination=pagination,
+        categories=categories,
+        search=search,
+        selected_category=selected_category,
+        per_page=per_page,
+    )
+
+
+@admin_bp.route('/flashcards/<int:term_id>/update', methods=['POST'])
+@login_required
+@admin_required
+def flashcards_update(term_id):
+    """Обновление данных медицинского термина."""
+    term = MedicalTerm.query.get_or_404(term_id)
+
+    def _cleanup(value: str):
+        return value.strip() if value and value.strip() else None
+
+    filter_search = (request.form.get('filter_search') or '').strip()
+    filter_category = (request.form.get('filter_category') or '').strip()
+    filter_page_raw = request.form.get('filter_page')
+    filter_per_page_raw = request.form.get('filter_per_page')
+
+    try:
+        term_nl = (request.form.get('term_nl') or '').strip()
+        if not term_nl:
+            flash('Нидерландский термин является обязательным.', 'error')
+            raise ValueError('term_nl required')
+
+        term_category = (request.form.get('term_category') or '').strip()
+        if not term_category:
+            flash('Категория не может быть пустой.', 'error')
+            raise ValueError('category required')
+
+        term.term_nl = term_nl
+        term.definition_nl = request.form.get('definition_nl') or None
+        term.term_en = _cleanup(request.form.get('term_en'))
+        term.term_ru = _cleanup(request.form.get('term_ru'))
+        term.term_uk = _cleanup(request.form.get('term_uk'))
+        term.term_es = _cleanup(request.form.get('term_es'))
+        term.term_pt = _cleanup(request.form.get('term_pt'))
+        term.term_tr = _cleanup(request.form.get('term_tr'))
+        term.term_fa = _cleanup(request.form.get('term_fa'))
+        term.term_ar = _cleanup(request.form.get('term_ar'))
+        term.category = term_category
+        term.audio_url = _cleanup(request.form.get('audio_url'))
+
+        difficulty_raw = request.form.get('difficulty')
+        if difficulty_raw is not None and difficulty_raw.strip():
+            try:
+                difficulty_value = int(difficulty_raw)
+            except ValueError:
+                difficulty_value = term.difficulty or 1
+        else:
+            difficulty_value = term.difficulty or 1
+        term.difficulty = max(1, min(difficulty_value, 5))
+
+        frequency_raw = request.form.get('frequency')
+        if frequency_raw is not None and frequency_raw.strip():
+            try:
+                frequency_value = int(frequency_raw)
+            except ValueError:
+                frequency_value = term.frequency or 1
+        else:
+            frequency_value = term.frequency or 1
+        term.frequency = max(1, frequency_value)
+
+        db.session.commit()
+        flash('Термин успешно обновлён.', 'success')
+    except ValueError:
+        db.session.rollback()
+    except Exception as exc:
+        db.session.rollback()
+        current_app.logger.error(f"Failed to update medical term {term_id}: {exc}")
+        flash('Не удалось обновить термин. Проверьте данные и попробуйте снова.', 'error')
+
+    redirect_args = {}
+    if filter_search:
+        redirect_args['search'] = filter_search
+    if filter_category:
+        redirect_args['category'] = filter_category
+
+    try:
+        filter_page = int(filter_page_raw)
+        if filter_page > 1:
+            redirect_args['page'] = filter_page
+    except (TypeError, ValueError):
+        pass
+
+    try:
+        filter_per_page = int(filter_per_page_raw)
+        if filter_per_page and filter_per_page != 25:
+            redirect_args['per_page'] = max(5, min(filter_per_page, 100))
+    except (TypeError, ValueError):
+        pass
+
+    return redirect(url_for('admin.flashcards_manager', **redirect_args))
 
 @admin_bp.route('/')
 @admin_bp.route('/dashboard')
