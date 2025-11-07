@@ -26,6 +26,7 @@ from utils.flashcard_helpers import (
     get_category_progress,
     get_due_reviews_by_category
 )
+from utils.mastery_helpers import update_item_mastery
 
 flashcard_bp = Blueprint('flashcards', __name__, url_prefix='/flashcards')
 
@@ -488,6 +489,19 @@ def review_term(term_id):
         
         # Update progress with SM-2
         progress.update_progress_sm2(quality)
+
+        # Update mastery tracking (requires different-day confirmation)
+        session_date = datetime.now(timezone.utc).date()
+        is_correct = quality >= 3
+        session_reference = f'term-{session_date.isoformat()}'
+        update_item_mastery(
+            user_id=current_user.id,
+            item_type='term',
+            item_id=term_id,
+            is_correct=is_correct,
+            session_reference=session_reference,
+            session_date=session_date
+        )
         
         # Calculate XP
         xp_earned = calculate_flashcard_xp(quality, is_first_time)
@@ -507,7 +521,6 @@ def review_term(term_id):
         
         # Ensure next_review is set (should be set by update_progress_sm2, but check anyway)
         if not progress.next_review:
-            from datetime import datetime, timezone, timedelta
             progress.next_review = datetime.now(timezone.utc) + timedelta(days=1)
             db.session.commit()
         

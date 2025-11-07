@@ -17,6 +17,7 @@ from models import (
 )
 from utils.helpers import get_user_profession_code
 from utils.domain_helpers import get_categories_for_profession, calculate_category_progress
+from utils.mastery_helpers import get_mastery_statistics
 from extensions import db
 from datetime import date, timedelta, datetime, timezone
 from sqlalchemy import func
@@ -231,28 +232,19 @@ def get_category_progress(user):
             'virtual_patients': {...}
         }
     """
-    from datetime import datetime, timezone, timedelta
-    
     now = datetime.now(timezone.utc)
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     
-    # 1. TESTS Progress
-    # Total completed tests
-    total_tests = DiagnosticSession.query.filter(
-        DiagnosticSession.user_id == user.id,
-        DiagnosticSession.status == 'completed',
-        DiagnosticSession.questions_answered > 0
-    ).count()
+    # 1. TESTS Progress (per-question mastery)
+    assigned_question_ids = get_all_assignment_item_ids(user, 'test')
+    question_mastery_stats = get_mastery_statistics(
+        user.id,
+        'question',
+        assigned_question_ids if assigned_question_ids else None
+    )
+    total_questions_assigned = len(assigned_question_ids) if assigned_question_ids else question_mastery_stats['total_items']
+    total_questions_assigned = total_questions_assigned or 0
     
-    # Tests today
-    tests_today = DiagnosticSession.query.filter(
-        DiagnosticSession.user_id == user.id,
-        DiagnosticSession.status == 'completed',
-        DiagnosticSession.completed_at >= today_start,
-        DiagnosticSession.questions_answered > 0
-    ).count()
-    
-    # Average score
     avg_score = db.session.query(
         func.avg(DiagnosticSession.correct_answers / DiagnosticSession.questions_answered * 100)
     ).filter(
@@ -261,74 +253,62 @@ def get_category_progress(user):
         DiagnosticSession.questions_answered > 0
     ).scalar() or 0
     
-    # Total questions answered in tests
-    total_test_questions = db.session.query(
-        func.sum(DiagnosticSession.questions_answered)
-    ).filter(
-        DiagnosticSession.user_id == user.id,
-        DiagnosticSession.status == 'completed'
-    ).scalar() or 0
+    tests_progress_percent = round((question_mastery_stats['mastered_items'] / total_questions_assigned) * 100, 1) if total_questions_assigned else 0
+    tests_progress_percent = min(tests_progress_percent, 100.0)
     
     tests_progress = {
         'name': 'Тесты',
         'name_en': 'Tests',
         'icon': 'bi-lightning-charge-fill',
         'color': '#667eea',
-        'total_completed': total_tests,
-        'completed_today': tests_today,
+        'total_completed': question_mastery_stats['mastered_items'],
+        'completed_today': question_mastery_stats['mastered_today'],
         'avg_score': round(avg_score, 1),
-        'total_questions': int(total_test_questions),
-        'progress_percent': min(100, round((total_tests / 10) * 100, 1)) if total_tests > 0 else 0  # Assuming 10 tests as goal
+        'total_questions': int(total_questions_assigned),
+        'progress_percent': tests_progress_percent,
+        'accuracy': question_mastery_stats['accuracy']
     }
     
-    # 2. TERMS Progress
-    # Total terms studied (from UserTermProgress)
-    total_terms_studied = UserTermProgress.query.filter(
-        UserTermProgress.user_id == user.id
-    ).count()
+    # 2. TERMS Progress (mastery requires two sessions)
+    assigned_term_ids = get_all_assignment_item_ids(user, 'terms')
+    term_mastery_stats = get_mastery_statistics(
+        user.id,
+        'term',
+        assigned_term_ids if assigned_term_ids else None
+    )
+    total_terms_available = len(assigned_term_ids) if assigned_term_ids else MedicalTerm.query.count() or 0
     
-    # Terms studied today (from DailyFlashcardProgress)
     daily_flashcard = DailyFlashcardProgress.query.filter_by(
         user_id=user.id,
         date=now.date()
     ).first()
-    
     terms_today = daily_flashcard.terms_studied if daily_flashcard and daily_flashcard.terms_studied else 0
     
-    # Total terms mastered (ease_factor >= 2.5 or similar criteria)
-    mastered_terms = UserTermProgress.query.filter(
-        UserTermProgress.user_id == user.id,
-        UserTermProgress.next_review > now  # Terms that are mastered (no review needed soon)
-    ).count()
-    
-    # Total terms available (from MedicalTerm table)
-    total_terms_available = MedicalTerm.query.count() or 1000  # Fallback estimate
+    terms_progress_percent = round((term_mastery_stats['mastered_items'] / total_terms_available) * 100, 1) if total_terms_available else 0
+    terms_progress_percent = min(terms_progress_percent, 100.0)
     
     terms_progress = {
         'name': 'Термины',
         'name_en': 'Terms',
         'icon': 'bi-journal-text',
         'color': '#f093fb',
-        'total_studied': total_terms_studied,
+        'total_studied': term_mastery_stats['total_items'],
         'studied_today': terms_today,
-        'mastered': mastered_terms,
+        'mastered': term_mastery_stats['mastered_items'],
         'total_available': total_terms_available,
-        'progress_percent': min(100, round((total_terms_studied / min(total_terms_available, 500)) * 100, 1)) if total_terms_studied > 0 else 0
+        'progress_percent': terms_progress_percent,
+        'accuracy': term_mastery_stats['accuracy']
     }
     
     # 3. ENGLISH READING Progress
-    # Total passages completed
-    total_passages = UserEnglishProgress.query.filter(
-        UserEnglishProgress.user_id == user.id
-    ).count()
+    assigned_passage_ids = get_all_assignment_item_ids(user, 'english')
+    english_mastery_stats = get_mastery_statistics(
+        user.id,
+        'english',
+        assigned_passage_ids if assigned_passage_ids else None
+    )
+    total_passages_available = len(assigned_passage_ids) if assigned_passage_ids else EnglishPassage.query.count() or 0
     
-    # Passages completed today
-    passages_today = UserEnglishProgress.query.filter(
-        UserEnglishProgress.user_id == user.id,
-        UserEnglishProgress.completed_at >= today_start
-    ).count()
-    
-    # Average score
     avg_english_score = db.session.query(
         func.avg(UserEnglishProgress.score / UserEnglishProgress.total_questions * 100)
     ).filter(
@@ -336,36 +316,31 @@ def get_category_progress(user):
         UserEnglishProgress.total_questions > 0
     ).scalar() or 0
     
-    # Total passages available
-    total_passages_available = EnglishPassage.query.count() or 50  # Fallback estimate
+    english_progress_percent = round((english_mastery_stats['mastered_items'] / total_passages_available) * 100, 1) if total_passages_available else 0
+    english_progress_percent = min(english_progress_percent, 100.0)
     
     english_progress = {
         'name': 'Английский',
         'name_en': 'English Reading',
         'icon': 'bi-book',
         'color': '#4facfe',
-        'total_completed': total_passages,
-        'completed_today': passages_today,
+        'total_completed': english_mastery_stats['mastered_items'],
+        'completed_today': english_mastery_stats['mastered_today'],
         'avg_score': round(avg_english_score, 1),
         'total_available': total_passages_available,
-        'progress_percent': min(100, round((total_passages / total_passages_available) * 100, 1)) if total_passages > 0 else 0
+        'progress_percent': english_progress_percent,
+        'accuracy': english_mastery_stats['accuracy']
     }
     
     # 4. VIRTUAL PATIENTS Progress
-    # Total VP attempts completed
-    total_vp_completed = VirtualPatientAttempt.query.filter(
-        VirtualPatientAttempt.user_id == user.id,
-        VirtualPatientAttempt.completed == True
-    ).count()
+    assigned_vp_ids = get_all_assignment_item_ids(user, 'virtual_patient')
+    vp_mastery_stats = get_mastery_statistics(
+        user.id,
+        'virtual_patient',
+        assigned_vp_ids if assigned_vp_ids else None
+    )
+    total_vp_available = len(assigned_vp_ids) if assigned_vp_ids else VirtualPatientScenario.query.filter_by(is_published=True).count() or 0
     
-    # VP completed today
-    vp_today = VirtualPatientAttempt.query.filter(
-        VirtualPatientAttempt.user_id == user.id,
-        VirtualPatientAttempt.started_at >= today_start,
-        VirtualPatientAttempt.completed == True
-    ).count()
-    
-    # Average score
     avg_vp_score = db.session.query(
         func.avg(VirtualPatientAttempt.score)
     ).filter(
@@ -373,19 +348,20 @@ def get_category_progress(user):
         VirtualPatientAttempt.completed == True
     ).scalar() or 0
     
-    # Total VP scenarios available
-    total_vp_available = VirtualPatientScenario.query.filter_by(is_published=True).count() or 20  # Fallback estimate
+    vp_progress_percent = round((vp_mastery_stats['mastered_items'] / total_vp_available) * 100, 1) if total_vp_available else 0
+    vp_progress_percent = min(vp_progress_percent, 100.0)
     
     vp_progress = {
         'name': 'Виртуальные пациенты',
         'name_en': 'Virtual Patients',
         'icon': 'bi-heart-pulse-fill',
         'color': '#fa709a',
-        'total_completed': total_vp_completed,
-        'completed_today': vp_today,
+        'total_completed': vp_mastery_stats['mastered_items'],
+        'completed_today': vp_mastery_stats['mastered_today'],
         'avg_score': round(avg_vp_score, 1),
         'total_available': total_vp_available,
-        'progress_percent': min(100, round((total_vp_completed / total_vp_available) * 100, 1)) if total_vp_completed > 0 else 0
+        'progress_percent': vp_progress_percent,
+        'accuracy': vp_mastery_stats['accuracy']
     }
     
     return {
@@ -1017,6 +993,26 @@ def get_daily_assignment_items(user, assignment_type):
         return assignment.get_item_ids()
     
     return None
+
+
+def get_all_assignment_item_ids(user, assignment_type):
+    """
+    Получить уникальные ID элементов всех дневных заданий пользователя указанного типа.
+    """
+    assignments = DailyAssignment.query.filter_by(
+        user_id=user.id,
+        assignment_type=assignment_type
+    ).all()
+    
+    unique_ids = set()
+    for assignment in assignments:
+        try:
+            item_ids = assignment.get_item_ids()
+            if item_ids:
+                unique_ids.update(item_ids)
+        except Exception:
+            continue
+    return unique_ids
 
 
 def select_english_passage_for_today(user, use_fixed_assignments=True):

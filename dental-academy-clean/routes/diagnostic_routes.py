@@ -24,6 +24,7 @@ from utils.data_validator import DataValidator, ValidationLevel
 from utils.irt_engine import validate_irt_parameters_for_calculation
 from utils.helpers import get_user_profession_code
 from diagnostic_config.diagnostic_domains import get_quick_test_config
+from utils.mastery_helpers import update_item_mastery
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -2707,8 +2708,24 @@ def complete_session(session_id):
         
         # Принудительно завершаем сессию
         session.status = 'completed'
-        session.completed_at = datetime.now(timezone.utc)
+        session_completed_at = datetime.now(timezone.utc)
+        session.completed_at = session_completed_at
         session.termination_reason = 'user_requested'
+
+        # Обновляем мастерство по вопросам на основе ответов текущей сессии
+        session_date = session_completed_at.date()
+        responses = DiagnosticResponse.query.filter_by(session_id=session.id).all()
+        for response in responses:
+            if not response.question_id:
+                continue
+            update_item_mastery(
+                user_id=current_user.id,
+                item_type='question',
+                item_id=response.question_id,
+                is_correct=bool(response.is_correct),
+                session_reference=f'test-{session.id}',
+                session_date=session_date
+            )
         
         db.session.commit()
         

@@ -8,7 +8,7 @@ from extensions import db
 from datetime import datetime, timezone
 from functools import wraps
 from flask import session
-from models import PersonalLearningPlan, Question, BIGDomain
+from models import PersonalLearningPlan, Question, BIGDomain, DiagnosticSession, DiagnosticResponse
 import os
 import json
 from flask import jsonify
@@ -16,6 +16,7 @@ from models import UserLearningProgress
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from utils.daily_learning_algorithm import DailyLearningAlgorithm
+from utils.mastery_helpers import update_item_mastery
 
 learning_bp = Blueprint('learning', __name__)
 
@@ -732,7 +733,6 @@ def complete_automated_session():
             diagnostic_session_id = session.get('daily_session_diagnostic_id')
             if diagnostic_session_id:
                 try:
-                    from models import DiagnosticSession
                     diagnostic_session = DiagnosticSession.query.get(diagnostic_session_id)
                     if diagnostic_session:
                         diagnostic_session.questions_answered = questions_answered
@@ -756,12 +756,12 @@ def complete_automated_session():
         # ✅ Update DiagnosticSession if this is a daily practice session
         diagnostic_session_id = session.get('daily_session_diagnostic_id')
         if diagnostic_session_id:
-            from models import DiagnosticSession
             diagnostic_session = DiagnosticSession.query.get(diagnostic_session_id)
             if diagnostic_session:
+                session_completed_at = datetime.now(timezone.utc)
                 diagnostic_session.questions_answered = questions_answered
                 diagnostic_session.correct_answers = correct_answers
-                diagnostic_session.completed_at = datetime.now(timezone.utc)
+                diagnostic_session.completed_at = session_completed_at
                 diagnostic_session.status = 'completed'
                 if time_spent is not None:
                     try:
@@ -769,8 +769,22 @@ def complete_automated_session():
                         diagnostic_session.time_spent = current_time_spent + float(time_spent)
                     except Exception as e:
                         current_app.logger.warning(f"Failed to update diagnostic_session time_spent: {e}")
+
+                session_date = (diagnostic_session.completed_at or session_completed_at).date()
+                responses = DiagnosticResponse.query.filter_by(session_id=diagnostic_session.id).all()
+                for response in responses:
+                    if not response.question_id:
+                        continue
+                    update_item_mastery(
+                        user_id=current_user.id,
+                        item_type='question',
+                        item_id=response.question_id,
+                        is_correct=bool(response.is_correct),
+                        session_reference=f'test-{diagnostic_session.id}',
+                        session_date=session_date
+                    )
+
                 current_app.logger.info(f"✅ Updated DiagnosticSession {diagnostic_session_id}: questions={questions_answered}, correct={correct_answers}")
-                db.session.commit()
         
         # ✅ Update time_invested if time_spent provided
         if time_spent > 0:

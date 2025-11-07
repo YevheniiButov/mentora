@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Optional
 from app import db
 from models import VirtualPatientScenario, VirtualPatientAttempt, User
+from utils.mastery_helpers import update_item_mastery
 
 
 class VirtualPatientSelector:
@@ -314,10 +315,28 @@ class VirtualPatientSessionManager:
             attempt.score = score
             attempt.completed = True
             attempt.time_spent = time_spent
-            attempt.completed_at = datetime.utcnow()
+            completion_time = datetime.utcnow()
+            attempt.completed_at = completion_time
             
             if dialogue_history:
                 attempt.dialogue_history = json.dumps(dialogue_history)
+
+            percentage_score = 0.0
+            if attempt.max_score and attempt.max_score > 0:
+                percentage_score = (score / attempt.max_score) * 100
+            elif attempt.max_score == 0:
+                percentage_score = 100 if score > 0 else 0
+
+            is_mastered = percentage_score >= 80  # Good or excellent result
+            session_date = completion_time.date()
+            update_item_mastery(
+                user_id=attempt.user_id,
+                item_type='virtual_patient',
+                item_id=attempt.scenario_id,
+                is_correct=is_mastered,
+                session_reference=f'vp-{attempt_id}',
+                session_date=session_date
+            )
             
             db.session.commit()
             

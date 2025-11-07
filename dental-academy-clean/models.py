@@ -6551,3 +6551,42 @@ class DailyAssignment(db.Model):
     
     def __repr__(self):
         return f'<DailyAssignment User:{self.user_id} Date:{self.assignment_date} Type:{self.assignment_type} Items:{len(self.get_item_ids())}>'
+
+
+# ========================================
+# LEARNING ITEM MASTERY
+# ========================================
+
+
+class UserItemMastery(db.Model):
+    """
+    Tracks mastery status for individual learning items (questions, terms, english passages, virtual patients)
+    based on consecutive correct answers across different daily sessions.
+    """
+    __tablename__ = 'user_item_mastery'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False, index=True)
+    item_type = db.Column(db.String(32), nullable=False, index=True)  # question, term, english, virtual_patient
+    item_id = db.Column(db.Integer, nullable=False, index=True)
+    total_attempts = db.Column(db.Integer, default=0)
+    total_correct = db.Column(db.Integer, default=0)
+    consecutive_correct_sessions = db.Column(db.Integer, default=0)
+    last_result = db.Column(db.Boolean, default=False)
+    last_session_reference = db.Column(db.String(64), nullable=True)
+    last_session_date = db.Column(db.Date, nullable=True)
+    last_attempt_at = db.Column(db.DateTime, nullable=True)
+    last_correct_at = db.Column(db.DateTime, nullable=True)
+    mastered_at = db.Column(db.DateTime, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'item_type', 'item_id', name='uq_user_item_mastery'),
+    )
+
+    user = db.relationship('User', backref='item_mastery')
+
+    def __repr__(self):
+        status = '✓' if self.mastered_at else '…'
+        return f'<UserItemMastery user={self.user_id} {self.item_type}:{self.item_id} {status}>'

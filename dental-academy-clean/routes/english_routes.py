@@ -8,6 +8,7 @@ from models import EnglishPassage, EnglishQuestion, UserEnglishProgress
 from datetime import datetime, timezone
 import json
 from utils.ielts_generator import parse_generated_passage, generate_passage_title_from_topic
+from utils.mastery_helpers import update_item_mastery
 
 english_bp = Blueprint('english', __name__, url_prefix='/api/english')
 
@@ -114,15 +115,27 @@ def submit_answers():
         xp_earned = correct_count * 10
         
         # Save progress
+        completion_time = datetime.now(timezone.utc)
         progress = UserEnglishProgress(
             user_id=current_user.id,
             passage_id=passage_id,
-            completed_at=datetime.now(timezone.utc),
+            completed_at=completion_time,
             score=correct_count,
             total_questions=total_questions,
             time_spent=time_spent
         )
         db.session.add(progress)
+
+        is_session_mastered = total_questions > 0 and correct_count == total_questions
+        session_date = completion_time.date()
+        update_item_mastery(
+            user_id=current_user.id,
+            item_type='english',
+            item_id=passage_id,
+            is_correct=is_session_mastered,
+            session_reference=f'english-{session_date.isoformat()}',
+            session_date=session_date
+        )
         
         # Update user XP
         current_user.xp = (current_user.xp or 0) + xp_earned
