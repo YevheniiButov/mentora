@@ -15,14 +15,16 @@ from models import Question
 def find_test_question():
     """Найти тестовый вопрос"""
     with app.app_context():
+        import json
+        
         # Ищем вопросы, содержащие "test" в тексте
-        questions = Question.query.filter(
+        questions_with_test = Question.query.filter(
             Question.text.ilike('%test%')
         ).all()
         
-        print(f"Найдено {len(questions)} вопросов, содержащих 'test':\n")
+        print(f"Найдено {len(questions_with_test)} вопросов, содержащих 'test':\n")
         
-        for q in questions:
+        for q in questions_with_test:
             print(f"ID: {q.id}")
             print(f"Текст: {q.text[:200]}...")
             print(f"Категория: {q.category}")
@@ -30,20 +32,46 @@ def find_test_question():
             print(f"Варианты ответов: {q.options}")
             print("-" * 80)
         
-        # Также ищем вопросы с простыми вариантами ответов (a, b, c, d)
-        print("\n\nПоиск вопросов с простыми вариантами ответов (a, b, c, d):\n")
-        all_questions = Question.query.all()
+        # Ищем вопросы с простыми вариантами ответов (a, b, c, d) - БЕЗ проверки на "test"
+        print("\n\n" + "=" * 80)
+        print("Поиск вопросов с простыми вариантами ответов (a, b, c, d):")
+        print("=" * 80 + "\n")
         
+        all_questions = Question.query.all()
         test_questions = []
+        
         for q in all_questions:
             if q.options:
+                # Парсим варианты ответов
+                options = None
+                if isinstance(q.options, str):
+                    try:
+                        options = json.loads(q.options)
+                    except:
+                        options = q.options
+                else:
+                    options = q.options
+                
                 # Проверяем, есть ли простые варианты a, b, c, d
-                options_str = str(q.options).lower()
-                if ('"a"' in options_str or "'a'" in options_str) and \
-                   ('"b"' in options_str or "'b'" in options_str):
-                    # Проверяем, содержит ли текст "test"
-                    if 'test' in q.text.lower():
-                        test_questions.append(q)
+                if isinstance(options, dict):
+                    # Проверяем ключи - если это просто "a", "b", "c", "d" или "A", "B", "C", "D"
+                    keys = [str(k).lower().strip() for k in options.keys()]
+                    simple_keys = ['a', 'b', 'c', 'd']
+                    
+                    # Если все ключи - это простые буквы a, b, c, d
+                    if all(k in simple_keys for k in keys) and len(keys) >= 2:
+                        # Проверяем значения - если они тоже простые (например, "a", "b", "c", "d")
+                        values = [str(v).lower().strip() for v in options.values()]
+                        if any(v in simple_keys for v in values) or any('test' in str(v).lower() for v in values):
+                            test_questions.append(q)
+                elif isinstance(options, list):
+                    # Если это список, проверяем содержимое
+                    options_str = str(options).lower()
+                    if (('"a"' in options_str or "'a'" in options_str) and 
+                        ('"b"' in options_str or "'b'" in options_str)):
+                        # Проверяем, содержит ли текст или варианты "test"
+                        if 'test' in q.text.lower() or any('test' in str(v).lower() for v in options):
+                            test_questions.append(q)
         
         if test_questions:
             print(f"Найдено {len(test_questions)} подозрительных тестовых вопросов:\n")
@@ -54,9 +82,48 @@ def find_test_question():
                 print(f"Категория: {q.category}, Домен: {q.domain}")
                 print("-" * 80)
         else:
-            print("Не найдено вопросов с простыми вариантами a, b, c, d и словом 'test'")
+            print("Не найдено вопросов с простыми вариантами a, b, c, d")
         
-        return questions + test_questions
+        # Дополнительный поиск: вопросы с очень коротким текстом или подозрительными вариантами
+        print("\n\n" + "=" * 80)
+        print("Поиск вопросов с подозрительно коротким текстом или простыми вариантами:")
+        print("=" * 80 + "\n")
+        
+        suspicious_questions = []
+        for q in all_questions:
+            # Ищем вопросы с текстом "test" или очень коротким текстом
+            text_lower = q.text.lower().strip()
+            if text_lower == 'test' or text_lower.startswith('test ') or text_lower.endswith(' test'):
+                suspicious_questions.append(q)
+            # Ищем вопросы, где варианты ответов - просто буквы
+            if q.options:
+                options = q.options
+                if isinstance(options, str):
+                    try:
+                        options = json.loads(options)
+                    except:
+                        pass
+                
+                if isinstance(options, dict):
+                    # Если все значения - это просто "a", "b", "c", "d"
+                    values = [str(v).strip().lower() for v in options.values()]
+                    if len(values) >= 2 and all(v in ['a', 'b', 'c', 'd', 'a.', 'b.', 'c.', 'd.'] for v in values):
+                        suspicious_questions.append(q)
+        
+        if suspicious_questions:
+            print(f"Найдено {len(suspicious_questions)} подозрительных вопросов:\n")
+            for q in suspicious_questions:
+                print(f"ID: {q.id}")
+                print(f"Текст: {q.text}")
+                print(f"Варианты: {q.options}")
+                print(f"Категория: {q.category}, Домен: {q.domain}")
+                print("-" * 80)
+        else:
+            print("Не найдено подозрительных вопросов")
+        
+        # Объединяем все найденные вопросы
+        all_found = list(set(questions_with_test + test_questions + suspicious_questions))
+        return all_found
 
 def delete_question(question_id):
     """Удалить вопрос по ID"""
