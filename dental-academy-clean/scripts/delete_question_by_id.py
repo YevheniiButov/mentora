@@ -11,11 +11,13 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app import app
 from extensions import db
 from models import Question, DiagnosticResponse, TestAttempt
+from sqlalchemy.orm import Session
 
 def delete_question_by_id(question_id):
     """Удалить вопрос по ID"""
     with app.app_context():
-        question = Question.query.get(question_id)
+        session = db.session
+        question = session.get(Question, question_id)
         if not question:
             print(f"❌ Вопрос с ID {question_id} не найден")
             return False
@@ -43,9 +45,9 @@ def delete_question_by_id(question_id):
         if len(sys.argv) > 2 and sys.argv[2] == '--force':
             confirm = 'yes'
         else:
-            confirm = input(f"\n❓ Вы уверены, что хотите удалить вопрос ID {question_id}? (yes/no): ")
+            confirm = input(f"\n❓ Вы уверены, что хотите удалить вопрос ID {question_id}? (yes/y/no): ")
         
-        if confirm.lower() == 'yes':
+        if confirm.lower() in ('yes', 'y'):
             try:
                 # Удаляем связанные записи
                 if responses_count > 0:
