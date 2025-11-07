@@ -17,12 +17,18 @@ def find_test_question():
     with app.app_context():
         import json
         
-        # Ищем вопросы, содержащие "test" в тексте
+        # Ищем вопросы, содержащие "test" в тексте (включая "test question", "test question", и т.д.)
         questions_with_test = Question.query.filter(
-            Question.text.ilike('%test%')
+            or_(
+                Question.text.ilike('%test%'),
+                Question.text.ilike('%test question%'),
+                Question.text.ilike('%testquestion%'),
+                Question.text.ilike('%тестовый вопрос%'),
+                Question.text.ilike('%test vraag%')
+            )
         ).all()
         
-        print(f"Найдено {len(questions_with_test)} вопросов, содержащих 'test':\n")
+        print(f"Найдено {len(questions_with_test)} вопросов, содержащих 'test' или 'test question':\n")
         
         for q in questions_with_test:
             print(f"ID: {q.id}")
@@ -91,9 +97,14 @@ def find_test_question():
         
         suspicious_questions = []
         for q in all_questions:
-            # Ищем вопросы с текстом "test" или очень коротким текстом
+            # Ищем вопросы с текстом "test", "test question" или очень коротким текстом
             text_lower = q.text.lower().strip()
-            if text_lower == 'test' or text_lower.startswith('test ') or text_lower.endswith(' test'):
+            if (text_lower == 'test' or 
+                text_lower == 'test question' or
+                text_lower.startswith('test ') or 
+                text_lower.endswith(' test') or
+                'test question' in text_lower or
+                'testquestion' in text_lower):
                 suspicious_questions.append(q)
             # Ищем вопросы, где варианты ответов - просто буквы
             if q.options:
