@@ -3028,4 +3028,14 @@ translations = {
     
     # Countdown Timer
     'time_left': 'زمان تا بازنشانی',
+    
+    # Premium Tab
+    'premium_access': 'دسترسی پریمیوم',
+    'unlimited_access_description': 'دسترسی نامحدود به تمام بخش‌های یادگیری',
+    'unlimited_test_access': 'دسترسی نامحدود به تمام سوالات',
+    'unlimited_terms_access': 'مطالعه تمام اصطلاحات پزشکی',
+    'unlimited_english_access': 'تمام متون خواندن',
+    'unlimited_vp_access': 'تمام سناریوها در دسترس',
+    'premium_description': '⭐ دسترسی پریمیوم: دسترسی نامحدود به تمام مطالب یادگیری. تمرین با تمام سوالات، اصطلاحات، بیماران مجازی و متون خواندن انگلیسی. فیلتر بر اساس دسته‌بندی‌ها و مطالعه بدون محدودیت.',
+    'english_reading': 'خواندن انگلیسی',
 }

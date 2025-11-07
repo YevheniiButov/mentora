@@ -2901,4 +2901,14 @@ translations = {
     
     # Countdown Timer
     'time_left': 'Sıfırlamaya kalan süre',
+    
+    # Premium Tab
+    'premium_access': 'Premium Erişim',
+    'unlimited_access_description': 'Tüm öğrenme bölümlerine sınırsız erişim',
+    'unlimited_test_access': 'Tüm sorulara sınırsız erişim',
+    'unlimited_terms_access': 'Tüm tıbbi terimleri çalışın',
+    'unlimited_english_access': 'Tüm okuma metinleri',
+    'unlimited_vp_access': 'Tüm senaryolar mevcut',
+    'premium_description': '⭐ Premium Erişim: Tüm öğrenme materyallerine sınırsız erişim. Tüm sorular, terimler, sanal hastalar ve İngilizce okuma metinleri ile pratik yapın. Kategorilere göre filtreleyin ve kısıtlama olmadan çalışın.',
+    'english_reading': 'İngilizce Okuma',
 }

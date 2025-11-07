@@ -2940,4 +2940,14 @@ translations = {
     
     # Countdown Timer
     'time_left': 'Tempo até reset',
+    
+    # Premium Tab
+    'premium_access': 'Acesso Premium',
+    'unlimited_access_description': 'Acesso ilimitado a todas as seções de aprendizagem',
+    'unlimited_test_access': 'Acesso ilimitado a todas as perguntas',
+    'unlimited_terms_access': 'Estude todos os termos médicos',
+    'unlimited_english_access': 'Todos os textos de leitura',
+    'unlimited_vp_access': 'Todos os cenários disponíveis',
+    'premium_description': '⭐ Acesso Premium: Acesso ilimitado a todos os materiais de aprendizagem. Pratique com todas as perguntas, termos, pacientes virtuais e textos de leitura em inglês. Filtre por categorias e estude sem restrições.',
+    'english_reading': 'Leitura em Inglês',
 }

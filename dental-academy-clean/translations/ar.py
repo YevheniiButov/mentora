@@ -2785,5 +2785,15 @@ translations = {
     "diploma_info": "معلومات الدبلوم",
     "profile_completion_note": "إكمال ملفك الشخصي يساعدنا على تخصيص تجربة التعلم الخاصة بك.",
     "complete_profile_button": "إكمال الملف الشخصي",
-    "time_left": "الوقت المتبقي لإعادة التعيين"
+    "time_left": "الوقت المتبقي لإعادة التعيين",
+    
+    # Premium Tab
+    "premium_access": "الوصول المميز",
+    "unlimited_access_description": "وصول غير محدود إلى جميع أقسام التعلم",
+    "unlimited_test_access": "وصول غير محدود إلى جميع الأسئلة",
+    "unlimited_terms_access": "ادرس جميع المصطلحات الطبية",
+    "unlimited_english_access": "جميع نصوص القراءة",
+    "unlimited_vp_access": "جميع السيناريوهات متاحة",
+    "premium_description": "⭐ الوصول المميز: وصول غير محدود إلى جميع مواد التعلم. تدرب مع جميع الأسئلة والمصطلحات والمرضى الافتراضيين ونصوص القراءة الإنجليزية. فلتر حسب الفئات وادرس دون قيود.",
+    "english_reading": "القراءة الإنجليزية"
 }
