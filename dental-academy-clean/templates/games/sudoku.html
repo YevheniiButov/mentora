@@ -632,28 +632,45 @@ function fillBox6x6(board) {
     const numbers = [1, 2, 3, 4, 5, 6];
     
     // Box 1: rows 0-1 (2 rows), cols 0-2 (3 cols) = 2x3 box
-    fillBoxWithNumbers(board, 0, 0, 2, 3, shuffle([...numbers]));
+    const box1Numbers = [...numbers];
+    shuffle(box1Numbers);
+    fillBoxWithNumbers(board, 0, 0, 2, 3, box1Numbers);
     
     // Box 2: rows 0-1 (2 rows), cols 3-5 (3 cols) = 2x3 box
-    fillBoxWithNumbers(board, 0, 3, 2, 3, shuffle([...numbers]));
+    const box2Numbers = [...numbers];
+    shuffle(box2Numbers);
+    fillBoxWithNumbers(board, 0, 3, 2, 3, box2Numbers);
     
     // Box 3: rows 2-3 (2 rows), cols 0-2 (3 cols) = 2x3 box
-    fillBoxWithNumbers(board, 2, 0, 2, 3, shuffle([...numbers]));
+    const box3Numbers = [...numbers];
+    shuffle(box3Numbers);
+    fillBoxWithNumbers(board, 2, 0, 2, 3, box3Numbers);
     
     // Box 4: rows 2-3 (2 rows), cols 3-5 (3 cols) = 2x3 box
-    fillBoxWithNumbers(board, 2, 3, 2, 3, shuffle([...numbers]));
+    const box4Numbers = [...numbers];
+    shuffle(box4Numbers);
+    fillBoxWithNumbers(board, 2, 3, 2, 3, box4Numbers);
     
     // Box 5: rows 4-5 (2 rows), cols 0-2 (3 cols) = 2x3 box
-    fillBoxWithNumbers(board, 4, 0, 2, 3, shuffle([...numbers]));
+    const box5Numbers = [...numbers];
+    shuffle(box5Numbers);
+    fillBoxWithNumbers(board, 4, 0, 2, 3, box5Numbers);
     
     // Box 6: rows 4-5 (2 rows), cols 3-5 (3 cols) = 2x3 box
-    fillBoxWithNumbers(board, 4, 3, 2, 3, shuffle([...numbers]));
+    const box6Numbers = [...numbers];
+    shuffle(box6Numbers);
+    fillBoxWithNumbers(board, 4, 3, 2, 3, box6Numbers);
 }
 
 function fillBoxWithNumbers(board, startRow, startCol, rows, cols, numbers) {
     // Safety check
-    if (!board || !numbers || numbers.length < rows * cols) {
-        console.error('Invalid parameters for fillBoxWithNumbers');
+    if (!board || !numbers || !Array.isArray(numbers) || numbers.length < rows * cols) {
+        console.error('Invalid parameters for fillBoxWithNumbers', {
+            board: !!board,
+            numbers: numbers,
+            numbersLength: numbers ? numbers.length : 0,
+            required: rows * cols
+        });
         return;
     }
     
@@ -666,6 +683,9 @@ function fillBoxWithNumbers(board, startRow, startCol, rows, cols, numbers) {
         for (let j = 0; j < cols; j++) {
             if (num < numbers.length) {
                 board[startRow + i][startCol + j] = numbers[num++];
+            } else {
+                console.error(`Not enough numbers: need ${rows * cols}, have ${numbers.length}`);
+                return;
             }
         }
     }
