@@ -12,98 +12,89 @@
 
 {% block extra_css %}
 <style>
-    /* Quiz Game Colors - Green/Emerald */
+    /* LinkedIn-inspired Professional Design */
     :root {
-        --game-primary: #10b981;
-        --game-secondary: #059669;
-        --game-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        --game-light: #d1fae5;
-        --game-shadow: rgba(16, 185, 129, 0.4);
+        --game-primary: #0a66c2;
+        --game-secondary: #004182;
+        --game-light: #e3f2fd;
+        --game-border: #e0e0e0;
+        --game-text: #1d1d1d;
+        --game-text-light: #666666;
+        --game-bg: #ffffff;
+        --game-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        --game-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
     }
     
+    /* Compact layout - no scrolling needed */
     .quiz-container {
-        max-width: 900px;
+        max-width: 1000px;
         margin: 0 auto;
     }
     
     .question-card {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 1.5rem;
-        box-shadow: var(--card-shadow);
-        animation: slideIn 0.5s ease;
+        background: var(--game-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: var(--game-shadow);
+        border: 1px solid var(--game-border);
     }
     
     @media (max-width: 767px) {
         .question-card {
-            padding: 1.5rem;
-            border-radius: 15px;
-        }
-    }
-    
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateX(50px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
+            padding: 1.25rem;
         }
     }
     
     .question-number {
         display: inline-block;
         padding: 0.5rem 1rem;
-        background: var(--game-gradient);
+        background: var(--game-primary);
         color: white;
-        border-radius: 12px;
-        font-size: 0.9rem;
-        font-weight: 700;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
         margin-bottom: 1rem;
-        letter-spacing: 0.5px;
     }
     
     .question-text {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 2rem;
-        color: #1e293b;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: var(--game-text);
         line-height: 1.5;
     }
     
     @media (max-width: 767px) {
         .question-text {
-            font-size: 1.25rem;
-            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            margin-bottom: 1.25rem;
         }
     }
     
     .answers-grid {
         display: grid;
-        gap: 1rem;
+        gap: 0.75rem;
     }
     
     .answer-btn {
-        padding: 1.5rem;
-        border: 2px solid #e2e8f0;
-        background: white;
-        border-radius: 16px;
+        padding: 1rem 1.25rem;
+        border: 1px solid var(--game-border);
+        background: var(--game-bg);
+        border-radius: 8px;
         text-align: left;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #1e293b;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+        font-weight: 500;
+        color: var(--game-text);
         position: relative;
-        overflow: hidden;
     }
     
     @media (max-width: 767px) {
         .answer-btn {
-            padding: 1.25rem;
-            font-size: 1rem;
+            padding: 0.875rem 1rem;
+            font-size: 0.95rem;
         }
     }
     
@@ -113,17 +104,16 @@
         left: 0;
         top: 0;
         height: 100%;
-        width: 4px;
-        background: var(--game-gradient);
+        width: 3px;
+        background: var(--game-primary);
         transform: scaleY(0);
-        transition: transform 0.3s;
+        transition: transform 0.2s;
     }
     
     .answer-btn:hover:not(:disabled) {
         border-color: var(--game-primary);
         background: var(--game-light);
-        transform: translateX(10px);
-        box-shadow: 0 4px 20px var(--game-shadow);
+        box-shadow: var(--game-shadow-hover);
     }
     
     .answer-btn:hover:not(:disabled)::before {
@@ -132,35 +122,20 @@
     
     .answer-btn.selected {
         border-color: var(--game-primary);
-        background: var(--game-gradient);
+        background: var(--game-primary);
         color: white;
-        transform: translateX(10px);
-        box-shadow: 0 8px 25px var(--game-shadow);
     }
     
     .answer-btn.correct {
-        border-color: #10b981;
-        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-        color: #047857;
-        animation: correct 0.6s;
-    }
-    
-    @keyframes correct {
-        0%, 100% { transform: translateX(0) scale(1); }
-        50% { transform: translateX(10px) scale(1.02); }
+        border-color: #2e7d32;
+        background: #e8f5e9;
+        color: #1b5e20;
     }
     
     .answer-btn.incorrect {
-        border-color: #ef4444;
-        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-        color: #dc2626;
-        animation: shake 0.5s;
-    }
-    
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-10px); }
-        75% { transform: translateX(10px); }
+        border-color: #c62828;
+        background: #ffebee;
+        color: #b71c1c;
     }
     
     .answer-btn:disabled {
@@ -168,42 +143,42 @@
     }
     
     .progress-bar-container {
-        height: 10px;
-        background: #e2e8f0;
-        border-radius: 10px;
+        height: 6px;
+        background: #e0e0e0;
+        border-radius: 3px;
         overflow: hidden;
-        margin-bottom: 2rem;
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
     }
     
     .progress-bar-fill {
         height: 100%;
-        background: var(--game-gradient);
-        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 0 10px var(--game-shadow);
+        background: var(--game-primary);
+        transition: width 0.3s ease;
     }
     
     .category-selector {
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
         text-align: center;
     }
     
     .category-selector h5 {
-        font-weight: 700;
-        color: #1e293b;
+        font-weight: 600;
+        color: var(--game-text);
         margin-bottom: 1rem;
+        font-size: 0.95rem;
     }
     
     .category-btn {
-        padding: 0.875rem 1.75rem;
-        border: 2px solid #e2e8f0;
-        background: white;
-        color: #64748b;
-        border-radius: 12px;
+        padding: 0.625rem 1.5rem;
+        border: 1px solid var(--game-border);
+        background: var(--game-bg);
+        color: var(--game-text-light);
+        border-radius: 6px;
         margin: 0.5rem;
         cursor: pointer;
-        transition: all 0.3s ease;
-        font-weight: 700;
+        transition: all 0.2s ease;
+        font-weight: 600;
+        font-size: 0.9rem;
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
@@ -214,136 +189,160 @@
             display: block;
             width: 100%;
             justify-content: center;
+            margin: 0.5rem 0;
         }
     }
     
     .category-btn.active {
-        background: var(--game-gradient);
+        background: var(--game-primary);
         color: white;
         border-color: var(--game-primary);
-        box-shadow: 0 4px 15px var(--game-shadow);
     }
     
     .category-btn:hover:not(.active) {
         border-color: var(--game-primary);
         color: var(--game-primary);
-        transform: translateY(-2px);
+        background: var(--game-light);
     }
     
     .feedback-card {
-        background: white;
-        border-radius: 20px;
-        padding: 2rem;
-        margin-top: 2rem;
+        background: var(--game-bg);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1rem;
         display: none;
-        box-shadow: var(--card-shadow);
+        box-shadow: var(--game-shadow);
+        border: 1px solid var(--game-border);
     }
     
     @media (max-width: 767px) {
         .feedback-card {
-            padding: 1.5rem;
+            padding: 1.25rem;
         }
     }
     
     .feedback-card.show {
         display: block;
-        animation: slideUp 0.4s ease;
-    }
-    
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
     }
     
     .explanation {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        border-left: 4px solid var(--game-primary);
-        padding: 1.25rem;
-        border-radius: 12px;
+        background: #f5f5f5;
+        border-left: 3px solid var(--game-primary);
+        padding: 1rem;
+        border-radius: 6px;
         margin-top: 1rem;
-        font-size: 1rem;
+        font-size: 0.95rem;
         line-height: 1.6;
+        color: var(--game-text);
     }
     
     @media (max-width: 767px) {
         .explanation {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
     }
     
     .results-card {
         text-align: center;
-        padding: 3rem 2rem;
+        padding: 2rem;
     }
     
     @media (max-width: 767px) {
         .results-card {
-            padding: 2rem 1rem;
+            padding: 1.5rem 1rem;
         }
     }
     
     .score-circle {
-        width: 180px;
-        height: 180px;
+        width: 150px;
+        height: 150px;
         border-radius: 50%;
-        background: var(--game-gradient);
+        background: var(--game-primary);
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 3rem;
-        font-weight: 900;
-        margin: 2rem auto;
-        box-shadow: 0 20px 60px var(--game-shadow);
-        animation: scaleIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 1.5rem auto;
+        box-shadow: var(--game-shadow-hover);
     }
     
     @media (max-width: 767px) {
         .score-circle {
-            width: 150px;
-            height: 150px;
-            font-size: 2.5rem;
+            width: 120px;
+            height: 120px;
+            font-size: 2rem;
         }
-    }
-    
-    @keyframes scaleIn {
-        from { transform: scale(0); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
     }
     
     .performance-badge {
         display: inline-block;
-        padding: 0.875rem 2rem;
-        border-radius: 12px;
-        font-weight: 700;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 600;
         margin: 1rem 0;
-        font-size: 1.2rem;
+        font-size: 1rem;
     }
     
     .badge-excellent {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background: #2e7d32;
         color: white;
     }
     
     .badge-good {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        background: var(--game-primary);
         color: white;
     }
     
     .badge-average {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        background: #f59e0b;
         color: white;
     }
     
     .badge-needs-work {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        background: #c62828;
         color: white;
+    }
+    
+    .game-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    @media (max-width: 767px) {
+        .game-stats {
+            gap: 0.75rem;
+        }
+    }
+    
+    .stats-box {
+        background: var(--game-bg);
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: var(--game-shadow);
+        text-align: center;
+        border: 1px solid var(--game-border);
+    }
+    
+    .stats-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--game-primary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .stats-label {
+        font-size: 0.75rem;
+        color: var(--game-text-light);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 </style>
 {% endblock %}

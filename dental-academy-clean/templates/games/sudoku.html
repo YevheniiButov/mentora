@@ -12,20 +12,37 @@
 
 {% block extra_css %}
 <style>
-    /* Sudoku Game Colors - Orange/Amber */
+    /* LinkedIn-inspired Professional Design */
     :root {
-        --game-primary: #f59e0b;
-        --game-secondary: #f97316;
-        --game-gradient: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
-        --game-light: #fef3c7;
-        --game-shadow: rgba(245, 158, 11, 0.4);
+        --game-primary: #0a66c2;
+        --game-secondary: #004182;
+        --game-light: #e3f2fd;
+        --game-border: #e0e0e0;
+        --game-text: #1d1d1d;
+        --game-text-light: #666666;
+        --game-bg: #ffffff;
+        --game-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        --game-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+    
+    /* Compact layout - no scrolling needed */
+    .game-card {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 1.5rem;
+    }
+    
+    @media (max-width: 767px) {
+        .game-card {
+            padding: 1rem;
+        }
     }
     
     .sudoku-wrapper {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 1rem;
+        gap: 1.5rem;
     }
     
     @media (min-width: 1024px) {
@@ -57,100 +74,111 @@
         justify-content: center;
     }
     
+    /* Grid styles - responsive */
     .sudoku-grid {
         display: grid;
-        grid-template-columns: repeat(9, minmax(38px, 48px));
-        grid-template-rows: repeat(9, minmax(38px, 48px));
         gap: 0;
-        border: 3px solid #1e293b;
-        background: white;
-        border-radius: 12px;
+        border: 2px solid var(--game-border);
+        background: var(--game-bg);
+        border-radius: 8px;
         overflow: hidden;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        box-shadow: var(--game-shadow);
+    }
+    
+    /* Easy: 6x6 grid with 2x3 boxes */
+    .sudoku-grid.easy {
+        grid-template-columns: repeat(6, minmax(45px, 55px));
+        grid-template-rows: repeat(6, minmax(45px, 55px));
+    }
+    
+    /* Medium/Hard: 9x9 grid with 3x3 boxes */
+    .sudoku-grid.medium,
+    .sudoku-grid.hard {
+        grid-template-columns: repeat(9, minmax(40px, 48px));
+        grid-template-rows: repeat(9, minmax(40px, 48px));
     }
     
     @media (max-width: 767px) {
-        .sudoku-grid {
+        .sudoku-grid.easy {
+            grid-template-columns: repeat(6, 40px);
+            grid-template-rows: repeat(6, 40px);
+        }
+        
+        .sudoku-grid.medium,
+        .sudoku-grid.hard {
             grid-template-columns: repeat(9, 32px);
             grid-template-rows: repeat(9, 32px);
         }
     }
     
     .sudoku-cell {
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--game-border);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.4rem;
-        font-weight: 700;
+        font-size: 1.3rem;
+        font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
-        background: white;
-        color: #1e293b;
+        background: var(--game-bg);
+        color: var(--game-text);
+        user-select: none;
     }
     
     @media (max-width: 767px) {
         .sudoku-cell {
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
     }
     
     .sudoku-cell:hover:not(.fixed):not(.error) {
         background: var(--game-light);
-        transform: scale(1.05);
     }
     
     .sudoku-cell.fixed {
-        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-        color: #1e293b;
+        background: #f5f5f5;
+        color: var(--game-text);
         cursor: default;
-        font-weight: 900;
+        font-weight: 700;
     }
     
     .sudoku-cell.selected {
-        background: var(--game-gradient) !important;
+        background: var(--game-primary) !important;
         color: white !important;
-        box-shadow: inset 0 0 0 2px white, 0 0 0 3px var(--game-primary);
-        transform: scale(1.1);
+        box-shadow: inset 0 0 0 2px white;
         z-index: 10;
     }
     
     .sudoku-cell.error {
-        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-        color: #dc2626;
-        animation: shake 0.5s;
-    }
-    
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-5px); }
-        75% { transform: translateX(5px); }
+        background: #ffebee;
+        color: #c62828;
     }
     
     .sudoku-cell.correct {
-        color: #059669;
+        color: #2e7d32;
     }
     
-    .sudoku-cell.hint {
-        animation: pulse 0.6s;
+    /* Box borders for easy (2x3) */
+    .sudoku-grid.easy .sudoku-cell:nth-child(2n):not(:nth-child(6n)) {
+        border-right: 2px solid var(--game-text);
     }
     
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.2); }
+    .sudoku-grid.easy .sudoku-cell:nth-child(n+13):nth-child(-n+18),
+    .sudoku-grid.easy .sudoku-cell:nth-child(n+25):nth-child(-n+30) {
+        border-bottom: 2px solid var(--game-text);
     }
     
-    /* 3x3 Box Borders */
-    .sudoku-cell:nth-child(3n):not(:nth-child(9n)) {
-        border-right: 2px solid #64748b;
+    /* Box borders for medium/hard (3x3) */
+    .sudoku-grid.medium .sudoku-cell:nth-child(3n):not(:nth-child(9n)),
+    .sudoku-grid.hard .sudoku-cell:nth-child(3n):not(:nth-child(9n)) {
+        border-right: 2px solid var(--game-text);
     }
     
-    .sudoku-cell:nth-child(n+19):nth-child(-n+27) {
-        border-bottom: 2px solid #64748b;
-    }
-    
-    .sudoku-cell:nth-child(n+46):nth-child(-n+54) {
-        border-bottom: 2px solid #64748b;
+    .sudoku-grid.medium .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+    .sudoku-grid.medium .sudoku-cell:nth-child(n+46):nth-child(-n+54),
+    .sudoku-grid.hard .sudoku-cell:nth-child(n+19):nth-child(-n+27),
+    .sudoku-grid.hard .sudoku-cell:nth-child(n+46):nth-child(-n+54) {
+        border-bottom: 2px solid var(--game-text);
     }
     
     .number-pad {
@@ -169,34 +197,33 @@
     
     .number-btn {
         aspect-ratio: 1;
-        border: 2px solid #e2e8f0;
-        background: white;
-        color: #1e293b;
-        border-radius: 12px;
-        font-size: 1.5rem;
-        font-weight: 800;
+        border: 1px solid var(--game-border);
+        background: var(--game-bg);
+        color: var(--game-text);
+        border-radius: 6px;
+        font-size: 1.4rem;
+        font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+        box-shadow: var(--game-shadow);
     }
     
     @media (max-width: 767px) {
         .number-btn {
-            font-size: 1.25rem;
-            border-radius: 10px;
+            font-size: 1.2rem;
         }
     }
     
     .number-btn:hover {
-        background: var(--game-gradient);
+        background: var(--game-primary);
         color: white;
         border-color: var(--game-primary);
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 8px 20px var(--game-shadow);
+        box-shadow: var(--game-shadow-hover);
+        transform: translateY(-2px);
     }
     
     .number-btn:active {
-        transform: translateY(0px) scale(0.95);
+        transform: translateY(0);
     }
     
     .game-controls {
@@ -223,22 +250,23 @@
     }
     
     .difficulty-selector h5 {
-        font-weight: 700;
-        color: #1e293b;
+        font-weight: 600;
+        color: var(--game-text);
         margin-bottom: 1rem;
+        font-size: 0.95rem;
     }
     
     .difficulty-btn {
-        padding: 0.75rem 1.75rem;
-        border: 2px solid #e2e8f0;
-        background: white;
-        color: #64748b;
-        border-radius: 12px;
+        padding: 0.625rem 1.5rem;
+        border: 1px solid var(--game-border);
+        background: var(--game-bg);
+        color: var(--game-text-light);
+        border-radius: 6px;
         margin: 0.25rem;
         cursor: pointer;
-        transition: all 0.3s ease;
-        font-weight: 700;
-        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        font-weight: 600;
+        font-size: 0.9rem;
     }
     
     @media (max-width: 767px) {
@@ -250,16 +278,55 @@
     }
     
     .difficulty-btn.active {
-        background: var(--game-gradient);
+        background: var(--game-primary);
         color: white;
         border-color: var(--game-primary);
-        box-shadow: 0 4px 15px var(--game-shadow);
     }
     
     .difficulty-btn:hover:not(.active) {
         border-color: var(--game-primary);
         color: var(--game-primary);
-        transform: translateY(-2px);
+        background: var(--game-light);
+    }
+    
+    .game-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    @media (max-width: 767px) {
+        .game-stats {
+            gap: 0.75rem;
+        }
+    }
+    
+    .stats-box {
+        background: var(--game-bg);
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: var(--game-shadow);
+        text-align: center;
+        border: 1px solid var(--game-border);
+    }
+    
+    .stats-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--game-primary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .stats-label {
+        font-size: 0.75rem;
+        color: var(--game-text-light);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
     .victory-modal {
@@ -268,8 +335,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(10px);
+        background: rgba(0, 0, 0, 0.75);
         display: none;
         align-items: center;
         justify-content: center;
@@ -282,13 +348,12 @@
     }
     
     .victory-content {
-        background: white;
+        background: var(--game-bg);
         padding: 2.5rem;
-        border-radius: 24px;
+        border-radius: 12px;
         text-align: center;
         max-width: 500px;
         width: 100%;
-        animation: victory 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
     
@@ -298,31 +363,14 @@
         }
     }
     
-    @keyframes victory {
-        0% { 
-            transform: scale(0.5) rotate(-10deg); 
-            opacity: 0; 
-        }
-        100% { 
-            transform: scale(1) rotate(0deg); 
-            opacity: 1; 
-        }
-    }
-    
     .victory-title {
-        font-size: 4rem;
+        font-size: 3rem;
         margin-bottom: 1rem;
-        animation: bounce 1s infinite;
-    }
-    
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
     }
     
     .keyboard-hint {
         text-align: center;
-        color: #64748b;
+        color: var(--game-text-light);
         font-size: 0.85rem;
         margin-top: 0.5rem;
         font-style: italic;
@@ -359,7 +407,7 @@
             <div class="stats-label">Mistakes</div>
         </div>
         <div class="stats-box">
-            <div class="stats-value" id="remaining">81</div>
+            <div class="stats-value" id="remaining">36</div>
             <div class="stats-label">Remaining</div>
         </div>
     </div>
@@ -382,7 +430,7 @@
         <!-- Sudoku Grid -->
         <div class="sudoku-left">
             <div class="sudoku-container">
-                <div class="sudoku-grid" id="sudokuGrid"></div>
+                <div class="sudoku-grid easy" id="sudokuGrid"></div>
             </div>
             <div class="keyboard-hint">
                 💡 Use keyboard 1-9 to enter numbers, Backspace/Delete to erase
@@ -449,14 +497,15 @@ let gameState = {
     hintsUsed: 0,
     isPaused: false,
     pauseStartTime: null,
-    totalPauseTime: 0
+    totalPauseTime: 0,
+    gridSize: 6  // Easy starts with 6x6
 };
 
 // Difficulty settings
 const DIFFICULTY = {
-    easy: 35,
-    medium: 45,
-    hard: 55
+    easy: { size: 6, remove: 20 },  // 6x6 grid, remove 20 numbers
+    medium: { size: 9, remove: 35 },  // 9x9 grid, remove 35 numbers
+    hard: { size: 9, remove: 50 }   // 9x9 grid, remove 50 numbers
 };
 
 // Initialize
@@ -479,6 +528,7 @@ function setupDifficultyButtons() {
             document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
             gameState.difficulty = this.dataset.difficulty;
+            gameState.gridSize = DIFFICULTY[gameState.difficulty].size;
             newGame();
         });
     });
@@ -499,8 +549,10 @@ function setupKeyboardInput() {
     document.addEventListener('keydown', function(e) {
         if (gameState.selectedCell === null) return;
         
-        // Numbers 1-9
-        if (e.key >= '1' && e.key <= '9') {
+        const maxNum = gameState.gridSize;
+        
+        // Numbers 1-9 (or 1-6 for easy)
+        if (e.key >= '1' && e.key <= String(maxNum)) {
             placeNumber(gameState.selectedCell, parseInt(e.key));
         }
         // Backspace or Delete to clear
@@ -519,22 +571,26 @@ function navigateCell(key) {
     if (!gameState.selectedCell) return;
     
     let { row, col } = gameState.selectedCell;
+    const maxIndex = gameState.gridSize - 1;
     
     switch(key) {
         case 'ArrowUp': row = Math.max(0, row - 1); break;
-        case 'ArrowDown': row = Math.min(8, row + 1); break;
+        case 'ArrowDown': row = Math.min(maxIndex, row + 1); break;
         case 'ArrowLeft': col = Math.max(0, col - 1); break;
-        case 'ArrowRight': col = Math.min(8, col + 1); break;
+        case 'ArrowRight': col = Math.min(maxIndex, col + 1); break;
     }
     
     selectCell(row, col);
 }
 
 function newGame() {
+    const config = DIFFICULTY[gameState.difficulty];
+    gameState.gridSize = config.size;
+    
     gameState.solution = generateSudoku();
     gameState.board = JSON.parse(JSON.stringify(gameState.solution));
     
-    removeNumbers(DIFFICULTY[gameState.difficulty]);
+    removeNumbers(config.remove);
     gameState.initialBoard = JSON.parse(JSON.stringify(gameState.board));
     
     gameState.mistakes = 0;
@@ -553,10 +609,17 @@ function newGame() {
 }
 
 function generateSudoku() {
-    const board = Array(9).fill(0).map(() => Array(9).fill(0));
+    const size = gameState.gridSize;
+    const board = Array(size).fill(0).map(() => Array(size).fill(0));
     
-    for (let box = 0; box < 9; box += 3) {
-        fillBox(board, box, box);
+    if (size === 6) {
+        // Easy: 6x6 with 2x3 boxes
+        fillBox6x6(board);
+    } else {
+        // Medium/Hard: 9x9 with 3x3 boxes
+        for (let box = 0; box < 9; box += 3) {
+            fillBox(board, box, box);
+        }
     }
     
     solveSudoku(board);
@@ -564,23 +627,60 @@ function generateSudoku() {
     return board;
 }
 
+function fillBox6x6(board) {
+    // Fill 2x3 boxes for 6x6 grid
+    const numbers = [1, 2, 3, 4, 5, 6];
+    
+    // Box 1: rows 0-1, cols 0-2
+    fillBoxWithNumbers(board, 0, 0, 2, 2, shuffle([...numbers]));
+    
+    // Box 2: rows 0-1, cols 3-5
+    fillBoxWithNumbers(board, 0, 3, 2, 2, shuffle([...numbers]));
+    
+    // Box 3: rows 2-3, cols 0-2
+    fillBoxWithNumbers(board, 2, 0, 2, 2, shuffle([...numbers]));
+    
+    // Box 4: rows 2-3, cols 3-5
+    fillBoxWithNumbers(board, 2, 3, 2, 2, shuffle([...numbers]));
+    
+    // Box 5: rows 4-5, cols 0-2
+    fillBoxWithNumbers(board, 4, 0, 2, 2, shuffle([...numbers]));
+    
+    // Box 6: rows 4-5, cols 3-5
+    fillBoxWithNumbers(board, 4, 3, 2, 2, shuffle([...numbers]));
+}
+
+function fillBoxWithNumbers(board, startRow, startCol, rows, cols, numbers) {
+    let num = 0;
+    for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+            board[startRow + i][startCol + j] = numbers[num++];
+        }
+    }
+}
+
 function fillBox(board, row, col) {
-    const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const numbers = gameState.gridSize === 6 
+        ? [1, 2, 3, 4, 5, 6]
+        : [1, 2, 3, 4, 5, 6, 7, 8, 9];
     shuffle(numbers);
     
     let num = 0;
-    for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 3; j++) {
+    const boxSize = gameState.gridSize === 6 ? 2 : 3;
+    for (let i = 0; i < boxSize; i++) {
+        for (let j = 0; j < boxSize; j++) {
             board[row + i][col + j] = numbers[num++];
         }
     }
 }
 
 function solveSudoku(board) {
-    for (let row = 0; row < 9; row++) {
-        for (let col = 0; col < 9; col++) {
+    const size = gameState.gridSize;
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
             if (board[row][col] === 0) {
-                for (let num = 1; num <= 9; num++) {
+                const maxNum = size;
+                for (let num = 1; num <= maxNum; num++) {
                     if (isValid(board, row, col, num)) {
                         board[row][col] = num;
                         if (solveSudoku(board)) {
@@ -597,19 +697,36 @@ function solveSudoku(board) {
 }
 
 function isValid(board, row, col, num) {
-    for (let x = 0; x < 9; x++) {
+    const size = gameState.gridSize;
+    
+    // Check row
+    for (let x = 0; x < size; x++) {
         if (board[row][x] === num) return false;
     }
     
-    for (let x = 0; x < 9; x++) {
+    // Check column
+    for (let x = 0; x < size; x++) {
         if (board[x][col] === num) return false;
     }
     
-    const startRow = row - row % 3;
-    const startCol = col - col % 3;
-    for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 3; j++) {
-            if (board[i + startRow][j + startCol] === num) return false;
+    // Check box
+    if (size === 6) {
+        // 2x3 boxes
+        const startRow = row - row % 2;
+        const startCol = col - col % 3;
+        for (let i = 0; i < 2; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (board[i + startRow][j + startCol] === num) return false;
+            }
+        }
+    } else {
+        // 3x3 boxes
+        const startRow = row - row % 3;
+        const startCol = col - col % 3;
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (board[i + startRow][j + startCol] === num) return false;
+            }
         }
     }
     
@@ -618,9 +735,10 @@ function isValid(board, row, col, num) {
 
 function removeNumbers(count) {
     let removed = 0;
+    const size = gameState.gridSize;
     while (removed < count) {
-        const row = Math.floor(Math.random() * 9);
-        const col = Math.floor(Math.random() * 9);
+        const row = Math.floor(Math.random() * size);
+        const col = Math.floor(Math.random() * size);
         
         if (gameState.board[row][col] !== 0) {
             gameState.board[row][col] = 0;
@@ -633,8 +751,12 @@ function renderBoard() {
     const grid = document.getElementById('sudokuGrid');
     grid.innerHTML = '';
     
-    for (let row = 0; row < 9; row++) {
-        for (let col = 0; col < 9; col++) {
+    // Update grid class for styling
+    grid.className = `sudoku-grid ${gameState.difficulty}`;
+    
+    const size = gameState.gridSize;
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
             const cell = document.createElement('div');
             cell.className = 'sudoku-cell';
             cell.dataset.row = row;
@@ -710,10 +832,6 @@ function giveHint() {
             gameState.board[row][col] = gameState.solution[row][col];
             gameState.hintsUsed++;
             
-            const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-            cell.classList.add('hint');
-            setTimeout(() => cell.classList.remove('hint'), 600);
-            
             renderBoard();
             updateStats();
             checkWin();
@@ -725,8 +843,9 @@ function giveHint() {
 
 function checkSolution() {
     let correct = true;
-    for (let row = 0; row < 9; row++) {
-        for (let col = 0; col < 9; col++) {
+    const size = gameState.gridSize;
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
             if (gameState.board[row][col] !== gameState.solution[row][col]) {
                 correct = false;
             }
@@ -743,9 +862,10 @@ function checkSolution() {
 function checkWin() {
     let complete = true;
     let correct = true;
+    const size = gameState.gridSize;
     
-    for (let row = 0; row < 9; row++) {
-        for (let col = 0; col < 9; col++) {
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
             if (gameState.board[row][col] === 0) {
                 complete = false;
             } else if (gameState.board[row][col] !== gameState.solution[row][col]) {
@@ -763,8 +883,9 @@ function updateStats() {
     document.getElementById('mistakes').textContent = gameState.mistakes;
     
     let remaining = 0;
-    for (let row = 0; row < 9; row++) {
-        for (let col = 0; col < 9; col++) {
+    const size = gameState.gridSize;
+    for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
             if (gameState.board[row][col] === 0) remaining++;
         }
     }
@@ -774,7 +895,7 @@ function updateStats() {
 function updateTimer() {
     if (!gameState.startTime) return;
     
-    const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+    const elapsed = Math.floor((Date.now() - gameState.startTime - gameState.totalPauseTime) / 1000);
     const minutes = Math.floor(elapsed / 60);
     const seconds = elapsed % 60;
     document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -797,7 +918,6 @@ function shuffle(array) {
 
 // Auto-pause functionality
 function setupAutoPause() {
-    // Pause when page becomes hidden (tab switch, minimize, etc.)
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
             pauseGame();
@@ -806,14 +926,11 @@ function setupAutoPause() {
         }
     });
     
-    // Pause when page is about to unload (refresh, close, navigation)
     window.addEventListener('beforeunload', function() {
         pauseGame();
-        // Save game state to localStorage
         saveGameState();
     });
     
-    // Resume when page loads (if there's saved state)
     window.addEventListener('load', function() {
         loadGameState();
     });
@@ -824,9 +941,6 @@ function pauseGame() {
         gameState.isPaused = true;
         gameState.pauseStartTime = Date.now();
         clearInterval(gameState.timerInterval);
-        
-        // Show pause indicator
-        showPauseIndicator();
     }
 }
 
@@ -835,44 +949,7 @@ function resumeGame() {
         gameState.isPaused = false;
         gameState.totalPauseTime += Date.now() - gameState.pauseStartTime;
         gameState.pauseStartTime = null;
-        
-        // Resume timer
         gameState.timerInterval = setInterval(updateTimer, 1000);
-        
-        // Hide pause indicator
-        hidePauseIndicator();
-    }
-}
-
-function showPauseIndicator() {
-    // Create or show pause indicator
-    let indicator = document.getElementById('pauseIndicator');
-    if (!indicator) {
-        indicator = document.createElement('div');
-        indicator.id = 'pauseIndicator';
-        indicator.innerHTML = '⏸️ Game Paused';
-        indicator.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            z-index: 10000;
-            animation: pulse 1.5s infinite;
-        `;
-        document.body.appendChild(indicator);
-    }
-    indicator.style.display = 'block';
-}
-
-function hidePauseIndicator() {
-    const indicator = document.getElementById('pauseIndicator');
-    if (indicator) {
-        indicator.style.display = 'none';
     }
 }
 
@@ -886,6 +963,7 @@ function saveGameState() {
         hintsUsed: gameState.hintsUsed,
         startTime: gameState.startTime,
         totalPauseTime: gameState.totalPauseTime,
+        gridSize: gameState.gridSize,
         timestamp: Date.now()
     };
     
@@ -897,11 +975,8 @@ function loadGameState() {
     if (savedData) {
         try {
             const gameData = JSON.parse(savedData);
-            
-            // Check if saved game is recent (within 1 hour)
             const timeDiff = Date.now() - gameData.timestamp;
-            if (timeDiff < 3600000) { // 1 hour
-                // Restore game state
+            if (timeDiff < 3600000) {
                 gameState.difficulty = gameData.difficulty;
                 gameState.board = gameData.board;
                 gameState.solution = gameData.solution;
@@ -910,55 +985,16 @@ function loadGameState() {
                 gameState.hintsUsed = gameData.hintsUsed;
                 gameState.startTime = gameData.startTime;
                 gameState.totalPauseTime = gameData.totalPauseTime;
+                gameState.gridSize = gameData.gridSize;
                 
-                // Restore UI
                 renderBoard();
                 updateStats();
-                
-                // Resume timer
                 gameState.timerInterval = setInterval(updateTimer, 1000);
-                
-                // Show restore notification
-                showRestoreNotification();
             }
         } catch (e) {
             console.log('Could not restore game state:', e);
         }
     }
-}
-
-function showRestoreNotification() {
-    const notification = document.createElement('div');
-    notification.innerHTML = '🔄 Game Restored';
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: rgba(34, 197, 94, 0.9);
-        color: white;
-        padding: 10px 15px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        z-index: 10000;
-        animation: slideIn 0.3s ease;
-    `;
-    
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
-
-// Update timer to account for pause time
-function updateTimer() {
-    if (!gameState.startTime) return;
-    
-    const elapsed = Math.floor((Date.now() - gameState.startTime - gameState.totalPauseTime) / 1000);
-    const minutes = Math.floor(elapsed / 60);
-    const seconds = elapsed % 60;
-    document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 </script>
 {% endblock %}
