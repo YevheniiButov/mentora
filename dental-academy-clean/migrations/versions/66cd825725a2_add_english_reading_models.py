@@ -119,7 +119,12 @@ def upgrade():
                existing_type=sa.BOOLEAN(),
                nullable=True,
                existing_server_default=sa.text("'1'"))
-        batch_op.create_index(batch_op.f('ix_user_member_id'), ['member_id'], unique=True)
+        
+        # Check if index already exists before creating
+        inspector = inspect(op.get_bind())
+        indexes = [idx['name'] for idx in inspector.get_indexes('user')]
+        if 'ix_user_member_id' not in indexes:
+            batch_op.create_index(batch_op.f('ix_user_member_id'), ['member_id'], unique=True)
 
     with op.batch_alter_table('user_learning_progress', schema=None) as batch_op:
         batch_op.alter_column('learning_path_id',
