@@ -1,0 +1,250 @@
+{
+  "migration_plan": {
+    "summary": {
+      "current_domains": 25,
+      "target_domains": 30,
+      "total_questions": 320,
+      "target_questions_per_domain": 12,
+      "estimated_new_questions_needed": 40
+    },
+    "phase_1_consolidation": {
+      "description": "Объединение дублирующихся доменов",
+      "actions": [
+        {
+          "action": "merge",
+          "source_domains": ["PHARMA", "FARMACOLOGIE"],
+          "target_domain": "PHARMACOLOGY",
+          "questions_to_move": 34,
+          "priority": "high"
+        },
+        {
+          "action": "split",
+          "source_domains": ["ETHIEK", "PROFESSIONAL"],
+          "target_domains": ["ETHICS_NL", "PROFESSIONAL_ETHICS"],
+          "questions_to_redistribute": 25,
+          "priority": "high"
+        },
+        {
+          "action": "merge",
+          "source_domains": ["DIAGNOSIS", "DIAGNOSIS_SPECIAL"],
+          "target_domain": "DIAGNOSTICS",
+          "questions_to_move": 19,
+          "priority": "medium"
+        }
+      ]
+    },
+    "phase_2_renaming": {
+      "description": "Переименование доменов для стандартизации",
+      "actions": [
+        {
+          "old_name": "THER",
+          "new_name": "THERAPEUTIC_DENTISTRY",
+          "priority": "medium"
+        },
+        {
+          "old_name": "SURG",
+          "new_name": "SURGICAL_DENTISTRY",
+          "priority": "medium"
+        },
+        {
+          "old_name": "PROTH",
+          "new_name": "PROSTHODONTICS",
+          "priority": "medium"
+        },
+        {
+          "old_name": "PEDI",
+          "new_name": "PEDIATRIC_DENTISTRY",
+          "priority": "medium"
+        },
+        {
+          "old_name": "PARO",
+          "new_name": "PERIODONTOLOGY",
+          "priority": "medium"
+        },
+        {
+          "old_name": "ORTHO",
+          "new_name": "ORTHODONTICS",
+          "priority": "medium"
+        },
+        {
+          "old_name": "PREV",
+          "new_name": "PREVENTIVE_DENTISTRY",
+          "priority": "medium"
+        },
+        {
+          "old_name": "ANATOMIE",
+          "new_name": "ANATOMY",
+          "priority": "medium"
+        },
+        {
+          "old_name": "FYSIOLOGIE",
+          "new_name": "PHYSIOLOGY",
+          "priority": "medium"
+        },
+        {
+          "old_name": "PATHOLOGIE",
+          "new_name": "PATHOLOGY",
+          "priority": "medium"
+        },
+        {
+          "old_name": "RADIOLOGIE",
+          "new_name": "RADIOLOGY",
+          "priority": "medium"
+        },
+        {
+          "old_name": "MICROBIOLOGIE",
+          "new_name": "MICROBIOLOGY",
+          "priority": "medium"
+        },
+        {
+          "old_name": "MATERIAALKUNDE",
+          "new_name": "MATERIALS_SCIENCE",
+          "priority": "medium"
+        },
+        {
+          "old_name": "ALGEMENE_GENEESKUNDE",
+          "new_name": "GENERAL_MEDICINE",
+          "priority": "medium"
+        },
+        {
+          "old_name": "EMERGENCY",
+          "new_name": "EMERGENCY_MEDICINE",
+          "priority": "medium"
+        },
+        {
+          "old_name": "SYSTEMIC",
+          "new_name": "SYSTEMIC_DISEASES",
+          "priority": "medium"
+        },
+        {
+          "old_name": "INFECTION",
+          "new_name": "INFECTIOUS_DISEASES",
+          "priority": "medium"
+        },
+        {
+          "old_name": "SPECIAL",
+          "new_name": "SPECIAL_CASES",
+          "priority": "medium"
+        },
+        {
+          "old_name": "DUTCH",
+          "new_name": "DUTCH_DENTISTRY",
+          "priority": "medium"
+        }
+      ]
+    },
+    "phase_3_new_domains": {
+      "description": "Создание новых доменов",
+      "actions": [
+        {
+          "new_domain": "STATISTICS",
+          "target_questions": 10,
+          "priority": "medium",
+          "description": "Статистика и анализ данных в стоматологии"
+        },
+        {
+          "new_domain": "RESEARCH_METHOD",
+          "target_questions": 10,
+          "priority": "medium",
+          "description": "Методология научных исследований"
+        },
+        {
+          "new_domain": "TREATMENT_PLANNING",
+          "target_questions": 12,
+          "priority": "high",
+          "description": "Планирование комплексного лечения"
+        },
+        {
+          "new_domain": "COMMUNICATION",
+          "target_questions": 10,
+          "priority": "medium",
+          "description": "Коммуникация с пациентами и коллегами"
+        },
+        {
+          "new_domain": "PRACTICAL_THEORY",
+          "target_questions": 12,
+          "priority": "high",
+          "description": "Практическая теория и клинические навыки"
+        }
+      ]
+    },
+    "quality_improvements": {
+      "irt_parameter_fixes": {
+        "description": "Исправление некорректных IRT параметров",
+        "actions": [
+          {
+            "issue": "difficulty_too_high",
+            "target_range": "0.0-2.0",
+            "questions_to_review": "все вопросы с difficulty > 2.0"
+          },
+          {
+            "issue": "discrimination_too_low",
+            "target_range": "1.0-3.0",
+            "questions_to_review": "все вопросы с discrimination < 1.0"
+          }
+        ]
+      },
+      "content_validation": {
+        "description": "Проверка качества контента",
+        "actions": [
+          {
+            "action": "review_dutch_language",
+            "description": "Проверка корректности голландского языка"
+          },
+          {
+            "action": "validate_medical_terminology",
+            "description": "Валидация медицинской терминологии"
+          },
+          {
+            "action": "check_explanations",
+            "description": "Проверка полноты и точности объяснений"
+          }
+        ]
+      }
+    },
+    "target_distribution": {
+      "high_priority_domains": {
+        "PHARMACOLOGY": 15,
+        "THERAPEUTIC_DENTISTRY": 15,
+        "EMERGENCY_MEDICINE": 12,
+        "DIAGNOSTICS": 12,
+        "PEDIATRIC_DENTISTRY": 12,
+        "PERIODONTOLOGY": 12,
+        "GENERAL_MEDICINE": 12,
+        "SYSTEMIC_DISEASES": 12,
+        "INFECTIOUS_DISEASES": 12,
+        "TREATMENT_PLANNING": 12,
+        "PRACTICAL_THEORY": 12
+      },
+      "medium_priority_domains": {
+        "SURGICAL_DENTISTRY": 12,
+        "PROSTHODONTICS": 12,
+        "ORTHODONTICS": 12,
+        "PREVENTIVE_DENTISTRY": 12,
+        "ANATOMY": 12,
+        "PHYSIOLOGY": 12,
+        "PATHOLOGY": 12,
+        "RADIOLOGY": 12,
+        "MICROBIOLOGY": 12,
+        "MATERIALS_SCIENCE": 12,
+        "SPECIAL_CASES": 15,
+        "DUTCH_DENTISTRY": 12,
+        "ETHICS_NL": 12,
+        "PROFESSIONAL_ETHICS": 12,
+        "STATISTICS": 10,
+        "RESEARCH_METHOD": 10,
+        "COMMUNICATION": 10
+      },
+      "low_priority_domains": {
+        "SPECIAL_DIAGNOSTICS": 8
+      }
+    },
+    "timeline": {
+      "phase_1": "1-2 недели",
+      "phase_2": "1 неделя",
+      "phase_3": "2-3 недели",
+      "quality_improvements": "1-2 недели",
+      "total_estimated_time": "5-8 недель"
+    }
+  }
+} 

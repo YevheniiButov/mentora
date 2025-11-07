@@ -489,20 +489,37 @@ def review_term(term_id):
         
         current_app.logger.info(f"User {current_user.id} reviewed term {term_id}: quality={quality}, xp={xp_earned}")
         
+        # Ensure next_review is set (should be set by update_progress_sm2, but check anyway)
+        if not progress.next_review:
+            from datetime import datetime, timezone, timedelta
+            progress.next_review = datetime.now(timezone.utc) + timedelta(days=1)
+            db.session.commit()
+        
+        # Get accuracy rate safely
+        accuracy = 0.0
+        try:
+            accuracy = round(progress.accuracy_rate, 1)
+        except (AttributeError, TypeError):
+            # Calculate manually if property doesn't work
+            if progress.times_reviewed > 0:
+                accuracy = round((progress.times_correct / progress.times_reviewed) * 100, 1)
+        
         return jsonify({
             'success': True,
             'xp_earned': xp_earned,
-            'next_review': progress.next_review.isoformat(),
+            'next_review': progress.next_review.isoformat() if progress.next_review else None,
             'mastery_level': progress.mastery_level,
-            'accuracy': round(progress.accuracy_rate, 1),
+            'accuracy': accuracy,
             'times_reviewed': progress.times_reviewed,
             'is_mastered': progress.mastery_level >= 4
         })
     
     except Exception as e:
-        current_app.logger.error(f"Error reviewing term: {e}")
+        import traceback
+        current_app.logger.error(f"Error reviewing term {term_id} for user {current_user.id}: {e}")
+        current_app.logger.error(f"Traceback: {traceback.format_exc()}")
         db.session.rollback()
-        return jsonify({'error': 'Failed to process review'}), 500
+        return jsonify({'error': f'Failed to process review: {str(e)}'}), 500
 
 
 @flashcard_bp.route('/due-reviews')

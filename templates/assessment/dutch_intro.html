@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('dutch_assessment_title', lang) | default('Оценка готовности к работе в Нидерландах') }} - Mentora{% endblock %}
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/assessment.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/universal-layout-system.css') }}">
+<style>
+    .dutch-assessment {
+        --dutch-orange: #FF6B35;
+        --dutch-blue: #0066CC;
+        --dutch-white: #FFFFFF;
+    }
+    
+    .dutch-hero {
+        background: linear-gradient(135deg, var(--dutch-orange) 0%, var(--dutch-blue) 100%);
+        color: white;
+        padding: 3rem 0;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .dutch-flag-icon::before {
+        content: "🇳🇱";
+        font-size: 1.5em;
+        margin-right: 0.5rem;
+    }
+    
+    .dutch-intro {
+        background: var(--bg-gradient);
+        min-height: 100vh;
+        padding: var(--space-2xl) 0;
+    }
+    
+    .intro-container {
+        max-width: var(--container-xl);
+        margin: 0 auto;
+        padding: 0 var(--space-xl);
+    }
+    
+    .intro-card {
+        background: var(--bg-surface-alpha);
+        backdrop-filter: blur(20px);
+        border-radius: var(--radius-2xl);
+        box-shadow: var(--shadow-xl);
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+    }
+    
+    .intro-header {
+        background: linear-gradient(135deg, var(--dutch-orange) 0%, var(--dutch-blue) 100%);
+        color: var(--text-inverse);
+        padding: var(--space-3xl) var(--space-xl);
+        text-align: center;
+    }
+    
+    .intro-header h1 {
+        font-size: var(--text-4xl);
+        font-weight: var(--font-extrabold);
+        margin-bottom: var(--space-md);
+    }
+    
+    .intro-content {
+        padding: var(--space-3xl) var(--space-xl);
+    }
+    
+    .dutch-category-card {
+        border-left: 4px solid var(--dutch-orange);
+        transition: transform 0.2s ease;
+        background: var(--bg-surface);
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        margin-bottom: var(--space-md);
+        border: 1px solid var(--border-color);
+    }
+    
+    .dutch-category-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 107, 53, 0.15);
+    }
+    
+    .dutch-category-card.critical {
+        border-left-color: #EF4444;
+        background: linear-gradient(to right, #FEF2F2, var(--bg-surface));
+    }
+    
+    .regional-focus-selector {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+    
+    .focus-option {
+        padding: 1.5rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+        background: var(--bg-surface);
+    }
+    
+    .focus-option:hover {
+        border-color: var(--dutch-orange);
+        background-color: #fff7ed;
+    }
+    
+    .focus-option.selected {
+        border-color: var(--dutch-orange);
+        background-color: #fff7ed;
+        box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    }
+    
+    .big-exam-section {
+        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin: 2rem 0;
+    }
+    
+    .big-category {
+        border-left: 4px solid #dc2626;
+    }
+    
+    .btn-start-dutch {
+        background: linear-gradient(135deg, var(--dutch-orange) 0%, var(--dutch-blue) 100%);
+        color: var(--text-inverse);
+        border: none;
+        padding: var(--space-md) var(--space-3xl);
+        border-radius: var(--radius-full);
+        font-size: var(--text-lg);
+        font-weight: var(--font-bold);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        box-shadow: var(--shadow-primary);
+    }
+    
+    .btn-start-dutch:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg), var(--shadow-primary);
+    }
+    
+    .competency-levels {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+    
+    .competency-level {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        text-align: center;
+        font-weight: bold;
+        margin: 1rem 0;
+    }
+    
+    .competency-insufficient {
+        background-color: #fee2e2;
+        color: #dc2626;
+        border: 2px solid #f87171;
+    }
+    
+    .competency-basic {
+        background-color: #fef3c7;
+        color: #d97706;
+        border: 2px solid #fbbf24;
+    }
+    
+    .competency-competent {
+        background-color: #d1fae5;
+        color: #059669;
+        border: 2px solid #34d399;
+    }
+    
+    .competency-proficient {
+        background-color: #dbeafe;
+        color: #2563eb;
+        border: 2px solid #60a5fa;
+    }
+    
+    @media (max-width: 768px) {
+        .intro-container {
+            padding: 0 var(--space-md);
+        }
+        
+        .intro-content {
+            padding: var(--space-xl) var(--space-md);
+        }
+        
+        .intro-header h1 {
+            font-size: var(--text-2xl);
+        }
+        
+        .regional-focus-selector {
+            grid-template-columns: 1fr;
+        }
+        
+        .competency-levels {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dutch-intro">
+    <div class="intro-container">
+        <div class="intro-card">
+            <div class="intro-header">
+                <h1 class="dutch-flag-icon">{{ t('dutch_assessment_title', lang) | default('Оценка готовности к работе в Нидерландах') }}</h1>
+                <p class="lead">{{ t('dutch_intro_subtitle', lang) | default('Оцените свою готовность работать стоматологом в Нидерландах') }}</p>
+            </div>
+            
+            <div class="intro-content">
+                <!-- Dutch Hero Section -->
+                <div class="dutch-hero">
+                    <h2>🇳🇱 Nederlandse Tandheelkunde</h2>
+                    <p>Специализированная оценка для работы в нидерландской системе здравоохранения</p>
+                </div>
+                
+                <!-- Categories Overview -->
+                <h3>Категории оценки</h3>
+                <div class="categories-preview">
+                    {% for category in dutch_categories %}
+                    <div class="dutch-category-card {% if category.critical_for_netherlands %}critical{% endif %}">
+                        <div class="d-flex align-items-center">
+                            <div class="category-icon" style="background-color: {{ category.color }};">
+                                <i class="bi bi-{{ category.icon }}"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h4>{{ category.name }}</h4>
+                                <p class="text-muted">{{ category.description }}</p>
+                                {% if category.critical_for_netherlands %}
+                                <span class="badge bg-danger">Критично для Нидерландов</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Regional Focus -->
+                <h3>{{ t('regional_focus', lang) | default('Региональный фокус') }}</h3>
+                <div class="regional-focus-selector">
+                    <div class="focus-option" data-focus="urban">
+                        <h4>🏙️ Городские районы</h4>
+                        <p>Амстердам, Роттердам, Гаага</p>
+                        <small>Мультикультурные пациенты, сложная страховка</small>
+                    </div>
+                    <div class="focus-option" data-focus="rural">
+                        <h4>🌾 Сельские районы</h4>
+                        <p>Landelijke gebieden</p>
+                        <small>Общая практика, профилактическая помощь</small>
+                    </div>
+                </div>
+                
+                <!-- BIG Exam Section -->
+                <div class="big-exam-section">
+                    <h3>🏥 BIG Examen Подготовка</h3>
+                    <p>Включите вопросы для подготовки к BIG экзамену (медицинские знания)</p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="include_big_exam">
+                        <label class="form-check-label" for="include_big_exam">
+                            Включить BIG экзаменационные вопросы
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Competency Levels -->
+                <h3>Уровни компетенции</h3>
+                <div class="competency-levels">
+                    <div class="competency-level competency-insufficient">
+                        <h4>Недостаточно</h4>
+                        <p>&lt; 70%</p>
+                        <small>Требуется дополнительное обучение</small>
+                    </div>
+                    <div class="competency-level competency-basic">
+                        <h4>Базовый</h4>
+                        <p>70-79%</p>
+                        <small>Можно работать под супервизией</small>
+                    </div>
+                    <div class="competency-level competency-competent">
+                        <h4>Компетентный</h4>
+                        <p>80-89%</p>
+                        <small>Готов к самостоятельной практике</small>
+                    </div>
+                    <div class="competency-level competency-proficient">
+                        <h4>Профессиональный</h4>
+                        <p>≥ 90%</p>
+                        <small>Отличная подготовка</small>
+                    </div>
+                </div>
+                
+                <!-- Previous Attempts -->
+                {% if previous_attempts %}
+                <div class="previous-attempts">
+                    <h3>Предыдущие попытки</h3>
+                    {% for attempt in previous_attempts %}
+                    <div class="alert alert-info">
+                        <strong>{{ attempt.completed_at.strftime('%d.%m.%Y') }}</strong> - 
+                        Результат: {{ "%.1f"|format(attempt.total_score) }}%
+                        <a href="{{ url_for('assessment_bp.dutch_results', lang=lang, attempt_id=attempt.id) }}" 
+                           class="btn btn-sm btn-outline-primary ms-2">Просмотреть</a>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Start Section -->
+                <div class="start-section">
+                    <h3>Готовы начать?</h3>
+                    <p>Оценка займет примерно 60-90 минут и включает вопросы по всем нидерландским категориям.</p>
+                    <button class="btn-start-dutch" onclick="startDutchAssessment()">
+                        🇳🇱 Начать нидерландскую оценку
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assessment Form -->
+<form id="dutch-assessment-form" action="{{ url_for('assessment_bp.start_dutch_assessment', lang=lang) }}" method="POST" style="display: none;">
+    <input type="hidden" name="regional_focus" id="regional_focus" value="general">
+    <input type="hidden" name="include_big_exam" id="include_big_exam_hidden" value="false">
+</form>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Regional focus selection
+    const focusOptions = document.querySelectorAll('.focus-option');
+    focusOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            focusOptions.forEach(opt => opt.classList.remove('selected'));
+            this.classList.add('selected');
+            document.getElementById('regional_focus').value = this.dataset.focus;
+        });
+    });
+    
+    // BIG exam checkbox
+    const bigExamCheckbox = document.getElementById('include_big_exam');
+    const bigExamHidden = document.getElementById('include_big_exam_hidden');
+    
+    bigExamCheckbox.addEventListener('change', function() {
+        bigExamHidden.value = this.checked;
+    });
+});
+
+function startDutchAssessment() {
+    const btn = document.querySelector('.btn-start-dutch');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> {{ t("loading", lang) | default("Загрузка...") }}';
+    
+    // Получаем CSRF токен
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                     document.querySelector('input[name="csrf_token"]')?.value;
+    
+    // Получаем данные формы
+    const regionalFocus = document.getElementById('regional_focus').value;
+    const includeBigExam = document.getElementById('include_big_exam_hidden').value === 'true';
+    
+    // Отправляем JSON запрос
+    fetch('{{ url_for("assessment_bp.start_dutch_assessment", lang=lang) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({
+            regional_focus: regionalFocus,
+            include_big_exam: includeBigExam
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = data.redirect_url;
+        } else {
+            alert(data.error || '{{ t("error_starting_assessment", lang) | default("Ошибка при запуске оценки") }}');
+            btn.disabled = false;
+            btn.innerHTML = '🇳🇱 {{ t("start_dutch_assessment", lang) | default("Начать нидерландскую оценку") }}';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('{{ t("error_starting_assessment", lang) | default("Ошибка при запуске оценки") }}');
+        btn.disabled = false;
+        btn.innerHTML = '🇳🇱 {{ t("start_dutch_assessment", lang) | default("Начать нидерландскую оценку") }}';
+    });
+}
+</script>
+{% endblock %} 

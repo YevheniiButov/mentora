@@ -1,0 +1,361 @@
+{
+    "title": {
+      "en": "Toothache Agony",
+      "ru": "Мучительная зубная боль",
+      "nl": "Kiespijn Agonie"
+    },
+    "description": {
+      "en": "Patient presents with a persistent toothache.",
+      "ru": "Пациент обращается с жалобой на постоянную зубную боль.",
+      "nl": "Patiënt presenteert zich met aanhoudende kiespijn."
+    },
+    "scenario_data": {
+      "translations": {
+        "en": {
+          "patient_info": {
+            "name": "Sarah Chen",
+            "medical_history": "Generally healthy, no known allergies. Reports occasional stress-related bruxism."
+          },
+          "initial_state": {
+            "patient_statement": "Doctor, I've had this terrible toothache for a few days now, and it's getting worse. It's on my lower right side.",
+            "notes": "Patient presents with acute dental pain. Initial assessment needed to determine cause and appropriate treatment."
+          },
+          "dialogue_nodes": [
+            {
+              "id": "node_1",
+              "title": "Gathering Initial Pain Details",
+              "patient_statement": "It's a sharp, throbbing pain, especially when I bite down or have something cold or sweet.",
+              "options": [
+                {
+                  "text": "Can you point to the exact tooth that hurts?",
+                  "next_node": "node_2",
+                  "score": 5
+                },
+                {
+                  "text": "How long has this specific pain been occurring?",
+                  "next_node": "node_2_alt",
+                  "score": 3
+                }
+              ]
+            },
+            {
+              "id": "node_2",
+              "title": "Localizing Pain and Checking Sensitivity",
+              "patient_statement": "Yes, it feels like it's this one here (points to lower right first molar). When I had ice cream yesterday, the pain shot up and lasted for ages.",
+              "options": [
+                {
+                  "text": "Does the pain linger for a long time after cold, or does it go away quickly?",
+                  "next_node": "node_3",
+                  "score": 10
+                },
+                {
+                  "text": "Have you noticed any swelling in that area?",
+                  "next_node": "node_swelling_check",
+                  "score": 7
+                }
+              ]
+            },
+            {
+              "id": "node_2_alt",
+              "title": "Clarifying Duration",
+              "patient_statement": "This sharp pain started about three days ago, but I've had some mild sensitivity there for a couple of weeks.",
+              "options": [
+                {
+                  "text": "Can you point to the exact tooth that hurts?",
+                  "next_node": "node_2",
+                  "score": 5
+                }
+              ]
+            },
+            {
+              "id": "node_3",
+              "title": "Assessing Pulp Vitality Indicators",
+              "patient_statement": "It definitely lingers. Sometimes it even starts aching on its own, especially at night, making it hard to sleep.",
+              "options": [
+                {
+                  "text": "Okay, Sarah. Based on what you're describing, it sounds like the nerve in your tooth might be inflamed or infected. We'll need to take an X-ray to confirm. (Proceed to preliminary diagnosis and X-ray)",
+                  "next_node": "outcome_pulpitis_suspected",
+                  "score": 10
+                },
+                {
+                  "text": "Have you tried any pain medication for this?",
+                  "next_node": "node_medication_query",
+                  "score": 3
+                }
+              ]
+            },
+            {
+              "id": "node_swelling_check",
+              "title": "Checking for Swelling",
+              "patient_statement": "No, I haven't noticed any swelling on my face or gums, but the gum around the tooth feels a bit tender.",
+              "options": [
+                {
+                  "text": "Does the pain linger for a long time after cold, or does it go away quickly?",
+                  "next_node": "node_3",
+                  "score": 10
+                }
+              ]
+            },
+            {
+              "id": "node_medication_query",
+              "title": "Querying Pain Medication Use",
+              "patient_statement": "Yes, I've taken some ibuprofen, and it helps a little, but the pain comes back.",
+              "options": [
+                {
+                  "text": "Alright Sarah. The lingering pain, spontaneous aching, and pain with cold and sweets strongly suggest an issue with the tooth's nerve, likely irreversible pulpitis. We need an X-ray to see the extent. (Proceed to preliminary diagnosis and X-ray)",
+                  "next_node": "outcome_pulpitis_suspected",
+                  "score": 8
+                }
+              ]
+            }
+          ],
+          "outcomes": {
+            "good_diagnosis_pulpitis": {
+              "title": "Accurate Preliminary Assessment!",
+              "text": "You've asked key questions pointing towards irreversible pulpitis. The next logical step is an X-ray and pulp vitality testing to confirm the diagnosis and plan treatment (likely root canal therapy or extraction)."
+            },
+            "outcome_pulpitis_suspected": {
+              "title": "Pulpitis Suspected",
+              "text": "Your questions about lingering pain, spontaneous pain, and specific triggers (cold, sweet) were crucial. This points towards likely irreversible pulpitis. An X-ray and clinical examination are the next steps to confirm and decide on treatment (e.g., root canal or extraction)."
+            },
+            "needs_more_info": {
+              "title": "More Information Needed",
+              "text": "You've started well, but more specific questions about the pain's nature, duration, and triggers would help narrow down the diagnosis more effectively."
+            }
+          }
+        },
+        "ru": {
+          "patient_info": {
+            "name": "Сара Чен",
+            "medical_history": "В целом здорова, известных аллергий нет. Сообщает об эпизодическом бруксизме, связанном со стрессом."
+          },
+          "initial_state": {
+            "patient_statement": "Доктор, у меня уже несколько дней ужасная зубная боль, и она становится все сильнее. Это с правой нижней стороны.",
+            "notes": "Пациент обращается с острой зубной болью. Необходима первичная оценка для определения причины и соответствующего лечения."
+          },
+          "dialogue_nodes": [
+            {
+              "id": "node_1",
+              "title": "Сбор первоначальных сведений о боли",
+              "patient_statement": "Это острая, пульсирующая боль, особенно когда я кусаю или ем что-то холодное или сладкое.",
+              "options": [
+                {
+                  "text": "Можете ли вы указать точный зуб, который болит?",
+                  "next_node": "node_2",
+                  "score": 5
+                },
+                {
+                  "text": "Как давно у вас эта конкретная боль?",
+                  "next_node": "node_2_alt",
+                  "score": 3
+                }
+              ]
+            },
+            {
+              "id": "node_2",
+              "title": "Локализация боли и проверка чувствительности",
+              "patient_statement": "Да, кажется, это вот этот (указывает на нижний правый первый моляр). Когда я вчера ела мороженое, боль резко усилилась и долго не проходила.",
+              "options": [
+                {
+                  "text": "Боль сохраняется долго после холодного или быстро проходит?",
+                  "next_node": "node_3",
+                  "score": 10
+                },
+                {
+                  "text": "Вы замечали отек в этой области?",
+                  "next_node": "node_swelling_check",
+                  "score": 7
+                }
+              ]
+            },
+            {
+              "id": "node_2_alt",
+              "title": "Уточнение продолжительности",
+              "patient_statement": "Эта острая боль началась дня три назад, но легкая чувствительность в этом месте была уже пару недель.",
+              "options": [
+                {
+                  "text": "Можете ли вы указать точный зуб, который болит?",
+                  "next_node": "node_2",
+                  "score": 5
+                }
+              ]
+            },
+            {
+              "id": "node_3",
+              "title": "Оценка показателей жизнеспособности пульпы",
+              "patient_statement": "Определенно сохраняется. Иногда даже начинает болеть сама по себе, особенно ночью, мешает спать.",
+              "options": [
+                {
+                  "text": "Хорошо, Сара. Судя по вашему описанию, похоже, что нерв в вашем зубе воспален или инфицирован. Нам нужно будет сделать рентген, чтобы это подтвердить. (Перейти к предварительному диагнозу и рентгену)",
+                  "next_node": "outcome_pulpitis_suspected",
+                  "score": 10
+                },
+                {
+                  "text": "Вы пробовали какие-нибудь обезболивающие?",
+                  "next_node": "node_medication_query",
+                  "score": 3
+                }
+              ]
+            },
+             {
+              "id": "node_swelling_check",
+              "title": "Проверка на наличие отека",
+              "patient_statement": "Нет, я не замечала отека на лице или деснах, но десна вокруг зуба немного чувствительна.",
+              "options": [
+                {
+                  "text": "Боль сохраняется долго после холодного или быстро проходит?",
+                  "next_node": "node_3",
+                  "score": 10
+                }
+              ]
+            },
+            {
+              "id": "node_medication_query",
+              "title": "Запрос о приеме обезболивающих",
+              "patient_statement": "Да, я принимала ибупрофен, он немного помогает, но боль возвращается.",
+              "options": [
+                {
+                  "text": "Хорошо, Сара. Длительная боль, спонтанные боли и боль от холодного и сладкого убедительно указывают на проблему с нервом зуба, вероятно, необратимый пульпит. Нам нужен рентген, чтобы увидеть степень поражения. (Перейти к предварительному диагнозу и рентгену)",
+                  "next_node": "outcome_pulpitis_suspected",
+                  "score": 8
+                }
+              ]
+            }
+          ],
+          "outcomes": {
+            "good_diagnosis_pulpitis": {
+              "title": "Точная предварительная оценка!",
+              "text": "Вы задали ключевые вопросы, указывающие на необратимый пульпит. Следующим логическим шагом является рентген и проверка жизнеспособности пульпы для подтверждения диагноза и планирования лечения (вероятно, лечение корневых каналов или удаление)."
+            },
+            "outcome_pulpitis_suspected": {
+              "title": "Подозрение на пульпит",
+              "text": "Ваши вопросы о длительной боли, спонтанной боли и конкретных триггерах (холодное, сладкое) были крайне важны. Это указывает на вероятный необратимый пульпит. Рентген и клинический осмотр — следующие шаги для подтверждения и выбора лечения (например, лечение корневых каналов или удаление)."
+            },
+            "needs_more_info": {
+              "title": "Требуется больше информации",
+              "text": "Вы хорошо начали, но более конкретные вопросы о характере боли, ее продолжительности и триггерах помогли бы более эффективно сузить диагноз."
+            }
+          }
+        },
+        "nl": {
+          "patient_info": {
+            "name": "Sarah Chen",
+            "medical_history": "Over het algemeen gezond, geen bekende allergieën. Meldt af en toe stressgerelateerd bruxisme."
+          },
+          "initial_state": {
+            "patient_statement": "Dokter, ik heb al een paar dagen vreselijke kiespijn, en het wordt erger. Het zit aan mijn rechteronderkant.",
+            "notes": "Patiënt presenteert zich met acute tandpijn. Initiële beoordeling nodig om de oorzaak en passende behandeling te bepalen."
+          },
+          "dialogue_nodes": [
+            {
+              "id": "node_1",
+              "title": "Verzamelen van initiële pijndetails",
+              "patient_statement": "Het is een scherpe, kloppende pijn, vooral als ik bijt of iets kouds of zoets eet.",
+              "options": [
+                {
+                  "text": "Kunt u de precieze tand aanwijzen die pijn doet?",
+                  "next_node": "node_2",
+                  "score": 5
+                },
+                {
+                  "text": "Hoe lang heeft u deze specifieke pijn al?",
+                  "next_node": "node_2_alt",
+                  "score": 3
+                }
+              ]
+            },
+            {
+              "id": "node_2",
+              "title": "Pijn lokaliseren en gevoeligheid controleren",
+              "patient_statement": "Ja, het voelt alsof het deze hier is (wijst naar de rechter ondermolaar). Toen ik gisteren ijs at, schoot de pijn erin en hield het eeuwen aan.",
+              "options": [
+                {
+                  "text": "Blijft de pijn lang hangen na kou, of gaat het snel weg?",
+                  "next_node": "node_3",
+                  "score": 10
+                },
+                {
+                  "text": "Heeft u zwelling opgemerkt in dat gebied?",
+                  "next_node": "node_swelling_check",
+                  "score": 7
+                }
+              ]
+            },
+            {
+              "id": "node_2_alt",
+              "title": "Verduidelijking van de duur",
+              "patient_statement": "Deze scherpe pijn begon ongeveer drie dagen geleden, maar ik had al een paar weken wat milde gevoeligheid daar.",
+              "options": [
+                {
+                  "text": "Kunt u de precieze tand aanwijzen die pijn doet?",
+                  "next_node": "node_2",
+                  "score": 5
+                }
+              ]
+            },
+            {
+              "id": "node_3",
+              "title": "Beoordelen van pulpa vitaliteitsindicatoren",
+              "patient_statement": "Het blijft zeker hangen. Soms begint het zelfs vanzelf te zeuren, vooral 's nachts, waardoor ik moeilijk kan slapen.",
+              "options": [
+                {
+                  "text": "Oké, Sarah. Op basis van wat u beschrijft, klinkt het alsof de zenuw in uw tand ontstoken of geïnfecteerd zou kunnen zijn. We moeten een röntgenfoto maken om dit te bevestigen. (Ga verder naar voorlopige diagnose en röntgenfoto)",
+                  "next_node": "outcome_pulpitis_suspected",
+                  "score": 10
+                },
+                {
+                  "text": "Heeft u hiervoor pijnstillers geprobeerd?",
+                  "next_node": "node_medication_query",
+                  "score": 3
+                }
+              ]
+            },
+            {
+              "id": "node_swelling_check",
+              "title": "Controleren op zwelling",
+              "patient_statement": "Nee, ik heb geen zwelling opgemerkt aan mijn gezicht of tandvlees, maar het tandvlees rond de tand voelt een beetje gevoelig aan.",
+              "options": [
+                {
+                  "text": "Blijft de pijn lang hangen na kou, of gaat het snel weg?",
+                  "next_node": "node_3",
+                  "score": 10
+                }
+              ]
+            },
+            {
+              "id": "node_medication_query",
+              "title": "Navraag doen over gebruik van pijnstillers",
+              "patient_statement": "Ja, ik heb wat ibuprofen genomen, en dat helpt een beetje, maar de pijn komt terug.",
+              "options": [
+                {
+                  "text": "Goed Sarah. De aanhoudende pijn, spontane pijn, en pijn bij koud en zoet wijzen sterk op een probleem met de tandzenuw, waarschijnlijk irreversibele pulpitis. We hebben een röntgenfoto nodig om de omvang te zien. (Ga verder naar voorlopige diagnose en röntgenfoto)",
+                  "next_node": "outcome_pulpitis_suspected",
+                  "score": 8
+                }
+              ]
+            }
+          ],
+          "outcomes": {
+            "good_diagnosis_pulpitis": {
+              "title": "Nauwkeurige voorlopige beoordeling!",
+              "text": "U heeft belangrijke vragen gesteld die wijzen op irreversibele pulpitis. De volgende logische stap is een röntgenfoto en pulpa vitaliteitstesten om de diagnose te bevestigen en de behandeling te plannen (waarschijnlijk wortelkanaalbehandeling of extractie)."
+            },
+            "outcome_pulpitis_suspected": {
+              "title": "Pulpitis Vermoed",
+              "text": "Uw vragen over aanhoudende pijn, spontane pijn en specifieke triggers (koud, zoet) waren cruciaal. Dit wijst op waarschijnlijke irreversibele pulpitis. Een röntgenfoto en klinisch onderzoek zijn de volgende stappen om te bevestigen en te beslissen over de behandeling (bijv. wortelkanaalbehandeling of extractie)."
+            },
+            "needs_more_info": {
+              "title": "Meer informatie nodig",
+              "text": "U bent goed begonnen, maar meer specifieke vragen over de aard, duur en triggers van de pijn zouden helpen om de diagnose effectiever te verfijnen."
+            }
+          }
+        }
+      },
+      "default": "en",
+      "patient_info": {
+        "age": 30,
+        "gender": "female",
+        "image": "patient_sarah_chen.jpg"
+      }
+    }
+  }

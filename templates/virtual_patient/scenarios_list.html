@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Виртуальные пациенты{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">
+                    <i class="fas fa-user-md text-primary me-2"></i>
+                    Виртуальные пациенты
+                </h1>
+                <span class="badge bg-info">{{ scenarios|length }} сценариев</span>
+            </div>
+            
+            <p class="text-muted mb-4">
+                Отрабатывайте клинические навыки на виртуальных пациентах. 
+                Каждый сценарий основан на реальных клинических случаях.
+            </p>
+            
+            {% if scenarios %}
+                <div class="row g-4">
+                    {% for item in scenarios %}
+                    {% set scenario = item.scenario %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-header bg-light">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h5 class="card-title mb-0">{{ scenario.title }}</h5>
+                                    <span class="badge bg-{{ 'success' if scenario.difficulty == 'easy' else 'warning' if scenario.difficulty == 'medium' else 'danger' }}">
+                                        {{ scenario.difficulty }}
+                                    </span>
+                                </div>
+                                {% if scenario.category %}
+                                <small class="text-muted">{{ scenario.category }}</small>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="card-body">
+                                <p class="card-text">{{ scenario.description or 'Описание недоступно' }}</p>
+                                
+                                <!-- Прогресс -->
+                                <div class="mb-3">
+                                    {% if item.completed %}
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-success">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                Завершен
+                                            </span>
+                                            <span class="badge bg-success">{{ item.best_percentage }}%</span>
+                                        </div>
+                                        <div class="progress mt-2" style="height: 6px;">
+                                            <div class="progress-bar bg-success" style="width: {{ item.best_percentage }}%"></div>
+                                        </div>
+                                    {% else %}
+                                        <div class="text-muted">
+                                            <i class="fas fa-circle me-1"></i>
+                                            Не пройден
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Статистика -->
+                                <div class="row text-center mb-3">
+                                    <div class="col-6">
+                                        <small class="text-muted">Попыток</small>
+                                        <div class="fw-bold">{{ item.attempts_count }}</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-muted">Макс. балл</small>
+                                        <div class="fw-bold">{{ scenario.max_score }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card-footer bg-transparent">
+                                <div class="d-grid gap-2">
+                                    <a href="{{ url_for('virtual_patient.scenario_detail', scenario_id=scenario.id) }}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Подробнее
+                                    </a>
+                                    <form method="POST" action="{{ url_for('virtual_patient.start_scenario', scenario_id=scenario.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="fas fa-play me-1"></i>
+                                            {% if item.completed %}Пройти еще раз{% else %}Начать{% endif %}
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-user-md text-muted mb-3" style="font-size: 4rem;"></i>
+                    <h3 class="text-muted">Сценарии не найдены</h3>
+                    <p class="text-muted">В данный момент нет доступных виртуальных пациентов.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Добавляем интерактивность карточкам
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.transition = 'transform 0.3s ease';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %} 

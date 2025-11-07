@@ -3465,6 +3465,7 @@ translations = {
     'valid_until': 'Valid until',
     'scan_to_verify': 'Scan to verify',
     'qr_not_generated': 'QR not generated',
+    'qr_generating': 'Generating QR code...',
     'view_full_card': 'View card',
     'download_png': 'Download PNG',
     'download_pdf': 'Download PDF',

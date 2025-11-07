@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if lang == 'ru' %}Админ: Управление модулями{% else %}Admin: Manage Modules{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {# --- Форма импорта --- #}
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h1 class="card-title h4"><i class="bi bi-upload"></i> {% if lang == 'ru' %}Импорт учебных модулей{% else %}Import Learning Modules{% endif %}</h1>
+
+            {# Отображение Flash-сообщений, связанных с импортом/удалением #}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category if category in ['success', 'danger', 'warning', 'info'] else 'secondary' }} alert-dismissible fade show mt-3" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+
+            <p>{% if lang == 'ru' %}Загрузите файл <code>.json</code>, содержащий список модулей и уроков.{% else %}Upload a <code>.json</code> file containing modules and lessons.{% endif %}</p>
+
+            <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin_bp.modules', lang=lang) }}"> {# Указываем action явно #}
+              {# Скрытое поле для идентификации формы на бэкенде #}
+              <input type="hidden" name="import_form" value="true">
+              <div class="mb-3">
+                {# Меняем name="json" на name="json_file" #}
+                <input class="form-control" type="file" name="json_file" accept="application/json" required>
+              </div>
+              <button type="submit" class="btn btn-primary">
+                  <i class="bi bi-cloud-arrow-up-fill"></i> {% if lang == 'ru' %}Импортировать{% else %}Import{% endif %}
+              </button>
+            </form>
+        </div>
+    </div>
+
+    {# --- Список существующих модулей --- #}
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h2 class="card-title h4"><i class="bi bi-collection-fill"></i> {% if lang == 'ru' %}Существующие модули{% else %}Existing Modules{% endif %}</h2>
+            {% if modules %}
+            <div class="list-group mt-3">
+                {% for mod in modules %}
+                <div class="list-group-item list-group-item-action flex-column align-items-start mb-2">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ mod.title }} {% if not mod.is_premium %}<span class="badge bg-success">Free</span>{% else %}<span class="badge bg-warning text-dark">Premium</span>{% endif %}</h5>
+                        {# Форма удаления модуля #}
+                        <form method="POST"
+                              action="{{ url_for('admin_bp.delete_module', lang=lang, module_id=mod.id) }}" {# Добавлен lang=lang #}
+                              style="display: inline;"
+                              onsubmit="return confirm('{% if lang == 'ru' %}Вы уверены, что хотите удалить модуль \'{{ mod.title }}\' и все его уроки?{% else %}Are you sure you want to delete module \'{{ mod.title }}\' and all its lessons?{% endif %}');">
+                          <button type="submit" class="btn btn-danger btn-sm">
+                              <i class="bi bi-trash"></i> {% if lang == 'ru' %}Удалить{% else %}Delete{% endif %}
+                          </button>
+                        </form>
+                    </div>
+                    <p class="mb-1">{{ mod.description }}</p>
+                    {% if mod.lessons %}
+                    <small>
+                        <ul class="list-inline">
+                            <li class="list-inline-item"><strong>{% if lang == 'ru' %}Уроки:{% else %}Lessons:{% endif %}</strong></li>
+                            {% for lesson in mod.lessons %}
+                            <li class="list-inline-item"><span class="badge bg-secondary">{{ lesson.title }} (ID: {{ lesson.id }})</span></li>
+                            {% endfor %}
+                        </ul>
+                    </small>
+                    {% else %}
+                    <small class="text-muted">({% if lang == 'ru' %}Уроков нет{% else %}No lessons{% endif %})</small>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+                 <p class="text-muted mt-3">({% if lang == 'ru' %}Нет импортированных модулей.{% else %}No modules imported yet.{% endif %})</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div> {# Конец container #}
+{% endblock %}

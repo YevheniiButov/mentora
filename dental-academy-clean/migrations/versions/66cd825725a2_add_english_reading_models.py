@@ -77,11 +77,22 @@ def upgrade():
     with op.batch_alter_table('forum_topics', schema=None) as batch_op:
         batch_op.create_foreign_key('fk_forum_topics_deleted_by', 'user', ['deleted_by'], ['id'])
 
-    with op.batch_alter_table('incoming_emails', schema=None) as batch_op:
-        batch_op.alter_column('source_account',
-               existing_type=sa.VARCHAR(length=50),
-               nullable=False,
-               existing_server_default=sa.text("'info'"))
+    # Check if incoming_emails table exists and has source_account column
+    if 'incoming_emails' in tables:
+        inspector = inspect(op.get_bind())
+        columns = [col['name'] for col in inspector.get_columns('incoming_emails')]
+        
+        if 'source_account' in columns:
+            # Column exists, just alter it
+            with op.batch_alter_table('incoming_emails', schema=None) as batch_op:
+                batch_op.alter_column('source_account',
+                       existing_type=sa.VARCHAR(length=50),
+                       nullable=False,
+                       existing_server_default=sa.text("'info'"))
+        else:
+            # Column doesn't exist, add it
+            with op.batch_alter_table('incoming_emails', schema=None) as batch_op:
+                batch_op.add_column(sa.Column('source_account', sa.String(length=50), nullable=False, server_default='info'))
 
     with op.batch_alter_table('learning_path', schema=None) as batch_op:
         batch_op.alter_column('id',
@@ -154,11 +165,20 @@ def downgrade():
                existing_nullable=False,
                autoincrement=True)
 
-    with op.batch_alter_table('incoming_emails', schema=None) as batch_op:
-        batch_op.alter_column('source_account',
-               existing_type=sa.VARCHAR(length=50),
-               nullable=True,
-               existing_server_default=sa.text("'info'"))
+    # Check if incoming_emails table exists and has source_account column
+    from sqlalchemy import inspect
+    inspector = inspect(op.get_bind())
+    tables = inspector.get_table_names()
+    
+    if 'incoming_emails' in tables:
+        columns = [col['name'] for col in inspector.get_columns('incoming_emails')]
+        
+        if 'source_account' in columns:
+            with op.batch_alter_table('incoming_emails', schema=None) as batch_op:
+                batch_op.alter_column('source_account',
+                       existing_type=sa.VARCHAR(length=50),
+                       nullable=True,
+                       existing_server_default=sa.text("'info'"))
 
     with op.batch_alter_table('forum_topics', schema=None) as batch_op:
         batch_op.drop_constraint('fk_forum_topics_deleted_by', type_='foreignkey')

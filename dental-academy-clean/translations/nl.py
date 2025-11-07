@@ -3263,6 +3263,7 @@ translations = {
     'valid_until': 'Geldig tot',
     'scan_to_verify': 'Scan om te verifiëren',
     'qr_not_generated': 'QR niet gegenereerd',
+    'qr_generating': 'QR wordt gegenereerd...',
     'view_full_card': 'Bekijk kaart',
     'download_png': 'Download PNG',
     'download_pdf': 'Download PDF',
