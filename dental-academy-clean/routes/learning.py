@@ -28,7 +28,7 @@ def get_daily_tasks(user_id):
     else:
         days_since_start = 0
     
-    cycle_day = (days_since_start % 3) + 1  # 1, 2, or 3
+    cycle_day = (days_since_start % 6) + 1  # 1, 2, 3, 4, 5, or 6
     
     # Get today's start and end timestamps
     today_start = datetime.combine(today, datetime.min.time()).replace(tzinfo=timezone.utc)
@@ -70,13 +70,45 @@ def get_daily_tasks(user_id):
     ).all()
     english_completed = len(english_today) > 0
     
+    # Memory game (check if user played today - using localStorage on client side)
+    # For now, we'll assume it's not completed (client will track this)
+    memory_completed = False
+    
     tasks = {
         'cycle_day': cycle_day,
         'tasks': []
     }
     
     if cycle_day == 1:
-        # Day 1: Tests + Flashcards + VP + English Reading
+        # Day 1: Tests + Flashcards + English Reading
+        tasks['tasks'] = [
+            {
+                'type': 'diagnostic_test',
+                'title': 'Diagnostische Test',
+                'target': 10,
+                'icon': 'clipboard-check',
+                'completed': tests_completed > 0,
+                'progress': min(tests_completed, 10)
+            },
+            {
+                'type': 'flashcards',
+                'title': 'Medische Termen',
+                'target': 20,
+                'icon': 'card-text',
+                'completed': flashcards_completed,
+                'progress': flashcard_today.terms_studied if flashcard_today and flashcard_today.terms_studied else 0
+            },
+            {
+                'type': 'english_reading',
+                'title': 'English Reading',
+                'target': 1,
+                'icon': 'book',
+                'completed': english_completed,
+                'progress': 1 if english_completed else 0
+            }
+        ]
+    elif cycle_day == 2:
+        # Day 2: Tests + Flashcards + VP
         tasks['tasks'] = [
             {
                 'type': 'diagnostic_test',
@@ -101,6 +133,18 @@ def get_daily_tasks(user_id):
                 'icon': 'person-badge',
                 'completed': vp_completed,
                 'progress': 1 if vp_completed else 0
+            }
+        ]
+    elif cycle_day == 3:
+        # Day 3: Intensive Tests + English Reading
+        tasks['tasks'] = [
+            {
+                'type': 'diagnostic_test',
+                'title': 'Diagnostische Test (Intensief)',
+                'target': 20,
+                'icon': 'clipboard-check',
+                'completed': tests_completed >= 20,
+                'progress': min(tests_completed, 20)
             },
             {
                 'type': 'english_reading',
@@ -111,8 +155,8 @@ def get_daily_tasks(user_id):
                 'progress': 1 if english_completed else 0
             }
         ]
-    elif cycle_day == 2:
-        # Day 2: Tests + Flashcards + English Reading
+    elif cycle_day == 4:
+        # Day 4: Tests + Flashcards + VP
         tasks['tasks'] = [
             {
                 'type': 'diagnostic_test',
@@ -131,6 +175,34 @@ def get_daily_tasks(user_id):
                 'progress': flashcard_today.terms_studied if flashcard_today and flashcard_today.terms_studied else 0
             },
             {
+                'type': 'virtual_patient',
+                'title': 'Virtual Patient',
+                'target': 1,
+                'icon': 'person-badge',
+                'completed': vp_completed,
+                'progress': 1 if vp_completed else 0
+            }
+        ]
+    elif cycle_day == 5:
+        # Day 5: Tests + Memory Game + English Reading
+        tasks['tasks'] = [
+            {
+                'type': 'diagnostic_test',
+                'title': 'Diagnostische Test',
+                'target': 10,
+                'icon': 'clipboard-check',
+                'completed': tests_completed > 0,
+                'progress': min(tests_completed, 10)
+            },
+            {
+                'type': 'memory',
+                'title': 'Memory Game',
+                'target': 1,
+                'icon': 'bullseye',
+                'completed': memory_completed,
+                'progress': 1 if memory_completed else 0
+            },
+            {
                 'type': 'english_reading',
                 'title': 'English Reading',
                 'target': 1,
@@ -139,8 +211,8 @@ def get_daily_tasks(user_id):
                 'progress': 1 if english_completed else 0
             }
         ]
-    else:  # cycle_day == 3
-        # Day 3 (Intensive): More tests + English Reading
+    else:  # cycle_day == 6
+        # Day 6: Intensive Tests + Flashcards
         tasks['tasks'] = [
             {
                 'type': 'diagnostic_test',
@@ -151,12 +223,12 @@ def get_daily_tasks(user_id):
                 'progress': min(tests_completed, 20)
             },
             {
-                'type': 'english_reading',
-                'title': 'English Reading',
-                'target': 1,
-                'icon': 'book',
-                'completed': english_completed,
-                'progress': 1 if english_completed else 0
+                'type': 'flashcards',
+                'title': 'Medische Termen',
+                'target': 20,
+                'icon': 'card-text',
+                'completed': flashcards_completed,
+                'progress': flashcard_today.terms_studied if flashcard_today and flashcard_today.terms_studied else 0
             }
         ]
     

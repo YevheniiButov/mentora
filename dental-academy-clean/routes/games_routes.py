@@ -25,7 +25,10 @@ def sudoku():
 @login_required
 def memory():
     """Medical Memory game page"""
-    return render_template('games/memory.html', lang=g.lang)
+    from flask import request
+    # Check if started from learning (auto-start with medium difficulty)
+    auto_start = request.args.get('auto_start', 'false').lower() == 'true'
+    return render_template('games/memory.html', lang=g.lang, auto_start=auto_start)
 
 @games_bp.route('/quiz')
 @login_required

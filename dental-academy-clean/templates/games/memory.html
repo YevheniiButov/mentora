@@ -12,44 +12,77 @@
 
 {% block extra_css %}
 <style>
-    /* Memory Game Colors - Pink/Red */
+    /* Memory Game Colors - Modern Pink/Red with better contrast */
     :root {
         --game-primary: #ec4899;
         --game-secondary: #f43f5e;
         --game-gradient: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
         --game-light: #fce7f3;
         --game-shadow: rgba(236, 72, 153, 0.4);
+        --game-card-shadow: 0 8px 24px rgba(236, 72, 153, 0.25);
+    }
+    
+    /* Compact layout - game board visible immediately */
+    .game-card {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 1.5rem;
+    }
+    
+    @media (max-width: 767px) {
+        .game-card {
+            padding: 1rem;
+        }
+    }
+    
+    /* Hide difficulty selector when auto_start */
+    {% if auto_start %}
+    .difficulty-selector {
+        display: none !important;
+    }
+    {% endif %}
+    
+    /* Compact stats and controls */
+    .game-stats {
+        margin-bottom: 1rem;
+    }
+    
+    .control-buttons {
+        margin-bottom: 1rem;
     }
     
     .memory-board {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 0.75rem;
-        margin: 1.5rem auto 1rem;
-        max-width: 600px;
+        margin: 0 auto;
+        max-width: 650px;
+        padding: 0.5rem 0;
     }
     
     @media (max-width: 767px) {
         .memory-board {
             gap: 0.5rem;
-            margin: 1rem auto 0.5rem;
+            max-width: 100%;
         }
     }
     
     .memory-card {
         aspect-ratio: 1;
         background: var(--game-gradient);
-        border-radius: 16px;
+        border-radius: 18px;
         cursor: pointer;
         position: relative;
         transform-style: preserve-3d;
-        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--game-card-shadow);
+        border: 2px solid transparent;
     }
     
     .memory-card:hover:not(.flipped):not(.matched) {
-        transform: scale(1.05);
-        box-shadow: 0 8px 20px var(--game-shadow);
+        transform: scale(1.08) translateY(-4px);
+        box-shadow: 0 12px 32px var(--game-shadow);
+        border-color: rgba(255, 255, 255, 0.3);
     }
     
     .memory-card.flipped {
@@ -93,6 +126,7 @@
         background: var(--game-gradient);
         color: white;
         font-size: 2.5rem;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
     }
     
     @media (max-width: 767px) {
@@ -102,33 +136,67 @@
     }
     
     .card-back {
-        background: white;
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
         color: #1e293b;
         transform: rotateY(180deg);
         font-size: 0.95rem;
         text-align: center;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-        line-height: 1.3;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        line-height: 1.4;
+        font-weight: 600;
+        border: 1px solid #e2e8f0;
     }
     
     @media (max-width: 767px) {
         .card-back {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
+            line-height: 1.3;
         }
     }
     
     .game-stats {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-        margin-bottom: 1.25rem;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        max-width: 500px;
+        margin-left: auto;
+        margin-right: auto;
     }
     
     @media (max-width: 767px) {
         .game-stats {
-            gap: 0.75rem;
-            margin-bottom: 1rem;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
         }
+    }
+    
+    .stats-box {
+        background: white;
+        padding: 0.75rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        text-align: center;
+        transition: transform 0.2s ease;
+    }
+    
+    .stats-box:hover {
+        transform: translateY(-2px);
+    }
+    
+    .stats-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--game-primary);
+        margin-bottom: 0.25rem;
+    }
+    
+    .stats-label {
+        font-size: 0.75rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
     .victory-modal {
@@ -191,9 +259,15 @@
     }
     
     .difficulty-selector {
-        margin-bottom: 1.25rem;
+        margin-bottom: 1rem;
         text-align: center;
     }
+    
+    {% if auto_start %}
+    .difficulty-selector {
+        display: none;
+    }
+    {% endif %}
     
     .difficulty-selector h5 {
         font-weight: 700;
@@ -578,6 +652,23 @@ document.addEventListener('DOMContentLoaded', function() {
     
     document.getElementById('startBtn').addEventListener('click', startGame);
     document.getElementById('resetBtn').addEventListener('click', resetGame);
+    
+    // Auto-start if started from learning
+    {% if auto_start %}
+    // Set medium difficulty and start automatically
+    gameState.difficulty = 'medium';
+    document.querySelectorAll('.difficulty-btn').forEach(btn => {
+        if (btn.dataset.difficulty === 'medium') {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    // Start game after a short delay to ensure everything is loaded
+    setTimeout(() => {
+        startGame();
+    }, 300);
+    {% endif %}
 });
 
 function setupDifficultyButtons() {
