@@ -22,27 +22,39 @@
     }
     
     .game-container {
-        max-width: 900px !important;
+        max-width: 100% !important;
         position: relative;
+        padding: 0;
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+    }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
     }
     
     /* Back button positioned at top-left */
     .pixel-back-btn {
         position: fixed;
-        top: 20px;
-        left: 20px;
+        top: 10px;
+        left: 10px;
         background: rgba(0, 0, 0, 0.9);
         color: #fcfc00;
-        border: 4px solid #fff;
-        padding: 10px 18px;
+        border: 3px solid #fff;
+        padding: 8px 14px;
         font-family: 'Press Start 2P', cursive;
-        font-size: 11px;
+        font-size: 9px;
         cursor: pointer;
         transition: all 0.2s;
         z-index: 10000;
         text-decoration: none;
         display: inline-block;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        touch-action: manipulation;
     }
     
     .pixel-back-btn:hover {
@@ -54,22 +66,92 @@
     
     @media (max-width: 768px) {
         .pixel-back-btn {
-            top: 10px;
-            left: 10px;
-            padding: 8px 14px;
-            font-size: 9px;
+            top: 5px;
+            left: 5px;
+            padding: 6px 10px;
+            font-size: 7px;
+            border: 2px solid #fff;
         }
+    }
+    
+    /* Fullscreen button */
+    .fullscreen-btn {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.9);
+        color: #fcfc00;
+        border: 3px solid #fff;
+        padding: 8px 14px;
+        font-family: 'Press Start 2P', cursive;
+        font-size: 9px;
+        cursor: pointer;
+        transition: all 0.2s;
+        z-index: 10000;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        touch-action: manipulation;
+    }
+    
+    @media (max-width: 768px) {
+        .fullscreen-btn {
+            top: 5px;
+            right: 5px;
+            padding: 6px 10px;
+            font-size: 7px;
+            border: 2px solid #fff;
+        }
+    }
+    
+    .fullscreen-btn:hover {
+        background: #fcfc00;
+        color: #000;
+        transform: scale(1.1);
     }
     
     #gameCanvas {
         display: block;
-        margin: 20px auto;
+        margin: 0 auto;
         background: #5c94fc;
-        border: 8px solid #222;
+        border: 4px solid #222;
         box-shadow: 
-            0 0 0 4px #444,
-            0 0 20px rgba(0,0,0,0.8),
-            inset 0 0 100px rgba(0,0,0,0.3);
+            0 0 0 2px #444,
+            0 0 10px rgba(0,0,0,0.8),
+            inset 0 0 50px rgba(0,0,0,0.3);
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    /* Mobile: Full screen canvas */
+    @media (max-width: 768px) {
+        #gameCanvas {
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            border: none;
+            box-shadow: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            margin: 0;
+        }
+        
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+        }
+    }
+    
+    /* Desktop: Responsive but maintain aspect ratio */
+    @media (min-width: 769px) {
+        #gameCanvas {
+            max-width: 100%;
+            max-height: calc(100vh - 100px);
+            width: auto;
+            height: auto;
+        }
     }
     
     .hud {
@@ -83,6 +165,22 @@
         padding: 10px;
         background: rgba(0,0,0,0.8);
         border-radius: 8px;
+        position: relative;
+        z-index: 100;
+    }
+    
+    @media (max-width: 768px) {
+        .hud {
+            font-size: 8px;
+            padding: 6px;
+            margin-bottom: 5px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 9999;
+        }
     }
     
     .start-screen, .game-over-screen, .victory-screen {
@@ -132,12 +230,182 @@
         line-height: 2;
         color: #aaa;
     }
+    
+    /* Mobile Virtual Controls */
+    .mobile-controls {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 10000;
+        touch-action: none;
+        pointer-events: none;
+    }
+    
+    @media (max-width: 768px) {
+        .mobile-controls {
+            display: block;
+        }
+    }
+    
+    .control-pad {
+        position: absolute;
+        bottom: 20px;
+        touch-action: none;
+        pointer-events: auto;
+    }
+    
+    .control-pad-left {
+        left: 20px;
+    }
+    
+    .control-pad-right {
+        right: 20px;
+    }
+    
+    .control-btn {
+        width: 60px;
+        height: 60px;
+        background: rgba(0, 0, 0, 0.7);
+        border: 3px solid #fff;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: #fff;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+        position: absolute;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    }
+    
+    .control-btn:active {
+        background: rgba(252, 252, 0, 0.8);
+        transform: scale(0.95);
+    }
+    
+    /* Directional pad */
+    .dpad {
+        position: relative;
+        width: 180px;
+        height: 180px;
+    }
+    
+    .dpad-btn {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+    }
+    
+    .dpad-up {
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    .dpad-down {
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    .dpad-left {
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    
+    .dpad-right {
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    
+    /* Action buttons */
+    .action-btn {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .jump-btn {
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    .dash-btn {
+        bottom: 100px;
+        right: 20px;
+    }
+    
+    .shoot-btn {
+        bottom: 20px;
+        right: 100px;
+    }
+    
+    /* Hide controls when game not started */
+    .mobile-controls.hidden {
+        display: none;
+    }
+    
+    /* Prevent zoom on double tap */
+    * {
+        touch-action: manipulation;
+    }
+    
+    @media (max-width: 768px) {
+        .start-screen, .game-over-screen, .victory-screen {
+            max-width: 90vw;
+            padding: 20px;
+            font-size: 10px;
+        }
+        
+        .start-screen h1 {
+            font-size: 16px;
+        }
+        
+        .pixel-btn {
+            padding: 8px 16px;
+            font-size: 9px;
+            margin: 5px;
+        }
+        
+        .instructions {
+            font-size: 8px;
+            line-height: 1.5;
+        }
+        
+        .desktop-only {
+            display: none;
+        }
+        
+        .mobile-only {
+            display: block;
+        }
+    }
+    
+    @media (min-width: 769px) {
+        .desktop-only {
+            display: block;
+        }
+        
+        .mobile-only {
+            display: none;
+        }
+    }
 </style>
 
 <!-- Back Button -->
 <a href="/learning-map" class="pixel-back-btn">
     ← BACK
 </a>
+
+<!-- Fullscreen Button -->
+<button class="fullscreen-btn" onclick="toggleFullscreen()" id="fullscreenBtn">
+    ⛶ FULL
+</button>
 
 <div class="hud">
     <div>❤️ <span id="livesDisplay">3</span></div>
@@ -153,14 +421,19 @@
         <p style="color: #00fc00; margin: 20px 0;">RETRO 8-BIT ACTION!</p>
         <p style="color: #fc8000; font-size: 10px; margin: 10px 0;">Featuring RAMBO in Jungle Mode! 💪</p>
         <div class="instructions">
-            ⬅️ ➡️ MOVE<br>
+            <span class="desktop-only">⬅️ ➡️ MOVE<br>
             ⬆️ / SPACE JUMP<br>
             ⬆️ x2 DOUBLE JUMP!<br>
             <span style="color: #00fcfc;">Z DASH ATTACK! ⚡</span><br>
             <span style="color: #fcfc00;">COMBO = MORE POINTS!</span><br>
             ⬇️ ENTER PIPES<br>
             X SHOOT (Contra mode)<br>
-            C CHANGE WEAPON<br>
+            C CHANGE WEAPON<br></span>
+            <span class="mobile-only">📱 TOUCH CONTROLS:<br>
+            👆 SWIPE TO MOVE<br>
+            ⬆️ BUTTON = JUMP<br>
+            ⚡ BUTTON = DASH<br>
+            🔫 BUTTON = SHOOT<br></span>
             🦠 STOMP ENEMIES<br>
             💎 HIT BLOCKS<br>
             🟢 GREEN = COINS<br>
@@ -208,11 +481,52 @@
     
     <canvas id="gameCanvas" width="800" height="600"></canvas>
     
+    <!-- Mobile Virtual Controls -->
+    <div class="mobile-controls hidden" id="mobileControls">
+        <!-- Left: Directional Pad -->
+        <div class="control-pad control-pad-left">
+            <div class="dpad">
+                <button class="control-btn dpad-btn dpad-up" id="btnUp" ontouchstart="handleTouchStart('ArrowUp', event)" ontouchend="handleTouchEnd('ArrowUp', event)" ontouchcancel="handleTouchEnd('ArrowUp', event)">⬆️</button>
+                <button class="control-btn dpad-btn dpad-down" id="btnDown" ontouchstart="handleTouchStart('ArrowDown', event)" ontouchend="handleTouchEnd('ArrowDown', event)" ontouchcancel="handleTouchEnd('ArrowDown', event)">⬇️</button>
+                <button class="control-btn dpad-btn dpad-left" id="btnLeft" ontouchstart="handleTouchStart('ArrowLeft', event)" ontouchend="handleTouchEnd('ArrowLeft', event)" ontouchcancel="handleTouchEnd('ArrowLeft', event)">⬅️</button>
+                <button class="control-btn dpad-btn dpad-right" id="btnRight" ontouchstart="handleTouchStart('ArrowRight', event)" ontouchend="handleTouchEnd('ArrowRight', event)" ontouchcancel="handleTouchEnd('ArrowRight', event)">➡️</button>
+            </div>
+        </div>
+        
+        <!-- Right: Action Buttons -->
+        <div class="control-pad control-pad-right">
+            <button class="control-btn action-btn jump-btn" id="btnJump" ontouchstart="handleTouchStart(' ', event)" ontouchend="handleTouchEnd(' ', event)" ontouchcancel="handleTouchEnd(' ', event)">⬆️</button>
+            <button class="control-btn action-btn dash-btn" id="btnDash" ontouchstart="handleTouchStart('KeyZ', event)" ontouchend="handleTouchEnd('KeyZ', event)" ontouchcancel="handleTouchEnd('KeyZ', event)">⚡</button>
+            <button class="control-btn action-btn shoot-btn" id="btnShoot" ontouchstart="handleTouchStart('KeyX', event)" ontouchend="handleTouchEnd('KeyX', event)" ontouchcancel="handleTouchEnd('KeyX', event)">🔫</button>
+        </div>
+    </div>
+    
     <!-- Cheat Code Button -->
-    <button id="cheatButton" onclick="showCheatInput()" style="position: fixed; top: 20px; right: 20px; background: rgba(0, 0, 0, 0.9); color: #fcfc00; border: 4px solid #fff; padding: 8px 12px; font-family: 'Press Start 2P', cursive; font-size: 10px; cursor: pointer; z-index: 10000; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);">CHEAT</button>
+    <button id="cheatButton" onclick="showCheatInput()" style="position: fixed; top: 50px; right: 10px; background: rgba(0, 0, 0, 0.9); color: #fcfc00; border: 3px solid #fff; padding: 6px 10px; font-family: 'Press Start 2P', cursive; font-size: 8px; cursor: pointer; z-index: 10000; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); touch-action: manipulation;">CHEAT</button>
     
     <!-- Sound Toggle Button -->
-    <button id="soundToggle" onclick="toggleSound()" style="position: fixed; top: 20px; right: 100px; width: 50px; height: 50px; background: rgba(0, 0, 0, 0.9); color: #fcfc00; border: 4px solid #fff; border-radius: 50%; cursor: pointer; font-size: 20px; z-index: 10000; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);">🔊</button>
+    <button id="soundToggle" onclick="toggleSound()" style="position: fixed; top: 50px; right: 80px; width: 40px; height: 40px; background: rgba(0, 0, 0, 0.9); color: #fcfc00; border: 3px solid #fff; border-radius: 50%; cursor: pointer; font-size: 16px; z-index: 10000; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); touch-action: manipulation;">🔊</button>
+    
+    <style>
+        @media (max-width: 768px) {
+            #cheatButton {
+                top: 40px !important;
+                right: 5px !important;
+                padding: 5px 8px !important;
+                font-size: 7px !important;
+                border: 2px solid #fff !important;
+            }
+            
+            #soundToggle {
+                top: 40px !important;
+                right: 60px !important;
+                width: 35px !important;
+                height: 35px !important;
+                font-size: 14px !important;
+                border: 2px solid #fff !important;
+            }
+        }
+    </style>
     
     <!-- Cheat Code Input -->
     <div id="cheatInput" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 0, 0, 0.9); color: #fcfc00; padding: 20px; border: 4px solid #fff; font-family: 'Press Start 2P', cursive; font-size: 12px; z-index: 10001; display: none;">
@@ -228,6 +542,243 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
+
+// Mobile optimization: Scale canvas using CSS (keep internal size 800x600)
+function resizeCanvas() {
+    const isMobile = window.innerWidth <= 768;
+    
+    // Always keep internal canvas size at 800x600 for game logic
+    canvas.width = 800;
+    canvas.height = 600;
+    
+    if (isMobile) {
+        // Mobile: Scale to full screen using CSS
+        const scaleX = window.innerWidth / 800;
+        const scaleY = window.innerHeight / 600;
+        const scale = Math.min(scaleX, scaleY);
+        
+        canvas.style.width = (800 * scale) + 'px';
+        canvas.style.height = (600 * scale) + 'px';
+        canvas.style.transform = 'translate(-50%, -50%)';
+        canvas.style.position = 'fixed';
+        canvas.style.top = '50%';
+        canvas.style.left = '50%';
+    } else {
+        // Desktop: Responsive but maintain aspect ratio
+        const maxWidth = Math.min(800, window.innerWidth - 40);
+        const maxHeight = Math.min(600, window.innerHeight - 100);
+        const aspectRatio = 800 / 600;
+        
+        let width = maxWidth;
+        let height = width / aspectRatio;
+        
+        if (height > maxHeight) {
+            height = maxHeight;
+            width = height * aspectRatio;
+        }
+        
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        canvas.style.transform = 'none';
+        canvas.style.position = 'relative';
+        canvas.style.top = 'auto';
+        canvas.style.left = 'auto';
+    }
+}
+
+// Initial resize
+resizeCanvas();
+
+// Resize on window resize
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', () => {
+    setTimeout(resizeCanvas, 100);
+});
+
+// Fullscreen support
+function toggleFullscreen() {
+    const elem = document.documentElement;
+    
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+            elem.msRequestFullscreen();
+        }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+    }
+}
+
+// Update fullscreen button text
+document.addEventListener('fullscreenchange', updateFullscreenButton);
+document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+document.addEventListener('msfullscreenchange', updateFullscreenButton);
+
+function updateFullscreenButton() {
+    const btn = document.getElementById('fullscreenBtn');
+    const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+    if (btn) {
+        btn.textContent = isFullscreen ? '⛶ EXIT' : '⛶ FULL';
+    }
+}
+
+// Touch controls
+let touchKeys = {};
+
+function handleTouchStart(key, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    touchKeys[key] = true;
+    if (typeof keys !== 'undefined') {
+        keys[key] = true;
+    }
+    if (typeof keyCodes !== 'undefined') {
+        keyCodes[key] = true;
+    }
+    
+    // Special handling for jump (space) - only if player exists
+    if (key === ' ' && typeof player !== 'undefined') {
+        if (player.onGround || player.coyoteTime > 0) {
+            player.jumpBuffer = 10;
+            const currentJumpPower = player.hasSuperJump ? player.jumpPower * 1.4 : player.jumpPower;
+            player.velY = -currentJumpPower;
+            player.jumping = true;
+            player.onGround = false;
+            player.coyoteTime = 0;
+            player.doubleJumpAvailable = true;
+            player.hasDoubleJumped = false;
+            player.jumpBuffer = 0;
+            if (typeof playSound === 'function') playSound('jump');
+        } else if (player.doubleJumpAvailable && !player.hasDoubleJumped) {
+            const currentJumpPower = player.hasSuperJump ? player.jumpPower * 1.4 : player.jumpPower;
+            player.velY = -currentJumpPower * 0.9;
+            player.hasDoubleJumped = true;
+            player.doubleJumpAvailable = false;
+            player.jumpBuffer = 0;
+            if (typeof playSound === 'function') playSound('doublejump');
+        }
+    }
+    
+    // Special handling for dash - only if player exists
+    if (key === 'KeyZ' && typeof player !== 'undefined') {
+        if (!player.dashing && player.dashCooldown === 0) {
+            player.dashing = true;
+            player.dashTime = 15;
+            player.dashCooldown = 60;
+            player.dashDirection = player.direction !== 0 ? player.direction : 1;
+            if (typeof playSound === 'function') playSound('dash');
+            const wasInvincible = player.invincible;
+            player.invincible = true;
+            setTimeout(() => {
+                if (!wasInvincible) player.invincible = false;
+            }, 250);
+        }
+    }
+    
+    return false;
+}
+
+function handleTouchEnd(key, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    touchKeys[key] = false;
+    if (typeof keys !== 'undefined') {
+        keys[key] = false;
+    }
+    if (typeof keyCodes !== 'undefined') {
+        keyCodes[key] = false;
+    }
+    
+    return false;
+}
+
+// Touch event handlers for canvas (swipe controls)
+let touchStartX = 0;
+let touchStartY = 0;
+let touchStartTime = 0;
+
+canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    touchStartTime = Date.now();
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+}, { passive: false });
+
+canvas.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    if (!touchStartX || !touchStartY) return;
+    
+    const touch = e.changedTouches[0];
+    const deltaX = touch.clientX - touchStartX;
+    const deltaY = touch.clientY - touchStartY;
+    const deltaTime = Date.now() - touchStartTime;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    
+    // Swipe detection
+    if (distance > 30 && deltaTime < 300) {
+        const absX = Math.abs(deltaX);
+        const absY = Math.abs(deltaY);
+        
+        if (absX > absY) {
+            // Horizontal swipe
+            if (deltaX > 0) {
+                // Swipe right
+                handleTouchStart('ArrowRight', e);
+                setTimeout(() => handleTouchEnd('ArrowRight', e), 100);
+            } else {
+                // Swipe left
+                handleTouchStart('ArrowLeft', e);
+                setTimeout(() => handleTouchEnd('ArrowLeft', e), 100);
+            }
+        } else {
+            // Vertical swipe
+            if (deltaY < 0) {
+                // Swipe up (jump)
+                handleTouchStart(' ', e);
+                setTimeout(() => handleTouchEnd(' ', e), 100);
+            } else {
+                // Swipe down
+                handleTouchStart('ArrowDown', e);
+                setTimeout(() => handleTouchEnd('ArrowDown', e), 100);
+            }
+        }
+    }
+    
+    touchStartX = 0;
+    touchStartY = 0;
+    touchStartTime = 0;
+}, { passive: false });
+
+// Prevent double-tap zoom
+let lastTap = 0;
+canvas.addEventListener('touchend', (e) => {
+    const currentTime = Date.now();
+    const tapLength = currentTime - lastTap;
+    if (tapLength < 300 && tapLength > 0) {
+        e.preventDefault();
+    }
+    lastTap = currentTime;
+}, { passive: false });
 
 // 🐱 CAT SPRITE FOR ALL MODES
 const spriteImg = document.getElementById('catSprite');
@@ -2102,6 +2653,14 @@ function createSimpleUndergroundLevel() {
 
 function startGame() {
     document.getElementById('startScreen').style.display = 'none';
+    
+    // Show mobile controls on mobile devices
+    const isMobile = window.innerWidth <= 768;
+    const mobileControls = document.getElementById('mobileControls');
+    if (isMobile && mobileControls) {
+        mobileControls.classList.remove('hidden');
+    }
+    
     gameRunning = true;
     score = 0;
     level = 1;
@@ -2115,6 +2674,14 @@ function startGame() {
 
 function restartGame() {
     document.getElementById('gameOverScreen').style.display = 'none';
+    
+    // Show mobile controls on mobile devices
+    const isMobile = window.innerWidth <= 768;
+    const mobileControls = document.getElementById('mobileControls');
+    if (isMobile && mobileControls) {
+        mobileControls.classList.remove('hidden');
+    }
+    
     startGame();
 }
 
@@ -2141,6 +2708,13 @@ function backToMenu() {
     stopBackgroundMusic();
     document.getElementById('victoryScreen').style.display = 'none';
     document.getElementById('startScreen').style.display = 'block';
+    
+    // Hide mobile controls when returning to menu
+    const mobileControls = document.getElementById('mobileControls');
+    if (mobileControls) {
+        mobileControls.classList.add('hidden');
+    }
+    
     gameRunning = false;
 }
 
