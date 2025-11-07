@@ -47,7 +47,10 @@ def delete_question_by_id(question_id):
         else:
             confirm = input(f"\n❓ Вы уверены, что хотите удалить вопрос ID {question_id}? (yes/y/no): ")
         
-        if confirm.lower() in ('yes', 'y'):
+        # Очищаем ввод от пробелов и приводим к нижнему регистру
+        confirm_clean = confirm.strip().lower()
+        
+        if confirm_clean in ('yes', 'y', 'да', 'д'):
             try:
                 # Удаляем связанные записи
                 if responses_count > 0:
