@@ -20,7 +20,10 @@ dashboard_bp = Blueprint('dashboard', __name__)
 @login_required
 def index():
     """Enhanced main dashboard with gamification widgets"""
-    
+    if not getattr(current_user, 'is_admin', False):
+        lang = g.get('lang') or session.get('lang') or 'nl'
+        return redirect(url_for('daily_learning.learning_map', lang=lang))
+
     # Проверка необходимости диагностики (временно отключено для предварительного запуска)
     # if current_user.requires_diagnostic:
     #     # Проверяем есть ли завершенная диагностика
