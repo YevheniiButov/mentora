@@ -50,7 +50,15 @@ def main() -> None:
     with app.app_context():
         for item in entries:
             cat_number, cat_name = parse_category(item['category'])
-            category_key = f"dentistry_{cat_number}_{slugify(cat_name)}"
+            raw_number, raw_name = parse_category(item['category'])
+            cat_number = raw_number or 'general'
+            cat_name = raw_name or 'General'
+            slug = slugify(cat_name)
+            if len(slug) > 35:
+                slug = slug[:35]
+            category_key = f"dentistry_{cat_number}_{slug}"
+            if len(category_key) > 50:
+                category_key = category_key[:50]
 
             term_nl = item['nl'].strip()
             term_en = item['en'].strip()
