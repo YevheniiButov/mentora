@@ -8,7 +8,82 @@ from extensions import db
 from datetime import datetime, timezone
 from functools import wraps
 from flask import session
-from models import PersonalLearningPlan, Question, BIGDomain, DiagnosticSession, DiagnosticResponse
+from models import PersonalLearningPlan, Question, BIGDomain, DiagnosticSession, DiagnosticResponse, StudySession
+def _rebuild_study_schedule_from_sessions(plan):
+    """
+    Build a minimal study schedule structure from existing StudySession records.
+    Returns schedule dict or None if rebuild not possible.
+    """
+    try:
+        sessions = plan.study_sessions.order_by(StudySession.id).all()
+        if not sessions:
+            current_app.logger.warning(f"Schedule rebuild: plan {plan.id} has no study sessions")
+            return None
+
+        day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        weekly_schedule = []
+        current_week_sessions = []
+        week_number = 1
+
+        for idx, study_session in enumerate(sessions):
+            day_index = idx % 7
+            if day_index == 0 and current_week_sessions:
+                # finalize previous week
+                estimated_hours = sum(
+                    (session_entry.get('duration', 0) or 0) / 60.0
+                    for session_entry in current_week_sessions
+                )
+                weekly_schedule.append({
+                    'week_number': week_number,
+                    'focus_domains': [],
+                    'daily_sessions': current_week_sessions,
+                    'milestone_test': False,
+                    'estimated_hours': round(estimated_hours, 2)
+                })
+                week_number += 1
+                current_week_sessions = []
+
+            focus_domains = []
+            if study_session.domain_id:
+                domain = BIGDomain.query.get(study_session.domain_id)
+                if domain and domain.code:
+                    focus_domains.append(domain.code)
+
+            duration_minutes = study_session.planned_duration or plan.daily_goal_minutes or 30
+            session_entry = {
+                'day': day_names[day_index],
+                'type': study_session.session_type or 'practice',
+                'duration': duration_minutes,
+                'focus_domains': focus_domains
+            }
+            current_week_sessions.append(session_entry)
+
+        if current_week_sessions:
+            estimated_hours = sum(
+                (session_entry.get('duration', 0) or 0) / 60.0
+                for session_entry in current_week_sessions
+            )
+            weekly_schedule.append({
+                'week_number': week_number,
+                'focus_domains': [],
+                'daily_sessions': current_week_sessions,
+                'milestone_test': False,
+                'estimated_hours': round(estimated_hours, 2)
+            })
+
+        if not weekly_schedule:
+            current_app.logger.warning(f"Schedule rebuild produced empty weekly_schedule for plan {plan.id}")
+            return None
+
+        schedule = {
+            'weekly_schedule': weekly_schedule,
+            'total_weeks': len(weekly_schedule),
+            'recovered_from': 'study_sessions'
+        }
+        return schedule
+    except Exception as rebuild_error:
+        current_app.logger.error(f"Failed to rebuild study schedule for plan {plan.id}: {rebuild_error}")
+        return None
 import os
 import json
 from flask import jsonify
@@ -796,8 +871,16 @@ def complete_automated_session():
         current_app.logger.info(f"Study schedule keys: {list(study_schedule.keys()) if study_schedule else 'None'}")
         
         if not study_schedule or 'weekly_schedule' not in study_schedule:
-            current_app.logger.error(f"Invalid study schedule: {study_schedule}")
-            return safe_jsonify({'error': 'Invalid study schedule'}), 500
+            current_app.logger.warning(f"Invalid study schedule detected for plan {plan.id}, attempting rebuild. Raw schedule: {study_schedule}")
+            rebuilt_schedule = _rebuild_study_schedule_from_sessions(plan)
+            if rebuilt_schedule and rebuilt_schedule.get('weekly_schedule'):
+                plan.set_study_schedule(rebuilt_schedule)
+                study_schedule = rebuilt_schedule
+                db.session.commit()
+                current_app.logger.info(f"Study schedule rebuilt from existing sessions for plan {plan.id}")
+            else:
+                current_app.logger.error(f"Unable to rebuild study schedule for plan {plan.id}")
+                return safe_jsonify({'error': 'Invalid study schedule'}), 500
         
         # Find next session
         next_session = None

@@ -2814,5 +2814,26 @@ translations = {
     "diagnostic_required_title": "ابدأ بجلسة تشخيصية",
     "diagnostic_required_body": "أكمل اختبارًا تشخيصيًا قصيرًا لإنشاء خطة دراسية يومية مخصّصة لك. بعد الانتهاء ستحصل فورًا على التمارين الملائمة.",
     "diagnostic_required_cta": "بدء الجلسة التشخيصية",
-    "diagnostic_required_secondary": "تستغرق حوالي 20 دقيقة"
+    "diagnostic_required_secondary": "تستغرق حوالي 20 دقيقة",
+    
+    # Learning map tour
+    "tour_intro_title": "مرحباً بك في خريطة التعلّم",
+    "tour_intro_body": "أعددنا جولة سريعة كي تعرف دائماً من أين تبدأ.",
+    "tour_start_button": "ابدأ الجولة",
+    "tour_skip_button": "تخطَّ الآن",
+    "tour_prev_button": "السابق",
+    "tour_next_button": "التالي",
+    "tour_finish_button": "إنهاء",
+    "tour_step1_title": "التنقّل",
+    "tour_step1_body": "هذه لوحة التحكم بالتعلّم. كل أيقونة تفتح قسماً خاصاً. أنت الآن في التعلّم الفردي.",
+    "tour_step2_title": "مهام اليوم",
+    "tour_step2_body": "تجد هنا مهامك اليومية. تظهر العناصر الجديدة وفق الجدول ويبيّن المؤقّت وقت التحديث القادم.",
+    "tour_step3_title": "مساعدة سياقية",
+    "tour_step3_body": "استخدم النصائح على اليمين لفهم كل قسم والحصول على نتائج أفضل بسرعة.",
+    "tour_step4_title": "تحليلات التقدّم",
+    "tour_step4_body": "افتح علامة التبويب Progress في أي وقت لمراجعة الإنجازات ووقت الدراسة والإحصاءات.",
+    "tour_step5_title": "الموارد والمجتمع",
+    "tour_step5_body": "يوفّر Knowledge Base مواد منظمة، بينما يساعدك Community على التواصل مع الزملاء.",
+    "tour_step6_title": "قائمة اللغات",
+    "tour_step6_body": "غيّر لغة الواجهة فوراً، وسيتم حفظ اختيارك للزيارات القادمة."
 }

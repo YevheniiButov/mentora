@@ -3818,6 +3818,252 @@
                 padding: 16px;
             }
         }
+        
+        [x-cloak] {
+            display: none !important;
+        }
+        
+        /* Guided tour */
+        body.tour-active {
+            overflow: hidden;
+        }
+        
+        .tour-highlight {
+            position: relative;
+            z-index: 10005;
+            box-shadow: 0 0 0 9999px rgba(13, 23, 44, 0.65);
+            border-radius: 14px;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        
+        .tour-highlight:before {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 18px;
+            border: 2px solid rgba(59, 130, 246, 0.35);
+            pointer-events: none;
+        }
+        
+        .tour-scrim {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 15, 35, 0.45);
+            backdrop-filter: blur(2px);
+            z-index: 10000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .tour-scrim.active {
+            opacity: 1;
+        }
+        
+        .tour-tooltip {
+            position: fixed;
+            z-index: 10006;
+            background: #ffffff;
+            color: #1a1a2e;
+            padding: 20px 24px;
+            border-radius: 18px;
+            width: 320px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.25);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        
+        .tour-tooltip h5 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .tour-tooltip p {
+            font-size: 0.95rem;
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        
+        .tour-tooltip .tour-controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        
+        .tour-tooltip .tour-controls button {
+            flex: 1;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .tour-tooltip .tour-controls button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.2);
+        }
+        
+        .tour-tooltip .tour-controls .secondary-btn {
+            background: #eef2ff;
+            color: #3b82f6;
+        }
+        
+        .tour-tooltip .tour-controls .primary-btn {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: #fff;
+        }
+        
+        .tour-tooltip .tour-controls .finish-btn {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            color: #fff;
+        }
+        
+        .tour-tooltip-step-1 { top: 210px; left: 140px; }
+        .tour-tooltip-step-2 { top: 420px; left: 220px; }
+        .tour-tooltip-step-3 { top: 360px; right: 160px; }
+        .tour-tooltip-step-4 { top: 210px; left: 420px; }
+        .tour-tooltip-step-5 { top: 160px; right: 320px; }
+        .tour-tooltip-step-6 { top: 110px; right: 140px; }
+        
+        .tour-start-button {
+            position: fixed;
+            right: 28px;
+            bottom: 28px;
+            z-index: 10004;
+            background: rgba(37, 99, 235, 0.15);
+            color: #2563eb;
+            border: 1px solid rgba(37, 99, 235, 0.35);
+            border-radius: 50%;
+            width: 54px;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 14px 30px rgba(37, 99, 235, 0.25);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .tour-start-button:hover {
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 18px 38px rgba(37, 99, 235, 0.3);
+        }
+        
+        .tour-intro-overlay {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 64, 175, 0.85));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10008;
+            backdrop-filter: blur(6px);
+        }
+        
+        .tour-intro-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 28px;
+            padding: 48px;
+            max-width: 520px;
+            width: 90%;
+            text-align: center;
+            color: #f8fafc;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+        }
+        
+        .tour-intro-logo {
+            width: 160px;
+            height: auto;
+            margin: 0 auto 24px auto;
+        }
+        
+        .tour-intro-card h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        
+        .tour-intro-card p {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: rgba(226, 232, 240, 0.9);
+            margin-bottom: 32px;
+        }
+        
+        .tour-intro-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .tour-intro-actions button {
+            min-width: 180px;
+            padding: 12px 20px;
+            border-radius: 999px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .tour-intro-actions button.primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            box-shadow: 0 16px 40px rgba(59, 130, 246, 0.35);
+        }
+        
+        .tour-intro-actions button.secondary {
+            background: rgba(248, 250, 252, 0.12);
+            color: #e2e8f0;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+        }
+        
+        .tour-intro-actions button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .tour-intro-actions button.primary:hover {
+            box-shadow: 0 22px 50px rgba(59, 130, 246, 0.4);
+        }
+        
+        @media (max-width: 1024px) {
+            .tour-tooltip {
+                width: 280px;
+            }
+            
+            .tour-tooltip-step-2 { top: 440px; left: 120px; }
+            .tour-tooltip-step-3 { top: 400px; right: 80px; }
+            .tour-tooltip-step-4 { top: 220px; left: 360px; }
+            .tour-tooltip-step-5 { top: 150px; right: 220px; }
+            .tour-tooltip-step-6 { top: 110px; right: 80px; }
+        }
+        
+        @media (max-width: 768px) {
+            .tour-tooltip {
+                width: calc(100% - 40px);
+                left: 20px !important;
+                right: 20px !important;
+                top: auto !important;
+                bottom: 20px !important;
+            }
+            
+            .tour-highlight:before {
+                inset: -4px;
+            }
+            
+            .tour-intro-card {
+                padding: 32px 24px;
+            }
+        }
 
         /* Hide residual Debug Info block on learning map */
         .debug-section { display: none !important; }
@@ -3928,12 +4174,12 @@
                         
                         <!-- Knowledge Base -->
                         <li class="nav-item">
-                            <a class="nav-link" href="/{{ lang }}/knowledge-base">{{ t('knowledge_base', lang)|default('Knowledge Base') }}</a>
+                            <a class="nav-link" :class="{'tour-highlight': tourActive && tourStep === 5}" href="/{{ lang }}/knowledge-base">{{ t('knowledge_base', lang)|default('Knowledge Base') }}</a>
                         </li>
                         
                         <!-- Community -->
                         <li class="nav-item">
-                            <a class="nav-link" href="/{{ lang }}/community">{{ t('community', lang)|default('Community') }}</a>
+                            <a class="nav-link" :class="{'tour-highlight': tourActive && tourStep === 5}" href="/{{ lang }}/community">{{ t('community', lang)|default('Community') }}</a>
                         </li>
                         
                         <!-- About BIG -->
@@ -3947,6 +4193,7 @@
                         <!-- Language Dropdown -->
                         <div class="dropdown me-3 language-dropdown" style="position: relative; z-index: 9999;">
                             <button class="btn language-btn-modern" 
+                                    :class="{'tour-highlight': tourActive && tourStep === 6}"
                                     type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false"
                                     title="{{ t('language', lang)|default('Language') }}: {{ lang|upper }}">
                                 <span class="language-icon"><i class="bi bi-globe2"></i></span>
@@ -4012,7 +4259,75 @@
     </header>
 
     <!-- Main -->
-    <div x-data="learningMapApp()" x-init="init()" class="learning-map-container">
+    <div x-data="learningMapApp()" x-init="init()" :class="{'tour-active': tourActive}" class="learning-map-container">
+        <button type="button" class="tour-start-button" x-show="!showTourOverlay && !tourActive" @click="restartTour()" x-transition.opacity title="{{ t('tour_start_button', lang)|default('Start guided tour') }}" aria-label="{{ t('tour_start_button', lang)|default('Start guided tour') }}">
+            ?
+        </button>
+        
+        <div class="tour-intro-overlay" x-show="showTourOverlay" x-transition.opacity x-cloak>
+            <div class="tour-intro-card">
+                <img src="/static/images/logo.png" alt="Mentora" class="tour-intro-logo" loading="lazy">
+                <h2>{{ t('tour_intro_title', lang)|default('Welcome to your Learning Map') }}</h2>
+                <p>{{ t('tour_intro_body', lang)|default('Let us guide you through the main sections so you always know where to start.') }}</p>
+                <div class="tour-intro-actions">
+                    <button class="primary" @click="startTour(true)">{{ t('tour_start_button', lang)|default('Start guided tour') }}</button>
+                    <button class="secondary" @click="skipTour()">{{ t('tour_skip_button', lang)|default('Skip for now') }}</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tour-scrim" x-show="tourActive" :class="{'active': tourActive}" x-transition.opacity x-cloak></div>
+        
+        <div class="tour-tooltip" x-show="tourActive && tourStep > 0" :class="'tour-tooltip-step-' + tourStep" x-transition.opacity x-cloak>
+            <template x-if="tourStep === 1">
+                <div>
+                    <h5>{{ t('tour_step1_title', lang)|default('Navigation') }}</h5>
+                    <p>{{ t('tour_step1_body', lang)|default("This is your main learning panel. Each icon opens a dedicated section. You're currently in Individual Learning.") }}</p>
+                </div>
+            </template>
+            <template x-if="tourStep === 2">
+                <div>
+                    <h5>{{ t('tour_step2_title', lang)|default('Today\'s tasks') }}</h5>
+                    <p>{{ t('tour_step2_body', lang)|default('Here you see your daily assignments. New items appear on schedule and the timer shows when they refresh.') }}</p>
+                </div>
+            </template>
+            <template x-if="tourStep === 3">
+                <div>
+                    <h5>{{ t('tour_step3_title', lang)|default('Context help') }}</h5>
+                    <p>{{ t('tour_step3_body', lang)|default('Use the tips on the right to understand how each section works and how to get the best results.') }}</p>
+                </div>
+            </template>
+            <template x-if="tourStep === 4">
+                <div>
+                    <h5>{{ t('tour_step4_title', lang)|default('Track your progress') }}</h5>
+                    <p>{{ t('tour_step4_body', lang)|default('Switch to the Progress tab anytime to see your achievements and learning statistics.') }}</p>
+                </div>
+            </template>
+            <template x-if="tourStep === 5">
+                <div>
+                    <h5>{{ t('tour_step5_title', lang)|default('Explore resources') }}</h5>
+                    <p>{{ t('tour_step5_body', lang)|default('Knowledge Base offers structured materials, and Community connects you with peers for discussion.') }}</p>
+                </div>
+            </template>
+            <template x-if="tourStep === 6">
+                <div>
+                    <h5>{{ t('tour_step6_title', lang)|default('Choose your language') }}</h5>
+                    <p>{{ t('tour_step6_body', lang)|default('Use the language menu to switch the interface instantly. The system remembers your choice.') }}</p>
+                </div>
+            </template>
+            
+            <div class="tour-controls">
+                <button class="secondary-btn" x-show="tourStep > 1" @click="prevTourStep()">{{ t('tour_prev_button', lang)|default('Back') }}</button>
+                <button class="secondary-btn" x-show="tourStep === 1" @click="skipTour()">{{ t('tour_skip_button', lang)|default('Skip') }}</button>
+                <template x-if="tourStep < 6">
+                    <button class="primary-btn" @click="nextTourStep()">{{ t('tour_next_button', lang)|default('Next') }}</button>
+                </template>
+                <template x-if="tourStep === 6">
+                    <button class="finish-btn" @click="endTour()">{{ t('tour_finish_button', lang)|default('Finish') }}</button>
+                </template>
+            </div>
+        </div>
+        
         {% if needs_diagnostic_prompt %}
         <div class="diagnostic-banner">
             <div class="diagnostic-banner-content">
@@ -4037,7 +4352,7 @@
             <div class="left-column">
                 
                 <!-- Узлы на блоке -->
-                <div class="learning-tabs">
+                <div class="learning-tabs" :class="{'tour-highlight': tourActive && tourStep === 1}">
                     <div class="tabs-container">
                         <!-- Individual Tab - Always Enabled (FIRST) -->
                         <div class="tab-circle" :class="{ 'active': activeTab === 'individual' }" @click="selectTab('individual')">
@@ -4089,7 +4404,7 @@
                         </div>
 
                         <!-- Progress Tab - Always Enabled -->
-                        <div class="tab-circle" :class="{ 'active': activeTab === 'progress' }" @click="selectTab('progress')">
+                        <div class="tab-circle" :class="{ 'active': activeTab === 'progress', 'tour-highlight': tourActive && tourStep === 4 }" @click="selectTab('progress')">
                             <div class="circle-button">
                                 <div class="circle-glow"></div>
                                 <div class="circle-inner"><i class="bi bi-graph-up"></i></div>
@@ -4239,7 +4554,7 @@
                 <div x-show="activeTab === 'individual'" class="individual-plan-container">
                     
                     <!-- TODAY'S PLAN CARD -->
-                    <div class="daily-plan-card">
+                    <div class="daily-plan-card" :class="{'tour-highlight': tourActive && tourStep === 2}">
                     <div class="plan-header">
                             <div class="plan-header-left">
                                 <h2>Vandaag te doen</h2>
@@ -4898,7 +5213,7 @@
             </div>
             
             <!-- ПРАВАЯ КОЛОНКА: ОПИСАНИЕ -->
-            <div class="sidebar-description">
+            <div class="sidebar-description" :class="{'tour-highlight': tourActive && tourStep === 3}">
                 <div class="description-card">
                     <h3>
                         <i :class="`bi bi-${getTabIcon(activeTab)}`"></i>
@@ -4931,12 +5246,34 @@
                 const tabParam = urlParams.get('tab');
                 const reloadParam = urlParams.get('reload');
                 const validTabs = ['irt', 'premium', 'individual', 'games', 'progress', 'planner'];
+                const tourParam = urlParams.get('tour');
+                
+                let shouldLaunchTour = false;
+                let shouldAutoStartTour = false;
+                let storedTourState = null;
+                
+                try {
+                    storedTourState = localStorage.getItem('learningMapTourCompleted');
+                    shouldLaunchTour = storedTourState !== 'true';
+                } catch (e) {
+                    shouldLaunchTour = true;
+                }
+                
+                if (tourParam === '1') {
+                    shouldLaunchTour = true;
+                    shouldAutoStartTour = true;
+                    try {
+                        localStorage.setItem('learningMapTourCompleted', 'false');
+                    } catch (e) {
+                        console.warn('Could not reset tour state in localStorage:', e);
+                    }
+                }
                 
                 // Приоритет: URL параметр > localStorage > дефолт
                 let initialTab = 'individual';
                 
                 // Проверяем премиум статус пользователя (для проверки доступа к premium)
-                const isPremiumUser = {% if current_user.is_authenticated and current_user.is_premium_active %}true{% else %}false{% endif %};
+                const isPremiumUser = JSON.parse(`{{ "true" if current_user.is_authenticated and current_user.is_premium_active else "false" }}`);
                 
                 // 1. Проверяем URL параметр (имеет наивысший приоритет)
                 if (tabParam && validTabs.includes(tabParam)) {
@@ -5005,6 +5342,130 @@
                 launchDate: launchDate,
                 // Enabled tabs (IRT, Individual, Progress, Games, и Premium только для премиум)
                 enabledTabs: enabledTabsList,
+                
+                tourActive: false,
+                tourStep: 0,
+                showTourOverlay: shouldLaunchTour,
+                tourAutoStart: shouldAutoStartTour,
+                tourAutoStartTimer: null,
+                
+                persistTourState(completed) {
+                    try {
+                        localStorage.setItem('learningMapTourCompleted', completed ? 'true' : 'false');
+                    } catch (e) {
+                        console.warn('Could not persist tour state:', e);
+                    }
+                },
+                lockScroll(shouldLock) {
+                    try {
+                        if (document && document.body) {
+                            if (shouldLock) {
+                                document.body.classList.add('tour-active');
+                            } else {
+                                document.body.classList.remove('tour-active');
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Failed to toggle body scroll for tour:', e);
+                    }
+                },
+                startTour(autoLaunch) {
+                    if (this.tourAutoStartTimer) {
+                        clearTimeout(this.tourAutoStartTimer);
+                        this.tourAutoStartTimer = null;
+                    }
+                    
+                    this.tourAutoStart = false;
+                    this.showTourOverlay = false;
+                    
+                    if (this.activeTab !== 'individual') {
+                        this.selectTab('individual');
+                    }
+                    
+                    this.lockScroll(true);
+                    this.tourActive = true;
+                    this.tourStep = 1;
+                    this.persistTourState(false);
+                    
+                    const behavior = autoLaunch ? 'auto' : 'smooth';
+                    this.$nextTick(() => {
+                        this.scrollToTourTarget(this.tourStep, behavior);
+                    });
+                },
+                nextTourStep() {
+                    if (this.tourStep < 6) {
+                        this.tourStep += 1;
+                        this.$nextTick(() => {
+                            this.scrollToTourTarget(this.tourStep);
+                        });
+                    } else {
+                        this.endTour();
+                    }
+                },
+                prevTourStep() {
+                    if (this.tourStep > 1) {
+                        this.tourStep -= 1;
+                        this.$nextTick(() => {
+                            this.scrollToTourTarget(this.tourStep);
+                        });
+                    }
+                },
+                endTour() {
+                    this.tourActive = false;
+                    this.tourStep = 0;
+                    this.tourAutoStart = false;
+                    this.persistTourState(true);
+                    this.lockScroll(false);
+                },
+                skipTour() {
+                    if (this.tourAutoStartTimer) {
+                        clearTimeout(this.tourAutoStartTimer);
+                        this.tourAutoStartTimer = null;
+                    }
+                    this.tourAutoStart = false;
+                    this.showTourOverlay = false;
+                    this.tourActive = false;
+                    this.tourStep = 0;
+                    this.persistTourState(true);
+                    this.lockScroll(false);
+                },
+                restartTour() {
+                    this.persistTourState(false);
+                    this.startTour(false);
+                },
+                scrollToTourTarget(step, behavior) {
+                    try {
+                        const scrollBehavior = behavior || 'smooth';
+                        const selectors = {
+                            1: '.learning-tabs',
+                            2: '.daily-plan-card',
+                            3: '.sidebar-description',
+                            4: '.learning-tabs',
+                            5: '.navbar-nav .nav-link[href*="knowledge-base"]',
+                            6: '#languageDropdown'
+                        };
+                        
+                        const selector = selectors[step];
+                        if (!selector) {
+                            return;
+                        }
+                        
+                        const target = document.querySelector(selector);
+                        if (!target) {
+                            return;
+                        }
+                        
+                        const rect = target.getBoundingClientRect();
+                        const offset = window.pageYOffset + rect.top - 160;
+                        
+                        window.scrollTo({
+                            top: offset > 0 ? offset : 0,
+                            behavior: scrollBehavior
+                        });
+                    } catch (e) {
+                        console.warn('Failed to scroll to tour target:', e);
+                    }
+                },
                 // Real user statistics
                 userStats: {
                     activeModules: 0,
@@ -5188,6 +5649,11 @@
                         clearInterval(this.countdownInterval);
                         this.countdownInterval = null;
                     }
+                    if (this.tourAutoStartTimer) {
+                        clearTimeout(this.tourAutoStartTimer);
+                        this.tourAutoStartTimer = null;
+                    }
+                    this.lockScroll(false);
                 },
                 
                 async init() {
@@ -5234,6 +5700,12 @@
                                 this.loadProgressData();
                             }
                         }, 300);
+                    }
+                    
+                    if (this.showTourOverlay && this.tourAutoStart) {
+                        this.tourAutoStartTimer = setTimeout(() => {
+                            this.startTour(true);
+                        }, 900);
                     }
                 },
                 selectTab(tab) {

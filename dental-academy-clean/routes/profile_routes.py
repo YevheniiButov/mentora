@@ -207,7 +207,7 @@ def update_personal_info(lang):
         # Determine redirect target
         redirect_target = url_for('profile.personal_info', lang=lang)
         if profile_check['is_complete'] and not profile_was_complete:
-            redirect_target = url_for('learning_map_bp.learning_map', lang=lang, path_id='irt')
+            redirect_target = url_for('learning_map_bp.learning_map', lang=lang, path_id='irt', tour='1')
         elif request.form.get('force_completion') == 'true':
             redirect_target = url_for('main.index', lang=lang)
         
