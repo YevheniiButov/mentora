@@ -1022,9 +1022,15 @@ def learning_map(lang, path_id=None):
                 for topic in subcat.topics.all():
                     print(f"DEBUG:     Тема: {topic.name}")
         # Определяем, нужно ли показывать баннер с диагностикой
-        has_completed_diagnostic = DiagnosticSession.query.filter_by(
-            user_id=current_user.id,
-            status='completed'
+        diagnostic_session_types = [
+            'quick_30', 'full_60', 'preliminary', 'readiness',
+            'full', 'comprehensive', 'express', 'adaptive_diagnostic',
+            'diagnostic'
+        ]
+        has_completed_diagnostic = DiagnosticSession.query.filter(
+            DiagnosticSession.user_id == current_user.id,
+            DiagnosticSession.status == 'completed',
+            DiagnosticSession.session_type.in_(diagnostic_session_types)
         ).first() is not None
 
         active_plan = PersonalLearningPlan.query.filter_by(
@@ -1059,11 +1065,13 @@ def learning_map(lang, path_id=None):
                 current_app.logger.error(f"Failed to persist learning map updates for user {current_user.id}: {commit_error}", exc_info=True)
                 db.session.rollback()
 
-        needs_diagnostic_prompt = (
-            (getattr(current_user, 'requires_diagnostic', False) and not has_completed_diagnostic)
-            or not schedule_valid
-            or active_plan is None
-        )
+        needs_diagnostic_prompt = False
+        if not has_completed_diagnostic:
+            needs_diagnostic_prompt = True
+        elif getattr(current_user, 'requires_diagnostic', False):
+            needs_diagnostic_prompt = True
+        elif active_plan and not schedule_valid:
+            needs_diagnostic_prompt = True
         diagnostic_url = url_for('diagnostic.start_diagnostic')
 
         # Получаем все пути обучения

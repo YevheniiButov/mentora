@@ -3119,30 +3119,37 @@ def select_questions_for_quick_test(user, diagnostic_type='quick_30'):
         import random
         random.shuffle(selected_questions)
         
-        logger.info(f"Total selected questions: {len(selected_questions)}")
+        logger.info(f"Total selected questions after initial selection: {len(selected_questions)}")
         
         # Handle edge case: if not enough questions, add fallback
         if len(selected_questions) < 30:
             logger.warning(f"Only {len(selected_questions)} questions selected, adding fallback questions")
             
-            # Get additional random questions
+            # Get additional random questions without excluding already selected ones (allow duplicates if needed)
             user_profession = get_user_profession_code(user)
-            fallback_query = Question.query.filter_by(
-                profession=user_profession
-            )
+            fallback_pool = Question.query.filter_by(profession=user_profession).all()
             
-            if seen_ids:
-                fallback_query = fallback_query.filter(~Question.id.in_(seen_ids))
+            if not fallback_pool:
+                logger.warning(f"No fallback pool found for profession {user_profession}, using global pool")
+                fallback_pool = Question.query.order_by(func.random()).limit(30).all()
             
-            fallback_questions = fallback_query.order_by(func.random()).limit(30 - len(selected_questions)).all()
+            missing = 30 - len(selected_questions)
+            added = 0
             
-            selected_questions.extend(fallback_questions)
-            seen_ids.update(q.id for q in fallback_questions)
-            logger.info(f"Added {len(fallback_questions)} fallback questions, total: {len(selected_questions)}")
+            if fallback_pool:
+                import random
+                for _ in range(missing):
+                    selected_questions.append(random.choice(fallback_pool))
+                    added += 1
+            
+            logger.info(f"Added {added} fallback questions (allowing repeats), total: {len(selected_questions)}")
         
         # Ensure final list is randomized and limited to 30
         random.shuffle(selected_questions)
-        return selected_questions[:30]
+        if len(selected_questions) > 30:
+            selected_questions = selected_questions[:30]
+        logger.info(f"Final Quick Test question count: {len(selected_questions)}")
+        return selected_questions
         
     except Exception as e:
         logger.error(f"Error in select_questions_for_quick_test: {e}")
