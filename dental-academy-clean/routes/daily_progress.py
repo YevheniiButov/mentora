@@ -31,8 +31,10 @@ def get_daily_progress():
         
         # Tests progress - используем DiagnosticSession с календарным днем
         from models import DiagnosticSession
+        practice_session_types = ['daily_practice', 'category_practice']
         tests_today = DiagnosticSession.query.filter(
             DiagnosticSession.user_id == current_user.id,
+            DiagnosticSession.session_type.in_(practice_session_types),
             DiagnosticSession.started_at >= today_start,
             DiagnosticSession.started_at < today_end  # До начала следующего дня
         ).all()

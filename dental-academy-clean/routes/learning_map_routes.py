@@ -8,7 +8,7 @@ from flask_login import login_required, current_user
 from extensions import db
 from models import (
     VirtualPatientScenario, VirtualPatientAttempt, LearningPath, Subject, Module, Lesson, UserProgress, Test, UserExamDate, ContentCategory, ContentSubcategory, ContentTopic,
-    User, Question, TestAttempt, QuestionCategory, DiagnosticSession, PersonalLearningPlan
+    User, Question, TestAttempt, QuestionCategory, DiagnosticSession, PersonalLearningPlan, StudySession
 )
 from translations import get_translation as t  # предполагаем, что функция называется get_translation
 from sqlalchemy import func
@@ -25,6 +25,76 @@ learning_map_bp = Blueprint(
     url_prefix='/<string:lang>/learning-map',
     template_folder='../templates'
     )
+
+
+def _rebuild_study_schedule_from_sessions(plan):
+    """
+    Attempt to rebuild a minimal study schedule from existing StudySession records.
+    Returns schedule dict or None if rebuild not possible.
+    """
+    try:
+        sessions = plan.study_sessions.order_by(StudySession.id).all()
+        if not sessions:
+            current_app.logger.warning(f"Schedule rebuild: plan {plan.id} has no study sessions")
+            return None
+
+        day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        weekly_schedule = []
+        current_week_sessions = []
+        week_number = 1
+
+        for idx, study_session in enumerate(sessions):
+            day_index = idx % 7
+            if day_index == 0 and current_week_sessions:
+                estimated_hours = sum(
+                    (session_entry.get('duration', 0) or 0) / 60.0
+                    for session_entry in current_week_sessions
+                )
+                weekly_schedule.append({
+                    'week_number': week_number,
+                    'focus_domains': [],
+                    'daily_sessions': current_week_sessions,
+                    'milestone_test': False,
+                    'estimated_hours': round(estimated_hours, 2)
+                })
+                week_number += 1
+                current_week_sessions = []
+
+            duration_minutes = study_session.planned_duration or getattr(plan, 'daily_goal_minutes', None) or 30
+            session_entry = {
+                'day': day_names[day_index],
+                'type': study_session.session_type or 'practice',
+                'duration': duration_minutes,
+                'focus_domains': []
+            }
+            current_week_sessions.append(session_entry)
+
+        if current_week_sessions:
+            estimated_hours = sum(
+                (session_entry.get('duration', 0) or 0) / 60.0
+                for session_entry in current_week_sessions
+            )
+            weekly_schedule.append({
+                'week_number': week_number,
+                'focus_domains': [],
+                'daily_sessions': current_week_sessions,
+                'milestone_test': False,
+                'estimated_hours': round(estimated_hours, 2)
+            })
+
+        if not weekly_schedule:
+            current_app.logger.warning(f"Schedule rebuild produced empty weekly_schedule for plan {plan.id}")
+            return None
+
+        schedule = {
+            'weekly_schedule': weekly_schedule,
+            'total_weeks': len(weekly_schedule),
+            'recovered_from': 'study_sessions'
+        }
+        return schedule
+    except Exception as error:
+        current_app.logger.error(f"Failed to rebuild study schedule for plan {plan.id}: {error}", exc_info=True)
+        return None
 
 # === ПРОФЕССИОНАЛЬНАЯ СИСТЕМА РОУТИНГА === #
 
@@ -934,6 +1004,7 @@ def learning_map(lang, path_id=None):
         profile_check = check_profile_complete(current_user)
     
     if not profile_check['is_complete']:
+        flash('Please complete your profile before accessing the learning map.', 'warning')
         return redirect(url_for('learning_map_bp.complete_profile', lang=current_lang))
     
     try:
@@ -964,7 +1035,35 @@ def learning_map(lang, path_id=None):
         schedule = active_plan.get_study_schedule() if active_plan else {}
         schedule_valid = bool(schedule and schedule.get('weekly_schedule'))
 
-        needs_diagnostic_prompt = not has_completed_diagnostic or not schedule_valid
+        plan_updated = False
+        if active_plan and not schedule_valid:
+            rebuilt_schedule = _rebuild_study_schedule_from_sessions(active_plan)
+            if rebuilt_schedule:
+                active_plan.set_study_schedule(rebuilt_schedule)
+                schedule = rebuilt_schedule
+                schedule_valid = True
+                plan_updated = True
+                current_app.logger.info(f"Rebuilt study schedule for plan {active_plan.id} from existing sessions")
+
+        diagnostic_flag_updated = False
+        requires_diagnostic_flag = getattr(current_user, 'requires_diagnostic', False)
+        if has_completed_diagnostic and requires_diagnostic_flag:
+            current_user.requires_diagnostic = False
+            diagnostic_flag_updated = True
+            current_app.logger.info(f"Diagnostic requirement flag cleared for user {current_user.id}")
+
+        if plan_updated or diagnostic_flag_updated:
+            try:
+                db.session.commit()
+            except Exception as commit_error:
+                current_app.logger.error(f"Failed to persist learning map updates for user {current_user.id}: {commit_error}", exc_info=True)
+                db.session.rollback()
+
+        needs_diagnostic_prompt = (
+            (getattr(current_user, 'requires_diagnostic', False) and not has_completed_diagnostic)
+            or not schedule_valid
+            or active_plan is None
+        )
         diagnostic_url = url_for('diagnostic.start_diagnostic')
 
         # Получаем все пути обучения

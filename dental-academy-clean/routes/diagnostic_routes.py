@@ -2785,6 +2785,10 @@ def complete_session(session_id):
                 db.session.commit()
                 
                 print(f"🔍 ОТЛАДКА: создан новый план обучения {plan.id}")
+
+                if getattr(current_user, 'requires_diagnostic', False):
+                    current_user.requires_diagnostic = False
+                    db.session.commit()
                 
                 return safe_jsonify({
                     'success': True,
@@ -2794,6 +2798,9 @@ def complete_session(session_id):
                 })
             else:
                 print(f"🔍 ОТЛАДКА: активный план уже существует {existing_plan.id}")
+                if getattr(current_user, 'requires_diagnostic', False):
+                    current_user.requires_diagnostic = False
+                    db.session.commit()
                 return safe_jsonify({
                     'success': True,
                     'message': 'Session completed successfully',

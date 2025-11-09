@@ -669,6 +669,8 @@ def confirm_email(token):
         
         # Confirm email and activate user
         user.confirm_email()
+        user.email_confirmed = True
+        user.email_confirmation_token = None
         user.is_active = True  # Activate user after email confirmation
         db.session.commit()
         
