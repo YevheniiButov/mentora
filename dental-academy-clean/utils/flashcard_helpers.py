@@ -5,6 +5,7 @@ Helper functions for medical terminology flashcard system
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import func
 from models import MedicalTerm, UserTermProgress, db
+from utils.helpers import get_user_profession_code
 
 
 def get_session_terms(user, category, count=10):
@@ -82,6 +83,37 @@ def get_session_terms(user, category, count=10):
         print(f"Error getting session terms: {e}")
         print(f"Traceback: {traceback.format_exc()}")
         return []
+
+
+def get_allowed_categories(user):
+    """
+    Return list of category names accessible for the given user.
+
+    Dentists (tandarts) see only categories with prefix `dentistry_`.
+    Other professions see all categories that do NOT have that prefix.
+    If the preferred group is empty (e.g. data not imported yet), fall back
+    to whatever is available so that the interface is still usable.
+    """
+    # Fetch all category names
+    all_categories = [
+        name
+        for (name,) in db.session.query(MedicalTerm.category).distinct().all()
+        if name
+    ]
+
+    if not all_categories:
+        return []
+
+    dentistry_categories = [c for c in all_categories if c.startswith('dentistry_')]
+    general_categories = [c for c in all_categories if not c.startswith('dentistry_')]
+
+    profession = get_user_profession_code(user)
+
+    if profession == 'tandarts':
+        return dentistry_categories or general_categories
+
+    # Non-dentists should not see dental-specific categories
+    return general_categories or dentistry_categories
 
 
 def calculate_flashcard_xp(quality, is_first_time=False):
@@ -243,9 +275,14 @@ def get_due_reviews_by_category(user):
         
         due_by_category = {}
         
+        allowed_categories = set(get_allowed_categories(user))
+
         for progress in due_items:
             term = progress.term
             category = term.category
+            
+            if allowed_categories and category not in allowed_categories:
+                continue
             
             if category not in due_by_category:
                 due_by_category[category] = []

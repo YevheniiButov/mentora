@@ -24,7 +24,8 @@ from utils.flashcard_helpers import (
     calculate_flashcard_xp,
     get_mastery_distribution,
     get_category_progress,
-    get_due_reviews_by_category
+    get_due_reviews_by_category,
+    get_allowed_categories
 )
 from utils.mastery_helpers import update_item_mastery
 
@@ -41,9 +42,15 @@ def daily_session():
     try:
         current_app.logger.info(f"Daily session started for user: {current_user.id}")
         
-        # Get all available categories
-        categories = db.session.query(MedicalTerm.category).distinct().all()
-        categories = [c[0] for c in categories if c[0]]
+        allowed_categories = get_allowed_categories(current_user)
+        if not allowed_categories:
+            return render_template('flashcards/study_simple.html',
+                                 category='all',
+                                 terms=[],
+                                 total_terms=0,
+                                 message='No terms available for your profession yet.')
+        
+        categories = allowed_categories
         
         if not categories:
             return render_template('flashcards/study_simple.html',
@@ -67,10 +74,13 @@ def daily_session():
             remaining = 10 - len(all_selected_terms)
             if all_selected_terms:
                 any_terms = MedicalTerm.query.filter(
+                    MedicalTerm.category.in_(allowed_categories),
                     ~MedicalTerm.id.in_([t.id for t in all_selected_terms])
                 ).limit(remaining).all()
             else:
-                any_terms = MedicalTerm.query.limit(remaining).all()
+                any_terms = MedicalTerm.query.filter(
+                    MedicalTerm.category.in_(allowed_categories)
+                ).limit(remaining).all()
             all_selected_terms.extend(any_terms)
         
         # Limit to 10 total
@@ -150,10 +160,20 @@ def categories():
     - Terms due for review today
     """
     try:
-        # Get all categories
+        allowed_categories = get_allowed_categories(current_user)
+        if not allowed_categories:
+            return render_template('flashcards/study_simple.html',
+                                 category='all',
+                                 terms=[],
+                                 total_terms=0,
+                                 message='No flashcard categories available for your profession yet.')
+
+        # Get allowed categories
         categories_data = db.session.query(
             MedicalTerm.category,
             func.count(MedicalTerm.id).label('total_terms')
+        ).filter(
+            MedicalTerm.category.in_(allowed_categories)
         ).group_by(MedicalTerm.category).all()
         
         categories_with_progress = []
@@ -213,7 +233,11 @@ def study_category(category):
     try:
         current_app.logger.info(f"Study session started for category: {category}, user: {current_user.id}")
         
-        # Validate category
+        allowed_categories = set(get_allowed_categories(current_user))
+        if allowed_categories and category not in allowed_categories:
+            return jsonify({'error': 'Category not available for your profession'}), 403
+
+        # Validate category exists at all
         category_exists = MedicalTerm.query.filter_by(category=category).first()
         if not category_exists:
             current_app.logger.warning(f"Category not found: {category}")
@@ -297,7 +321,11 @@ def study_simple(category):
     try:
         current_app.logger.info(f"Simple study session started for category: {category}, user: {current_user.id}")
         
-        # Validate category
+        allowed_categories = set(get_allowed_categories(current_user))
+        if allowed_categories and category not in allowed_categories:
+            return jsonify({'error': 'Category not available for your profession'}), 403
+
+        # Validate category exists
         category_exists = MedicalTerm.query.filter_by(category=category).first()
         if not category_exists:
             current_app.logger.warning(f"Category not found: {category}")
@@ -380,6 +408,10 @@ def study_single_term(term_id):
     """
     try:
         term = MedicalTerm.query.get_or_404(term_id)
+
+        allowed_categories = set(get_allowed_categories(current_user))
+        if allowed_categories and term.category not in allowed_categories:
+            return jsonify({'error': 'Term not available for your profession'}), 403
         
         # Get or create progress
         progress = UserTermProgress.query.filter_by(
@@ -470,6 +502,10 @@ def review_term(term_id):
         
         # Get term
         term = MedicalTerm.query.get_or_404(term_id)
+
+        allowed_categories = set(get_allowed_categories(current_user))
+        if allowed_categories and term.category not in allowed_categories:
+            return jsonify({'error': 'Term not available for your profession'}), 403
         
         # Get or create progress
         progress = UserTermProgress.query.filter_by(
@@ -596,10 +632,19 @@ def user_stats():
     Overall user statistics for medical terminology learning
     """
     try:
-        # Get all progress for user
-        all_progress = UserTermProgress.query.filter_by(
-            user_id=current_user.id
-        ).all()
+        allowed_categories = get_allowed_categories(current_user)
+
+        # Get all progress for user within allowed categories
+        progress_query = UserTermProgress.query.join(
+            MedicalTerm, UserTermProgress.term_id == MedicalTerm.id
+        ).filter(
+            UserTermProgress.user_id == current_user.id
+        )
+
+        if allowed_categories:
+            progress_query = progress_query.filter(MedicalTerm.category.in_(allowed_categories))
+
+        all_progress = progress_query.all()
         
         # Count by mastery level
         mastery_dist = get_mastery_distribution(current_user)
@@ -624,7 +669,14 @@ def user_stats():
         
         # Get category breakdown
         category_stats = []
-        categories = db.session.query(MedicalTerm.category).distinct().all()
+        if allowed_categories:
+            categories_query = db.session.query(MedicalTerm.category).filter(
+                MedicalTerm.category.in_(allowed_categories)
+            )
+        else:
+            categories_query = db.session.query(MedicalTerm.category)
+
+        categories = categories_query.distinct().all()
         
         for (cat,) in categories:
             cat_progress = get_category_progress(current_user, cat)
@@ -655,7 +707,11 @@ def category_stats(category):
     Detailed statistics for a specific category
     """
     try:
-        # Validate category
+        allowed_categories = set(get_allowed_categories(current_user))
+        if allowed_categories and category not in allowed_categories:
+            return jsonify({'error': 'Category not available for your profession'}), 403
+
+        # Validate category exists
         if not MedicalTerm.query.filter_by(category=category).first():
             return jsonify({'error': 'Category not found'}), 404
         
@@ -689,7 +745,17 @@ def api_due_count():
         due_count = UserTermProgress.query.filter(
             UserTermProgress.user_id == current_user.id,
             UserTermProgress.next_review <= datetime.now(timezone.utc)
-        ).count()
+        )
+
+        allowed_categories = get_allowed_categories(current_user)
+        if allowed_categories:
+            due_count = due_count.join(
+                MedicalTerm, UserTermProgress.term_id == MedicalTerm.id
+            ).filter(
+                MedicalTerm.category.in_(allowed_categories)
+            )
+
+        due_count = due_count.count()
         
         return jsonify({'due_count': due_count})
     
