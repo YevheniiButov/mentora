@@ -1022,15 +1022,10 @@ def learning_map(lang, path_id=None):
                 for topic in subcat.topics.all():
                     print(f"DEBUG:     Тема: {topic.name}")
         # Определяем, нужно ли показывать баннер с диагностикой
-        diagnostic_session_types = [
-            'quick_30', 'full_60', 'preliminary', 'readiness',
-            'full', 'comprehensive', 'express', 'adaptive_diagnostic',
-            'diagnostic'
-        ]
         has_completed_diagnostic = DiagnosticSession.query.filter(
             DiagnosticSession.user_id == current_user.id,
-            DiagnosticSession.status == 'completed',
-            DiagnosticSession.session_type.in_(diagnostic_session_types)
+            DiagnosticSession.completed_at.isnot(None),
+            DiagnosticSession.session_type != 'daily_practice'
         ).first() is not None
 
         active_plan = PersonalLearningPlan.query.filter_by(
