@@ -10,6 +10,7 @@ class RegistrationTracker {
         this.nameEntered = false;
         this.formStarted = false;
         this.trackingActive = true;
+        this.pageVisitPromise = null;
         
         this.init();
     }
@@ -24,22 +25,22 @@ class RegistrationTracker {
     
     init() {
         // Отслеживаем заход на страницу
-        this.trackPageVisit();
+        this.pageVisitPromise = this.trackPageVisit();
         
         // Отслеживаем выход со страницы
-        this.trackPageExit();
+        this.setupPageExitTracking();
         
         // Отслеживаем ввод email
-        this.trackEmailInput();
+        this.setupEmailInputTracking();
         
         // Отслеживаем ввод имени
-        this.trackNameInput();
+        this.setupNameInputTracking();
         
         // Отслеживаем начало заполнения формы
-        this.trackFormStart();
+        this.setupFormStartTracking();
         
         // Отслеживаем отправку формы
-        this.trackFormSubmit();
+        this.setupFormSubmitTracking();
     }
     
     async trackPageVisit() {
@@ -64,7 +65,7 @@ class RegistrationTracker {
         }
     }
     
-    trackEmailInput() {
+    setupEmailInputTracking() {
         const emailInputs = document.querySelectorAll('input[type="email"], input[name="email"]');
         
         emailInputs.forEach(input => {
@@ -83,7 +84,7 @@ class RegistrationTracker {
         });
     }
     
-    trackNameInput() {
+    setupNameInputTracking() {
         const firstNameInputs = document.querySelectorAll('input[name="first_name"], input[name="firstName"], input[id="first_name"], input[id="firstName"]');
         const lastNameInputs = document.querySelectorAll('input[name="last_name"], input[name="lastName"], input[id="last_name"], input[id="lastName"]');
         
@@ -117,11 +118,25 @@ class RegistrationTracker {
         return input ? input.value.trim() : null;
     }
     
+    async ensurePageVisitTracked() {
+        if (!this.pageVisitPromise) {
+            this.pageVisitPromise = this.trackPageVisit();
+        }
+        
+        try {
+            await this.pageVisitPromise;
+        } catch (error) {
+            console.warn('Registration tracker: page visit tracking failed', error);
+        }
+    }
+    
     async trackEmailEntry(email) {
         if (this.emailEntered) return;
         
         try {
             this.emailEntered = true;
+            
+            await this.ensurePageVisitTracked();
             
             const response = await fetch('/track-email-entry', {
                 method: 'POST',
@@ -149,6 +164,8 @@ class RegistrationTracker {
         try {
             this.nameEntered = true;
             
+            await this.ensurePageVisitTracked();
+            
             const response = await fetch('/track-name-entry', {
                 method: 'POST',
                 headers: {
@@ -170,7 +187,7 @@ class RegistrationTracker {
         }
     }
     
-    trackFormStart() {
+    setupFormStartTracking() {
         const forms = document.querySelectorAll('form');
         
         forms.forEach(form => {
@@ -178,17 +195,18 @@ class RegistrationTracker {
             
             inputs.forEach(input => {
                 input.addEventListener('focus', () => {
-                    this.trackFormStart();
+                    this.sendFormStart();
                 });
             });
         });
     }
     
-    async trackFormStart() {
+    async sendFormStart() {
         if (this.formStarted) return;
         
         try {
             this.formStarted = true;
+            await this.ensurePageVisitTracked();
             
             const response = await fetch('/track-form-start', {
                 method: 'POST',
@@ -209,18 +227,19 @@ class RegistrationTracker {
         }
     }
     
-    trackFormSubmit() {
+    setupFormSubmitTracking() {
         const forms = document.querySelectorAll('form');
         
         forms.forEach(form => {
             form.addEventListener('submit', (e) => {
-                this.trackFormSubmit();
+                this.sendFormSubmit();
             });
         });
     }
     
-    async trackFormSubmit() {
+    async sendFormSubmit() {
         try {
+            await this.ensurePageVisitTracked();
             const response = await fetch('/track-form-submit', {
                 method: 'POST',
                 headers: {
@@ -240,10 +259,10 @@ class RegistrationTracker {
         }
     }
     
-    trackPageExit() {
+    setupPageExitTracking() {
         // Отслеживаем уход со страницы
         window.addEventListener('beforeunload', () => {
-            this.trackPageExit();
+            this.sendPageExit(true);
         });
         
         // Отслеживаем неактивность (пользователь ушел, но не закрыл вкладку)
@@ -269,6 +288,7 @@ class RegistrationTracker {
     
     async trackFormAbandonment() {
         try {
+            await this.ensurePageVisitTracked();
             const response = await fetch('/track-form-abandonment', {
                 method: 'POST',
                 headers: {
@@ -288,9 +308,10 @@ class RegistrationTracker {
         }
     }
     
-    async trackPageExit() {
+    async sendPageExit(useKeepalive = false) {
         try {
             const timeOnPage = Math.round((Date.now() - this.startTime) / 1000);
+            await this.ensurePageVisitTracked();
             
             const response = await fetch('/track-page-exit', {
                 method: 'POST',
@@ -298,6 +319,7 @@ class RegistrationTracker {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': this.getCSRFToken()
                 },
+                keepalive: useKeepalive,
                 body: JSON.stringify({
                     page_type: this.pageType,
                     time_on_page: timeOnPage

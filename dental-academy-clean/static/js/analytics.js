@@ -45,6 +45,16 @@ class AnalyticsTracker {
         return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
     
+    getCSRFToken() {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta && meta.getAttribute('content')) {
+            return meta.getAttribute('content');
+        }
+        
+        const match = document.cookie.match(/(?:^|;)\s*csrf_token=([^;]+)/);
+        return match ? decodeURIComponent(match[1]) : null;
+    }
+    
     trackPageView() {
         const pageData = {
             url: window.location.href,
@@ -127,7 +137,7 @@ class AnalyticsTracker {
                 time_on_page: timeOnPage,
                 scroll_depth: this.maxScrollDepth,
                 session_id: this.sessionId
-            }, true); // Use sendBeacon for reliability
+            }, true); // Use keepalive fetch for reliability
         });
     }
     
@@ -184,48 +194,39 @@ class AnalyticsTracker {
             return;
         }
         
-        if (useBeacon && navigator.sendBeacon) {
-            // Use sendBeacon for reliable delivery on page unload
-            // Note: sendBeacon doesn't support custom headers, so CSRF is handled server-side for beacons
-            try {
-                const blob = new Blob([JSON.stringify(payload)], { type: 'text/plain;charset=UTF-8' });
-                navigator.sendBeacon('/analytics/track-event', blob);
-            } catch (error) {
-                // Silently fail for sendBeacon errors
-            }
-        } else {
-            // Use fetch for normal events
-            const csrfToken = document.querySelector('meta[name="csrf-token"]');
-            const headers = {
-                'Content-Type': 'application/json',
-            };
-            
-            if (csrfToken) {
-                headers['X-CSRFToken'] = csrfToken.getAttribute('content');
-            }
-            
-            fetch('/analytics/track-event', {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(payload)
-            })
-            .then(response => {
-                if (!response.ok) {
-                    // Only log errors if it's not a 400 (which might be expected for invalid requests)
-                    if (response.status !== 400) {
-                        console.warn(`Analytics tracking error: ${response.status} ${response.statusText}`);
-                    }
-                    return response.json().catch(() => ({}));
-                }
-                return response.json();
-            })
-            .catch(error => {
-                // Only log network errors, not 400 responses
-                if (error.name !== 'AbortError') {
-                    // Silently ignore analytics errors to avoid console spam
-                }
-            });
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        
+        const csrfToken = this.getCSRFToken();
+        if (!csrfToken) {
+            // If we cannot get a CSRF token we skip the call to avoid guaranteed 400 responses
+            return;
         }
+        
+        headers['X-CSRFToken'] = csrfToken;
+        
+        fetch('/analytics/track-event', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(payload),
+            keepalive: !!useBeacon
+        })
+        .then(response => {
+            if (!response.ok) {
+                // Only log errors if it's not a 400 (which might be expected for invalid requests)
+                if (response.status !== 400) {
+                    console.warn(`Analytics tracking error: ${response.status} ${response.statusText}`);
+                }
+                return response.json().catch(() => ({}));
+            }
+            return response.json();
+        })
+        .catch(error => {
+            if (error.name !== 'AbortError') {
+                // Silently ignore analytics errors to avoid console spam
+            }
+        });
     }
     
     // Public methods for manual tracking

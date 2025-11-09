@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Роуты для отслеживания посетителей регистрации
+Routes for tracking registration page visitors.
 """
 
 from flask import Blueprint, request, jsonify, current_app
@@ -13,7 +13,7 @@ from functools import wraps
 tracking_bp = Blueprint('tracking', __name__, url_prefix='/track')
 
 def require_csrf_token(f):
-    """Декоратор для проверки CSRF токена"""
+    """Decorator that enforces presence of a CSRF token."""
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if request.method == 'POST':
@@ -26,7 +26,7 @@ def require_csrf_token(f):
 @tracking_bp.route('/registration-visit', methods=['POST'])
 @require_csrf_token
 def track_registration_visit():
-    """Отслеживает посещение страницы регистрации"""
+    """Track a registration page visit."""
     try:
         data = request.get_json()
         page_type = data.get('page_type', 'unknown')
@@ -46,7 +46,7 @@ def track_registration_visit():
 @tracking_bp.route('/email-entry', methods=['POST'])
 @require_csrf_token
 def track_email_entry():
-    """Отслеживает ввод email адреса"""
+    """Track email entry during registration."""
     try:
         data = request.get_json()
         email = data.get('email', '').strip()
@@ -69,7 +69,7 @@ def track_email_entry():
 @tracking_bp.route('/form-start', methods=['POST'])
 @require_csrf_token
 def track_form_start():
-    """Отслеживает начало заполнения формы"""
+    """Track the moment a registration form is started."""
     try:
         data = request.get_json()
         page_type = data.get('page_type', 'unknown')
@@ -88,7 +88,7 @@ def track_form_start():
 @tracking_bp.route('/form-submit', methods=['POST'])
 @require_csrf_token
 def track_form_submit():
-    """Отслеживает отправку формы"""
+    """Track registration form submission."""
     try:
         data = request.get_json()
         page_type = data.get('page_type', 'unknown')
@@ -109,7 +109,7 @@ def track_form_submit():
 @tracking_bp.route('/form-abandonment', methods=['POST'])
 @require_csrf_token
 def track_form_abandonment():
-    """Отслеживает отказ от заполнения формы"""
+    """Track form abandonment events."""
     try:
         data = request.get_json()
         page_type = data.get('page_type', 'unknown')
@@ -128,7 +128,7 @@ def track_form_abandonment():
 @tracking_bp.route('/page-exit', methods=['POST'])
 @require_csrf_token
 def track_page_exit():
-    """Отслеживает выход со страницы"""
+    """Track the user leaving the registration page."""
     try:
         data = request.get_json()
         page_type = data.get('page_type', 'unknown')

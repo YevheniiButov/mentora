@@ -2,7 +2,6 @@
 
 from flask import Blueprint, render_template, jsonify, request, current_app
 from flask_login import login_required, current_user
-from extensions import csrf
 from utils.decorators import admin_required
 from models import db, WebsiteVisit, PageView, UserSession, ProfessionClick
 from utils.analytics import get_analytics_data, get_recent_visits, get_ip_analytics, cleanup_old_data
@@ -133,7 +132,6 @@ def cleanup():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @analytics_bp.route('/track-event', methods=['POST'])
-@csrf.exempt
 def track_event():
     """Track custom events from JavaScript"""
     try:

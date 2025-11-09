@@ -2302,11 +2302,11 @@ def track_email_entry():
         success = VisitorTracker.track_email_entry(email, page_type)
         
         if success:
-            logger.info(f"✅ Email entry tracked successfully: {email} on {page_type}")
+            logger.info(f"Email entry tracked successfully: {email} on {page_type}")
             return safe_jsonify({"success": True})
         else:
-            logger.warning(f"⚠️ Failed to track email entry: {email} on {page_type}")
-            # Не возвращаем ошибку 500, так как это может быть нормально (нет активной сессии)
+            logger.info(f"Email entry skipped (no active visitor session): {email} on {page_type}")
+            # It is safe to return success=false without 500 response: visitors may not have an active session yet
             return safe_jsonify({"success": False, "message": "No active visitor session"})
             
     except Exception as e:
