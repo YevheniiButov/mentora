@@ -215,11 +215,42 @@ def update_personal_info(lang):
     
     return redirect(url_for('profile.personal_info', lang=lang))
 
-@profile_bp.route('/settings')
+@profile_bp.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings(lang):
     """Profile settings page"""
+    if request.method == 'POST':
+        return update_settings(lang)
     return render_template('profile/settings.html', user=current_user)
+
+
+def update_settings(lang):
+    """Handle settings form submission"""
+    supported_languages = {'nl', 'en', 'ru', 'es', 'pt', 'uk', 'fa', 'tr'}
+    updated_lang = lang
+    try:
+        # Interface language
+        new_language = request.form.get('language', '').strip()
+        if new_language in supported_languages:
+            current_user.language = new_language
+            session['lang'] = new_language
+            g.lang = new_language
+            updated_lang = new_language
+        
+        # Theme preference
+        new_theme = request.form.get('theme', '').strip()
+        if new_theme in {'light', 'dark', 'auto'}:
+            current_user.theme = new_theme
+            session['theme'] = new_theme
+        
+        db.session.commit()
+        flash('Settings saved successfully!', 'success')
+    except Exception as exc:
+        current_app.logger.error(f"Failed to update settings for user {current_user.id}: {exc}", exc_info=True)
+        db.session.rollback()
+        flash('Failed to save settings. Please try again.', 'error')
+    
+    return redirect(url_for('profile.settings', lang=updated_lang))
 
 @profile_bp.route('/security')
 @login_required
