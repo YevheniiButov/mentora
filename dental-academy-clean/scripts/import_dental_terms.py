@@ -39,8 +39,8 @@ def parse_category(raw: str) -> tuple[str, str]:
 def main() -> None:
     if not DATA_PATH.exists():
         raise FileNotFoundError(
-            f\"Data file {DATA_PATH} not found. "
-            \"Run the PDF extraction beforehand.\"
+            f"Data file {DATA_PATH} not found. "
+            "Run the PDF extraction beforehand."
         )
 
     entries = json.loads(DATA_PATH.read_text(encoding='utf-8'))
@@ -50,10 +50,17 @@ def main() -> None:
     with app.app_context():
         for item in entries:
             cat_number, cat_name = parse_category(item['category'])
-            category_key = f\"dentistry_{cat_number}_{slugify(cat_name)}\"
+            category_key = f"dentistry_{cat_number}_{slugify(cat_name)}"
 
             term_nl = item['nl'].strip()
             term_en = item['en'].strip()
+            term_ru = item.get('ru')
+            term_uk = item.get('uk')
+            term_es = item.get('es')
+            term_pt = item.get('pt')
+            term_tr = item.get('tr')
+            term_fa = item.get('fa')
+            term_ar = item.get('ar')
 
             term = MedicalTerm.query.filter_by(term_nl=term_nl).first()
 
@@ -61,17 +68,28 @@ def main() -> None:
                 updated += 1
                 term.term_en = term_en
                 term.category = category_key
-                if term.definition_nl is None:
-                    term.definition_nl = term_en
-                if term.difficulty is None:
-                    term.difficulty = 1
-                if term.frequency is None:
-                    term.frequency = 1
+                term.definition_nl = term.definition_nl or term_en
+                term.difficulty = term.difficulty or 1
+                term.frequency = term.frequency or 1
+                term.term_ru = term_ru or term_en
+                term.term_uk = term_uk or term_en
+                term.term_es = term_es or term_en
+                term.term_pt = term_pt or term_en
+                term.term_tr = term_tr or term_en
+                term.term_fa = term_fa or term_en
+                term.term_ar = term_ar or term_en
             else:
                 created += 1
                 term = MedicalTerm(
                     term_nl=term_nl,
                     term_en=term_en,
+                    term_ru=term_ru or term_en,
+                    term_uk=term_uk or term_en,
+                    term_es=term_es or term_en,
+                    term_pt=term_pt or term_en,
+                    term_tr=term_tr or term_en,
+                    term_fa=term_fa or term_en,
+                    term_ar=term_ar or term_en,
                     definition_nl=term_en,
                     category=category_key,
                     difficulty=1,
@@ -81,7 +99,7 @@ def main() -> None:
 
         db.session.commit()
 
-    print(f\"Imported dental terms: created={created}, updated={updated}\")
+    print(f"Imported dental terms: created={created}, updated={updated}")
 
 
 if __name__ == '__main__':
