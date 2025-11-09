@@ -244,9 +244,18 @@ def start_diagnostic():
             if diagnostic_type == 'quick_30':
                 selected_questions = select_questions_for_quick_test(current_user, diagnostic_type)
                 if selected_questions:
+                    selected_questions = selected_questions[:30]
+                    total_selected = len(selected_questions)
                     session_data['selected_questions'] = [q.id for q in selected_questions]
                     session_data['quick_test_config'] = get_quick_test_config(get_user_profession_code(current_user))
-                    logger.info(f"Saved {len(selected_questions)} questions for Quick Test")
+                    session_data['estimated_total_questions'] = total_selected
+                    diagnostic_session.test_length = total_selected
+                    logger.info(f"Saved {total_selected} questions for Quick Test")
+                else:
+                    logger.warning("Quick Test question selection returned 0 questions, using default estimated count")
+                    diagnostic_session.test_length = estimated_questions
+            else:
+                diagnostic_session.test_length = estimated_questions
             
             diagnostic_session.set_session_data(session_data)
             
@@ -877,15 +886,19 @@ def submit_answer(session_id):
             diagnostic_type = 'express'
         
         # Determine max questions with validation
-        max_questions = {
-            'express': 30,  # Изменено с 25 на 30 для совместимости
-            'quick_30': 30,  # 30 вопросов для Quick Test
-            'full_60': 60,   # 60 вопросов для Full Test
-            'preliminary': 75, 
-            'readiness': 130,
-            'full': 60,      # Изменено с 75 на 60 для совместимости
-            'comprehensive': 130
-        }.get(diagnostic_type, 30)  # Изменено с 25 на 30
+        estimated_total = session_data.get('estimated_total_questions')
+        if isinstance(estimated_total, (int, float)) and estimated_total > 0:
+            max_questions = int(estimated_total)
+        else:
+            max_questions = {
+                'express': 30,  # Изменено с 25 на 30 для совместимости
+                'quick_30': 30,  # 30 вопросов для Quick Test
+                'full_60': 60,   # 60 вопросов для Full Test
+                'preliminary': 75, 
+                'readiness': 130,
+                'full': 60,      # Изменено с 75 на 60 для совместимости
+                'comprehensive': 130
+            }.get(diagnostic_type, 30)  # Изменено с 25 на 30
         
         # Validate question count
         if session.questions_answered > max_questions:
@@ -3093,6 +3106,15 @@ def select_questions_for_quick_test(user, diagnostic_type='quick_30'):
                 logger.error(f"Error selecting questions for area '{area['name']}': {area_error}")
                 continue
         
+        # Deduplicate while preserving order
+        unique_questions = []
+        seen_ids = set()
+        for question in selected_questions:
+            if question.id not in seen_ids:
+                unique_questions.append(question)
+                seen_ids.add(question.id)
+        selected_questions = unique_questions
+        
         # Shuffle final list
         import random
         random.shuffle(selected_questions)
@@ -3100,21 +3122,27 @@ def select_questions_for_quick_test(user, diagnostic_type='quick_30'):
         logger.info(f"Total selected questions: {len(selected_questions)}")
         
         # Handle edge case: if not enough questions, add fallback
-        if len(selected_questions) < 20:
+        if len(selected_questions) < 30:
             logger.warning(f"Only {len(selected_questions)} questions selected, adding fallback questions")
             
             # Get additional random questions
             user_profession = get_user_profession_code(user)
-            fallback_questions = Question.query.filter_by(
+            fallback_query = Question.query.filter_by(
                 profession=user_profession
-            ).filter(
-                ~Question.id.in_([q.id for q in selected_questions])
-            ).order_by(func.random()).limit(30 - len(selected_questions)).all()
+            )
+            
+            if seen_ids:
+                fallback_query = fallback_query.filter(~Question.id.in_(seen_ids))
+            
+            fallback_questions = fallback_query.order_by(func.random()).limit(30 - len(selected_questions)).all()
             
             selected_questions.extend(fallback_questions)
+            seen_ids.update(q.id for q in fallback_questions)
             logger.info(f"Added {len(fallback_questions)} fallback questions, total: {len(selected_questions)}")
         
-        return selected_questions[:30]  # Limit to 30 questions max
+        # Ensure final list is randomized and limited to 30
+        random.shuffle(selected_questions)
+        return selected_questions[:30]
         
     except Exception as e:
         logger.error(f"Error in select_questions_for_quick_test: {e}")
