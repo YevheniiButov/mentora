@@ -2808,5 +2808,11 @@ translations = {
     "unlimited_english_access": "جميع نصوص القراءة",
     "unlimited_vp_access": "جميع السيناريوهات متاحة",
     "premium_description": "⭐ الوصول المميز: وصول غير محدود إلى جميع مواد التعلم. تدرب مع جميع الأسئلة والمصطلحات والمرضى الافتراضيين ونصوص القراءة الإنجليزية. فلتر حسب الفئات وادرس دون قيود.",
-    "english_reading": "القراءة الإنجليزية"
+    "english_reading": "القراءة الإنجليزية",
+    
+    # Diagnostic onboarding banner
+    "diagnostic_required_title": "ابدأ بجلسة تشخيصية",
+    "diagnostic_required_body": "أكمل اختبارًا تشخيصيًا قصيرًا لإنشاء خطة دراسية يومية مخصّصة لك. بعد الانتهاء ستحصل فورًا على التمارين الملائمة.",
+    "diagnostic_required_cta": "بدء الجلسة التشخيصية",
+    "diagnostic_required_secondary": "تستغرق حوالي 20 دقيقة"
 }

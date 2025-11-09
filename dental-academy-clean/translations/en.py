@@ -3518,4 +3518,10 @@ translations = {
     'unlimited_vp_access': 'All scenarios available',
     'premium_description': '⭐ Premium Access: Unlimited access to all learning materials. Practice with all questions, terms, virtual patients, and English reading passages. Filter by categories and study without restrictions.',
     'english_reading': 'English Reading',
+    
+    # Diagnostic onboarding banner
+    'diagnostic_required_title': 'Start with a diagnostic session',
+    'diagnostic_required_body': "Complete a quick diagnostic test to generate your personalised daily study plan. You'll unlock tailored practice right after finishing.",
+    'diagnostic_required_cta': 'Start diagnostic session',
+    'diagnostic_required_secondary': 'Takes about 20 minutes',
 }

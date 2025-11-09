@@ -3316,4 +3316,10 @@ translations = {
     'unlimited_vp_access': 'Alle scenario\'s beschikbaar',
     'premium_description': '⭐ Premium Toegang: Onbeperkte toegang tot alle leermaterialen. Oefen met alle vragen, termen, virtuele patiënten en Engelse leesteksten. Filter op categorieën en studeer zonder beperkingen.',
     'english_reading': 'Engels Lezen',
+    
+    # Diagnostic onboarding banner
+    'diagnostic_required_title': 'Begin met een diagnostische sessie',
+    'diagnostic_required_body': 'Voltooi een korte diagnostische test om je persoonlijke dagelijkse studieplan te laten maken. Daarna kun je meteen met de aanbevolen training beginnen.',
+    'diagnostic_required_cta': 'Start diagnostische sessie',
+    'diagnostic_required_secondary': 'Duurt ongeveer 20 minuten',
 }

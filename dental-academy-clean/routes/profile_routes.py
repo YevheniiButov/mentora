@@ -204,9 +204,14 @@ def update_personal_info(lang):
         else:
             flash('Personal information updated successfully!', 'success')
         
-        # Check if this was a forced completion
-        if request.form.get('force_completion') == 'true':
-            return redirect(url_for('main.index', lang=lang))
+        # Determine redirect target
+        redirect_target = url_for('profile.personal_info', lang=lang)
+        if profile_check['is_complete'] and not profile_was_complete:
+            redirect_target = url_for('learning_map_bp.learning_map', lang=lang, path_id='irt')
+        elif request.form.get('force_completion') == 'true':
+            redirect_target = url_for('main.index', lang=lang)
+        
+        return redirect(redirect_target)
         
     except Exception as e:
         current_app.logger.error(f"Error updating personal info: {e}", exc_info=True)

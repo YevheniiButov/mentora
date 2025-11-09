@@ -2963,4 +2963,10 @@ translations = {
     'unlimited_vp_access': 'Todos os cenários disponíveis',
     'premium_description': '⭐ Acesso Premium: Acesso ilimitado a todos os materiais de aprendizagem. Pratique com todas as perguntas, termos, pacientes virtuais e textos de leitura em inglês. Filtre por categorias e estude sem restrições.',
     'english_reading': 'Leitura em Inglês',
+    
+    # Diagnostic onboarding banner
+    'diagnostic_required_title': 'Inicie com uma sessão diagnóstica',
+    'diagnostic_required_body': 'Conclua um teste diagnóstico rápido para gerar o seu plano diário de estudos personalizado. Assim que terminar, terá acesso aos exercícios recomendados.',
+    'diagnostic_required_cta': 'Iniciar sessão diagnóstica',
+    'diagnostic_required_secondary': 'Leva cerca de 20 minutos',
 }

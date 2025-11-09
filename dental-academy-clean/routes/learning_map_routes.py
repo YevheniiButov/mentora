@@ -8,7 +8,7 @@ from flask_login import login_required, current_user
 from extensions import db
 from models import (
     VirtualPatientScenario, VirtualPatientAttempt, LearningPath, Subject, Module, Lesson, UserProgress, Test, UserExamDate, ContentCategory, ContentSubcategory, ContentTopic,
-    User, Question, TestAttempt, QuestionCategory, DiagnosticSession
+    User, Question, TestAttempt, QuestionCategory, DiagnosticSession, PersonalLearningPlan
 )
 from translations import get_translation as t  # предполагаем, что функция называется get_translation
 from sqlalchemy import func
@@ -950,6 +950,23 @@ def learning_map(lang, path_id=None):
                 print(f"DEBUG:   Подкатегория: {subcat.name}, тем: {subcat.topics.count()}")
                 for topic in subcat.topics.all():
                     print(f"DEBUG:     Тема: {topic.name}")
+        # Определяем, нужно ли показывать баннер с диагностикой
+        has_completed_diagnostic = DiagnosticSession.query.filter_by(
+            user_id=current_user.id,
+            status='completed'
+        ).first() is not None
+
+        active_plan = PersonalLearningPlan.query.filter_by(
+            user_id=current_user.id,
+            status='active'
+        ).first()
+
+        schedule = active_plan.get_study_schedule() if active_plan else {}
+        schedule_valid = bool(schedule and schedule.get('weekly_schedule'))
+
+        needs_diagnostic_prompt = not has_completed_diagnostic or not schedule_valid
+        diagnostic_url = url_for('diagnostic.start_diagnostic')
+
         # Получаем все пути обучения
         learning_paths = LearningPath.query.filter_by(is_active=True).all()
         for path in learning_paths:
@@ -1146,7 +1163,9 @@ def learning_map(lang, path_id=None):
                     content_categories=processed_categories,
                     due_reviews_count=due_reviews_count,
                     total_terms_studied=total_terms_studied,
-                    current_language_streak=current_language_streak
+                    current_language_streak=current_language_streak,
+                    needs_diagnostic_prompt=needs_diagnostic_prompt,
+                    diagnostic_url=diagnostic_url
         )
     except Exception as e:
         import traceback

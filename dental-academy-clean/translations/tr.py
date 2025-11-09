@@ -2924,4 +2924,10 @@ translations = {
     'unlimited_vp_access': 'Tüm senaryolar mevcut',
     'premium_description': '⭐ Premium Erişim: Tüm öğrenme materyallerine sınırsız erişim. Tüm sorular, terimler, sanal hastalar ve İngilizce okuma metinleri ile pratik yapın. Kategorilere göre filtreleyin ve kısıtlama olmadan çalışın.',
     'english_reading': 'İngilizce Okuma',
+    
+    # Diagnostic onboarding banner
+    'diagnostic_required_title': 'Tanı oturumuyla başlayın',
+    'diagnostic_required_body': 'Kişiselleştirilmiş günlük çalışma planınızı oluşturmak için kısa bir tanı testi yapın. Bitirdiğinizde size özel çalışmalar hemen açılacak.',
+    'diagnostic_required_cta': 'Tanı oturumunu başlat',
+    'diagnostic_required_secondary': 'Yaklaşık 20 dakika sürer',
 }
