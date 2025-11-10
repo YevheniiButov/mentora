@@ -2920,7 +2920,7 @@ translations = {
     # Descripciones de pestañas
     'irt_description': '🧪 BETA: Elige tu formato de prueba - Prueba Rápida (30 preguntas) para evaluación rápida, Prueba Completa (60 preguntas) para evaluación integral, o Modo de Aprendizaje (30 preguntas con explicaciones) para estudiar mientras pruebas. Todas las pruebas usan tecnología IRT adaptativa.',
     'virtual_description': 'Practica con casos de pacientes virtuales realistas. Aplica tu conocimiento en escenarios clínicos simulados y mejora tus habilidades de toma de decisiones.',
-    'individual_description': 'Módulos de aprendizaje personalizados adaptados a tus necesidades. Estudia a tu propio ritmo con materiales completos y ejercicios interactivos.',
+    'individual_description': 'Módulos de aprendizaje personalizados adaptados a tus necesidades. Estudia a tu propio ritmo con materiales completos y ejercicios interactivos. Tras una breve evaluación diagnóstica creamos tu plan diario. Si la primera vez algo no salió bien, abre la pestaña IRT y repite la prueba rápida para que el sistema se reajuste y se centre en las áreas que te faltan.',
     'games_description': '¡Relájate y mejora tus habilidades cognitivas con juegos divertidos! Juega Sudoku para entrenar la lógica, Memoria Médica para aprender terminología, o Quiz Rápido para verificaciones rápidas de conocimiento. ¡Gana logros y compite en la tabla de líderes!',
     'progress_description': 'Rastrea tu viaje de aprendizaje con análisis detallados. Monitorea tu rendimiento en todos los módulos, ve tu tiempo de estudio e identifica áreas de mejora.',
     'planner_description': 'Planifica tu horario de aprendizaje de manera efectiva. Establece metas diarias y semanales, rastrea fechas límite y mantente organizado con nuestro planificador de aprendizaje inteligente.',
@@ -2936,6 +2936,7 @@ translations = {
     'tip_choose_modules': 'Elige módulos basados en tus objetivos de aprendizaje',
     'tip_complete_quizzes': 'Completa cuestionarios para reforzar tu conocimiento',
     'tip_unlock_modules': 'Desbloquea nuevos módulos progresando a través del currículo',
+    'tip_retake_diagnostic': 'Si algo no salió bien, abre la pestaña IRT y repite la prueba diagnóstica rápida para actualizar tu plan',
     'tip_play_sudoku': 'Juega Sudoku para mejorar el pensamiento lógico',
     'tip_medical_memory': 'Memoria Médica ayuda a aprender terminología rápidamente',
     'tip_quick_quiz': 'Quiz Rápido prueba tu conocimiento en segundos',

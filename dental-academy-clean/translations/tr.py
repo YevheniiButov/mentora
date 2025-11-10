@@ -2837,7 +2837,7 @@ translations = {
     # Sekme açıklamaları
     'irt_description': '🧪 BETA: Test formatınızı seçin - Hızlı Test (30 soru) hızlı değerlendirme için, Tam Test (60 soru) kapsamlı değerlendirme için, veya Öğrenme Modu (açıklamalı 30 soru) test ederken öğrenmek için. Tüm testler uyarlanabilir IRT teknolojisi kullanır.',
     'virtual_description': 'Gerçekçi sanal hasta vakalarıyla pratik yapın. Bilginizi simüle edilmiş klinik senaryolarda uygulayın ve karar verme becerilerinizi geliştirin.',
-    'individual_description': 'İhtiyaçlarınıza göre uyarlanmış kişiselleştirilmiş öğrenme modülleri. Kapsamlı materyaller ve etkileşimli alıştırmalarla kendi hızınızda öğrenin.',
+    'individual_description': 'İhtiyaçlarınıza göre uyarlanmış kişiselleştirilmiş öğrenme modülleri. Kapsamlı materyaller ve etkileşimli alıştırmalarla kendi hızınızda öğrenin. Kısa bir tanı sonrasında günlük planınızı oluşturuyoruz. İlk seferde bir şeyler ters gittiyse, IRT sekmesini açıp hızlı tanıyı yeniden uygulayın; sistem planı yeniden ayarlar ve kaçırdığınız alanlara odaklanır.',
     'games_description': 'Eğlenceli oyunlarla rahatlayın ve bilişsel becerilerinizi geliştirin! Mantık eğitimi için Sudoku oynayın, terminoloji öğrenmek için Tıbbi Hafıza, veya hızlı bilgi kontrolleri için Hızlı Quiz. Başarılar kazanın ve liderlik tablosunda yarışın!',
     'progress_description': 'Detaylı analizlerle öğrenme yolculuğunuzu takip edin. Tüm modüllerdeki performansınızı izleyin, çalışma sürenizi görün ve iyileştirme alanlarını belirleyin.',
     'planner_description': 'Öğrenme programınızı etkili bir şekilde planlayın. Günlük ve haftalık hedefler belirleyin, son tarihleri takip edin ve akıllı öğrenme planlayıcımızla organize kalın.',
@@ -2853,6 +2853,7 @@ translations = {
     'tip_choose_modules': 'Öğrenme hedeflerinize göre modüller seçin',
     'tip_complete_quizzes': 'Bilginizi pekiştirmek için quizleri tamamlayın',
     'tip_unlock_modules': 'Müfredat boyunca ilerleyerek yeni modülleri açın',
+    'tip_retake_diagnostic': 'Bir şeyler ters gittiyse, IRT sekmesini açıp hızlı tanıyı yeniden yaparak planınızı yenileyin',
     'tip_play_sudoku': 'Mantıksal düşünmeyi geliştirmek için Sudoku oynayın',
     'tip_medical_memory': 'Tıbbi Hafıza terminolojiyi hızlı öğrenmeye yardımcı olur',
     'tip_quick_quiz': 'Hızlı Quiz bilginizi saniyeler içinde test eder',

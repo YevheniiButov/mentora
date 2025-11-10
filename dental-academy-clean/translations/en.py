@@ -3429,7 +3429,7 @@ translations = {
     # Tab descriptions
     'irt_description': '🧪 BETA: Choose your test format - Quick Test (30 questions) for rapid assessment, Full Test (60 questions) for comprehensive evaluation, or Learning Mode (30 questions with explanations) to study while testing. All tests use adaptive IRT technology.',
     'virtual_description': 'Practice with realistic virtual patient cases. Apply your knowledge in simulated clinical scenarios and improve your decision-making skills.',
-    'individual_description': 'Personalized learning modules tailored to your needs. Study at your own pace with comprehensive materials and interactive exercises.',
+    'individual_description': 'Personalized learning modules tailored to your needs. Study at your own pace with comprehensive materials and interactive exercises. After a short diagnostic we build your daily plan. If something felt off the first time, open the IRT tab and retake the quick diagnostic so the system recalibrates and focuses on the areas you missed.',
     'games_description': 'Relax and improve your cognitive skills with fun games! Play Sudoku for logic training, Medical Memory to learn terminology, or Quick Quiz for fast knowledge checks. Earn achievements and compete on the leaderboard!',
     'progress_description': 'Track your learning journey with detailed analytics. Monitor your performance across all modules, see your study time, and identify areas for improvement.',
     'planner_description': 'Plan your learning schedule effectively. Set daily and weekly goals, track deadlines, and stay organized with our intelligent learning planner.',
@@ -3445,6 +3445,7 @@ translations = {
     'tip_choose_modules': 'Choose modules based on your learning goals',
     'tip_complete_quizzes': 'Complete quizzes to reinforce your knowledge',
     'tip_unlock_modules': 'Unlock new modules by progressing through the curriculum',
+    'tip_retake_diagnostic': 'If something felt off, open the IRT tab and repeat the quick diagnostic to refresh your plan',
     'tip_play_sudoku': 'Play Sudoku to improve logical thinking',
     'tip_medical_memory': 'Medical Memory helps learn terminology quickly',
     'tip_quick_quiz': 'Quick Quiz tests your knowledge in seconds',

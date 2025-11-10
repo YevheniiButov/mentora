@@ -3227,7 +3227,7 @@ translations = {
     # Tab beschrijvingen
     'irt_description': '🧪 BETA: Kies je testformaat - Snelle Test (30 vragen) voor snelle beoordeling, Volledige Test (60 vragen) voor uitgebreide evaluatie, of Leermodus (30 vragen met uitleg) om te studeren tijdens het testen. Alle tests gebruiken adaptieve IRT-technologie.',
     'virtual_description': 'Oefen met realistische virtuele patiëntgevallen. Pas je kennis toe in gesimuleerde klinische scenario\'s en verbeter je besluitvormingsvaardigheden.',
-    'individual_description': 'Gepersonaliseerde leermodules afgestemd op jouw behoeften. Studeren in je eigen tempo met uitgebreide materialen en interactieve oefeningen.',
+    'individual_description': 'Gepersonaliseerde leermodules afgestemd op jouw behoeften. Studeren in je eigen tempo met uitgebreide materialen en interactieve oefeningen. Na een korte diagnose bouwen we je dagelijkse plan op. Ging er iets mis bij de eerste keer? Open dan de IRT-tab en doe de snelle diagnose opnieuw zodat het systeem zich opnieuw richt op de onderdelen die je hebt gemist.',
     'games_description': 'Ontspan en verbeter je cognitieve vaardigheden met leuke spellen! Speel Sudoku voor logica training, Medical Memory om terminologie te leren, of Quick Quiz voor snelle kenniscontroles. Verdiend prestaties en strijd op de leaderboard!',
     'progress_description': 'Volg je leerreis met gedetailleerde analyses. Monitor je prestaties in alle modules, zie je studietijd, en identificeer verbeterpunten.',
     'planner_description': 'Plan je leerschema effectief. Stel dagelijkse en wekelijkse doelen, volg deadlines, en blijf georganiseerd met onze intelligente leerplanner.',
@@ -3243,6 +3243,7 @@ translations = {
     'tip_choose_modules': 'Kies modules op basis van je leerdoelen',
     'tip_complete_quizzes': 'Voltooi quizzen om je kennis te versterken',
     'tip_unlock_modules': 'Ontgrendel nieuwe modules door vooruitgang in het curriculum',
+    'tip_retake_diagnostic': 'Ging er iets mis? Open de IRT-tab en doe de snelle diagnose opnieuw om je plan te vernieuwen',
     'tip_play_sudoku': 'Speel Sudoku om logisch denken te verbeteren',
     'tip_medical_memory': 'Medical Memory helpt terminologie snel te leren',
     'tip_quick_quiz': 'Quick Quiz test je kennis in seconden',
