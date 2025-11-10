@@ -42,6 +42,12 @@ from models import (
     SystemNotification,
     ForumTopic,
     ForumPost,
+    UserTermProgress,
+    DailyFlashcardProgress,
+    UserEnglishProgress,
+    UserItemMastery,
+    EnglishPassage,
+    TestAttempt,
 )
 from datetime import datetime, timedelta, date
 import json
@@ -2865,6 +2871,217 @@ def user_detail_extended(user_id):
     except Exception as e:
         current_app.logger.error(f"Error in user_detail_extended route for user {user_id}: {str(e)}")
         flash(f'Ошибка загрузки расширенной информации о пользователе: {str(e)}', 'error')
+        return redirect(url_for('admin.user_detail', user_id=user_id))
+
+@admin_bp.route('/users/<int:user_id>/learning-progress')
+@login_required
+@admin_required
+def user_learning_progress(user_id):
+    """Детальный прогресс обучения пользователя"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # 1. Диагностические сессии
+        diagnostic_sessions = DiagnosticSession.query.filter_by(
+            user_id=user_id
+        ).order_by(DiagnosticSession.started_at.desc()).limit(50).all()
+        
+        diagnostic_stats = {
+            'total': DiagnosticSession.query.filter_by(user_id=user_id).count(),
+            'completed': DiagnosticSession.query.filter(
+                DiagnosticSession.user_id == user_id,
+                DiagnosticSession.completed_at.isnot(None)
+            ).count(),
+            'by_type': {}
+        }
+        
+        # Статистика по типам диагностик
+        for session_type in ['quick_30', 'full_60', 'express', 'preliminary', 'readiness', 'full', 'comprehensive']:
+            count = DiagnosticSession.query.filter_by(
+                user_id=user_id,
+                session_type=session_type
+            ).count()
+            if count > 0:
+                diagnostic_stats['by_type'][session_type] = count
+        
+        # Последняя диагностика
+        last_diagnostic = DiagnosticSession.query.filter(
+            DiagnosticSession.user_id == user_id,
+            DiagnosticSession.completed_at.isnot(None)
+        ).order_by(DiagnosticSession.completed_at.desc()).first()
+        
+        # 2. Термины (Flashcards)
+        terms_stats = {
+            'total_studied': UserTermProgress.query.filter_by(user_id=user_id).count(),
+            'total_terms': MedicalTerm.query.count(),
+            'due_reviews': UserTermProgress.query.filter(
+                UserTermProgress.user_id == user_id,
+                UserTermProgress.next_review <= datetime.now(timezone.utc)
+            ).count(),
+            'mastered': UserItemMastery.query.filter_by(
+                user_id=user_id,
+                item_type='term'
+            ).filter(UserItemMastery.mastered_at.isnot(None)).count(),
+            'by_category': {}
+        }
+        
+        # Статистика по категориям терминов
+        category_stats = db.session.query(
+            MedicalTerm.category,
+            func.count(UserTermProgress.id).label('count')
+        ).join(
+            UserTermProgress, MedicalTerm.id == UserTermProgress.term_id
+        ).filter(
+            UserTermProgress.user_id == user_id
+        ).group_by(MedicalTerm.category).all()
+        
+        for category, count in category_stats:
+            terms_stats['by_category'][category or 'uncategorized'] = count
+        
+        # Время на флешкарты
+        total_flashcard_time = db.session.query(
+            func.sum(DailyFlashcardProgress.time_spent)
+        ).filter_by(user_id=user_id).scalar() or 0
+        
+        # 3. Английское чтение
+        english_stats = {
+            'total_passages': EnglishPassage.query.count(),
+            'completed': UserEnglishProgress.query.filter_by(user_id=user_id).count(),
+            'mastered': UserItemMastery.query.filter_by(
+                user_id=user_id,
+                item_type='english'
+            ).filter(UserItemMastery.mastered_at.isnot(None)).count(),
+            'average_score': 0,
+            'passages': []
+        }
+        
+        # Прогресс по текстам
+        english_progress = UserEnglishProgress.query.filter_by(
+            user_id=user_id
+        ).order_by(UserEnglishProgress.completed_at.desc()).limit(20).all()
+        
+        total_score = 0
+        completed_count = 0
+        for progress in english_progress:
+            passage = EnglishPassage.query.get(progress.passage_id)
+            if passage:
+                score = (progress.correct_answers / progress.total_questions * 100) if progress.total_questions > 0 else 0
+                total_score += score
+                completed_count += 1
+                english_stats['passages'].append({
+                    'passage': passage,
+                    'progress': progress,
+                    'score': round(score, 1)
+                })
+        
+        if completed_count > 0:
+            english_stats['average_score'] = round(total_score / completed_count, 1)
+        
+        # 4. Виртуальные пациенты
+        vp_stats = {
+            'total_scenarios': VirtualPatientScenario.query.count(),
+            'attempts': VirtualPatientAttempt.query.filter_by(user_id=user_id).count(),
+            'completed': VirtualPatientAttempt.query.filter_by(
+                user_id=user_id,
+                completed=True
+            ).count(),
+            'mastered': UserItemMastery.query.filter_by(
+                user_id=user_id,
+                item_type='virtual_patient'
+            ).filter(UserItemMastery.mastered_at.isnot(None)).count(),
+            'average_score': 0,
+            'scenarios': []
+        }
+        
+        # Прогресс по сценариям
+        vp_attempts = VirtualPatientAttempt.query.filter_by(
+            user_id=user_id
+        ).order_by(VirtualPatientAttempt.completed_at.desc()).limit(20).all()
+        
+        total_vp_score = 0
+        completed_vp_count = 0
+        for attempt in vp_attempts:
+            scenario = VirtualPatientScenario.query.get(attempt.scenario_id)
+            if scenario and attempt.completed:
+                score = attempt.score_percentage or 0
+                total_vp_score += score
+                completed_vp_count += 1
+                vp_stats['scenarios'].append({
+                    'scenario': scenario,
+                    'attempt': attempt,
+                    'score': round(score, 1)
+                })
+        
+        if completed_vp_count > 0:
+            vp_stats['average_score'] = round(total_vp_score / completed_vp_count, 1)
+        
+        # 5. Мастерство (UserItemMastery)
+        mastery_stats = {
+            'total_items': UserItemMastery.query.filter_by(user_id=user_id).count(),
+            'mastered_items': UserItemMastery.query.filter_by(
+                user_id=user_id
+            ).filter(UserItemMastery.mastered_at.isnot(None)).count(),
+            'by_type': {}
+        }
+        
+        # Статистика по типам элементов
+        for item_type in ['question', 'term', 'english', 'virtual_patient']:
+            total = UserItemMastery.query.filter_by(
+                user_id=user_id,
+                item_type=item_type
+            ).count()
+            mastered = UserItemMastery.query.filter_by(
+                user_id=user_id,
+                item_type=item_type
+            ).filter(UserItemMastery.mastered_at.isnot(None)).count()
+            
+            if total > 0:
+                mastery_stats['by_type'][item_type] = {
+                    'total': total,
+                    'mastered': mastered,
+                    'percentage': round((mastered / total) * 100, 1) if total > 0 else 0
+                }
+        
+        # 6. Тесты (TestAttempt)
+        test_attempts = TestAttempt.query.filter_by(
+            user_id=user_id
+        ).order_by(TestAttempt.completed_at.desc()).limit(50).all()
+        
+        test_stats = {
+            'total': TestAttempt.query.filter_by(user_id=user_id).count(),
+            'completed': TestAttempt.query.filter_by(
+                user_id=user_id,
+                completed=True
+            ).count(),
+            'average_score': 0
+        }
+        
+        total_test_score = 0
+        completed_test_count = 0
+        for attempt in test_attempts:
+            if attempt.completed and attempt.score is not None:
+                total_test_score += attempt.score
+                completed_test_count += 1
+        
+        if completed_test_count > 0:
+            test_stats['average_score'] = round(total_test_score / completed_test_count, 1)
+        
+        return render_template('admin/user_learning_progress.html',
+                             user=user,
+                             diagnostic_sessions=diagnostic_sessions,
+                             diagnostic_stats=diagnostic_stats,
+                             last_diagnostic=last_diagnostic,
+                             terms_stats=terms_stats,
+                             total_flashcard_time=total_flashcard_time,
+                             english_stats=english_stats,
+                             vp_stats=vp_stats,
+                             mastery_stats=mastery_stats,
+                             test_attempts=test_attempts,
+                             test_stats=test_stats)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error in user_learning_progress route for user {user_id}: {str(e)}", exc_info=True)
+        flash(f'Ошибка загрузки прогресса обучения: {str(e)}', 'error')
         return redirect(url_for('admin.user_detail', user_id=user_id))
 
 @admin_bp.route('/users/<int:user_id>/edit', methods=['GET', 'POST'])

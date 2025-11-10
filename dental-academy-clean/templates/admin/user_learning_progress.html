@@ -1,0 +1,584 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Прогресс обучения - {{ user.get_display_name() }}{% endblock %}
+
+{% block page_title %}Прогресс обучения: {{ user.get_display_name() }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <div>
+        <p class="text-muted mb-0">{{ user.email }}</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад к профилю
+        </a>
+    </div>
+</div>
+
+<!-- Navigation Tabs -->
+<ul class="nav nav-tabs mb-4" id="progressTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="diagnostics-tab" data-bs-toggle="tab" data-bs-target="#diagnostics" type="button" role="tab">
+            <i class="bi bi-clipboard-pulse"></i> Диагностики
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="terms-tab" data-bs-toggle="tab" data-bs-target="#terms" type="button" role="tab">
+            <i class="bi bi-book-half"></i> Термины
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="english-tab" data-bs-toggle="tab" data-bs-target="#english" type="button" role="tab">
+            <i class="bi bi-globe"></i> Английский
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="vp-tab" data-bs-toggle="tab" data-bs-target="#vp" type="button" role="tab">
+            <i class="bi bi-person-badge"></i> Виртуальные пациенты
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="mastery-tab" data-bs-toggle="tab" data-bs-target="#mastery" type="button" role="tab">
+            <i class="bi bi-trophy"></i> Мастерство
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tests-tab" data-bs-toggle="tab" data-bs-target="#tests" type="button" role="tab">
+            <i class="bi bi-file-earmark-text"></i> Тесты
+        </button>
+    </li>
+</ul>
+
+<!-- Tab Content -->
+<div class="tab-content" id="progressTabContent">
+    <!-- Diagnostics Tab -->
+    <div class="tab-pane fade show active" id="diagnostics" role="tabpanel">
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ diagnostic_stats.total }}</h5>
+                        <p class="card-text text-muted">Всего сессий</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">{{ diagnostic_stats.completed }}</h5>
+                        <p class="card-text text-muted">Завершено</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-info">
+                            {% if last_diagnostic %}
+                                {{ last_diagnostic.completed_at.strftime('%d.%m.%Y') if last_diagnostic.completed_at else 'Не завершена' }}
+                            {% else %}
+                                Нет
+                            {% endif %}
+                        </h5>
+                        <p class="card-text text-muted">Последняя диагностика</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning">{{ diagnostic_stats.by_type|length }}</h5>
+                        <p class="card-text text-muted">Типов использовано</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if diagnostic_stats.by_type %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Статистика по типам</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for session_type, count in diagnostic_stats.by_type.items() %}
+                    <div class="col-md-3 mb-2">
+                        <strong>{{ session_type }}:</strong> {{ count }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">История диагностических сессий</h5>
+            </div>
+            <div class="card-body">
+                {% if diagnostic_sessions %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Дата начала</th>
+                                <th>Тип</th>
+                                <th>Статус</th>
+                                <th>Вопросов</th>
+                                <th>Правильных</th>
+                                <th>Балл</th>
+                                <th>Время</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in diagnostic_sessions %}
+                            <tr>
+                                <td>{{ session.started_at.strftime('%d.%m.%Y %H:%M') if session.started_at else 'N/A' }}</td>
+                                <td><span class="badge bg-secondary">{{ session.session_type or 'N/A' }}</span></td>
+                                <td>
+                                    {% if session.completed_at %}
+                                        <span class="badge bg-success">Завершена</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">В процессе</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ session.total_questions or 0 }}</td>
+                                <td>{{ session.correct_answers or 0 }}</td>
+                                <td>
+                                    {% if session.score_percentage is not none %}
+                                        {{ "%.1f"|format(session.score_percentage) }}%
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if session.time_spent %}
+                                        {{ session.time_spent }} мин
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Нет диагностических сессий</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms Tab -->
+    <div class="tab-pane fade" id="terms" role="tabpanel">
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ terms_stats.total_studied }}</h5>
+                        <p class="card-text text-muted">Изучено терминов</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-info">{{ terms_stats.total_terms }}</h5>
+                        <p class="card-text text-muted">Всего доступно</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning">{{ terms_stats.due_reviews }}</h5>
+                        <p class="card-text text-muted">К повторению</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">{{ terms_stats.mastered }}</h5>
+                        <p class="card-text text-muted">Освоено</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Время на флешкарты</h5>
+                <p class="mb-0">
+                    <strong>{{ "%.1f"|format(total_flashcard_time) }}</strong> минут
+                </p>
+            </div>
+        </div>
+
+        {% if terms_stats.by_category %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Статистика по категориям</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Категория</th>
+                                <th>Изучено</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category, count in terms_stats.by_category.items() %}
+                            <tr>
+                                <td>{{ category }}</td>
+                                <td>{{ count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- English Tab -->
+    <div class="tab-pane fade" id="english" role="tabpanel">
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ english_stats.completed }}</h5>
+                        <p class="card-text text-muted">Прочитано текстов</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-info">{{ english_stats.total_passages }}</h5>
+                        <p class="card-text text-muted">Всего доступно</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">{{ english_stats.mastered }}</h5>
+                        <p class="card-text text-muted">Освоено</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning">{{ "%.1f"|format(english_stats.average_score) }}%</h5>
+                        <p class="card-text text-muted">Средний балл</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if english_stats.passages %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Прогресс по текстам</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Текст</th>
+                                <th>Дата</th>
+                                <th>Правильных</th>
+                                <th>Всего</th>
+                                <th>Балл</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in english_stats.passages %}
+                            <tr>
+                                <td>{{ item.passage.title or 'Без названия' }}</td>
+                                <td>{{ item.progress.completed_at.strftime('%d.%m.%Y %H:%M') if item.progress.completed_at else 'N/A' }}</td>
+                                <td>{{ item.progress.correct_answers }}</td>
+                                <td>{{ item.progress.total_questions }}</td>
+                                <td>
+                                    <span class="badge {% if item.score >= 80 %}bg-success{% elif item.score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ item.score }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Пользователь еще не проходил английские тексты
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Virtual Patients Tab -->
+    <div class="tab-pane fade" id="vp" role="tabpanel">
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ vp_stats.attempts }}</h5>
+                        <p class="card-text text-muted">Попыток</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">{{ vp_stats.completed }}</h5>
+                        <p class="card-text text-muted">Завершено</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-info">{{ vp_stats.total_scenarios }}</h5>
+                        <p class="card-text text-muted">Всего сценариев</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning">{{ "%.1f"|format(vp_stats.average_score) }}%</h5>
+                        <p class="card-text text-muted">Средний балл</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if vp_stats.scenarios %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Прогресс по сценариям</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Сценарий</th>
+                                <th>Дата</th>
+                                <th>Балл</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in vp_stats.scenarios %}
+                            <tr>
+                                <td>{{ item.scenario.title or 'Без названия' }}</td>
+                                <td>{{ item.attempt.completed_at.strftime('%d.%m.%Y %H:%M') if item.attempt.completed_at else 'N/A' }}</td>
+                                <td>
+                                    <span class="badge {% if item.score >= 80 %}bg-success{% elif item.score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                        {{ item.score }}%
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if item.attempt.completed %}
+                                        <span class="badge bg-success">Завершено</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">В процессе</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Пользователь еще не проходил виртуальных пациентов
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Mastery Tab -->
+    <div class="tab-pane fade" id="mastery" role="tabpanel">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ mastery_stats.total_items }}</h5>
+                        <p class="card-text text-muted">Всего элементов</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">{{ mastery_stats.mastered_items }}</h5>
+                        <p class="card-text text-muted">Освоено</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-info">
+                            {% if mastery_stats.total_items > 0 %}
+                                {{ "%.1f"|format((mastery_stats.mastered_items / mastery_stats.total_items) * 100) }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </h5>
+                        <p class="card-text text-muted">Процент освоения</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if mastery_stats.by_type %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Статистика по типам элементов</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Тип</th>
+                                <th>Всего</th>
+                                <th>Освоено</th>
+                                <th>Процент</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item_type, stats in mastery_stats.by_type.items() %}
+                            <tr>
+                                <td>
+                                    {% if item_type == 'question' %}
+                                        Вопросы
+                                    {% elif item_type == 'term' %}
+                                        Термины
+                                    {% elif item_type == 'english' %}
+                                        Английский
+                                    {% elif item_type == 'virtual_patient' %}
+                                        Виртуальные пациенты
+                                    {% else %}
+                                        {{ item_type }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ stats.total }}</td>
+                                <td>{{ stats.mastered }}</td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar" role="progressbar" style="width: {{ stats.percentage }}%">
+                                            {{ stats.percentage }}%
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Нет данных о мастерстве
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Tests Tab -->
+    <div class="tab-pane fade" id="tests" role="tabpanel">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">{{ test_stats.total }}</h5>
+                        <p class="card-text text-muted">Всего попыток</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-success">{{ test_stats.completed }}</h5>
+                        <p class="card-text text-muted">Завершено</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title text-warning">{{ "%.1f"|format(test_stats.average_score) }}%</h5>
+                        <p class="card-text text-muted">Средний балл</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if test_attempts %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">История тестов</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Тип</th>
+                                <th>Балл</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for attempt in test_attempts %}
+                            <tr>
+                                <td>{{ attempt.completed_at.strftime('%d.%m.%Y %H:%M') if attempt.completed_at else 'N/A' }}</td>
+                                <td><span class="badge bg-secondary">{{ attempt.test_type or 'N/A' }}</span></td>
+                                <td>
+                                    {% if attempt.score is not none %}
+                                        <span class="badge {% if attempt.score >= 80 %}bg-success{% elif attempt.score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ "%.1f"|format(attempt.score) }}%
+                                        </span>
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if attempt.completed %}
+                                        <span class="badge bg-success">Завершено</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">В процессе</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Нет данных о тестах
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
