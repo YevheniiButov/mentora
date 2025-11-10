@@ -3364,82 +3364,6 @@
             gap: 16px;
         }
 
-        .diagnostic-banner {
-            margin: 24px auto 32px auto;
-            max-width: 1200px;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            border-radius: 20px;
-            padding: 32px;
-            color: #ffffff;
-            box-shadow: 0 20px 45px rgba(37, 99, 235, 0.35);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .diagnostic-banner::after {
-            content: '';
-            position: absolute;
-            right: -80px;
-            top: -80px;
-            width: 220px;
-            height: 220px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 50%;
-        }
-
-        .diagnostic-banner-content {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .diagnostic-banner-text h2 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-        }
-
-        .diagnostic-banner-text p {
-            margin: 0;
-            font-size: 1rem;
-            line-height: 1.6;
-            color: rgba(255, 255, 255, 0.92);
-        }
-
-        .diagnostic-banner-meta {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 12px;
-            padding: 6px 12px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.15);
-            font-size: 0.85rem;
-        }
-
-        .diagnostic-banner-cta {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 16px 28px;
-            background: #fbbf24;
-            color: #1f2937;
-            font-weight: 700;
-            font-size: 1rem;
-            border-radius: 16px;
-            text-decoration: none;
-            box-shadow: 0 12px 30px rgba(251, 191, 36, 0.35);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .diagnostic-banner-cta:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 16px 36px rgba(251, 191, 36, 0.5);
-        }
 
         .vp-card {
             background: white;
@@ -3790,20 +3714,6 @@
             .header-stats {
                 width: 100%;
                 justify-content: space-around;
-            }
-            
-            .diagnostic-banner {
-                padding: 24px;
-            }
-            
-            .diagnostic-banner-content {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .diagnostic-banner-cta {
-                width: 100%;
-                justify-content: center;
             }
             
             .vp-cards-container {
@@ -4338,24 +4248,6 @@
             </div>
         </div>
         
-        {% if needs_diagnostic_prompt %}
-        <div class="diagnostic-banner">
-            <div class="diagnostic-banner-content">
-                <div class="diagnostic-banner-text">
-                    <h2>{{ t('diagnostic_required_title', lang)|default('Start with a diagnostic session') }}</h2>
-                    <p>{{ t('diagnostic_required_body', lang)|default("Complete a quick diagnostic test to generate your personalised daily study plan. You'll unlock tailored practice right after finishing.") }}</p>
-                    <span class="diagnostic-banner-meta">
-                        <i class="bi bi-clock-history"></i> {{ t('diagnostic_required_secondary', lang)|default('Takes about 20 minutes') }}
-                    </span>
-                </div>
-                <a href="{{ diagnostic_url }}" class="diagnostic-banner-cta">
-                    <i class="bi bi-play-circle-fill"></i>
-                    {{ t('diagnostic_required_cta', lang)|default('Start diagnostic session') }}
-                </a>
-            </div>
-        </div>
-        {% endif %}
-
         <div class="main-layout">
             
             <!-- ЛЕВАЯ КОЛОНКА: УЗЛЫ + КАРТОЧКИ -->
@@ -5517,7 +5409,8 @@
                 timeTodayHours: 0,
                 timeTodayMinutes: 0,
                 retentionRate: 0,
-                showQuickDiagnosticModal: false,
+                diagnosticCompleted: JSON.parse(`{{ "true" if diagnostic_completed else "false" }}`),
+                diagnosticRequired: JSON.parse(`{{ "true" if diagnostic_required else "false" }}`),
                 individualPlanDataLoaded: false,
                 
                 // Countdown timer data
@@ -6060,16 +5953,15 @@
                         await this.loadVirtualPatientData();
                     }
                     
-                    // Check if user has done Quick Diagnostic
-                    // Allow practice if user has any progress OR has completed diagnostic sessions
-                    if (this.overallProgress === 0 && this.questionsToday === 0) {
-                        // Show modal to start Quick Diagnostic first
-                        this.showQuickDiagnosticModal = true;
-                    } else {
-                        // Перейти на daily session start page (новая страница)
-                        // которая показывает flow: тесты → слова → виртуальный пациент
-                        window.location.href = '/learning-map/daily-session-flow';
+                    // Require diagnostic before first daily flow launch
+                    if (!this.diagnosticCompleted) {
+                        this.diagnosticRequired = true;
+                        return this.startDiagnostic('quick_30');
                     }
+                    
+                    // Перейти на daily session start page (новая страница)
+                    // которая показывает flow: тесты → слова → виртуальный пациент
+                    window.location.href = '/learning-map/daily-session-flow';
                 },
                 
                 getCategoryIcon(categoryName) {
@@ -6113,17 +6005,6 @@
                     });
                 },
                 
-                startQuickDiagnostic() {
-                    // Close modal and start Quick Diagnostic (30q)
-                    this.showQuickDiagnosticModal = false;
-                    // Redirect to Quick Test route (bypasses old template)
-                    window.location.href = '/big-diagnostic/quick-test';
-                },
-                
-                closeModal() {
-                    this.showQuickDiagnosticModal = false;
-                },
-                
                 async loadIndividualPlanData() {
                     try {
                         // Fetch daily tasks with rate limit handling
@@ -6150,6 +6031,11 @@
                         
                         // Get questions_today from progressData (it has the correct count)
                         this.questionsToday = progressData.questions_today || 0;
+                        
+                        if (Object.prototype.hasOwnProperty.call(progressData, 'diagnostic_completed')) {
+                            this.diagnosticCompleted = Boolean(progressData.diagnostic_completed);
+                            this.diagnosticRequired = !this.diagnosticCompleted;
+                        }
                         
                         this.dailyStreak = progressData.daily_streak || 0;
                         this.categories = progressData.categories || [];
@@ -6546,6 +6432,10 @@
                 },
 
                 async startOrContinueTests() {
+                    if (!this.diagnosticCompleted) {
+                        this.diagnosticRequired = true;
+                        return this.startDiagnostic('quick_30');
+                    }
                     // Initialize daily session (server sets plan/session in Flask session)
                     window.location.href = '/learning-map/daily-session';
                 },

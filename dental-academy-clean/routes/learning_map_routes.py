@@ -823,6 +823,26 @@ def profession_learning_map(lang, profession):
             'is_own_profession': user_profession == requested_profession
         }
         
+        has_completed_diagnostic = DiagnosticSession.query.filter(
+            DiagnosticSession.user_id == current_user.id,
+            DiagnosticSession.completed_at.isnot(None),
+            DiagnosticSession.session_type != 'daily_practice'
+        ).first() is not None
+
+        active_plan = PersonalLearningPlan.query.filter_by(
+            user_id=current_user.id,
+            status='active'
+        ).first()
+
+        schedule = active_plan.get_study_schedule() if active_plan else {}
+        schedule_valid = bool(schedule and schedule.get('weekly_schedule'))
+
+        diagnostic_required = (
+            not has_completed_diagnostic
+            or getattr(current_user, 'requires_diagnostic', False)
+            or (active_plan and not schedule_valid)
+        )
+        
         # Получаем состояние обучения пользователя
         learning_state = get_user_learning_state(current_user.id)
         print(f"🔍 DEBUG: profession_learning_map - learning_state = {learning_state}")
@@ -842,7 +862,9 @@ def profession_learning_map(lang, profession):
             content_categories=processed_categories,
             content_categories_for_hierarchy=processed_categories,  # Добавляем эту переменную
             profession_context=profession_context,
-            learning_state=learning_state
+            learning_state=learning_state,
+            diagnostic_completed=has_completed_diagnostic,
+            diagnostic_required=diagnostic_required
         )
     except Exception as e:
         import traceback
@@ -1060,14 +1082,11 @@ def learning_map(lang, path_id=None):
                 current_app.logger.error(f"Failed to persist learning map updates for user {current_user.id}: {commit_error}", exc_info=True)
                 db.session.rollback()
 
-        needs_diagnostic_prompt = False
-        if not has_completed_diagnostic:
-            needs_diagnostic_prompt = True
-        elif getattr(current_user, 'requires_diagnostic', False):
-            needs_diagnostic_prompt = True
-        elif active_plan and not schedule_valid:
-            needs_diagnostic_prompt = True
-        diagnostic_url = url_for('diagnostic.start_diagnostic')
+        diagnostic_required = (
+            not has_completed_diagnostic
+            or getattr(current_user, 'requires_diagnostic', False)
+            or (active_plan and not schedule_valid)
+        )
 
         # Получаем все пути обучения
         learning_paths = LearningPath.query.filter_by(is_active=True).all()
@@ -1266,8 +1285,8 @@ def learning_map(lang, path_id=None):
                     due_reviews_count=due_reviews_count,
                     total_terms_studied=total_terms_studied,
                     current_language_streak=current_language_streak,
-                    needs_diagnostic_prompt=needs_diagnostic_prompt,
-                    diagnostic_url=diagnostic_url
+                    diagnostic_completed=has_completed_diagnostic,
+                    diagnostic_required=diagnostic_required
         )
     except Exception as e:
         import traceback
@@ -1955,6 +1974,26 @@ def view_path(lang, path_id):
         </script>
         """ % path_id
         
+        has_completed_diagnostic = DiagnosticSession.query.filter(
+            DiagnosticSession.user_id == current_user.id,
+            DiagnosticSession.completed_at.isnot(None),
+            DiagnosticSession.session_type != 'daily_practice'
+        ).first() is not None
+
+        active_plan = PersonalLearningPlan.query.filter_by(
+            user_id=current_user.id,
+            status='active'
+        ).first()
+
+        schedule = active_plan.get_study_schedule() if active_plan else {}
+        schedule_valid = bool(schedule and schedule.get('weekly_schedule'))
+
+        diagnostic_required = (
+            not has_completed_diagnostic
+            or getattr(current_user, 'requires_diagnostic', False)
+            or (active_plan and not schedule_valid)
+        )
+        
         return render_template(
             'learning/learning_map_modern_style.html',
             lang=lang,
@@ -1966,7 +2005,9 @@ def view_path(lang, path_id):
             stats=stats,
             recommendations=recommendations,
             content_categories=content_categories,
-            extra_scripts=extra_scripts  # Передаем скрипт в шаблон
+            extra_scripts=extra_scripts,  # Передаем скрипт в шаблон
+            diagnostic_completed=has_completed_diagnostic,
+            diagnostic_required=diagnostic_required
         )
     except Exception as e:
         current_app.logger.error(f"Ошибка при отображении пути {path_id}: {str(e)}", exc_info=True)
