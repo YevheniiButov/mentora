@@ -1965,6 +1965,133 @@
             opacity: 0.9;
         }
         
+        /* Planner Calendar Styles */
+        .planner-calendar-container {
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .planner-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .planner-calendar-week {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            min-height: 50px;
+        }
+        
+        /* Mobile adaptation for planner calendar */
+        @media (max-width: 768px) {
+            .planner-calendar-container {
+                padding: 1rem;
+            }
+            
+            .planner-calendar {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 0.3rem;
+                margin-top: 1rem;
+            }
+            
+            /* На мобильных календарь из 28 дней будет в 4 строки по 7 дней */
+            .calendar-day {
+                min-height: 40px;
+                padding: 0.3rem;
+            }
+            
+            .day-number {
+                font-size: 0.9rem;
+            }
+            
+            /* На мобильных для планировщика меняем layout на колонку */
+            .learning-map-container:has(.planner-calendar-container) .main-layout {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .learning-map-container:has(.planner-calendar-container) .sidebar-description {
+                position: relative !important;
+                top: auto !important;
+                margin-top: 1.5rem;
+            }
+        }
+        
+        .calendar-day:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-color);
+        }
+        
+        .calendar-day.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .calendar-day.selected .day-number {
+            color: white;
+        }
+        
+        .calendar-day.today {
+            border-color: #10b981;
+            border-width: 2px;
+        }
+        
+        .calendar-day.big-test {
+            background: #f59e0b;
+            color: white;
+            border-color: #f59e0b;
+        }
+        
+        .calendar-day.big-test .day-number {
+            color: white;
+        }
+        
+        .calendar-day.locked {
+            background: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .calendar-day.locked .day-number {
+            color: #9ca3af;
+        }
+        
+        .calendar-day.locked:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .day-number {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #1a202c;
+        }
+        
+        .planner-calendar-wrapper {
+            width: 100%;
+        }
+        
         .task-card {
             display: flex;
             align-items: center;
@@ -4314,12 +4441,11 @@
                             <div class="tab-label">{{ t('progress', lang)|default('Progress') }}</div>
                         </div>
 
-                        <!-- Planner Tab - Disabled until launch -->
-                        <div class="tab-circle" :class="{ 'active': activeTab === 'planner', 'disabled': !isLaunched }" @click="selectTab('planner')">
-                            <div class="circle-button" :style="!isLaunched ? 'opacity: 0.5; cursor: not-allowed;' : ''">
+                        <!-- Planner Tab - Always Enabled -->
+                        <div class="tab-circle" :class="{ 'active': activeTab === 'planner' }" @click="selectTab('planner')">
+                            <div class="circle-button">
                                 <div class="circle-glow"></div>
                                 <div class="circle-inner"><i class="bi bi-calendar-check-fill"></i></div>
-                                <div class="tab-status-badge" style="background: #94a3b8;"><i class="bi bi-lock-fill"></i></div>
                             </div>
                             <div class="tab-label">{{ t('planner', lang)|default('Planner') }}</div>
                         </div>
@@ -4327,7 +4453,7 @@
                 </div>
                 
                 <!-- Карточки -->
-                <div class="cards-area" x-show="activeTab !== 'individual'">
+                <div class="cards-area" x-show="activeTab !== 'individual' && activeTab !== 'planner'">
                     
                     <!-- IRT Test Cards -->
                     <div class="info-card test-card" x-show="activeTab === 'irt'" @click="startIRTTest(30)" style="cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
@@ -4452,6 +4578,53 @@
                     </div>
                 </div>
 
+                <!-- PLANNER TAB CONTENT - CALENDAR -->
+                <div x-show="activeTab === 'planner'" 
+                     class="planner-calendar-container" 
+                     x-data="plannerCalendar()"
+                     @planner-day-selected.window="plannerSelectedDayPlan = $event.detail"
+                     :data-tab="activeTab === 'planner' ? 'planner' : ''">
+                    <h2 style="margin-bottom: 1rem; color: #1a202c; font-size: 1.5rem;">
+                        <i class="bi bi-calendar-check-fill" style="color: var(--primary-color); margin-right: 0.5rem;"></i>
+                        {{ t('learning_planner', lang)|default('Learning Planner') }}
+                    </h2>
+                    <p style="color: #666; margin-bottom: 1.5rem;">
+                        {{ t('planner_description', lang)|default('Plan your learning schedule for the next 28 study days. Complete BIG test on day 14 to unlock days 15-28.') }}
+                    </p>
+                    
+                    <!-- Calendar Grid - 28 days in compact table format (4 rows x 7 columns) -->
+                    <div class="planner-calendar-wrapper">
+                        <div class="planner-calendar">
+                            <template x-for="day in studyDays" :key="day.study_day">
+                                <div 
+                                    class="calendar-day"
+                                    :class="{
+                                        'today': day.is_today,
+                                        'selected': selectedDay === day.study_day,
+                                        'big-test': day.is_big_test_day,
+                                        'locked': day.is_locked
+                                    }"
+                                    @click="!day.is_locked && selectDay(day.study_day)"
+                                >
+                                    <div class="day-number" x-text="day.study_day"></div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div x-show="loading" style="text-align: center; padding: 2rem; color: #666;">
+                        <i class="bi bi-arrow-repeat" style="animation: spin 1s linear infinite; font-size: 2rem;"></i>
+                        <p>{{ t('loading', lang)|default('Loading...') }}</p>
+                    </div>
+                    
+                    <!-- Error State -->
+                    <div x-show="error" style="padding: 1rem; background: #fee2e2; border-radius: 8px; color: #dc2626; margin-top: 1rem;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span x-text="error"></span>
+                    </div>
+                </div>
+
                 <!-- INDIVIDUAL PLAN TAB CONTENT - SIMPLIFIED DAILY FLOW -->
                 <div x-show="activeTab === 'individual'" class="individual-plan-container">
                     
@@ -4473,147 +4646,85 @@
                             </span>
                     </div>
 
-                        <!-- PLAN ITEMS WITH PROGRESS -->
-                        <div class="plan-items">
-                            
-                            <!-- TESTS ITEM -->
-                            <div class="plan-item" :class="{ 'completed': testsCompleted, 'in-progress': testsInProgress }">
-                                <div class="item-left">
-                                    <div class="item-number">1</div>
-                                    <div class="item-info">
-                                        <h3 class="item-title">Medische Testen</h3>
-                                        <p class="item-description">Adaptieve vragen</p>
+                        <!-- PLAN ITEMS WITH PROGRESS - Dynamic from planner -->
+                        <div class="plan-items" x-show="dailyTasksData && dailyTasksData.tasks">
+                            <template x-for="(task, index) in dailyTasksData.tasks" :key="task.type">
+                                <div>
+                                    <div class="plan-item" 
+                                         :class="{ 
+                                             'completed': getTaskCompleted(task.type), 
+                                             'in-progress': getTaskInProgress(task.type)
+                                         }">
+                                        <div class="item-left">
+                                            <div class="item-number" x-text="index + 1"></div>
+                                            <div class="item-info">
+                                                <h3 class="item-title" x-text="task.title"></h3>
+                                                <p class="item-description" x-text="getTaskDescription(task)"></p>
+                                            </div>
+                                        </div>
+                                        <div class="item-right">
+                                            <span class="item-progress" x-show="!getTaskCompleted(task.type) && getTaskProgress(task.type) > 0">
+                                                <span x-text="getTaskProgressText(task)"></span>
+                                            </span>
+                                            <span class="item-status-badge" x-show="getTaskCompleted(task.type)">
+                                                <i class="bi bi-check-circle-fill"></i> Klaar
+                                            </span>
+                                            <span class="item-status-badge in-progress" x-show="getTaskInProgress(task.type)">
+                                                <i class="bi bi-play-circle"></i> Bezig
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- PROGRESS BAR BETWEEN ITEMS -->
+                                    <div class="connector" 
+                                         x-show="index < dailyTasksData.tasks.length - 1"
+                                         :class="{ 'active': getTaskCompleted(task.type) }">
+                                    </div>
                                 </div>
-                            </div>
-                                <div class="item-right">
-                                    <span class="item-progress" x-show="!testsCompleted">
-                                        <span x-text="testsProgress + '%'"></span>
-                                    </span>
-                                    <span class="item-status-badge" x-show="testsCompleted">
-                                        <i class="bi bi-check-circle-fill"></i> Klaar
-                                    </span>
-                                    <span class="item-status-badge in-progress" x-show="testsInProgress">
-                                        <i class="bi bi-play-circle"></i> Bezig
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <!-- PROGRESS BAR BETWEEN ITEMS -->
-                            <div class="connector" :class="{ 'active': testsCompleted }"></div>
-
-                            <!-- LANGUAGE TERMS ITEM -->
-                            <div class="plan-item" :class="{ 'completed': termsCompleted, 'in-progress': termsInProgress, 'locked': !testsCompleted }">
-                                <div class="item-left">
-                                    <div class="item-number">2</div>
-                                    <div class="item-info">
-                                        <h3 class="item-title">Nederlandse Termen</h3>
-                                        <p class="item-description">10 medische woorden</p>
-                            </div>
-                        </div>
-                                <div class="item-right">
-                                    <span class="item-progress" x-show="!termsCompleted && testsCompleted">
-                                        <span x-text="termsProgress + '/' + 10"></span>
-                                    </span>
-                                    <span class="item-status-badge" x-show="termsCompleted">
-                                        <i class="bi bi-check-circle-fill"></i> Klaar
-                                    </span>
-                                    <span class="item-status-badge in-progress" x-show="termsInProgress && testsCompleted">
-                                        <i class="bi bi-play-circle"></i> Bezig
-                                    </span>
-                                    <span class="item-status-badge locked" x-show="!testsCompleted || (!termsCompleted && !termsInProgress)">
-                                        <i class="bi bi-lock"></i> Vergrendeld
-                                    </span>
-                    </div>
+                            </template>
                         </div>
                         
-                            <!-- PROGRESS BAR BETWEEN ITEMS -->
-                            <div class="connector" :class="{ 'active': termsCompleted }"></div>
-
-                            <!-- VIRTUAL PATIENT ITEM -->
-                            <div class="plan-item" :class="{ 'completed': vpCompleted, 'in-progress': vpInProgress, 'locked': !termsCompleted }">
-                                <div class="item-left">
-                                    <div class="item-number">3</div>
-                                    <div class="item-info">
-                                        <h3 class="item-title">Virtuele Patiënt</h3>
-                                        <p class="item-description">Praktische casus - diagnose en behandeling</p>
-                            </div>
-                            </div>
-                                <div class="item-right">
-                                    <span class="item-status-badge" x-show="vpCompleted">
-                                        <i class="bi bi-check-circle-fill"></i> Klaar
-                                    </span>
-                                    <span class="item-status-badge in-progress" x-show="vpInProgress">
-                                        <i class="bi bi-play-circle"></i> Bezig
-                                    </span>
-                                    <span class="item-status-badge locked" x-show="!termsCompleted && !vpCompleted">
-                                        <i class="bi bi-lock"></i> Vergrendeld
-                                    </span>
+                        <!-- Loading state -->
+                        <div x-show="!dailyTasksData" class="plan-items" style="text-align: center; padding: 2rem;">
+                            <i class="bi bi-arrow-repeat" style="animation: spin 1s linear infinite; font-size: 2rem; color: #666;"></i>
+                            <p style="color: #666; margin-top: 1rem;">{{ t('loading', lang)|default('Loading tasks...') }}</p>
                         </div>
-                        </div>
-                    </div>
 
                         <!-- DAILY TASKS CONTAINER (for rotation logic) -->
                         <div id="dailyTasksContainer" class="daily-tasks-rotation-container" style="display: none;">
                             <!-- Will be populated by loadDailyTasks() -->
                         </div>
 
-                        <!-- ACTION BUTTONS -->
-                        <div class="plan-actions">
-                            <!-- TESTS START/CONTINUE -->
-                            <div class="action-group" x-show="!testsCompleted">
-                                <button 
-                                    class="btn-primary btn-large"
-                                    @click="startOrContinueTests()"
-                                    x-text="testsInProgress ? 'Doorgaan met testen →' : 'Start testen →'"
-                                >
-                                </button>
-                                    </div>
-                                    
-                            <!-- TERMS START/CONTINUE (Only if tests completed) -->
-                            <div class="action-group" x-show="testsCompleted && !termsCompleted">
-                                <button 
-                                    class="btn-primary btn-large"
-                                    @click="startOrContinueTerms()"
-                                    x-text="termsInProgress ? 'Doorgaan met termen →' : 'Start termen →'"
-                                >
-                                </button>
-                                            </div>
-
-                            <!-- VIRTUAL PATIENT START (Only if terms completed) -->
-                            <div class="action-group" x-show="termsCompleted && !vpCompleted">
-                                <button 
-                                    class="btn-primary btn-large"
-                                    @click="startVirtualPatient()"
-                                    x-text="vpInProgress ? 'Doorgaan met patiënt →' : 'Start patiënt →'"
-                                >
-                                        </button>
-                    </div>
+                        <!-- ACTION BUTTONS - Dynamic from planner -->
+                        <div class="plan-actions" x-show="dailyTasksData && dailyTasksData.tasks">
+                            <template x-for="(task, index) in dailyTasksData.tasks" :key="task.type">
+                                <div class="action-group" 
+                                     x-show="!getTaskCompleted(task.type) && (index === 0 || getTaskCompleted(dailyTasksData.tasks[index - 1].type))">
+                                    <button 
+                                        class="btn-primary btn-large"
+                                        @click="startTask(task.type)"
+                                        x-text="getTaskInProgress(task.type) ? 'Doorgaan →' : 'Start →'"
+                                    >
+                                    </button>
+                                </div>
+                            </template>
 
                             <!-- REPEAT OPTIONS (All completed) -->
-                            <div class="action-group completion-group" x-show="vpCompleted">
+                            <div class="action-group completion-group" 
+                                 x-show="areAllTasksCompleted()">
                                 <h3 class="completion-title">
                                     <i class="bi bi-star-fill"></i> Goed gedaan! Wil je herhalen?
                                 </h3>
                                 <div class="repeat-buttons">
-                                    <button 
-                                        class="btn-outline"
-                                        @click="repeatTests()"
-                                    >
-                                        <i class="bi bi-arrow-clockwise"></i> Testen herhalen
-                                    </button>
-                                    <button 
-                                        class="btn-outline"
-                                        @click="repeatTerms()"
-                                    >
-                                        <i class="bi bi-arrow-clockwise"></i> Termen herhalen
-                                    </button>
-                                    <button 
-                                        class="btn-outline"
-                                        @click="repeatVirtualPatient()"
-                                    >
-                                        <i class="bi bi-arrow-clockwise"></i> Patiënt herhalen
-                                    </button>
-                            </div>
+                                    <template x-for="task in dailyTasksData.tasks" :key="task.type">
+                                        <button 
+                                            class="btn-outline"
+                                            @click="startTask(task.type)"
+                                        >
+                                            <i class="bi bi-arrow-clockwise"></i> <span x-text="task.title + ' herhalen'"></span>
+                                        </button>
+                                    </template>
+                                </div>
                             </div>
                         </div>
                         
@@ -5115,8 +5226,45 @@
             </div>
             
             <!-- ПРАВАЯ КОЛОНКА: ОПИСАНИЕ -->
-            <div class="sidebar-description" :class="{'tour-highlight': tourActive && tourStep === 3}">
-                <div class="description-card">
+            <div class="sidebar-description" 
+                 :class="{'tour-highlight': tourActive && tourStep === 3}"
+                 @planner-day-selected.window="plannerSelectedDayPlan = $event.detail">
+                <!-- План на выбранный день (для Planner) -->
+                <div x-show="activeTab === 'planner' && plannerSelectedDayPlan" class="daily-plan-details">
+                    <div class="description-card">
+                        <h3>
+                            <i class="bi bi-calendar-check-fill"></i>
+                            <span>{{ t('day', lang)|default('Day') }} <span x-text="plannerSelectedDayPlan?.study_day"></span></span>
+                        </h3>
+                        
+                        <div x-show="plannerSelectedDayPlan?.is_big_test_day" style="padding: 1rem; background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); border-radius: 8px; color: white; margin: 1rem 0;">
+                            <h4 style="margin: 0 0 0.5rem 0; color: white;">
+                                <i class="bi bi-star-fill"></i> {{ t('big_test', lang)|default('BIG Test') }}
+                            </h4>
+                            <p style="margin: 0; opacity: 0.95;">
+                                {{ t('big_test_description', lang)|default('Comprehensive test with 60 questions from your last 2 weeks of study') }}
+                            </p>
+                        </div>
+                        
+                        <div x-show="!plannerSelectedDayPlan?.is_big_test_day">
+                            <h4 style="margin-top: 1rem; color: #1a202c;">{{ t('tasks_for_day', lang)|default('Tasks for day:') }}</h4>
+                            <ul style="list-style: none; padding: 0;">
+                                <template x-for="task in plannerSelectedDayPlan?.tasks" :key="task.type">
+                                    <li style="padding: 0.75rem; margin: 0.5rem 0; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem;">
+                                        <i :class="`bi bi-${getPlannerTaskIcon(task.type)}`" style="color: var(--primary-color); font-size: 1.25rem;"></i>
+                                        <div style="flex: 1;">
+                                            <div style="font-weight: 600; color: #1a202c;" x-text="task.title"></div>
+                                            <div style="font-size: 0.875rem; color: #666;" x-text="`${task.progress} / ${task.target}`"></div>
+                                        </div>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Обычные подсказки (для других вкладок) -->
+                <div x-show="activeTab !== 'planner' || !plannerSelectedDayPlan" class="description-card">
                     <h3>
                         <i :class="`bi bi-${getTabIcon(activeTab)}`"></i>
                         <span x-text="getTabTitle(activeTab)"></span>
@@ -5229,7 +5377,7 @@
                 }
             
             // Базовые доступные вкладки
-            const baseEnabledTabs = ['irt', 'individual', 'progress', 'games'];
+            const baseEnabledTabs = ['irt', 'individual', 'progress', 'games', 'planner'];
             
             // Добавляем premium только для премиум пользователей
             const enabledTabsList = [...baseEnabledTabs];
@@ -5244,6 +5392,9 @@
                 launchDate: launchDate,
                 // Enabled tabs (IRT, Individual, Progress, Games, и Premium только для премиум)
                 enabledTabs: enabledTabsList,
+                
+                // Planner state
+                plannerSelectedDayPlan: null,
                 
                 tourActive: false,
                 tourStep: 0,
@@ -5584,6 +5735,9 @@
                     // Initialize last30Days with empty data
                     this.last30Days = this.generateLast30Days();
                     
+                    // Load daily tasks from planner (synchronized)
+                    await this.loadDailyTasksFromPlanner();
+                    
                     // Load Individual Plan data if that's the active tab
                     if (this.activeTab === 'individual') {
                         console.log('Loading individual plan data...');
@@ -5806,6 +5960,17 @@
                     }
                     
                     return tips[tab] || [];
+                },
+                getPlannerTaskIcon(taskType) {
+                    const icons = {
+                        'diagnostic_test': 'clipboard-check',
+                        'flashcards': 'card-text',
+                        'virtual_patient': 'person-badge',
+                        'english_reading': 'book',
+                        'memory': 'bullseye',
+                        'big_test': 'clipboard-check'
+                    };
+                    return icons[taskType] || 'circle';
                 },
                 async startDiagnostic(diagnosticType) {
                     if (this.isStartingDiagnostic) return;
@@ -6405,6 +6570,10 @@
                 },
 
                 // ===== SIMPLIFIED DAILY FLOW PROPERTIES =====
+                // Daily tasks from rotation (synchronized with planner)
+                dailyTasksData: null,
+                currentStudyDay: 1,
+                
                 testsCompleted: false,
                 testsInProgress: false,
                 testsProgress: 0,
@@ -6413,6 +6582,10 @@
                 termsProgress: 0,
                 vpCompleted: false,
                 vpInProgress: false,
+                englishCompleted: false,
+                englishInProgress: false,
+                memoryCompleted: false,
+                memoryInProgress: false,
                 todayScore: 0,
                 studyTimeToday: '0 min',
 
@@ -6424,13 +6597,127 @@
                 },
 
                 getTodayCompletionPercentage() {
-                    let completed = 0;
-                    if (this.testsCompleted) completed++;
-                    if (this.termsCompleted) completed++;
-                    if (this.vpCompleted) completed++;
-                    return Math.round((completed / 3) * 100);
+                    if (!this.dailyTasksData || !this.dailyTasksData.tasks) {
+                        return 0;
+                    }
+                    const total = this.dailyTasksData.tasks.length;
+                    if (total === 0) return 0;
+                    const completed = this.dailyTasksData.tasks.filter(task => this.getTaskCompleted(task.type)).length;
+                    return Math.round((completed / total) * 100);
+                },
+                
+                getTaskCompleted(taskType) {
+                    switch(taskType) {
+                        case 'diagnostic_test':
+                        case 'big_test':
+                            return this.testsCompleted;
+                        case 'flashcards':
+                            return this.termsCompleted;
+                        case 'virtual_patient':
+                            return this.vpCompleted;
+                        case 'english_reading':
+                            return this.englishCompleted;
+                        case 'memory':
+                            return this.memoryCompleted;
+                        default:
+                            return false;
+                    }
+                },
+                
+                getTaskInProgress(taskType) {
+                    switch(taskType) {
+                        case 'diagnostic_test':
+                        case 'big_test':
+                            return this.testsInProgress;
+                        case 'flashcards':
+                            return this.termsInProgress;
+                        case 'virtual_patient':
+                            return this.vpInProgress;
+                        case 'english_reading':
+                            return this.englishInProgress;
+                        case 'memory':
+                            return this.memoryInProgress;
+                        default:
+                            return false;
+                    }
+                },
+                
+                getTaskProgress(taskType) {
+                    switch(taskType) {
+                        case 'diagnostic_test':
+                        case 'big_test':
+                            return this.testsProgress;
+                        case 'flashcards':
+                            return this.termsProgress;
+                        case 'virtual_patient':
+                            return this.vpCompleted ? 1 : 0;
+                        case 'english_reading':
+                            return this.englishCompleted ? 1 : 0;
+                        case 'memory':
+                            return this.memoryCompleted ? 1 : 0;
+                        default:
+                            return 0;
+                    }
+                },
+                
+                getTaskProgressText(task) {
+                    if (task.type === 'flashcards') {
+                        return `${this.termsProgress} / ${task.target}`;
+                    } else if (task.type === 'diagnostic_test' || task.type === 'big_test') {
+                        return `${this.testsProgress} / ${task.target}`;
+                    } else {
+                        return `${this.getTaskProgress(task.type)} / ${task.target}`;
+                    }
+                },
+                
+                getTaskDescription(task) {
+                    if (task.type === 'big_test') {
+                        return '60 vragen uit laatste 2 weken';
+                    } else if (task.type === 'diagnostic_test') {
+                        return task.title.includes('Intensief') ? '20 adaptieve vragen' : '10 adaptieve vragen';
+                    } else if (task.type === 'flashcards') {
+                        return `${task.target} medische woorden`;
+                    } else if (task.type === 'virtual_patient') {
+                        return 'Praktische casus - diagnose en behandeling';
+                    } else if (task.type === 'english_reading') {
+                        return 'Engels lezen';
+                    } else if (task.type === 'memory') {
+                        return 'Memory spel';
+                    }
+                    return '';
+                },
+                
+                areAllTasksCompleted() {
+                    if (!this.dailyTasksData || !this.dailyTasksData.tasks) {
+                        return false;
+                    }
+                    return this.dailyTasksData.tasks.every(task => this.getTaskCompleted(task.type));
                 },
 
+                startTask(taskType) {
+                    if (taskType === 'diagnostic_test' || taskType === 'big_test') {
+                        if (taskType === 'big_test') {
+                            // BIG test - 60 questions
+                            window.location.href = '/big-diagnostic/start?type=big_test';
+                        } else {
+                            // Regular diagnostic test
+                            if (!this.diagnosticCompleted) {
+                                this.diagnosticRequired = true;
+                                return this.startDiagnostic('quick_30');
+                            }
+                            window.location.href = '/learning-map/daily-session';
+                        }
+                    } else if (taskType === 'flashcards') {
+                        window.location.href = '/flashcards/daily-session';
+                    } else if (taskType === 'virtual_patient') {
+                        this.startVirtualPatient();
+                    } else if (taskType === 'english_reading') {
+                        window.location.href = '/english/practice';
+                    } else if (taskType === 'memory') {
+                        window.location.href = '/games/memory?auto_start=true';
+                    }
+                },
+                
                 async startOrContinueTests() {
                     if (!this.diagnosticCompleted) {
                         this.diagnosticRequired = true;
@@ -6484,6 +6771,70 @@
                     await this.startVirtualPatient();
                 },
 
+                async loadDailyTasksFromPlanner() {
+                    try {
+                        const response = await fetch('/api/daily-tasks');
+                        if (!response.ok) {
+                            console.error('Failed to load daily tasks:', response.status);
+                            return;
+                        }
+                        
+                        const data = await response.json();
+                        if (data.success && data.tasks) {
+                            this.dailyTasksData = data.tasks;
+                            this.currentStudyDay = data.study_day || 1;
+                            
+                            // Обновляем состояние задач на основе данных из планировщика
+                            this.updateTasksFromPlanner(data.tasks);
+                        }
+                    } catch (error) {
+                        console.error('Error loading daily tasks from planner:', error);
+                    }
+                },
+                
+                updateTasksFromPlanner(tasksData) {
+                    // Обновляем состояние задач на основе данных из планировщика
+                    if (!tasksData || !tasksData.tasks) {
+                        return;
+                    }
+                    
+                    // Сбрасываем все задачи
+                    this.testsCompleted = false;
+                    this.testsInProgress = false;
+                    this.testsProgress = 0;
+                    this.termsCompleted = false;
+                    this.termsInProgress = false;
+                    this.termsProgress = 0;
+                    this.vpCompleted = false;
+                    this.vpInProgress = false;
+                    this.englishCompleted = false;
+                    this.englishInProgress = false;
+                    this.memoryCompleted = false;
+                    this.memoryInProgress = false;
+                    
+                    // Обновляем на основе задач из планировщика
+                    tasksData.tasks.forEach((task) => {
+                        if (task.type === 'diagnostic_test' || task.type === 'big_test') {
+                            this.testsCompleted = task.completed || false;
+                            this.testsInProgress = !task.completed && task.progress > 0;
+                            this.testsProgress = task.progress || 0;
+                        } else if (task.type === 'flashcards') {
+                            this.termsCompleted = task.completed || false;
+                            this.termsInProgress = !task.completed && task.progress > 0;
+                            this.termsProgress = task.progress || 0;
+                        } else if (task.type === 'virtual_patient') {
+                            this.vpCompleted = task.completed || false;
+                            this.vpInProgress = !task.completed && task.progress > 0;
+                        } else if (task.type === 'english_reading') {
+                            this.englishCompleted = task.completed || false;
+                            this.englishInProgress = !task.completed && task.progress > 0;
+                        } else if (task.type === 'memory') {
+                            this.memoryCompleted = task.completed || false;
+                            this.memoryInProgress = !task.completed && task.progress > 0;
+                        }
+                    });
+                },
+                
                 async loadTodayProgress() {
                     try {
                         console.log('Loading today progress...');
@@ -6516,6 +6867,9 @@
                                 this.studyTimeToday = progress.study_time;
                                 
                                 console.log('Progress loaded successfully:', progress);
+                                
+                                // После загрузки прогресса обновляем задачи из планировщика
+                                await this.loadDailyTasksFromPlanner();
                             } else {
                                 console.error('Failed to load progress:', data.message);
                             }
@@ -6713,6 +7067,105 @@
           } catch(e) {}
         }
       })();
+      
+      // Planner Calendar Function
+      function plannerCalendar() {
+          return {
+              studyDays: [],
+              selectedDay: null,
+              selectedDayPlan: null,
+              loading: true,
+              error: null,
+              
+              async init() {
+                  await this.loadPlans();
+              },
+              
+              async loadPlans() {
+                  this.loading = true;
+                  this.error = null;
+                  
+                  try {
+                      const response = await fetch('/api/calendar-plan/upcoming-plans?days=28');
+                      if (!response.ok) {
+                          throw new Error('Failed to load plans');
+                      }
+                      
+                      const data = await response.json();
+                      if (data.success) {
+                          // Преобразуем объект plans в массив и сортируем по дням
+                          this.studyDays = Object.values(data.plans).sort((a, b) => a.study_day - b.study_day);
+                          
+                          // Устанавливаем текущий день как выбранный
+                          const today = this.studyDays.find(d => d.is_today);
+                          if (today) {
+                              this.selectedDay = today.study_day;
+                              this.selectedDayPlan = today;
+                              // Обновляем глобальный state в learningMapApp
+                              this.updateGlobalPlannerState(today);
+                          } else {
+                              // Если нет текущего дня, выбираем первый активный день
+                              const firstActive = this.studyDays.find(d => !d.is_locked);
+                              if (firstActive) {
+                                  this.selectedDay = firstActive.study_day;
+                                  this.selectedDayPlan = firstActive;
+                                  this.updateGlobalPlannerState(firstActive);
+                              }
+                          }
+                      } else {
+                          this.error = data.error || 'Failed to load plans';
+                      }
+                  } catch (error) {
+                      console.error('Error loading plans:', error);
+                      this.error = 'Error loading plans. Please try again later.';
+                  } finally {
+                      this.loading = false;
+                  }
+              },
+              
+              selectDay(studyDay) {
+                  const day = this.studyDays.find(d => d.study_day === studyDay);
+                  if (day && day.is_locked) {
+                      // Не позволяем выбирать заблокированные дни
+                      return;
+                  }
+                  
+                  this.selectedDay = studyDay;
+                  this.selectedDayPlan = day;
+                  
+                  // Обновляем глобальный state в learningMapApp
+                  this.updateGlobalPlannerState(this.selectedDayPlan);
+              },
+              
+              updateGlobalPlannerState(dayPlan) {
+                  // Используем событие для обновления plannerSelectedDayPlan в learningMapApp
+                  try {
+                      // Отправляем событие, которое будет перехвачено в learningMapApp
+                      window.dispatchEvent(new CustomEvent('planner-day-selected', { detail: dayPlan }));
+                  } catch (e) {
+                      console.warn('Could not update global planner state:', e);
+                  }
+              },
+              
+              getTaskIcon(taskType) {
+                  const icons = {
+                      'diagnostic_test': 'clipboard-check',
+                      'flashcards': 'card-text',
+                      'virtual_patient': 'person-badge',
+                      'english_reading': 'book',
+                      'memory': 'bullseye',
+                      'big_test': 'clipboard-check'
+                  };
+                  return icons[taskType] || 'circle';
+              }
+          };
+      }
+      
+      // Make plannerCalendar available globally for Alpine.js
+      if (typeof Alpine !== 'undefined') {
+          Alpine.data('plannerCalendar', plannerCalendar);
+      }
+      
     </script>
 </body>
 </html>

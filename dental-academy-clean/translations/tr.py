@@ -2868,6 +2868,11 @@ translations = {
     'tip_balance_activities': 'Farklı öğrenme aktivitesi türlerini dengeleyin',
     'tip_review_plan': 'Planınızı haftalık olarak gözden geçirin ve ayarlayın',
     
+    # Planlayıcıya özel çeviriler
+    'big_test': 'BÜYÜK Test',
+    'big_test_description': 'Son 2 haftalık çalışmanızdan 60 soru içeren kapsamlı test',
+    'tasks_for_day': 'Gün için görevler:',
+    
     # Eksik sekme etiketleri
     'irt': 'IRT',
     'virtual': 'Sanal',

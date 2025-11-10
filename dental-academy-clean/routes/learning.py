@@ -13,22 +13,30 @@ from models import (
 daily_tasks_bp = Blueprint('daily_tasks', __name__, url_prefix='/api')
 
 
-def get_daily_tasks(user_id):
-    """Generate daily tasks based on rotation schedule"""
+def get_daily_tasks(user_id, study_day=None):
+    """
+    Generate daily tasks based on rotation schedule.
+    
+    Args:
+        user_id: ID пользователя
+        study_day: День учебы (1-14). Если None, вычисляется автоматически.
+    
+    Returns:
+        dict: Задачи на день с учетом ротации
+    """
     user = User.query.get(user_id)
     if not user:
         return {'error': 'User not found'}
     
     today = datetime.now(timezone.utc).date()
     
-    # Calculate day number since user registration
-    if user.created_at:
-        user_created_date = user.created_at.date() if isinstance(user.created_at, datetime) else user.created_at
-        days_since_start = (today - user_created_date).days
-    else:
-        days_since_start = 0
+    # Получаем день учебы (1-14) вместо календарных дней
+    if study_day is None:
+        from utils.individual_plan_helpers import get_study_day
+        study_day = get_study_day(user)
     
-    cycle_day = (days_since_start % 6) + 1  # 1, 2, 3, 4, 5, or 6
+    # Используем день учебы для расчета cycle_day (ротация на 6 дней)
+    cycle_day = ((study_day - 1) % 6) + 1  # 1, 2, 3, 4, 5, or 6
     
     # Get today's start and end timestamps
     today_start = datetime.combine(today, datetime.min.time()).replace(tzinfo=timezone.utc)
@@ -74,17 +82,37 @@ def get_daily_tasks(user_id):
     # For now, we'll assume it's not completed (client will track this)
     memory_completed = False
     
+    # Проверяем, является ли это 14-м или 28-м днем (BIG test)
+    is_big_test_day = study_day == 14 or study_day == 28
+    
     tasks = {
         'cycle_day': cycle_day,
+        'study_day': study_day,
+        'is_big_test_day': is_big_test_day,
         'tasks': []
     }
+    
+    # Если это 14-й день - показываем только BIG test
+    if is_big_test_day:
+        tasks['tasks'] = [
+            {
+                'type': 'big_test',
+                'title': 'BIG Test',
+                'target': 60,
+                'icon': 'clipboard-check',
+                'completed': False,  # Будет обновляться при прохождении
+                'progress': 0,
+                'description': 'Comprehensive test with 60 questions from your last 2 weeks of study'
+            }
+        ]
+        return tasks
     
     if cycle_day == 1:
         # Day 1: Tests + Flashcards + English Reading
         tasks['tasks'] = [
             {
                 'type': 'diagnostic_test',
-                'title': 'Diagnostische Test',
+                'title': 'Medische Testen',
                 'target': 10,
                 'icon': 'clipboard-check',
                 'completed': tests_completed > 0,
@@ -92,8 +120,8 @@ def get_daily_tasks(user_id):
             },
             {
                 'type': 'flashcards',
-                'title': 'Medische Termen',
-                'target': 20,
+                'title': 'Nederlandse Termen',
+                'target': 10,
                 'icon': 'card-text',
                 'completed': flashcards_completed,
                 'progress': flashcard_today.terms_studied if flashcard_today and flashcard_today.terms_studied else 0
@@ -112,7 +140,7 @@ def get_daily_tasks(user_id):
         tasks['tasks'] = [
             {
                 'type': 'diagnostic_test',
-                'title': 'Diagnostische Test',
+                'title': 'Medische Testen',
                 'target': 10,
                 'icon': 'clipboard-check',
                 'completed': tests_completed > 0,
@@ -120,8 +148,8 @@ def get_daily_tasks(user_id):
             },
             {
                 'type': 'flashcards',
-                'title': 'Medische Termen',
-                'target': 20,
+                'title': 'Nederlandse Termen',
+                'target': 10,
                 'icon': 'card-text',
                 'completed': flashcards_completed,
                 'progress': flashcard_today.terms_studied if flashcard_today and flashcard_today.terms_studied else 0
@@ -140,7 +168,7 @@ def get_daily_tasks(user_id):
         tasks['tasks'] = [
             {
                 'type': 'diagnostic_test',
-                'title': 'Diagnostische Test (Intensief)',
+                'title': 'Medische Testen (Intensief)',
                 'target': 20,
                 'icon': 'clipboard-check',
                 'completed': tests_completed >= 20,
@@ -160,7 +188,7 @@ def get_daily_tasks(user_id):
         tasks['tasks'] = [
             {
                 'type': 'diagnostic_test',
-                'title': 'Diagnostische Test',
+                'title': 'Medische Testen',
                 'target': 10,
                 'icon': 'clipboard-check',
                 'completed': tests_completed > 0,
@@ -168,8 +196,8 @@ def get_daily_tasks(user_id):
             },
             {
                 'type': 'flashcards',
-                'title': 'Medische Termen',
-                'target': 20,
+                'title': 'Nederlandse Termen',
+                'target': 10,
                 'icon': 'card-text',
                 'completed': flashcards_completed,
                 'progress': flashcard_today.terms_studied if flashcard_today and flashcard_today.terms_studied else 0
@@ -188,7 +216,7 @@ def get_daily_tasks(user_id):
         tasks['tasks'] = [
             {
                 'type': 'diagnostic_test',
-                'title': 'Diagnostische Test',
+                'title': 'Medische Testen',
                 'target': 10,
                 'icon': 'clipboard-check',
                 'completed': tests_completed > 0,
@@ -216,7 +244,7 @@ def get_daily_tasks(user_id):
         tasks['tasks'] = [
             {
                 'type': 'diagnostic_test',
-                'title': 'Diagnostische Test (Intensief)',
+                'title': 'Medische Testen (Intensief)',
                 'target': 20,
                 'icon': 'clipboard-check',
                 'completed': tests_completed >= 20,
@@ -224,8 +252,8 @@ def get_daily_tasks(user_id):
             },
             {
                 'type': 'flashcards',
-                'title': 'Medische Termen',
-                'target': 20,
+                'title': 'Nederlandse Termen',
+                'target': 10,
                 'icon': 'card-text',
                 'completed': flashcards_completed,
                 'progress': flashcard_today.terms_studied if flashcard_today and flashcard_today.terms_studied else 0
@@ -243,10 +271,25 @@ def get_daily_tasks(user_id):
 @daily_tasks_bp.route('/daily-tasks', methods=['GET'])
 @login_required
 def api_daily_tasks():
-    """API endpoint for daily tasks"""
+    """
+    API endpoint for daily tasks with rotation.
+    Returns tasks for current study day, synchronized with planner.
+    """
     try:
-        tasks = get_daily_tasks(current_user.id)
-        return jsonify(tasks)
+        # Получаем текущий день учебы
+        from utils.individual_plan_helpers import get_study_day
+        study_day = get_study_day(current_user)
+        
+        # Получаем задачи для текущего дня учебы
+        tasks = get_daily_tasks(current_user.id, study_day=study_day)
+        
+        return jsonify({
+            'success': True,
+            'tasks': tasks,
+            'study_day': study_day
+        })
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
 

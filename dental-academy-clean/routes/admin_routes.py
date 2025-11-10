@@ -3043,28 +3043,27 @@ def user_learning_progress(user_id):
                 }
         
         # 6. Тесты (TestAttempt)
+        # TestAttempt не имеет поля completed_at, используем attempt_date
         test_attempts = TestAttempt.query.filter_by(
             user_id=user_id
-        ).order_by(TestAttempt.completed_at.desc()).limit(50).all()
+        ).order_by(TestAttempt.attempt_date.desc()).limit(50).all()
         
+        # TestAttempt не имеет полей completed и score, считаем только общее количество
         test_stats = {
             'total': TestAttempt.query.filter_by(user_id=user_id).count(),
-            'completed': TestAttempt.query.filter_by(
-                user_id=user_id,
-                completed=True
-            ).count(),
+            'completed': TestAttempt.query.filter_by(user_id=user_id).count(),  # Все попытки считаются завершенными
             'average_score': 0
         }
         
-        total_test_score = 0
-        completed_test_count = 0
-        for attempt in test_attempts:
-            if attempt.completed and attempt.score is not None:
-                total_test_score += attempt.score
-                completed_test_count += 1
+        # Подсчитываем правильные ответы
+        correct_answers = TestAttempt.query.filter_by(
+            user_id=user_id,
+            is_correct=True
+        ).count()
         
-        if completed_test_count > 0:
-            test_stats['average_score'] = round(total_test_score / completed_test_count, 1)
+        total_attempts = test_stats['total']
+        if total_attempts > 0:
+            test_stats['average_score'] = round((correct_answers / total_attempts) * 100, 1)
         
         return render_template('admin/user_learning_progress.html',
                              user=user,

@@ -2759,6 +2759,12 @@ translations = {
     "tip_set_reminders": "ضبط تذكيرات للمواعيد النهائية الهامة",
     "tip_balance_activities": "وازن بين أنواع مختلفة من أنشطة التعلم",
     "tip_review_plan": "راجع خطتك أسبوعيًا وقم بتعديلها",
+    
+    # ترجمات خاصة بالمخطط
+    "big_test": "اختبار كبير",
+    "big_test_description": "اختبار شامل مع 60 سؤالاً من آخر أسبوعين من دراستك",
+    "tasks_for_day": "المهام لليوم:",
+    
     "irt": "IRT",
     "virtual": "افتراضي",
     "individual_plan": "فردي",

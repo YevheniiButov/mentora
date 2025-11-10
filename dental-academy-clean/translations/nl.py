@@ -3258,6 +3258,11 @@ translations = {
     'tip_balance_activities': 'Balanceer verschillende soorten leeractiviteiten',
     'tip_review_plan': 'Bekijk en pas je plan wekelijks aan',
     
+    # Planner specifieke vertalingen
+    'big_test': 'BIG Test',
+    'big_test_description': 'Uitgebreide test met 60 vragen uit je laatste 2 weken studie',
+    'tasks_for_day': 'Taken voor dag:',
+    
     # Ontbrekende tab labels
     'irt': 'IRT',
     'virtual': 'Virtueel',

@@ -1230,3 +1230,257 @@ def reset_learning_plan(user):
     db.session.commit()
     
     return plan
+
+
+def check_all_tasks_completed_today(user):
+    """
+    Проверяет, выполнил ли пользователь все задачи на сегодня.
+    
+    Args:
+        user: User object
+        
+    Returns:
+        bool: True если все задачи выполнены
+    """
+    from routes.learning import get_daily_tasks
+    
+    # Получаем задачи на сегодня
+    tasks_data = get_daily_tasks(user.id)
+    
+    if 'tasks' not in tasks_data or not tasks_data['tasks']:
+        return False
+    
+    # Проверяем, все ли задачи выполнены
+    all_completed = all(task.get('completed', False) for task in tasks_data['tasks'])
+    
+    return all_completed
+
+
+def update_study_day_count(user):
+    """
+    Обновляет счетчик дней учебы на основе первого успешного дня.
+    Если сегодня пользователь выполнил все задачи и это первый успешный день - устанавливает его.
+    Увеличивает счетчик дней учебы если прошло больше дня с последнего обновления.
+    
+    Args:
+        user: User object
+        
+    Returns:
+        dict: {
+            'study_day': int,  # Текущий день учебы (1-14)
+            'first_successful_day': date or None,
+            'is_big_test_day': bool  # True если это 14-й день
+        }
+    """
+    plan = get_or_create_learning_plan(user)
+    today = date.today()
+    
+    # Используем JSON поле для хранения данных о днях учебы
+    # Временно используем domain_analysis для хранения (если оно не используется)
+    # Или создаем отдельное поле через JSON в существующем поле
+    study_data = {}
+    
+    # Пытаемся получить из domain_analysis (если оно пустое или содержит наши данные)
+    domain_analysis = plan.get_domain_analysis()
+    if isinstance(domain_analysis, dict) and '_study_day_data' in domain_analysis:
+        study_data = domain_analysis['_study_day_data']
+    elif not domain_analysis:  # Если domain_analysis пустое, можем использовать его
+        pass  # Будем использовать domain_analysis для хранения
+    
+    # Проверяем, выполнил ли пользователь все задачи сегодня
+    all_tasks_completed = check_all_tasks_completed_today(user)
+    
+    if not all_tasks_completed:
+        # Если задачи не выполнены, возвращаем текущий счетчик
+        study_day = study_data.get('study_day_count', 0) if study_data else 0
+        # Если день = 0, значит еще не было успешного дня - возвращаем день 1
+        if study_day == 0:
+            study_day = 1
+        first_day_str = study_data.get('first_successful_day') if study_data else None
+        first_day = None
+        if first_day_str:
+            try:
+                first_day = datetime.strptime(first_day_str, '%Y-%m-%d').date()
+            except:
+                first_day = None
+        
+        return {
+            'study_day': study_day,
+            'first_successful_day': first_day,
+            'is_big_test_day': study_day == 14 or study_day == 28
+        }
+    
+    # Если все задачи выполнены
+    first_day_str = study_data.get('first_successful_day') if study_data else None
+    first_day = None
+    if first_day_str:
+        try:
+            first_day = datetime.strptime(first_day_str, '%Y-%m-%d').date()
+        except:
+            first_day = None
+    
+    # Если это первый успешный день - устанавливаем его
+    if first_day is None:
+        first_day = today
+        if not study_data:
+            study_data = {}
+        study_data['first_successful_day'] = today.isoformat()
+        study_data['study_day_count'] = 1  # Начинаем с дня 1
+    else:
+        # Получаем текущий счетчик дней учебы
+        study_day_count = study_data.get('study_day_count', 0)
+        
+        # Если счетчик = 0, устанавливаем его в 1 (первый успешный день)
+        if study_day_count == 0:
+            study_day_count = 1
+        
+        # Если последняя активность была не сегодня - увеличиваем счетчик
+        last_activity = plan.last_activity_date
+        if last_activity is None or last_activity < today:
+            study_day_count += 1
+            # После 28 дня начинаем цикл заново с 1
+            if study_day_count > 28:
+                study_day_count = ((study_day_count - 1) % 28) + 1
+            study_data['study_day_count'] = study_day_count
+    
+    # Сохраняем данные в domain_analysis как временное решение
+    domain_analysis = plan.get_domain_analysis()
+    if not isinstance(domain_analysis, dict):
+        domain_analysis = {}
+    domain_analysis['_study_day_data'] = study_data
+    plan.set_domain_analysis(domain_analysis)
+    
+    # Также сохраняем в daily_goal_met_count для быстрого доступа
+    plan.daily_goal_met_count = study_data.get('study_day_count', 0)
+    
+    # Обновляем last_activity_date
+    plan.last_activity_date = today
+    
+    db.session.commit()
+    
+    study_day = study_data.get('study_day_count', 0)
+    
+    # Если день = 0, значит еще не было успешного дня - возвращаем день 1
+    if study_day == 0:
+        study_day = 1
+    
+    return {
+        'study_day': study_day,
+        'first_successful_day': first_day,
+        'is_big_test_day': study_day == 14 or study_day == 28
+    }
+
+
+def get_study_day(user):
+    """
+    Получить текущий день учебы пользователя (1-14) без обновления.
+    
+    Args:
+        user: User object
+        
+    Returns:
+        int: День учебы (1-14)
+    """
+    plan = get_or_create_learning_plan(user)
+    
+    # Получаем данные из domain_analysis
+    domain_analysis = plan.get_domain_analysis()
+    study_data = {}
+    if isinstance(domain_analysis, dict) and '_study_day_data' in domain_analysis:
+        study_data = domain_analysis['_study_day_data']
+    
+    # Если данных нет, используем daily_goal_met_count как fallback
+    study_day = study_data.get('study_day_count', 0) if study_data else (plan.daily_goal_met_count or 0)
+    
+    # Если день = 0, значит еще не было успешного дня - возвращаем день 1 (первый день)
+    if study_day == 0:
+        return 1
+    
+    return study_day
+
+
+def get_big_test_questions(user_id, max_questions=60):
+    """
+    Получить вопросы для большого теста (60 вопросов).
+    
+    Приоритет:
+    1. Неправильные из SR (максимум 60, если больше - первые 60)
+    2. Если неправильных < 60, добавить правильные из SR
+    3. Если все еще < 60, добавить вопросы из тестов за последние 2 недели
+    
+    Args:
+        user_id: ID пользователя
+        max_questions: Максимальное количество вопросов (по умолчанию 60)
+        
+    Returns:
+        list: Список ID вопросов для большого теста
+    """
+    from models import DiagnosticResponse, User
+    
+    two_weeks_ago = datetime.now(timezone.utc) - timedelta(days=14)
+    question_ids = []
+    
+    # 1. Получаем неправильные из SR (созданные за последние 2 недели)
+    incorrect_sr_items = SpacedRepetitionItem.query.filter(
+        SpacedRepetitionItem.user_id == user_id,
+        SpacedRepetitionItem.is_active == True,
+        SpacedRepetitionItem.created_at >= two_weeks_ago,
+        SpacedRepetitionItem.quality < 3  # Неправильные (качество < 3)
+    ).order_by(SpacedRepetitionItem.created_at.asc()).limit(max_questions).all()
+    
+    incorrect_question_ids = [item.question_id for item in incorrect_sr_items]
+    question_ids.extend(incorrect_question_ids[:max_questions])
+    
+    # 2. Если неправильных < 60, добавляем правильные из SR
+    if len(question_ids) < max_questions:
+        remaining = max_questions - len(question_ids)
+        correct_sr_items = SpacedRepetitionItem.query.filter(
+            SpacedRepetitionItem.user_id == user_id,
+            SpacedRepetitionItem.is_active == True,
+            SpacedRepetitionItem.created_at >= two_weeks_ago,
+            SpacedRepetitionItem.quality >= 3,  # Правильные
+            ~SpacedRepetitionItem.question_id.in_(question_ids) if question_ids else True
+        ).order_by(SpacedRepetitionItem.created_at.asc()).limit(remaining).all()
+        
+        correct_question_ids = [item.question_id for item in correct_sr_items]
+        question_ids.extend(correct_question_ids)
+    
+    # 3. Если все еще < 60, добавляем вопросы из тестов за последние 2 недели
+    if len(question_ids) < max_questions:
+        remaining = max_questions - len(question_ids)
+        
+        # Получаем все вопросы из DiagnosticSession за последние 2 недели
+        recent_sessions = DiagnosticSession.query.filter(
+            DiagnosticSession.user_id == user_id,
+            DiagnosticSession.status == 'completed',
+            DiagnosticSession.completed_at >= two_weeks_ago
+        ).all()
+        
+        # Получаем все question_id из этих сессий
+        session_ids = [session.id for session in recent_sessions]
+        if session_ids:
+            recent_responses = DiagnosticResponse.query.filter(
+                DiagnosticResponse.session_id.in_(session_ids)
+            ).all()
+            
+            recent_question_ids = list(set([r.question_id for r in recent_responses]))
+            # Исключаем уже добавленные
+            new_question_ids = [qid for qid in recent_question_ids if qid not in question_ids]
+            # Берем первые remaining
+            question_ids.extend(new_question_ids[:remaining])
+    
+    # Если все еще не хватает - добавляем случайные вопросы из профессии пользователя
+    if len(question_ids) < max_questions:
+        remaining = max_questions - len(question_ids)
+        user = User.query.get(user_id)
+        if user:
+            profession = get_user_profession_code(user)
+            additional_questions = Question.query.filter(
+                Question.profession == profession,
+                ~Question.id.in_(question_ids) if question_ids else True
+            ).order_by(func.random()).limit(remaining).all()
+            
+            additional_ids = [q.id for q in additional_questions]
+            question_ids.extend(additional_ids)
+    
+    return question_ids[:max_questions]

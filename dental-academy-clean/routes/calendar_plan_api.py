@@ -191,4 +191,99 @@ def health_check():
             'success': False,
             'status': 'unhealthy',
             'error': str(e)
+        }), 500
+
+@calendar_plan_bp.route('/upcoming-plans', methods=['GET'])
+@login_required
+def get_upcoming_plans():
+    """
+    Получить планы с ротацией задач на ближайшие 14 дней учебы.
+    
+    Query parameters:
+    - days: Количество дней (по умолчанию 14)
+    
+    Returns:
+    - JSON с планами по дням учебы (День 1, День 2, ... День 14)
+    """
+    try:
+        from routes.learning import get_daily_tasks
+        from utils.individual_plan_helpers import get_study_day, update_study_day_count
+        
+        days = request.args.get('days', 28, type=int)
+        days = min(days, 28)  # Максимум 28 дней (2 недели)
+        
+        # Получаем текущий день учебы
+        study_day_info = update_study_day_count(current_user)
+        current_study_day = study_day_info['study_day']
+        
+        # Проверяем, прошел ли пользователь BIG test (14-й день)
+        # Если study_day > 14, значит BIG test пройден
+        big_test_completed = current_study_day > 14
+        
+        plans = {}
+        
+        # Генерируем планы для всех 28 дней
+        for day_num in range(1, 29):  # Дни 1-28
+            # Определяем, заблокирован ли день
+            is_locked = day_num > 14 and not big_test_completed
+            
+            # Для заблокированных дней не генерируем задачи
+            if is_locked:
+                plans[f'day_{day_num}'] = {
+                    'study_day': day_num,
+                    'cycle_day': 0,
+                    'is_big_test_day': day_num == 14 or day_num == 28,  # BIG test на 14 и 28 день
+                    'tasks': [],
+                    'total_tasks': 0,
+                    'intensity': 'locked',
+                    'is_today': day_num == current_study_day,
+                    'is_past': False,
+                    'is_locked': True
+                }
+            else:
+                # Для активных дней генерируем задачи
+                # Если день > 14, используем цикл (день 15 = день 1, день 16 = день 2, и т.д.)
+                effective_day = day_num if day_num <= 14 else ((day_num - 15) % 14) + 1
+                
+                # Получаем задачи для этого дня учебы
+                tasks_data = get_daily_tasks(current_user.id, study_day=effective_day)
+                
+                # Определяем интенсивность дня
+                intensity = 'medium'
+                if day_num == 14 or day_num == 28:
+                    intensity = 'high'  # BIG test
+                elif tasks_data.get('cycle_day') in [3, 6]:  # Интенсивные дни
+                    intensity = 'high'
+                elif len(tasks_data.get('tasks', [])) == 2:  # Меньше задач
+                    intensity = 'light'
+                
+                plans[f'day_{day_num}'] = {
+                    'study_day': day_num,
+                    'cycle_day': tasks_data.get('cycle_day', 1),
+                    'is_big_test_day': day_num == 14 or day_num == 28,  # BIG test на 14 и 28 день
+                    'tasks': tasks_data.get('tasks', []),
+                    'total_tasks': len(tasks_data.get('tasks', [])),
+                    'intensity': intensity,
+                    'is_today': day_num == current_study_day,
+                    'is_past': False,
+                    'is_locked': False
+                }
+        
+        return jsonify({
+            'success': True,
+            'plans': plans,
+            'current_study_day': current_study_day,
+            'total_days': 28,
+            'big_test_completed': big_test_completed,
+            'first_successful_day': study_day_info.get('first_successful_day').isoformat() if study_day_info.get('first_successful_day') else None
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting upcoming plans for user {current_user.id}: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return jsonify({
+            'success': False,
+            'error': 'Внутренняя ошибка сервера',
+            'message': str(e)
         }), 500 

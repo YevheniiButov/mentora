@@ -2907,6 +2907,11 @@ translations = {
     'tip_balance_activities': 'Equilibre diferentes tipos de atividades de aprendizagem',
     'tip_review_plan': 'Revise e ajuste seu plano semanalmente',
     
+    # Traduções específicas do planejador
+    'big_test': 'Teste GRANDE',
+    'big_test_description': 'Teste abrangente com 60 questões das suas últimas 2 semanas de estudo',
+    'tasks_for_day': 'Tarefas para o dia:',
+    
     # Rótulos de abas em falta
     'irt': 'IRT',
     'virtual': 'Virtual',

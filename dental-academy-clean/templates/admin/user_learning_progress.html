@@ -548,23 +548,19 @@
                         <tbody>
                             {% for attempt in test_attempts %}
                             <tr>
-                                <td>{{ attempt.completed_at.strftime('%d.%m.%Y %H:%M') if attempt.completed_at else 'N/A' }}</td>
-                                <td><span class="badge bg-secondary">{{ attempt.test_type or 'N/A' }}</span></td>
+                                <td>{{ attempt.attempt_date.strftime('%d.%m.%Y %H:%M') if attempt.attempt_date else 'N/A' }}</td>
+                                <td><span class="badge bg-secondary">{{ attempt.test.title if attempt.test else 'N/A' }}</span></td>
                                 <td>
-                                    {% if attempt.score is not none %}
-                                        <span class="badge {% if attempt.score >= 80 %}bg-success{% elif attempt.score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
-                                            {{ "%.1f"|format(attempt.score) }}%
+                                    {% if attempt.is_correct is not none %}
+                                        <span class="badge {% if attempt.is_correct %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ 'Правильно' if attempt.is_correct else 'Неправильно' }}
                                         </span>
                                     {% else %}
                                         N/A
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if attempt.completed %}
-                                        <span class="badge bg-success">Завершено</span>
-                                    {% else %}
-                                        <span class="badge bg-warning">В процессе</span>
-                                    {% endif %}
+                                    <span class="badge bg-success">Завершено</span>
                                 </td>
                             </tr>
                             {% endfor %}

@@ -3460,6 +3460,11 @@ translations = {
     'tip_balance_activities': 'Balance different types of learning activities',
     'tip_review_plan': 'Review and adjust your plan weekly',
     
+    # Planner specific translations
+    'big_test': 'BIG Test',
+    'big_test_description': 'Comprehensive test with 60 questions from your last 2 weeks of study',
+    'tasks_for_day': 'Tasks for day:',
+    
     # Missing tab labels
     'irt': 'IRT',
     'virtual': 'Virtual',
