@@ -197,42 +197,65 @@ def health_check():
 @login_required
 def get_upcoming_plans():
     """
-    Получить планы с ротацией задач на ближайшие 14 дней учебы.
+    Получить планы с ротацией задач на ближайшие дни учебы.
+    Поддерживает бесконечные циклы обучения.
     
     Query parameters:
-    - days: Количество дней (по умолчанию 14)
+    - days: Количество дней для отображения (по умолчанию 28)
     
     Returns:
-    - JSON с планами по дням учебы (День 1, День 2, ... День 14)
+    - JSON с планами по дням учебы с информацией о циклах
     """
     try:
         from routes.learning import get_daily_tasks
-        from utils.individual_plan_helpers import get_study_day, update_study_day_count
+        from utils.individual_plan_helpers import get_study_day, update_study_day_count, get_cycle_info
         
         days = request.args.get('days', 28, type=int)
-        days = min(days, 28)  # Максимум 28 дней (2 недели)
+        days = min(days, 56)  # Максимум 56 дней (2 цикла) для отображения
         
         # Получаем текущий день учебы
         study_day_info = update_study_day_count(current_user)
         current_study_day = study_day_info['study_day']
+        current_cycle_info = study_day_info.get('cycle_info', get_cycle_info(current_study_day))
         
-        # Проверяем, прошел ли пользователь BIG test (14-й день)
+        # Проверяем, прошел ли пользователь BIG test в первом цикле
         # Если study_day > 14, значит BIG test пройден
         big_test_completed = current_study_day > 14
         
         plans = {}
         
-        # Генерируем планы для всех 28 дней
-        for day_num in range(1, 29):  # Дни 1-28
-            # Определяем, заблокирован ли день
-            is_locked = day_num > 14 and not big_test_completed
+        # Определяем, с какого дня начинать календарь
+        # Всегда показываем 28 дней текущего цикла
+        # Если текущий день <= 28, показываем дни 1-28
+        # Если текущий день > 28, показываем дни текущего цикла (например, 29-56, 57-84 и т.д.)
+        current_cycle_info = get_cycle_info(current_study_day)
+        current_cycle = current_cycle_info['cycle']
+        
+        # Вычисляем первый день текущего цикла
+        start_day = ((current_cycle - 1) * 28) + 1
+        
+        # Генерируем планы для 28 дней текущего цикла
+        logger.info(f"Generating plans: current_study_day={current_study_day}, current_cycle={current_cycle}, start_day={start_day}")
+        
+        for day_offset in range(28):  # Всегда 28 дней
+            day_num = start_day + day_offset
+            
+            # Получаем информацию о цикле для этого дня
+            day_cycle_info = get_cycle_info(day_num)
+            day_in_cycle = day_cycle_info['day_in_cycle']
+            
+            # Определяем, заблокирован ли день (только для первого цикла, дни 15-28)
+            # Заблокированы только дни 15-28 первого цикла, если BIG test не пройден
+            is_locked = (current_cycle == 1 and day_num > 14 and day_num <= 28 and not big_test_completed)
             
             # Для заблокированных дней не генерируем задачи
             if is_locked:
                 plans[f'day_{day_num}'] = {
                     'study_day': day_num,
+                    'day_in_cycle': day_in_cycle,
+                    'cycle_info': day_cycle_info,
                     'cycle_day': 0,
-                    'is_big_test_day': day_num == 14 or day_num == 28,  # BIG test на 14 и 28 день
+                    'is_big_test_day': day_in_cycle == 14 or day_in_cycle == 28,
                     'tasks': [],
                     'total_tasks': 0,
                     'intensity': 'locked',
@@ -241,16 +264,12 @@ def get_upcoming_plans():
                     'is_locked': True
                 }
             else:
-                # Для активных дней генерируем задачи
-                # Если день > 14, используем цикл (день 15 = день 1, день 16 = день 2, и т.д.)
-                effective_day = day_num if day_num <= 14 else ((day_num - 15) % 14) + 1
-                
                 # Получаем задачи для этого дня учебы
-                tasks_data = get_daily_tasks(current_user.id, study_day=effective_day)
+                tasks_data = get_daily_tasks(current_user.id, study_day=day_num)
                 
                 # Определяем интенсивность дня
                 intensity = 'medium'
-                if day_num == 14 or day_num == 28:
+                if day_in_cycle == 14 or day_in_cycle == 28:
                     intensity = 'high'  # BIG test
                 elif tasks_data.get('cycle_day') in [3, 6]:  # Интенсивные дни
                     intensity = 'high'
@@ -259,8 +278,10 @@ def get_upcoming_plans():
                 
                 plans[f'day_{day_num}'] = {
                     'study_day': day_num,
+                    'day_in_cycle': day_in_cycle,
+                    'cycle_info': day_cycle_info,
                     'cycle_day': tasks_data.get('cycle_day', 1),
-                    'is_big_test_day': day_num == 14 or day_num == 28,  # BIG test на 14 и 28 день
+                    'is_big_test_day': day_in_cycle == 14 or day_in_cycle == 28,
                     'tasks': tasks_data.get('tasks', []),
                     'total_tasks': len(tasks_data.get('tasks', [])),
                     'intensity': intensity,
@@ -269,11 +290,14 @@ def get_upcoming_plans():
                     'is_locked': False
                 }
         
+        logger.info(f"Generated {len(plans)} plans for user {current_user.id}")
+        
         return jsonify({
             'success': True,
             'plans': plans,
             'current_study_day': current_study_day,
-            'total_days': 28,
+            'current_cycle_info': current_cycle_info,
+            'total_days': len(plans),
             'big_test_completed': big_test_completed,
             'first_successful_day': study_day_info.get('first_successful_day').isoformat() if study_day_info.get('first_successful_day') else None
         })

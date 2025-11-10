@@ -30,13 +30,20 @@ def get_daily_tasks(user_id, study_day=None):
     
     today = datetime.now(timezone.utc).date()
     
-    # Получаем день учебы (1-14) вместо календарных дней
+    # Получаем день учебы (может быть любым числом, начиная с 1)
     if study_day is None:
         from utils.individual_plan_helpers import get_study_day
         study_day = get_study_day(user)
     
-    # Используем день учебы для расчета cycle_day (ротация на 6 дней)
-    cycle_day = ((study_day - 1) % 6) + 1  # 1, 2, 3, 4, 5, or 6
+    # Получаем информацию о цикле
+    from utils.individual_plan_helpers import get_cycle_info
+    cycle_info = get_cycle_info(study_day)
+    day_in_cycle = cycle_info['day_in_cycle']
+    cycle_config = cycle_info['config']
+    multiplier = cycle_config['multiplier']
+    
+    # Используем день в цикле для расчета cycle_day (ротация на 6 дней)
+    cycle_day = ((day_in_cycle - 1) % 6) + 1  # 1, 2, 3, 4, 5, or 6
     
     # Get today's start and end timestamps
     today_start = datetime.combine(today, datetime.min.time()).replace(tzinfo=timezone.utc)
@@ -82,17 +89,19 @@ def get_daily_tasks(user_id, study_day=None):
     # For now, we'll assume it's not completed (client will track this)
     memory_completed = False
     
-    # Проверяем, является ли это 14-м или 28-м днем (BIG test)
-    is_big_test_day = study_day == 14 or study_day == 28
+    # Проверяем, является ли это 14-м или 28-м днем в цикле (BIG test)
+    is_big_test_day = day_in_cycle == 14 or day_in_cycle == 28
     
     tasks = {
         'cycle_day': cycle_day,
         'study_day': study_day,
+        'day_in_cycle': day_in_cycle,
+        'cycle_info': cycle_info,
         'is_big_test_day': is_big_test_day,
         'tasks': []
     }
     
-    # Если это 14-й день - показываем только BIG test
+    # Если это 14-й или 28-й день в цикле - показываем только BIG test
     if is_big_test_day:
         tasks['tasks'] = [
             {
@@ -109,11 +118,12 @@ def get_daily_tasks(user_id, study_day=None):
     
     if cycle_day == 1:
         # Day 1: Tests + Flashcards + English Reading
+        # Применяем multiplier из цикла для увеличения целей
         tasks['tasks'] = [
             {
                 'type': 'diagnostic_test',
                 'title': 'Medische Testen',
-                'target': 10,
+                'target': int(10 * multiplier),
                 'icon': 'clipboard-check',
                 'completed': tests_completed > 0,
                 'progress': min(tests_completed, 10)
@@ -121,7 +131,7 @@ def get_daily_tasks(user_id, study_day=None):
             {
                 'type': 'flashcards',
                 'title': 'Nederlandse Termen',
-                'target': 10,
+                'target': int(10 * multiplier),
                 'icon': 'card-text',
                 'completed': flashcards_completed,
                 'progress': flashcard_today.terms_studied if flashcard_today and flashcard_today.terms_studied else 0
@@ -141,15 +151,15 @@ def get_daily_tasks(user_id, study_day=None):
             {
                 'type': 'diagnostic_test',
                 'title': 'Medische Testen',
-                'target': 10,
+                'target': int(10 * multiplier),
                 'icon': 'clipboard-check',
                 'completed': tests_completed > 0,
-                'progress': min(tests_completed, 10)
+                'progress': min(tests_completed, int(10 * multiplier))
             },
             {
                 'type': 'flashcards',
                 'title': 'Nederlandse Termen',
-                'target': 10,
+                'target': int(10 * multiplier),
                 'icon': 'card-text',
                 'completed': flashcards_completed,
                 'progress': flashcard_today.terms_studied if flashcard_today and flashcard_today.terms_studied else 0
@@ -169,10 +179,10 @@ def get_daily_tasks(user_id, study_day=None):
             {
                 'type': 'diagnostic_test',
                 'title': 'Medische Testen (Intensief)',
-                'target': 20,
+                'target': int(20 * multiplier),
                 'icon': 'clipboard-check',
-                'completed': tests_completed >= 20,
-                'progress': min(tests_completed, 20)
+                'completed': tests_completed >= int(20 * multiplier),
+                'progress': min(tests_completed, int(20 * multiplier))
             },
             {
                 'type': 'english_reading',
@@ -189,15 +199,15 @@ def get_daily_tasks(user_id, study_day=None):
             {
                 'type': 'diagnostic_test',
                 'title': 'Medische Testen',
-                'target': 10,
+                'target': int(10 * multiplier),
                 'icon': 'clipboard-check',
                 'completed': tests_completed > 0,
-                'progress': min(tests_completed, 10)
+                'progress': min(tests_completed, int(10 * multiplier))
             },
             {
                 'type': 'flashcards',
                 'title': 'Nederlandse Termen',
-                'target': 10,
+                'target': int(10 * multiplier),
                 'icon': 'card-text',
                 'completed': flashcards_completed,
                 'progress': flashcard_today.terms_studied if flashcard_today and flashcard_today.terms_studied else 0
@@ -217,10 +227,10 @@ def get_daily_tasks(user_id, study_day=None):
             {
                 'type': 'diagnostic_test',
                 'title': 'Medische Testen',
-                'target': 10,
+                'target': int(10 * multiplier),
                 'icon': 'clipboard-check',
                 'completed': tests_completed > 0,
-                'progress': min(tests_completed, 10)
+                'progress': min(tests_completed, int(10 * multiplier))
             },
             {
                 'type': 'memory',
@@ -245,10 +255,10 @@ def get_daily_tasks(user_id, study_day=None):
             {
                 'type': 'diagnostic_test',
                 'title': 'Medische Testen (Intensief)',
-                'target': 20,
+                'target': int(20 * multiplier),
                 'icon': 'clipboard-check',
-                'completed': tests_completed >= 20,
-                'progress': min(tests_completed, 20)
+                'completed': tests_completed >= int(20 * multiplier),
+                'progress': min(tests_completed, int(20 * multiplier))
             },
             {
                 'type': 'flashcards',

@@ -3349,4 +3349,9 @@ translations = {
     'tour_step5_body': 'In de Knowledge Base vind je gestructureerde materialen en via Community praat je met collega’s.',
     'tour_step6_title': 'Taalmenu',
     'tour_step6_body': 'Schakel direct van taal. Je keuze wordt onthouden voor volgende bezoeken.',
+    
+    # Cycle info
+    'current_cycle': 'Cyclus',
+    'day_in_cycle': 'Dag in cyclus',
+    'difficulty': 'Moeilijkheidsgraad',
 }

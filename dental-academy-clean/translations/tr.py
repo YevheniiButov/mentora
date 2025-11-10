@@ -2957,4 +2957,9 @@ translations = {
     'tour_step5_body': 'Knowledge Base yapılandırılmış içerikler sunar, Community ise sizi meslektaşlarınızla buluşturur.',
     'tour_step6_title': 'Dil menüsü',
     'tour_step6_body': 'Arayüz dilini anında değiştirin. Seçiminiz sonraki ziyaretleriniz için kaydedilir.',
+    
+    # Cycle info
+    'current_cycle': 'Döngü',
+    'day_in_cycle': 'Döngüdeki gün',
+    'difficulty': 'Zorluk',
 }

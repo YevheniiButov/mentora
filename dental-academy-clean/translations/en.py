@@ -3551,4 +3551,9 @@ translations = {
     'tour_step5_body': 'Knowledge Base provides structured materials, while Community connects you with colleagues.',
     'tour_step6_title': 'Language menu',
     'tour_step6_body': 'Switch the interface language instantly. Your choice is saved for future visits.',
+    
+    # Cycle info
+    'current_cycle': 'Cycle',
+    'day_in_cycle': 'Day in cycle',
+    'difficulty': 'Difficulty',
 }

@@ -2842,5 +2842,10 @@ translations = {
     "tour_step5_title": "الموارد والمجتمع",
     "tour_step5_body": "يوفّر Knowledge Base مواد منظمة، بينما يساعدك Community على التواصل مع الزملاء.",
     "tour_step6_title": "قائمة اللغات",
-    "tour_step6_body": "غيّر لغة الواجهة فوراً، وسيتم حفظ اختيارك للزيارات القادمة."
+    "tour_step6_body": "غيّر لغة الواجهة فوراً، وسيتم حفظ اختيارك للزيارات القادمة.",
+    
+    # Cycle info
+    "current_cycle": "الدورة",
+    "day_in_cycle": "اليوم في الدورة",
+    "difficulty": "الصعوبة"
 }

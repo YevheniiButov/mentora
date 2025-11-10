@@ -1304,10 +1304,14 @@ def update_study_day_count(user):
             except:
                 first_day = None
         
+        # Получаем информацию о цикле
+        cycle_info = get_cycle_info(study_day)
+        
         return {
             'study_day': study_day,
             'first_successful_day': first_day,
-            'is_big_test_day': study_day == 14 or study_day == 28
+            'is_big_test_day': cycle_info['day_in_cycle'] == 14 or cycle_info['day_in_cycle'] == 28,
+            'cycle_info': cycle_info
         }
     
     # Если все задачи выполнены
@@ -1338,9 +1342,8 @@ def update_study_day_count(user):
         last_activity = plan.last_activity_date
         if last_activity is None or last_activity < today:
             study_day_count += 1
-            # После 28 дня начинаем цикл заново с 1
-            if study_day_count > 28:
-                study_day_count = ((study_day_count - 1) % 28) + 1
+            # НЕ сбрасываем счетчик после 28 дня - продолжаем циклы бесконечно
+            # study_day_count может быть любым числом (29, 30, 31...)
             study_data['study_day_count'] = study_day_count
     
     # Сохраняем данные в domain_analysis как временное решение
@@ -1364,10 +1367,14 @@ def update_study_day_count(user):
     if study_day == 0:
         study_day = 1
     
+    # Получаем информацию о цикле
+    cycle_info = get_cycle_info(study_day)
+    
     return {
         'study_day': study_day,
         'first_successful_day': first_day,
-        'is_big_test_day': study_day == 14 or study_day == 28
+        'is_big_test_day': cycle_info['day_in_cycle'] == 14 or cycle_info['day_in_cycle'] == 28,
+        'cycle_info': cycle_info
     }
 
 
@@ -1484,3 +1491,79 @@ def get_big_test_questions(user_id, max_questions=60):
             question_ids.extend(additional_ids)
     
     return question_ids[:max_questions]
+
+
+def get_cycle_info(study_day):
+    """
+    Определяет текущий цикл обучения и его параметры.
+    
+    Циклы:
+    - Цикл 1 (дни 1-28): Базовый уровень
+    - Цикл 2 (дни 29-56): Адаптивный (фокус на слабых местах, +20% целей)
+    - Цикл 3 (дни 57-84): Углубленный (сложные задачи, +50% целей)
+    - Цикл 4+ (дни 85+): Экспертный (комплексные кейсы, +100% целей)
+    
+    Args:
+        study_day: День учебы (начиная с 1, может быть любым числом)
+        
+    Returns:
+        dict: {
+            'cycle': int,  # Номер цикла (1, 2, 3, 4+)
+            'day_in_cycle': int,  # День в текущем цикле (1-28)
+            'total_days': int,  # Общее количество дней учебы
+            'config': dict  # Конфигурация цикла
+        }
+    """
+    # Определяем номер цикла (начинается с 1)
+    cycle_num = ((study_day - 1) // 28) + 1
+    # День в текущем цикле (1-28)
+    day_in_cycle = ((study_day - 1) % 28) + 1
+    
+    # Конфигурация для каждого цикла
+    # Используем ключи для переводов, которые будут переводиться на фронтенде
+    cycle_configs = {
+        1: {
+            'name_key': 'cycle_basic',  # Ключ для перевода
+            'multiplier': 1.0,
+            'focus': 'general',
+            'description_key': 'cycle_basic_description',  # Ключ для перевода
+            'new_features': [],
+            'color': '#10b981'  # Зеленый (используем стандартный цвет)
+        },
+        2: {
+            'name_key': 'cycle_adaptive',
+            'multiplier': 1.2,
+            'focus': 'weak_domains',
+            'description_key': 'cycle_adaptive_description',
+            'new_features': ['adaptive_difficulty'],
+            'color': '#f59e0b'  # Оранжевый
+        },
+        3: {
+            'name_key': 'cycle_advanced',
+            'multiplier': 1.5,
+            'focus': 'mastery',
+            'description_key': 'cycle_advanced_description',
+            'new_features': ['complex_cases', 'adaptive_difficulty'],
+            'color': '#10b981'  # Зеленый
+        }
+    }
+    
+    # Для циклов 4+ используем конфигурацию экспертного уровня
+    if cycle_num >= 4:
+        config = {
+            'name_key': 'cycle_expert',
+            'multiplier': 2.0,
+            'focus': 'expert',
+            'description_key': 'cycle_expert_description',
+            'new_features': ['expert_mode', 'complex_cases', 'adaptive_difficulty', 'time_challenges'],
+            'color': '#ef4444'  # Красный
+        }
+    else:
+        config = cycle_configs[cycle_num]
+    
+    return {
+        'cycle': cycle_num,
+        'day_in_cycle': day_in_cycle,
+        'total_days': study_day,
+        'config': config
+    }

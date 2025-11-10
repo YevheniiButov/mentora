@@ -3040,4 +3040,9 @@ translations = {
     'tour_step5_body': 'Knowledge Base ofrece materiales estructurados y Community te conecta con colegas.',
     'tour_step6_title': 'Menú de idiomas',
     'tour_step6_body': 'Cambia el idioma de la interfaz al instante. Tu elección se guarda para futuras visitas.',
+    
+    # Cycle info
+    'current_cycle': 'Ciclo',
+    'day_in_cycle': 'Día en ciclo',
+    'difficulty': 'Dificultad',
 }

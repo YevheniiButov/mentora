@@ -3084,4 +3084,9 @@ translations = {
     'tour_step5_body': 'در Knowledge Base مطالب ساختاریافته وجود دارد و در Community می‌توانید با همکاران گفتگو کنید.',
     'tour_step6_title': 'منوی زبان',
     'tour_step6_body': 'زبان رابط را فوراً تغییر دهید. انتخاب شما برای مراجعات بعدی ذخیره می‌شود.',
+    
+    # Cycle info
+    'current_cycle': 'دوره',
+    'day_in_cycle': 'روز در دوره',
+    'difficulty': 'سختی',
 }

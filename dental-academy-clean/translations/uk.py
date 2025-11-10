@@ -3321,5 +3321,10 @@ translations = {
     'tour_step5_title': 'Ресурси та спільнота',
     'tour_step5_body': 'У Knowledge Base зібрані структуровані матеріали, а в Community можна поспілкуватися з колегами.',
     'tour_step6_title': 'Мова інтерфейсу',
-    'tour_step6_body': 'Миттєво перемикайте мову — система запам’ятовує ваш вибір.',
+    'tour_step6_body': 'Миттєво перемикайте мову — система запам\'ятовує ваш вибір.',
+    
+    # Cycle info
+    'current_cycle': 'Цикл',
+    'day_in_cycle': 'День у циклі',
+    'difficulty': 'Складність',
 }
