@@ -1234,336 +1234,249 @@ def reset_learning_plan(user):
 
 def check_all_tasks_completed_today(user):
     """
-    Проверяет, выполнил ли пользователь все задачи на сегодня.
+    Проверяет, выполнены ли все задачи на сегодня.
     
     Args:
         user: User object
-        
+    
     Returns:
         bool: True если все задачи выполнены
     """
     from routes.learning import get_daily_tasks
     
-    # Получаем задачи на сегодня
-    tasks_data = get_daily_tasks(user.id)
+    today = datetime.now(timezone.utc).date()
+    today_start = datetime.combine(today, datetime.min.time()).replace(tzinfo=timezone.utc)
+    today_end = today_start + timedelta(days=1)
     
-    if 'tasks' not in tasks_data or not tasks_data['tasks']:
+    # Получаем задачи на сегодня
+    tasks_data = get_daily_tasks(user.id, study_day=None)
+    tasks = tasks_data.get('tasks', [])
+    
+    if not tasks:
         return False
     
-    # Проверяем, все ли задачи выполнены
-    all_completed = all(task.get('completed', False) for task in tasks_data['tasks'])
-    
-    return all_completed
-
-
-def update_study_day_count(user):
-    """
-    Обновляет счетчик дней учебы на основе первого успешного дня.
-    Если сегодня пользователь выполнил все задачи и это первый успешный день - устанавливает его.
-    Увеличивает счетчик дней учебы если прошло больше дня с последнего обновления.
-    
-    Args:
-        user: User object
+    # Проверяем каждую задачу
+    for task in tasks:
+        task_type = task.get('type')
+        target = task.get('target', 0)
         
-    Returns:
-        dict: {
-            'study_day': int,  # Текущий день учебы (1-14)
-            'first_successful_day': date or None,
-            'is_big_test_day': bool  # True если это 14-й день
-        }
-    """
-    plan = get_or_create_learning_plan(user)
-    today = date.today()
-    
-    # Используем JSON поле для хранения данных о днях учебы
-    # Временно используем domain_analysis для хранения (если оно не используется)
-    # Или создаем отдельное поле через JSON в существующем поле
-    study_data = {}
-    
-    # Пытаемся получить из domain_analysis (если оно пустое или содержит наши данные)
-    domain_analysis = plan.get_domain_analysis()
-    if isinstance(domain_analysis, dict) and '_study_day_data' in domain_analysis:
-        study_data = domain_analysis['_study_day_data']
-    elif not domain_analysis:  # Если domain_analysis пустое, можем использовать его
-        pass  # Будем использовать domain_analysis для хранения
-    
-    # Проверяем, выполнил ли пользователь все задачи сегодня
-    all_tasks_completed = check_all_tasks_completed_today(user)
-    
-    if not all_tasks_completed:
-        # Если задачи не выполнены, возвращаем текущий счетчик
-        study_day = study_data.get('study_day_count', 0) if study_data else 0
-        # Если день = 0, значит еще не было успешного дня - возвращаем день 1
-        if study_day == 0:
-            study_day = 1
-        first_day_str = study_data.get('first_successful_day') if study_data else None
-        first_day = None
-        if first_day_str:
-            try:
-                first_day = datetime.strptime(first_day_str, '%Y-%m-%d').date()
-            except:
-                first_day = None
+        if task_type == 'test' or task_type == 'diagnostic_test' or task_type == 'big_test':
+            # Проверяем тесты
+            from models import DiagnosticSession
+            tests_today = DiagnosticSession.query.filter(
+                DiagnosticSession.user_id == user.id,
+                DiagnosticSession.started_at >= today_start,
+                DiagnosticSession.started_at < today_end
+            ).all()
+            tests_completed = len([t for t in tests_today if (
+                getattr(t, 'status', None) == 'completed' or 
+                getattr(t, 'completed_at', None) is not None
+            )])
+            if tests_completed < target:
+                return False
         
-        # Получаем информацию о цикле
-        cycle_info = get_cycle_info(study_day)
+        elif task_type == 'terms' or task_type == 'flashcards':
+            # Проверяем термины
+            flashcard_today = DailyFlashcardProgress.query.filter_by(
+                user_id=user.id,
+                date=today
+            ).first()
+            terms_completed = flashcard_today.terms_studied if flashcard_today else 0
+            if terms_completed < target:
+                return False
         
-        return {
-            'study_day': study_day,
-            'first_successful_day': first_day,
-            'is_big_test_day': cycle_info['day_in_cycle'] == 14 or cycle_info['day_in_cycle'] == 28,
-            'cycle_info': cycle_info
-        }
-    
-    # Если все задачи выполнены
-    first_day_str = study_data.get('first_successful_day') if study_data else None
-    first_day = None
-    if first_day_str:
-        try:
-            first_day = datetime.strptime(first_day_str, '%Y-%m-%d').date()
-        except:
-            first_day = None
-    
-    # Если это первый успешный день - устанавливаем его
-    if first_day is None:
-        first_day = today
-        if not study_data:
-            study_data = {}
-        study_data['first_successful_day'] = today.isoformat()
-        study_data['study_day_count'] = 1  # Начинаем с дня 1
-    else:
-        # Получаем текущий счетчик дней учебы
-        study_day_count = study_data.get('study_day_count', 0)
+        elif task_type == 'virtual_patient':
+            # Проверяем ВП
+            vp_today = VirtualPatientAttempt.query.filter(
+                VirtualPatientAttempt.user_id == user.id,
+                VirtualPatientAttempt.started_at >= today_start,
+                VirtualPatientAttempt.started_at < today_end
+            ).all()
+            vp_completed = len([v for v in vp_today if getattr(v, 'completed', False)])
+            if vp_completed < target:
+                return False
         
-        # Если счетчик = 0, устанавливаем его в 1 (первый успешный день)
-        if study_day_count == 0:
-            study_day_count = 1
+        elif task_type == 'english' or task_type == 'english_reading':
+            # Проверяем английский
+            english_today = UserEnglishProgress.query.filter(
+                UserEnglishProgress.user_id == user.id,
+                UserEnglishProgress.completed_at >= today_start,
+                UserEnglishProgress.completed_at < today_end
+            ).all()
+            english_completed = len(english_today)
+            if english_completed < target:
+                return False
         
-        # Если последняя активность была не сегодня - увеличиваем счетчик
-        last_activity = plan.last_activity_date
-        if last_activity is None or last_activity < today:
-            study_day_count += 1
-            # НЕ сбрасываем счетчик после 28 дня - продолжаем циклы бесконечно
-            # study_day_count может быть любым числом (29, 30, 31...)
-            study_data['study_day_count'] = study_day_count
+        elif task_type == 'memory_game':
+            # Игра "память" отслеживается на клиенте, считаем выполненной если другие задачи выполнены
+            pass
     
-    # Сохраняем данные в domain_analysis как временное решение
-    domain_analysis = plan.get_domain_analysis()
-    if not isinstance(domain_analysis, dict):
-        domain_analysis = {}
-    domain_analysis['_study_day_data'] = study_data
-    plan.set_domain_analysis(domain_analysis)
-    
-    # Также сохраняем в daily_goal_met_count для быстрого доступа
-    plan.daily_goal_met_count = study_data.get('study_day_count', 0)
-    
-    # Обновляем last_activity_date
-    plan.last_activity_date = today
-    
-    db.session.commit()
-    
-    study_day = study_data.get('study_day_count', 0)
-    
-    # Если день = 0, значит еще не было успешного дня - возвращаем день 1
-    if study_day == 0:
-        study_day = 1
-    
-    # Получаем информацию о цикле
-    cycle_info = get_cycle_info(study_day)
-    
-    return {
-        'study_day': study_day,
-        'first_successful_day': first_day,
-        'is_big_test_day': cycle_info['day_in_cycle'] == 14 or cycle_info['day_in_cycle'] == 28,
-        'cycle_info': cycle_info
-    }
+    return True
 
 
 def get_study_day(user):
     """
-    Получить текущий день учебы пользователя (1-14) без обновления.
+    Получить текущий день учебы пользователя.
     
     Args:
         user: User object
-        
+    
     Returns:
-        int: День учебы (1-14)
+        int: День учебы (начиная с 1)
     """
     plan = get_or_create_learning_plan(user)
     
-    # Получаем данные из domain_analysis
-    domain_analysis = plan.get_domain_analysis()
-    study_data = {}
-    if isinstance(domain_analysis, dict) and '_study_day_data' in domain_analysis:
-        study_data = domain_analysis['_study_day_data']
+    # Получаем study_day_count из daily_goal_met_count (временное решение)
+    # или из domain_analysis
+    study_day = getattr(plan, 'daily_goal_met_count', None)
     
-    # Если данных нет, используем daily_goal_met_count как fallback
-    study_day = study_data.get('study_day_count', 0) if study_data else (plan.daily_goal_met_count or 0)
+    if study_day is None or study_day == 0:
+        # Пытаемся получить из domain_analysis
+        study_data = plan.get_domain_analysis()
+        if study_data and isinstance(study_data, dict):
+            study_day = study_data.get('_study_day_data', {}).get('study_day_count', 0)
     
-    # Если день = 0, значит еще не было успешного дня - возвращаем день 1 (первый день)
-    if study_day == 0:
+    # Если все еще 0 или None, возвращаем 1 (первый день)
+    if not study_day or study_day == 0:
         return 1
     
     return study_day
 
 
-def get_big_test_questions(user_id, max_questions=60):
-    """
-    Получить вопросы для большого теста (60 вопросов).
-    
-    Приоритет:
-    1. Неправильные из SR (максимум 60, если больше - первые 60)
-    2. Если неправильных < 60, добавить правильные из SR
-    3. Если все еще < 60, добавить вопросы из тестов за последние 2 недели
-    
-    Args:
-        user_id: ID пользователя
-        max_questions: Максимальное количество вопросов (по умолчанию 60)
-        
-    Returns:
-        list: Список ID вопросов для большого теста
-    """
-    from models import DiagnosticResponse, User
-    
-    two_weeks_ago = datetime.now(timezone.utc) - timedelta(days=14)
-    question_ids = []
-    
-    # 1. Получаем неправильные из SR (созданные за последние 2 недели)
-    incorrect_sr_items = SpacedRepetitionItem.query.filter(
-        SpacedRepetitionItem.user_id == user_id,
-        SpacedRepetitionItem.is_active == True,
-        SpacedRepetitionItem.created_at >= two_weeks_ago,
-        SpacedRepetitionItem.quality < 3  # Неправильные (качество < 3)
-    ).order_by(SpacedRepetitionItem.created_at.asc()).limit(max_questions).all()
-    
-    incorrect_question_ids = [item.question_id for item in incorrect_sr_items]
-    question_ids.extend(incorrect_question_ids[:max_questions])
-    
-    # 2. Если неправильных < 60, добавляем правильные из SR
-    if len(question_ids) < max_questions:
-        remaining = max_questions - len(question_ids)
-        correct_sr_items = SpacedRepetitionItem.query.filter(
-            SpacedRepetitionItem.user_id == user_id,
-            SpacedRepetitionItem.is_active == True,
-            SpacedRepetitionItem.created_at >= two_weeks_ago,
-            SpacedRepetitionItem.quality >= 3,  # Правильные
-            ~SpacedRepetitionItem.question_id.in_(question_ids) if question_ids else True
-        ).order_by(SpacedRepetitionItem.created_at.asc()).limit(remaining).all()
-        
-        correct_question_ids = [item.question_id for item in correct_sr_items]
-        question_ids.extend(correct_question_ids)
-    
-    # 3. Если все еще < 60, добавляем вопросы из тестов за последние 2 недели
-    if len(question_ids) < max_questions:
-        remaining = max_questions - len(question_ids)
-        
-        # Получаем все вопросы из DiagnosticSession за последние 2 недели
-        recent_sessions = DiagnosticSession.query.filter(
-            DiagnosticSession.user_id == user_id,
-            DiagnosticSession.status == 'completed',
-            DiagnosticSession.completed_at >= two_weeks_ago
-        ).all()
-        
-        # Получаем все question_id из этих сессий
-        session_ids = [session.id for session in recent_sessions]
-        if session_ids:
-            recent_responses = DiagnosticResponse.query.filter(
-                DiagnosticResponse.session_id.in_(session_ids)
-            ).all()
-            
-            recent_question_ids = list(set([r.question_id for r in recent_responses]))
-            # Исключаем уже добавленные
-            new_question_ids = [qid for qid in recent_question_ids if qid not in question_ids]
-            # Берем первые remaining
-            question_ids.extend(new_question_ids[:remaining])
-    
-    # Если все еще не хватает - добавляем случайные вопросы из профессии пользователя
-    if len(question_ids) < max_questions:
-        remaining = max_questions - len(question_ids)
-        user = User.query.get(user_id)
-        if user:
-            profession = get_user_profession_code(user)
-            additional_questions = Question.query.filter(
-                Question.profession == profession,
-                ~Question.id.in_(question_ids) if question_ids else True
-            ).order_by(func.random()).limit(remaining).all()
-            
-            additional_ids = [q.id for q in additional_questions]
-            question_ids.extend(additional_ids)
-    
-    return question_ids[:max_questions]
-
-
 def get_cycle_info(study_day):
     """
-    Определяет текущий цикл обучения и его параметры.
-    
-    Циклы:
-    - Цикл 1 (дни 1-28): Базовый уровень
-    - Цикл 2 (дни 29-56): Адаптивный (фокус на слабых местах, +20% целей)
-    - Цикл 3 (дни 57-84): Углубленный (сложные задачи, +50% целей)
-    - Цикл 4+ (дни 85+): Экспертный (комплексные кейсы, +100% целей)
+    Определяет информацию о текущем цикле обучения.
     
     Args:
-        study_day: День учебы (начиная с 1, может быть любым числом)
-        
+        study_day: День учебы (начиная с 1)
+    
     Returns:
         dict: {
-            'cycle': int,  # Номер цикла (1, 2, 3, 4+)
-            'day_in_cycle': int,  # День в текущем цикле (1-28)
-            'total_days': int,  # Общее количество дней учебы
+            'cycle': int,  # Номер цикла (1, 2, 3...)
+            'day_in_cycle': int,  # День в цикле (1-28)
             'config': dict  # Конфигурация цикла
         }
     """
-    # Определяем номер цикла (начинается с 1)
-    cycle_num = ((study_day - 1) // 28) + 1
-    # День в текущем цикле (1-28)
+    if study_day <= 0:
+        study_day = 1
+    
+    # Каждый цикл = 28 дней
+    cycle = ((study_day - 1) // 28) + 1
     day_in_cycle = ((study_day - 1) % 28) + 1
     
-    # Конфигурация для каждого цикла
-    # Используем ключи для переводов, которые будут переводиться на фронтенде
-    cycle_configs = {
-        1: {
-            'name_key': 'cycle_basic',  # Ключ для перевода
-            'multiplier': 1.0,
-            'focus': 'general',
-            'description_key': 'cycle_basic_description',  # Ключ для перевода
-            'new_features': [],
-            'color': '#10b981'  # Зеленый (используем стандартный цвет)
-        },
-        2: {
-            'name_key': 'cycle_adaptive',
-            'multiplier': 1.2,
-            'focus': 'weak_domains',
-            'description_key': 'cycle_adaptive_description',
-            'new_features': ['adaptive_difficulty'],
-            'color': '#f59e0b'  # Оранжевый
-        },
-        3: {
-            'name_key': 'cycle_advanced',
-            'multiplier': 1.5,
-            'focus': 'mastery',
-            'description_key': 'cycle_advanced_description',
-            'new_features': ['complex_cases', 'adaptive_difficulty'],
-            'color': '#10b981'  # Зеленый
-        }
-    }
-    
-    # Для циклов 4+ используем конфигурацию экспертного уровня
-    if cycle_num >= 4:
-        config = {
-            'name_key': 'cycle_expert',
-            'multiplier': 2.0,
-            'focus': 'expert',
-            'description_key': 'cycle_expert_description',
-            'new_features': ['expert_mode', 'complex_cases', 'adaptive_difficulty', 'time_challenges'],
-            'color': '#ef4444'  # Красный
-        }
-    else:
-        config = cycle_configs[cycle_num]
+    # Определяем конфигурацию цикла
+    if cycle == 1:
+        multiplier = 1.0
+        focus = 'foundation'
+        name_key = 'cycle_basic'
+        description_key = 'cycle_basic_description'
+    elif cycle == 2:
+        multiplier = 1.2
+        focus = 'adaptation'
+        name_key = 'cycle_adaptive'
+        description_key = 'cycle_adaptive_description'
+    elif cycle == 3:
+        multiplier = 1.5
+        focus = 'advanced'
+        name_key = 'cycle_advanced'
+        description_key = 'cycle_advanced_description'
+    else:  # cycle >= 4
+        multiplier = 1.5 + (cycle - 3) * 0.1  # Увеличиваем сложность
+        focus = 'expert'
+        name_key = 'cycle_expert'
+        description_key = 'cycle_expert_description'
     
     return {
-        'cycle': cycle_num,
+        'cycle': cycle,
         'day_in_cycle': day_in_cycle,
-        'total_days': study_day,
-        'config': config
+        'config': {
+            'multiplier': multiplier,
+            'focus': focus,
+            'name_key': name_key,
+            'description_key': description_key
+        }
+    }
+
+
+def update_study_day_count(user):
+    """
+    Обновляет счетчик дней учебы на основе выполнения задач.
+    
+    Args:
+        user: User object
+    
+    Returns:
+        dict: {
+            'study_day': int,
+            'cycle_info': dict,
+            'first_successful_day': date or None
+        }
+    """
+    plan = get_or_create_learning_plan(user)
+    
+    # Получаем текущий день учебы
+    current_study_day = get_study_day(user)
+    
+    # Проверяем, выполнены ли все задачи сегодня
+    all_completed = check_all_tasks_completed_today(user)
+    
+    # Получаем информацию о первом успешном дне
+    study_data = plan.get_domain_analysis()
+    if study_data and isinstance(study_data, dict):
+        study_day_data = study_data.get('_study_day_data', {})
+        first_successful_day_str = study_day_data.get('first_successful_day')
+        if first_successful_day_str:
+            try:
+                from datetime import datetime as dt
+                first_successful_day = dt.fromisoformat(first_successful_day_str).date()
+            except:
+                first_successful_day = None
+        else:
+            first_successful_day = None
+    else:
+        first_successful_day = None
+    
+    # Если все задачи выполнены сегодня и это новый успешный день
+    if all_completed:
+        today = date.today()
+        
+        # Проверяем, не был ли сегодняшний день уже засчитан
+        # (чтобы не увеличивать счетчик несколько раз за день)
+        last_successful_date_str = None
+        if study_data and isinstance(study_data, dict):
+            study_day_data = study_data.get('_study_day_data', {})
+            last_successful_date_str = study_day_data.get('last_successful_date')
+        
+        if not last_successful_date_str or last_successful_date_str != today.isoformat():
+            # Увеличиваем счетчик дней учебы
+            new_study_day = current_study_day + 1
+            
+            # Сохраняем в daily_goal_met_count (временное решение)
+            plan.daily_goal_met_count = new_study_day
+            
+            # Сохраняем в domain_analysis
+            if not study_data:
+                study_data = {}
+            if '_study_day_data' not in study_data:
+                study_data['_study_day_data'] = {}
+            
+            study_data['_study_day_data']['study_day_count'] = new_study_day
+            study_data['_study_day_data']['last_successful_date'] = today.isoformat()
+            
+            if not first_successful_day:
+                first_successful_day = today
+                study_data['_study_day_data']['first_successful_day'] = today.isoformat()
+            
+            plan.set_domain_analysis(study_data)
+            db.session.commit()
+            
+            current_study_day = new_study_day
+    
+    # Получаем информацию о цикле
+    cycle_info = get_cycle_info(current_study_day)
+    
+    return {
+        'study_day': current_study_day,
+        'cycle_info': cycle_info,
+        'first_successful_day': first_successful_day
     }

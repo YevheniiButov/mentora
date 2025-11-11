@@ -2965,13 +2965,18 @@ def user_learning_progress(user_id):
         for progress in english_progress:
             passage = EnglishPassage.query.get(progress.passage_id)
             if passage:
-                score = (progress.correct_answers / progress.total_questions * 100) if progress.total_questions > 0 else 0
-                total_score += score
+                # UserEnglishProgress использует поле 'score' (количество правильных ответов), а не 'correct_answers'
+                # score уже содержит количество правильных ответов, нужно вычислить процент
+                if progress.total_questions and progress.total_questions > 0:
+                    score_percent = (progress.score / progress.total_questions * 100) if progress.score else 0
+                else:
+                    score_percent = 0
+                total_score += score_percent
                 completed_count += 1
                 english_stats['passages'].append({
                     'passage': passage,
                     'progress': progress,
-                    'score': round(score, 1)
+                    'score': round(score_percent, 1)
                 })
         
         if completed_count > 0:
@@ -3003,7 +3008,8 @@ def user_learning_progress(user_id):
         for attempt in vp_attempts:
             scenario = VirtualPatientScenario.query.get(attempt.scenario_id)
             if scenario and attempt.completed:
-                score = attempt.score_percentage or 0
+                # VirtualPatientAttempt имеет свойство percentage_score
+                score = attempt.percentage_score if hasattr(attempt, 'percentage_score') else 0
                 total_vp_score += score
                 completed_vp_count += 1
                 vp_stats['scenarios'].append({

@@ -7146,70 +7146,70 @@
                         this.loading = false;
                     }
                 },
-              
-              selectDay(studyDay) {
-                  const day = this.studyDays.find(d => d.study_day === studyDay);
-                  if (day && day.is_locked) {
-                      // Не позволяем выбирать заблокированные дни
-                      return;
-                  }
-                  
-                  this.selectedDay = studyDay;
-                  this.selectedDayPlan = day;
-                  
-                  // Обновляем глобальный state в learningMapApp
-                  this.updateGlobalPlannerState(this.selectedDayPlan);
-              },
-              
-              updateGlobalPlannerState(dayPlan) {
-                  // Используем событие для обновления plannerSelectedDayPlan в learningMapApp
-                  try {
-                      // Отправляем событие, которое будет перехвачено в learningMapApp
-                      window.dispatchEvent(new CustomEvent('planner-day-selected', { detail: dayPlan }));
-                  } catch (e) {
-                      console.warn('Could not update global planner state:', e);
-                  }
-              },
-              
-              getTaskIcon(taskType) {
-                const icons = {
-                    'diagnostic_test': 'clipboard-check',
-                    'flashcards': 'card-text',
-                    'virtual_patient': 'person-badge',
-                    'english_reading': 'book',
-                    'memory': 'bullseye',
-                    'big_test': 'clipboard-check'
-                };
-                return icons[taskType] || 'circle';
-            },
-            
-            getCycleDescription(descriptionKey) {
-                // Получаем язык из глобальной переменной или из data-атрибута
-                const lang = window.currentLang || 'nl';
                 
-                const descriptions = {
-                    'nl': {
-                        'cycle_basic_description': 'Basis niveau - Focus op algemene kennis en fundamentele vaardigheden',
-                        'cycle_adaptive_description': 'Adaptief niveau - Focus op zwakke punten, +20% doelen',
-                        'cycle_advanced_description': 'Geavanceerd niveau - Complexe taken, +50% doelen',
-                        'cycle_expert_description': 'Expert niveau - Complexe cases, +100% doelen'
-                    },
-                    'en': {
-                        'cycle_basic_description': 'Basic level - Focus on general knowledge and fundamental skills',
-                        'cycle_adaptive_description': 'Adaptive level - Focus on weak areas, +20% goals',
-                        'cycle_advanced_description': 'Advanced level - Complex tasks, +50% goals',
-                        'cycle_expert_description': 'Expert level - Complex cases, +100% goals'
-                    },
-                    'ru': {
-                        'cycle_basic_description': 'Базовый уровень - Фокус на общих знаниях и базовых навыках',
-                        'cycle_adaptive_description': 'Адаптивный уровень - Фокус на слабых местах, +20% целей',
-                        'cycle_advanced_description': 'Продвинутый уровень - Сложные задачи, +50% целей',
-                        'cycle_expert_description': 'Экспертный уровень - Сложные кейсы, +100% целей'
+                selectDay(studyDay) {
+                    const day = this.studyDays.find(d => d.study_day === studyDay);
+                    if (day && day.is_locked) {
+                        // Не позволяем выбирать заблокированные дни
+                        return;
                     }
-                };
+                    
+                    this.selectedDay = studyDay;
+                    this.selectedDayPlan = day;
+                    
+                    // Обновляем глобальный state в learningMapApp
+                    this.updateGlobalPlannerState(this.selectedDayPlan);
+                },
                 
-                return descriptions[lang]?.[descriptionKey] || descriptions['en'][descriptionKey] || '';
-            }
+                updateGlobalPlannerState(dayPlan) {
+                    // Используем событие для обновления plannerSelectedDayPlan в learningMapApp
+                    try {
+                        // Отправляем событие, которое будет перехвачено в learningMapApp
+                        window.dispatchEvent(new CustomEvent('planner-day-selected', { detail: dayPlan }));
+                    } catch (e) {
+                        console.warn('Could not update global planner state:', e);
+                    }
+                },
+                
+                getTaskIcon(taskType) {
+                    const icons = {
+                        'diagnostic_test': 'clipboard-check',
+                        'flashcards': 'card-text',
+                        'virtual_patient': 'person-badge',
+                        'english_reading': 'book',
+                        'memory': 'bullseye',
+                        'big_test': 'clipboard-check'
+                    };
+                    return icons[taskType] || 'circle';
+                },
+                
+                getCycleDescription(descriptionKey) {
+                    // Получаем язык из глобальной переменной или из data-атрибута
+                    const lang = window.currentLang || 'nl';
+                    
+                    const descriptions = {
+                        'nl': {
+                            'cycle_basic_description': 'Basis niveau - Focus op algemene kennis en fundamentele vaardigheden',
+                            'cycle_adaptive_description': 'Adaptief niveau - Focus op zwakke punten, +20% doelen',
+                            'cycle_advanced_description': 'Geavanceerd niveau - Complexe taken, +50% doelen',
+                            'cycle_expert_description': 'Expert niveau - Complexe cases, +100% doelen'
+                        },
+                        'en': {
+                            'cycle_basic_description': 'Basic level - Focus on general knowledge and fundamental skills',
+                            'cycle_adaptive_description': 'Adaptive level - Focus on weak areas, +20% goals',
+                            'cycle_advanced_description': 'Advanced level - Complex tasks, +50% goals',
+                            'cycle_expert_description': 'Expert level - Complex cases, +100% goals'
+                        },
+                        'ru': {
+                            'cycle_basic_description': 'Базовый уровень - Фокус на общих знаниях и базовых навыках',
+                            'cycle_adaptive_description': 'Адаптивный уровень - Фокус на слабых местах, +20% целей',
+                            'cycle_advanced_description': 'Продвинутый уровень - Сложные задачи, +50% целей',
+                            'cycle_expert_description': 'Экспертный уровень - Сложные кейсы, +100% целей'
+                        }
+                    };
+                    
+                    return descriptions[lang]?.[descriptionKey] || descriptions['en'][descriptionKey] || '';
+                }
           };
       }
       

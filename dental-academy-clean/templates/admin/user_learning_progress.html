@@ -146,8 +146,10 @@
                                 <td>{{ session.total_questions or 0 }}</td>
                                 <td>{{ session.correct_answers or 0 }}</td>
                                 <td>
-                                    {% if session.score_percentage is not none %}
-                                        {{ "%.1f"|format(session.score_percentage) }}%
+                                    {% if session.total_questions and session.total_questions > 0 %}
+                                        {{ "%.1f"|format((session.correct_answers or 0) / session.total_questions * 100) }}%
+                                    {% elif session.questions_answered and session.questions_answered > 0 %}
+                                        {{ "%.1f"|format((session.correct_answers or 0) / session.questions_answered * 100) }}%
                                     {% else %}
                                         N/A
                                     {% endif %}
@@ -305,8 +307,8 @@
                             <tr>
                                 <td>{{ item.passage.title or 'Без названия' }}</td>
                                 <td>{{ item.progress.completed_at.strftime('%d.%m.%Y %H:%M') if item.progress.completed_at else 'N/A' }}</td>
-                                <td>{{ item.progress.correct_answers }}</td>
-                                <td>{{ item.progress.total_questions }}</td>
+                                <td>{{ item.progress.score or 0 }}</td>
+                                <td>{{ item.progress.total_questions or 0 }}</td>
                                 <td>
                                     <span class="badge {% if item.score >= 80 %}bg-success{% elif item.score >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
                                         {{ item.score }}%

@@ -501,6 +501,9 @@ try:
     from routes.english_routes import english_bp
     from routes.english_reading_routes import english_reading_bp
     
+    # Импорт Reading Comprehension роутов
+    from routes.reading_comprehension import reading_comprehension_bp
+    
     # Импорт Calendar Plan API роутов
     from routes.calendar_plan_api import calendar_plan_bp
     
@@ -585,6 +588,9 @@ try:
     # These have specific prefixes (/api/english and /english) so they won't conflict
     app.register_blueprint(english_bp)  # /api/english
     app.register_blueprint(english_reading_bp)  # /english
+    
+    # Регистрация Reading Comprehension blueprint
+    app.register_blueprint(reading_comprehension_bp)  # /api/reading-comprehension
     
     # Регистрация Calendar Plan API blueprint
     app.register_blueprint(calendar_plan_bp)
