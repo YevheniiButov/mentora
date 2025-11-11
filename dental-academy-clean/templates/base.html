@@ -40,6 +40,13 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     
+    <!-- Alpine.js x-cloak для предотвращения мерцания -->
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+    
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
@@ -437,6 +444,9 @@
         </div>
     </div>
 
+    <!-- Alpine.js (load before Bootstrap to avoid conflicts) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" onload="console.log('✅ Alpine.js script loaded')"></script>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -454,148 +464,66 @@
             console.error('❌ Error line:', e.lineno);
         });
             
-        document.addEventListener('DOMContentLoaded', function() {// Инициализация всех выпадающих меню Bootstrap
-            try {
-                var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
-                    return new bootstrap.Dropdown(dropdownToggleEl);
-                });} catch (error) {
-                console.error('❌ Bootstrap dropdown error:', error);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ждем полной загрузки Alpine.js перед инициализацией Bootstrap
+            function initBootstrapDropdowns() {
+                // Инициализация всех выпадающих меню Bootstrap (только для элементов БЕЗ Alpine.js)
+                try {
+                    // Исключаем элементы с x-data (Alpine.js dropdown)
+                    var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'))
+                        .filter(function(el) {
+                            // Пропускаем элементы, которые находятся внутри Alpine.js dropdown
+                            return !el.closest('[x-data]');
+                        });
+                    
+                    var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
+                        return new bootstrap.Dropdown(dropdownToggleEl);
+                    });
+                } catch (error) {
+                    console.error('❌ Bootstrap dropdown error:', error);
+                }
+            }
+            
+            // Ждем загрузки Alpine.js
+            if (typeof Alpine !== 'undefined') {
+                // Alpine уже загружен
+                initBootstrapDropdowns();
+            } else {
+                // Ждем загрузки Alpine.js
+                var checkAlpine = setInterval(function() {
+                    if (typeof Alpine !== 'undefined') {
+                        clearInterval(checkAlpine);
+                        initBootstrapDropdowns();
+                    }
+                }, 100);
+                
+                // Таймаут на случай, если Alpine не загрузится
+                setTimeout(function() {
+                    clearInterval(checkAlpine);
+                    initBootstrapDropdowns();
+                }, 2000);
             }
             
             // Отладка выпадающих меню
             // Инициализировано выпадающих меню
             
-            // Добавляем обработчик для закрытия dropdown меню по клику вне
-            document.addEventListener('click', function(event) {
-                if (!event.target.closest('.dropdown')) {
-                    dropdownList.forEach(function(dropdown) {
-                        dropdown.hide();
-                    });
-                }
-            });// Прямая инициализация меню профиля и языка
-            try {
-                var userDropdown = document.getElementById('userDropdown');
-                if (userDropdown) {
-                    var userDropdownInstance = new bootstrap.Dropdown(userDropdown);} else {}
-            } catch (error) {
-                console.error('❌ User dropdown error:', error);
-            }
-            
-            // НАДЕЖНОЕ решение мобильного меню с защитой от повторной инициализации
-            function initMobileMenu() {const navbarToggler = document.querySelector('.navbar-toggler');
-                const navbarCollapse = document.querySelector('.navbar-collapse');
-                
-                if (!navbarToggler || !navbarCollapse) {return;
-                }
-                
-                // ЗАЩИТА ОТ ПОВТОРНОЙ ИНИЦИАЛИЗАЦИИ
-                if (navbarToggler.hasAttribute('data-mobile-menu-initialized')) {return;
-                }
-                
-                // Помечаем как инициализированный
-                navbarToggler.setAttribute('data-mobile-menu-initialized', 'true');// Проверяем, не инициализирован ли уже Bootstrap
-                let bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
-                if (!bsCollapse) {
-                    bsCollapse = new bootstrap.Collapse(navbarCollapse, {
-                        toggle: false
-                    });
-                }
-                
-                // Переменная для отслеживания состояния
-                let isMenuOpen = false;
-                
-                // УДАЛЯЕМ ВСЕ СУЩЕСТВУЮЩИЕ ОБРАБОТЧИКИ
-                const newToggler = navbarToggler.cloneNode(true);
-                navbarToggler.parentNode.replaceChild(newToggler, navbarToggler);
-                
-                // Добавляем обработчик на toggle
-                newToggler.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();if (isMenuOpen) {
-                        // Закрываем меню через Bootstrap
-                        bsCollapse.hide();
-                        newToggler.setAttribute('aria-expanded', 'false');
-                        isMenuOpen = false;} else {
-                        // Открываем меню через Bootstrap
-                        bsCollapse.show();
-                        newToggler.setAttribute('aria-expanded', 'true');
-                        isMenuOpen = true;}
-                });
-                
-                // Слушаем события Bootstrap
-                navbarCollapse.addEventListener('shown.bs.collapse', function() {
-                    isMenuOpen = true;});
-                
-                navbarCollapse.addEventListener('hidden.bs.collapse', function() {
-                    isMenuOpen = false;});
-                
-                // Обработчик для ссылок навигации
-                const navLinks = navbarCollapse.querySelectorAll('.nav-link');
-                navLinks.forEach(link => {
-                    link.addEventListener('click', function(e) {// Закрываем меню
-                        if (isMenuOpen) {
-                            bsCollapse.hide();
-                            newToggler.setAttribute('aria-expanded', 'false');
-                            isMenuOpen = false;}
-                        
-                        // НЕ блокируем переход
-                        // e.preventDefault() убран!
-                    });
-                });
-                
-                // Обработчик для кликов вне меню
-                document.addEventListener('click', function(e) {
-                    // Если клик вне меню и не по toggle
-                    if (!navbarCollapse.contains(e.target) && !newToggler.contains(e.target)) {
-                        if (isMenuOpen) {
-                            bsCollapse.hide();
-                            newToggler.setAttribute('aria-expanded', 'false');
-                            isMenuOpen = false;}
+            // Добавляем обработчик для закрытия dropdown меню по клику вне (только для Bootstrap dropdown)
+            // Примечание: Dropdown меню в шапке управляются через Alpine.js и не требуют этого обработчика
+            if (typeof dropdownList !== 'undefined' && dropdownList.length > 0) {
+                document.addEventListener('click', function(event) {
+                    // Проверяем, что клик не по Alpine.js dropdown (они имеют x-data)
+                    // И не по элементам внутри Alpine.js dropdown
+                    const alpineDropdown = event.target.closest('.dropdown[x-data]');
+                    if (!alpineDropdown) {
+                        dropdownList.forEach(function(dropdown) {
+                            try {
+                                dropdown.hide();
+                            } catch (e) {
+                                // Игнорируем ошибки для Alpine.js dropdown
+                            }
+                        });
                     }
                 });
-                
-                // ДОПОЛНИТЕЛЬНАЯ ДИАГНОСТИКА И ПРИНУДИТЕЛЬНАЯ НАВИГАЦИЯ
-                const allNavLinks = navbarCollapse.querySelectorAll('a, .nav-link, [href]');
-                allNavLinks.forEach(link => {
-                    link.addEventListener('click', function(e) {// Проверяем, что это действительно ссылка
-                        if (this.href && this.href !== '#' && !this.href.includes('javascript:')) {// ПРИНУДИТЕЛЬНАЯ НАВИГАЦИЯ: Если обычная навигация не работает
-                            setTimeout(() => {window.location.href = this.href;
-                            }, 100);
-                        } else {}
-                    });
-                });}
-            
-            // Инициализируем сразу и с задержкой для защиты от конфликтов
-            initMobileMenu();
-            setTimeout(initMobileMenu, 500);
-            setTimeout(initMobileMenu, 1000);
-            setTimeout(initMobileMenu, 2000);
-            setTimeout(initMobileMenu, 5000);
-            setTimeout(initMobileMenu, 10000);
-            
-            // Принудительная реинициализация каждые 30 секунд для защиты от поздних скриптов
-            setInterval(() => {
-                const navbarToggler = document.querySelector('.navbar-toggler');
-                if (navbarToggler && !navbarToggler.hasAttribute('data-mobile-menu-initialized')) {initMobileMenu();
-                }
-            }, 30000);
-            
-            var languageDropdown = document.getElementById('languageDropdown');
-            if (languageDropdown) {
-                console.log('🌐 Base.html: Initializing language dropdown');
-                var languageDropdownInstance = new bootstrap.Dropdown(languageDropdown);
-                console.log('✅ Base.html: Language dropdown initialized');
-            } else {
-                console.log('❌ Base.html: Language dropdown element not found');
-            }
-            
-            var userDropdown = document.getElementById('userDropdown');
-            if (userDropdown) {
-                console.log('👤 Base.html: Initializing user dropdown');
-                var userDropdownInstance = new bootstrap.Dropdown(userDropdown);
-                console.log('✅ Base.html: User dropdown initialized');
-            } else {
-                console.log('❌ Base.html: User dropdown element not found');
             }
         });
     </script>

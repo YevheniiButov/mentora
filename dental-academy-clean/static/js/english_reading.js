@@ -448,11 +448,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     time_spent: timeSpent
                 };
                 
+                const csrfToken = getCsrfToken();
                 const response = await fetch('/api/english/submit', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRFToken': getCsrfToken()
+                        'X-CSRF-Token': csrfToken,
+                        'X-CSRFToken': csrfToken  // Дублируем для совместимости
                     },
                     body: JSON.stringify(requestData)
                 });
@@ -474,7 +476,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function getCsrfToken() {
     const token = document.querySelector('meta[name="csrf-token"]');
-    return token ? token.getAttribute('content') : '';
+    const tokenValue = token ? token.getAttribute('content') : '';
+    if (!tokenValue) {
+        console.warn('⚠️ CSRF token not found in meta tag');
+    }
+    return tokenValue;
 }
 
 // Show results with highlighting

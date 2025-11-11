@@ -4,6 +4,7 @@
 
 from flask import Blueprint, jsonify, request, render_template, current_app
 from flask_login import login_required, current_user
+from flask_wtf.csrf import exempt
 from extensions import db
 from models import EnglishPassage, EnglishQuestion, UserEnglishProgress
 from datetime import datetime, timezone
@@ -355,6 +356,7 @@ def get_passage(passage_id):
 
 @english_bp.route('/submit', methods=['POST'])
 @login_required
+@exempt
 def submit_answers():
     """Submit answers and calculate score"""
     try:
