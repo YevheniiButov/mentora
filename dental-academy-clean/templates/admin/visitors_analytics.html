@@ -446,22 +446,29 @@ const deviceLabels = [];
 const deviceCounts = [];
 const deviceColors = [];
 
-deviceData.forEach(([device, count]) => {
-    if (device === 'mobile') {
-        deviceLabels.push('Мобильные');
-        deviceColors.push('#28a745');
-    } else if (device === 'tablet') {
-        deviceLabels.push('Планшеты');
-        deviceColors.push('#17a2b8');
-    } else if (device === 'desktop') {
-        deviceLabels.push('Компьютеры');
-        deviceColors.push('#007bff');
-    } else {
-        deviceLabels.push(device || 'Неизвестно');
-        deviceColors.push('#6c757d');
-    }
-    deviceCounts.push(count);
-});
+// Проверяем, что deviceData является массивом
+if (Array.isArray(deviceData)) {
+    deviceData.forEach((item) => {
+        // deviceData может быть массивом объектов {device_type, visits} или массивом кортежей [device, count]
+        const device = item.device_type || item[0] || item;
+        const count = item.visits || item[1] || 0;
+        
+        if (device === 'mobile') {
+            deviceLabels.push('Мобильные');
+            deviceColors.push('#28a745');
+        } else if (device === 'tablet') {
+            deviceLabels.push('Планшеты');
+            deviceColors.push('#17a2b8');
+        } else if (device === 'desktop') {
+            deviceLabels.push('Компьютеры');
+            deviceColors.push('#007bff');
+        } else {
+            deviceLabels.push(device || 'Неизвестно');
+            deviceColors.push('#6c757d');
+        }
+        deviceCounts.push(count);
+    });
+}
 
 new Chart(deviceCtx, {
     type: 'doughnut',

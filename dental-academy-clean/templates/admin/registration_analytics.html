@@ -426,7 +426,13 @@
                         <tbody>
                             {% for stat in daily_stats %}
                             <tr>
-                                <td>{{ stat.date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    {% if stat.date is string %}
+                                        {{ stat.date }}
+                                    {% else %}
+                                        {{ stat.date.strftime('%Y-%m-%d') if stat.date else 'N/A' }}
+                                    {% endif %}
+                                </td>
                                 <td>{{ stat.page_type.replace('_', ' ').title() }}</td>
                                 <td>{{ stat.visits }}</td>
                                 <td>{{ stat.unique_visitors }}</td>

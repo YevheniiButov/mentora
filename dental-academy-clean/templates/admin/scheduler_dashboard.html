@@ -270,26 +270,75 @@
 
 <!-- DataTables Scripts -->
 <script>
-$(document).ready(function() {
-    $('#overdueTable').DataTable({
-        "order": [[2, "desc"]], // Sort by days overdue
-        "pageLength": 10,
-        "language": {
-            "search": "Search overdue:",
-            "lengthMenu": "Show _MENU_ overdue items per page",
-            "info": "Showing _START_ to _END_ of _TOTAL_ overdue items"
+// Проверяем наличие jQuery и DataTables перед использованием
+document.addEventListener('DOMContentLoaded', function() {
+    // Загружаем jQuery если его нет
+    if (typeof jQuery === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
+        script.onload = function() {
+            // После загрузки jQuery загружаем DataTables
+            if (typeof $.fn.DataTable === 'undefined') {
+                const dtScript = document.createElement('script');
+                dtScript.src = 'https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js';
+                dtScript.onload = initDataTables;
+                document.head.appendChild(dtScript);
+                
+                const dtCss = document.createElement('link');
+                dtCss.rel = 'stylesheet';
+                dtCss.href = 'https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css';
+                document.head.appendChild(dtCss);
+            } else {
+                initDataTables();
+            }
+        };
+        document.head.appendChild(script);
+    } else {
+        // jQuery уже загружен, проверяем DataTables
+        if (typeof $.fn.DataTable === 'undefined') {
+            const dtScript = document.createElement('script');
+            dtScript.src = 'https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js';
+            dtScript.onload = initDataTables;
+            document.head.appendChild(dtScript);
+            
+            const dtCss = document.createElement('link');
+            dtCss.rel = 'stylesheet';
+            dtCss.href = 'https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css';
+            document.head.appendChild(dtCss);
+        } else {
+            initDataTables();
         }
-    });
+    }
+    
+    function initDataTables() {
+        if (typeof jQuery !== 'undefined' && typeof jQuery.fn.DataTable !== 'undefined') {
+            const $ = jQuery;
+            
+            if ($('#overdueTable').length) {
+                $('#overdueTable').DataTable({
+                    "order": [[2, "desc"]], // Sort by days overdue
+                    "pageLength": 10,
+                    "language": {
+                        "search": "Search overdue:",
+                        "lengthMenu": "Show _MENU_ overdue items per page",
+                        "info": "Showing _START_ to _END_ of _TOTAL_ overdue items"
+                    }
+                });
+            }
 
-    $('#recommendationsTable').DataTable({
-        "order": [[1, "asc"], [2, "asc"]], // Sort by priority, then date
-        "pageLength": 15,
-        "language": {
-            "search": "Search recommendations:",
-            "lengthMenu": "Show _MENU_ recommendations per page",
-            "info": "Showing _START_ to _END_ of _TOTAL_ recommendations"
+            if ($('#recommendationsTable').length) {
+                $('#recommendationsTable').DataTable({
+                    "order": [[1, "asc"], [2, "asc"]], // Sort by priority, then date
+                    "pageLength": 15,
+                    "language": {
+                        "search": "Search recommendations:",
+                        "lengthMenu": "Show _MENU_ recommendations per page",
+                        "info": "Showing _START_ to _END_ of _TOTAL_ recommendations"
+                    }
+                });
+            }
         }
-    });
+    }
 });
 </script>
 {% endblock %} 
