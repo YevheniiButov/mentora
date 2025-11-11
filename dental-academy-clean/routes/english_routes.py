@@ -361,12 +361,22 @@ def submit_answers():
         # Log request data for debugging
         current_app.logger.info(f"English submit request - Content-Type: {request.content_type}")
         current_app.logger.info(f"English submit request - Is JSON: {request.is_json}")
+        current_app.logger.info(f"English submit request - Raw data: {request.data}")
         
-        if not request.is_json:
-            current_app.logger.error("English submit: Request is not JSON")
-            return jsonify({'error': 'Request must be JSON'}), 400
+        # Try to get JSON data - handle both JSON and form data
+        data = None
+        if request.is_json:
+            data = request.get_json()
+        else:
+            # Try to parse as JSON from raw data
+            try:
+                import json
+                if request.data:
+                    data = json.loads(request.data.decode('utf-8'))
+            except (json.JSONDecodeError, UnicodeDecodeError) as e:
+                current_app.logger.error(f"English submit: Failed to parse JSON: {str(e)}")
+                return jsonify({'error': 'Invalid JSON format'}), 400
         
-        data = request.get_json()
         if not data:
             current_app.logger.error("English submit: No data received")
             return jsonify({'error': 'No data received'}), 400
@@ -377,22 +387,30 @@ def submit_answers():
         answers = data.get('answers', {})  # {question_id: answer}
         time_spent = data.get('time_spent', 0)  # seconds
         
-        # Convert passage_id to int if it's a string
-        if passage_id:
-            try:
-                passage_id = int(passage_id)
-            except (ValueError, TypeError):
-                current_app.logger.error(f"English submit: Invalid passage_id type: {type(passage_id)}, value: {passage_id}")
-                return jsonify({'error': 'Invalid passage ID format'}), 400
-        
-        if not passage_id:
+        # Convert passage_id to int if it's a string or None
+        if passage_id is None:
             current_app.logger.error(f"English submit: Missing passage_id. Data: {data}")
             return jsonify({'error': 'Passage ID required'}), 400
         
-        # Validate answers is a dict
+        try:
+            passage_id = int(passage_id)
+        except (ValueError, TypeError) as e:
+            current_app.logger.error(f"English submit: Invalid passage_id type: {type(passage_id)}, value: {passage_id}, error: {str(e)}")
+            return jsonify({'error': f'Invalid passage ID format: {passage_id}'}), 400
+        
+        # Validate answers is a dict or convert to dict
+        if answers is None:
+            answers = {}
+        
         if not isinstance(answers, dict):
-            current_app.logger.error(f"English submit: Invalid answers type: {type(answers)}, value: {answers}")
-            return jsonify({'error': 'Answers must be an object'}), 400
+            # Try to convert to dict if it's a list or other type
+            if isinstance(answers, list):
+                # Convert list to dict: [answer1, answer2] -> {1: answer1, 2: answer2}
+                answers = {str(i+1): str(ans) for i, ans in enumerate(answers)}
+                current_app.logger.info(f"Converted answers list to dict: {answers}")
+            else:
+                current_app.logger.error(f"English submit: Invalid answers type: {type(answers)}, value: {answers}")
+                return jsonify({'error': f'Answers must be an object, got {type(answers).__name__}'}), 400
         
         # Map old passage ID to new lesson number
         lesson_num = PASSAGE_ID_TO_LESSON_MAP.get(passage_id)
@@ -462,25 +480,51 @@ def submit_answers():
                 })
         
         # Load new lesson from JS file
-        lesson_data = get_lesson_from_file(lesson_num)
-        if not lesson_data:
-            return jsonify({'error': 'Lesson not found'}), 404
+        try:
+            lesson_data = get_lesson_from_file(lesson_num)
+            if not lesson_data:
+                current_app.logger.error(f"Failed to load lesson {lesson_num} for passage {passage_id}")
+                return jsonify({'error': f'Lesson {lesson_num} not found'}), 404
+        except Exception as e:
+            current_app.logger.error(f"Error loading lesson {lesson_num}: {str(e)}")
+            return jsonify({'error': f'Failed to load lesson: {str(e)}'}), 500
         
         # Check answers against new lesson
         correct_count = 0
-        total_questions = len(lesson_data.get('questions', []))
+        questions_list = lesson_data.get('questions', [])
+        if not questions_list:
+            current_app.logger.error(f"Lesson {lesson_num} has no questions")
+            return jsonify({'error': 'Lesson has no questions'}), 400
+        
+        total_questions = len(questions_list)
         results = []
         
-        for idx, q in enumerate(lesson_data.get('questions', []), 1):
-            # Get user answer (can be question ID or question number)
-            user_answer = answers.get(str(idx), '').strip() or answers.get(q.get('id', ''), '').strip()
+        for idx, q in enumerate(questions_list, 1):
+            # Get user answer (can be question ID, question number, or option ID)
+            question_id = q.get('id', str(idx))
+            user_answer = answers.get(str(idx), '') or answers.get(str(question_id), '') or answers.get(question_id, '')
+            
+            # Convert to string and strip
+            if user_answer:
+                user_answer = str(user_answer).strip()
+            else:
+                user_answer = ''
             
             # Find correct answer option ID
             correct_answer = None
-            for opt in q.get('options', []):
+            options_list = q.get('options', [])
+            if not options_list:
+                current_app.logger.warning(f"Question {idx} has no options")
+                continue
+                
+            for opt in options_list:
                 if opt.get('correct'):
-                    correct_answer = opt.get('id', '')
+                    correct_answer = str(opt.get('id', ''))
                     break
+            
+            if not correct_answer:
+                current_app.logger.warning(f"Question {idx} has no correct answer")
+                continue
             
             is_correct = user_answer == correct_answer
             
