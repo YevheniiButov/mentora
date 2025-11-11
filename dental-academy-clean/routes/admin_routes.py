@@ -3286,7 +3286,19 @@ def delete_user(user_id):
             return redirect(url_for('admin.user_detail', user_id=user_id))
     
     try:
+        from models import DailyAssignment
+        
         user_email = user.email
+        
+        # Явно удаляем daily_assignments перед удалением пользователя
+        # (хотя есть CASCADE, но лучше быть явным для избежания ошибок)
+        daily_assignments = DailyAssignment.query.filter_by(user_id=user_id).all()
+        if daily_assignments:
+            for assignment in daily_assignments:
+                db.session.delete(assignment)
+            current_app.logger.info(f"Deleted {len(daily_assignments)} daily assignments for user {user_id}")
+        
+        # Теперь удаляем пользователя
         db.session.delete(user)
         db.session.commit()
         
@@ -3295,6 +3307,7 @@ def delete_user(user_id):
         
     except Exception as e:
         db.session.rollback()
+        current_app.logger.error(f"Error deleting user {user_id}: {str(e)}")
         flash(f'Ошибка при удалении пользователя: {str(e)}', 'danger')
         return redirect(url_for('admin.user_detail', user_id=user_id))
 
@@ -5731,6 +5744,14 @@ def hard_delete_user(user_id):
         
         # Получаем имя пользователя для сообщения
         user_name = user.get_display_name()
+        
+        # Явно удаляем daily_assignments перед удалением пользователя
+        from models import DailyAssignment
+        daily_assignments = DailyAssignment.query.filter_by(user_id=user_id).all()
+        if daily_assignments:
+            for assignment in daily_assignments:
+                db.session.delete(assignment)
+            current_app.logger.info(f"Deleted {len(daily_assignments)} daily assignments for user {user_id}")
         
         # Выполняем жесткое удаление
         db.session.delete(user)

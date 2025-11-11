@@ -846,35 +846,94 @@ def select_terms_for_today(user, count=10, use_fixed_assignments=True):
             """Генерирует ID терминов для нового задания"""
             selected_ids = []
             
-            # Get terms studied today
+            # Get terms studied in recent days (last 5 days to avoid repetition)
             today = date.today()
-            daily_flashcard = DailyFlashcardProgress.query.filter_by(
-                user_id=user.id,
-                date=today
-            ).first()
+            recent_days_start = datetime.combine(today - timedelta(days=5), datetime.min.time()).replace(tzinfo=timezone.utc)
             
-            studied_today_ids = set()
-            if daily_flashcard and hasattr(daily_flashcard, 'studied_term_ids'):
-                # Если есть поле с изученными терминами сегодня
-                studied_today_ids = set(json.loads(daily_flashcard.studied_term_ids) if daily_flashcard.studied_term_ids else [])
+            # Get all terms studied in recent days from DailyAssignment
+            recent_assignments = DailyAssignment.query.filter(
+                DailyAssignment.user_id == user.id,
+                DailyAssignment.assignment_type == 'terms',
+                DailyAssignment.assignment_date >= (today - timedelta(days=5)),
+                DailyAssignment.assignment_date < today  # Exclude today
+            ).all()
+            
+            # Collect all term IDs from recent assignments
+            recently_studied_ids = set()
+            for assignment in recent_assignments:
+                term_ids = assignment.get_item_ids()
+                recently_studied_ids.update(term_ids)
+            
+            # Also get terms from UserTermProgress that were reviewed recently
+            recent_reviews = UserTermProgress.query.filter(
+                UserTermProgress.user_id == user.id,
+                UserTermProgress.last_reviewed >= recent_days_start
+            ).all()
+            recently_studied_ids.update([r.term_id for r in recent_reviews if r.term_id])
             
             # 1. Get terms from SR (UserTermProgress with next_review <= today)
+            # Prioritize terms based on user's difficulty feedback (quality)
+            # Terms with low quality (hard) should be reviewed more often
             sr_terms = UserTermProgress.query.filter(
                 UserTermProgress.user_id == user.id,
                 UserTermProgress.next_review <= datetime.now(timezone.utc)
-            ).limit(target_count // 2).all()
+            ).order_by(
+                # Priority 1: Low last_quality (1=Again, 2=Hard) - user found it difficult
+                # Priority 2: Low ease_factor - term is generally difficult for user
+                # Priority 3: Low mastery_level - term not mastered yet
+                # Priority 4: Older last_reviewed - haven't been studied recently
+                UserTermProgress.last_quality.asc().nullsfirst(),  # 1,2,3,4,5 -> prioritize 1,2
+                UserTermProgress.ease_factor.asc(),  # Lower ease = harder for user
+                UserTermProgress.mastery_level.asc(),  # Lower mastery = needs more practice
+                UserTermProgress.last_reviewed.asc().nullsfirst()  # Older reviews first
+            ).limit(target_count * 3).all()  # Get more to filter and sort
             
-            for sr_term in sr_terms:
-                if sr_term.term_id not in studied_today_ids:
-                    selected_ids.append(sr_term.term_id)
-                    if len(selected_ids) >= target_count:
-                        return selected_ids[:target_count]
+            # Filter out recently studied terms and prioritize by difficulty
+            # Sort by priority: low quality > low ease_factor > low mastery > low accuracy > older reviews
+            sr_terms_sorted = sorted(
+                [sr for sr in sr_terms if sr.term_id not in recently_studied_ids],
+                key=lambda x: (
+                    x.last_quality if x.last_quality is not None else 5,  # Lower quality = higher priority (1=Again, 2=Hard)
+                    x.ease_factor,  # Lower ease = harder for user
+                    x.mastery_level,  # Lower mastery = needs more practice
+                    -(x.times_correct / x.times_reviewed if x.times_reviewed > 0 else 0),  # Lower accuracy = higher priority
+                    x.last_reviewed if x.last_reviewed else datetime.min.replace(tzinfo=timezone.utc)  # Older = higher priority
+                )
+            )
             
-            # 2. Get new random terms
+            for sr_term in sr_terms_sorted:
+                selected_ids.append(sr_term.term_id)
+                if len(selected_ids) >= target_count:
+                    return selected_ids[:target_count]
+            
+            # 2. Get new terms (terms without UserTermProgress)
             remaining = target_count - len(selected_ids)
             if remaining > 0:
                 used_ids = selected_ids.copy()
-                used_ids.extend(studied_today_ids)
+                used_ids.extend(recently_studied_ids)
+                
+                # Get terms that user has never studied
+                studied_term_ids = db.session.query(UserTermProgress.term_id).filter(
+                    UserTermProgress.user_id == user.id
+                ).distinct().all()
+                studied_term_ids_set = set([t[0] for t in studied_term_ids])
+                used_ids.extend(studied_term_ids_set)
+                
+                new_terms = MedicalTerm.query.filter(
+                    ~MedicalTerm.id.in_(used_ids) if used_ids else True
+                ).order_by(
+                    # Prioritize by difficulty and frequency
+                    MedicalTerm.difficulty.desc(),
+                    MedicalTerm.frequency.desc()
+                ).limit(remaining).all()
+                
+                selected_ids.extend([t.id for t in new_terms])
+            
+            # 3. If still not enough, add random terms (excluding recently studied)
+            remaining = target_count - len(selected_ids)
+            if remaining > 0:
+                used_ids = selected_ids.copy()
+                used_ids.extend(recently_studied_ids)
                 
                 random_terms = MedicalTerm.query.filter(
                     ~MedicalTerm.id.in_(used_ids) if used_ids else True
@@ -1027,7 +1086,7 @@ def select_english_passage_for_today(user, use_fixed_assignments=True):
         EnglishPassage object or None
     """
     if use_fixed_assignments:
-        def generate_passage_id():
+        def generate_passage_id(target_count=1):
             """Генерирует ID текста для нового задания"""
             # Get passages completed today
             today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)

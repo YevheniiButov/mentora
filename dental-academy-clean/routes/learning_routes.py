@@ -866,7 +866,27 @@ def complete_automated_session():
             plan.add_time_invested(int(time_spent))
             current_app.logger.info(f"Updated time_invested: {plan.time_invested}")
         
-        # Get study schedule
+        # ✅ Update daily streak when session is completed
+        from datetime import date
+        plan.update_daily_streak(date.today())
+        current_app.logger.info(f"Updated daily streak: {plan.daily_streak}")
+        db.session.commit()
+        
+        # ✅ Для дневных сессий всегда возвращаем на карту дневной сессии после завершения
+        # Не требуем study schedule для daily sessions
+        if session.get('daily_session_active'):
+            # После завершения любой сессии в дневном режиме возвращаем на карту дневной сессии
+            # Пользователь сам выберет следующий шаг оттуда
+            lang = session.get('lang', 'nl')
+            redirect_url = f'/{lang}/learning-map/daily-session'
+            return safe_jsonify({
+                'success': True,
+                'redirect_url': redirect_url,
+                'next_session': None,
+                'completed': True
+            }), 200
+        
+        # Для не-дневных сессий нужен study schedule
         study_schedule = plan.get_study_schedule()
         current_app.logger.info(f"Study schedule keys: {list(study_schedule.keys()) if study_schedule else 'None'}")
         
@@ -879,8 +899,14 @@ def complete_automated_session():
                 db.session.commit()
                 current_app.logger.info(f"Study schedule rebuilt from existing sessions for plan {plan.id}")
             else:
-                current_app.logger.error(f"Unable to rebuild study schedule for plan {plan.id}")
-                return safe_jsonify({'error': 'Invalid study schedule'}), 500
+                # Если не удалось перестроить, но это не критично - просто возвращаем на dashboard
+                current_app.logger.warning(f"Unable to rebuild study schedule for plan {plan.id}, redirecting to dashboard")
+                return safe_jsonify({
+                    'success': True,
+                    'redirect_url': url_for('dashboard.index'),
+                    'next_session': None,
+                    'completed': True
+                }), 200
         
         # Find next session
         next_session = None
@@ -903,20 +929,8 @@ def complete_automated_session():
         
         current_app.logger.info(f"Next session found: {next_session is not None}")
         
-        # ✅ Update daily streak when session is completed
-        from datetime import date
-        plan.update_daily_streak(date.today())
-        current_app.logger.info(f"Updated daily streak: {plan.daily_streak}")
-        db.session.commit()
-        
         # Update session data
-        # ✅ Для дневных сессий всегда возвращаем на карту дневной сессии после завершения
-        if session.get('daily_session_active'):
-            # После завершения любой сессии в дневном режиме возвращаем на карту дневной сессии
-            # Пользователь сам выберет следующий шаг оттуда
-            lang = session.get('lang', 'nl')
-            redirect_url = f'/{lang}/learning-map/daily-session'
-        elif next_session:
+        if next_session:
             session['current_week'] = next_week['week_number']
             session['current_session'] = next_session
             

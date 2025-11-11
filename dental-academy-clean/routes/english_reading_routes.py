@@ -5,6 +5,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, g, ses
 from flask_login import login_required, current_user
 from extensions import db
 from models import EnglishPassage, EnglishQuestion, UserEnglishProgress
+from utils.individual_plan_helpers import select_english_passage_for_today
 
 english_reading_bp = Blueprint('english_reading', __name__, url_prefix='/english')
 
@@ -37,9 +38,10 @@ def practice(passage_id=None):
     if lang not in SUPPORTED_LANGUAGES:
         lang = DEFAULT_LANGUAGE
     
-    # If no passage_id provided, get a random passage
+    # If no passage_id provided, get today's fixed assignment
     if passage_id is None:
-        passage = EnglishPassage.query.order_by(db.func.random()).first()
+        # Use fixed daily assignment to ensure same passage for the day
+        passage = select_english_passage_for_today(current_user, use_fixed_assignments=True)
         if not passage:
             # Use direct path instead of url_for to avoid BuildError
             return redirect(f'/{lang}/learning-map/irt')

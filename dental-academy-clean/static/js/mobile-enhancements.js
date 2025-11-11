@@ -92,10 +92,26 @@ class MobileEnhancements {
         `);
 
         touchElements.forEach(element => {
-            // Добавляем haptic feedback для iOS
+            // Добавляем haptic feedback для iOS (только после user interaction)
+            let userInteracted = false;
+            
+            // Отслеживаем первое взаимодействие пользователя
+            document.addEventListener('touchstart', () => {
+                userInteracted = true;
+            }, { once: true });
+            
+            document.addEventListener('click', () => {
+                userInteracted = true;
+            }, { once: true });
+            
             element.addEventListener('touchstart', () => {
-                if (navigator.vibrate) {
-                    navigator.vibrate(10);
+                // Вибрация только после первого взаимодействия пользователя
+                if (userInteracted && navigator.vibrate) {
+                    try {
+                        navigator.vibrate(10);
+                    } catch (e) {
+                        // Игнорируем ошибки вибрации
+                    }
                 }
             });
 
