@@ -91,21 +91,22 @@
                style="position: relative; z-index: 9999;">
             <button class="btn language-btn-modern" 
                     type="button" 
-                    @click.stop.prevent="open = !open; console.log('Language dropdown clicked, open:', open)"
+                    @click.stop.prevent="open = !open; console.log('Language dropdown clicked, open:', open); setTimeout(() => { const menu = document.querySelector('.language-menu'); console.log('Menu element:', menu); console.log('Menu style:', menu ? menu.style.cssText : 'not found'); console.log('Menu computed display:', menu ? window.getComputedStyle(menu).display : 'not found'); }, 100);"
                     :aria-expanded="open"
                     style="pointer-events: auto !important; cursor: pointer !important;"
                     title="{{ t('language', lang)|default('Язык') }}: {{ lang|upper }}">
               <span class="language-icon"><i class="bi bi-globe2"></i></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end language-menu" 
-                x-show="open"
                 x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 transform scale-95 -translate-y-2"
                 x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
                 x-transition:leave="transition ease-in duration-150"
                 x-transition:leave-start="opacity-100 transform scale-100 translate-y-0"
                 x-transition:leave-end="opacity-0 transform scale-95 -translate-y-2"
-                style="z-index: 10000 !important; position: absolute !important; top: calc(100% + 0.5rem) !important; right: 0 !important;"
+                style="z-index: 10000 !important; position: absolute !important; top: calc(100% + 0.5rem) !important; right: 0 !important; display: none !important;"
+                :style="open ? 'display: block !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important;' : 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;'"
+                x-cloak
                 @click.stop="open = false">
               <li><a class="dropdown-item {% if lang == 'nl' %}active{% endif %}" 
                      href="{{ language_url('nl') }}"
@@ -164,20 +165,21 @@
                style="position: relative; z-index: 1002;">
             <button class="btn user-btn-modern" 
                     type="button" 
-                    @click.stop.prevent="open = !open; console.log('User dropdown clicked, open:', open)"
+                    @click.stop.prevent="open = !open; console.log('User dropdown clicked, open:', open); setTimeout(() => { const menu = document.querySelector('.user-dropdown'); console.log('Menu element:', menu); console.log('Menu style:', menu ? menu.style.cssText : 'not found'); console.log('Menu computed display:', menu ? window.getComputedStyle(menu).display : 'not found'); }, 100);"
                     :aria-expanded="open"
                     title="{{ current_user.get_display_name() }}">
               <span class="user-icon"><i class="bi bi-person-circle"></i></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end user-dropdown" 
-                x-show="open"
                 x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 transform scale-95 -translate-y-2"
                 x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
                 x-transition:leave="transition ease-in duration-150"
                 x-transition:leave-start="opacity-100 transform scale-100 translate-y-0"
                 x-transition:leave-end="opacity-0 transform scale-95 -translate-y-2"
-                style="position: absolute !important; top: calc(100% + 0.5rem) !important; right: 0 !important;"
+                style="position: absolute !important; top: calc(100% + 0.5rem) !important; right: 0 !important; display: none !important;"
+                :style="open ? 'display: block !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important;' : 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;'"
+                x-cloak
                 @click.stop="open = false">
               <!-- User Info Header -->
               <li class="dropdown-header">
@@ -235,14 +237,15 @@
               <span class="settings-icon"><i class="bi bi-gear-fill"></i></span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end user-dropdown" 
-                x-show="open"
                 x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 transform scale-95 -translate-y-2"
                 x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
                 x-transition:leave="transition ease-in duration-150"
                 x-transition:leave-start="opacity-100 transform scale-100 translate-y-0"
                 x-transition:leave-end="opacity-0 transform scale-95 -translate-y-2"
-                style="position: absolute !important; top: calc(100% + 0.5rem) !important; right: 0 !important;"
+                style="position: absolute !important; top: calc(100% + 0.5rem) !important; right: 0 !important; display: none !important;"
+                :style="open ? 'display: block !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important;' : 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;'"
+                x-cloak
                 @click.stop="open = false">
 
               
@@ -829,9 +832,22 @@ header.modern-header .navbar-toggler {
 }
 
 /* Переопределяем Bootstrap display для Alpine.js dropdown */
-/* Alpine.js сам управляет display через x-show, но нужно убедиться, что Bootstrap не переопределяет */
-.dropdown[x-data] .dropdown-menu[x-show] {
-  display: block !important; /* Принудительно показываем когда x-show="true" */
+/* Используем :style для управления display, так как Bootstrap может переопределять x-show */
+
+/* Принудительно показываем когда :style устанавливает display: block */
+.dropdown[x-data] .dropdown-menu[style*="display: block"] {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Скрываем когда :style устанавливает display: none */
+.dropdown[x-data] .dropdown-menu[style*="display: none"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 
