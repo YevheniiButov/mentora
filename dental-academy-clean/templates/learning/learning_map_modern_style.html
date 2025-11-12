@@ -5977,14 +5977,27 @@
                 const serverTourCompleted = JSON.parse(`{{ "true" if current_user.is_authenticated and current_user.learning_map_tour_completed else "false" }}`);
                 const isAuthenticated = JSON.parse(`{{ "true" if current_user.is_authenticated else "false" }}`);
                 
+                // Проверяем localStorage для неавторизованных пользователей
+                let localStorageTourCompleted = false;
+                try {
+                    const storedTourState = localStorage.getItem('learningMapTourCompleted');
+                    localStorageTourCompleted = storedTourState === 'true';
+                } catch (e) {
+                    // Игнорируем ошибки localStorage
+                }
+                
+                // Финальное состояние тура: для авторизованных - только БД, для неавторизованных - localStorage
+                const tourCompleted = isAuthenticated ? serverTourCompleted : localStorageTourCompleted;
+                
                 // Отладочное логирование (только в development)
                 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                     console.log('🔍 Tour Debug Info:', {
                         isAuthenticated,
                         serverTourCompleted,
+                        localStorageTourCompleted,
+                        finalTourCompleted: tourCompleted,
                         tourParam,
                         resetTourParam,
-                        localStorageState: localStorage.getItem('learningMapTourCompleted')
                     });
                 }
                 
@@ -6000,6 +6013,10 @@
                             body: JSON.stringify({ completed: false })
                         }).then(() => {
                             console.log('✅ Tour state reset in database');
+                            // Также очищаем localStorage
+                            try {
+                                localStorage.removeItem('learningMapTourCompleted');
+                            } catch (e) {}
                         }).catch(e => console.warn('Could not reset tour state:', e));
                     } else {
                         // Сбрасываем в localStorage
@@ -6014,19 +6031,8 @@
                     shouldLaunchTour = true;
                     shouldAutoStartTour = false;
                 } else {
-                    // Для авторизованных пользователей используем состояние из БД
-                    // Для неавторизованных - показываем тур (fallback)
-                    if (isAuthenticated) {
-                        shouldLaunchTour = !serverTourCompleted;
-                    } else {
-                        // Для неавторизованных пользователей используем localStorage как fallback
-                        try {
-                            const storedTourState = localStorage.getItem('learningMapTourCompleted');
-                            shouldLaunchTour = storedTourState !== 'true';
-                        } catch (e) {
-                            shouldLaunchTour = true;
-                        }
-                    }
+                    // Проверяем завершенность тура
+                    shouldLaunchTour = !tourCompleted;
                 }
                 
                 // URL параметр tour=1 имеет приоритет над всеми остальными
@@ -6130,9 +6136,13 @@
                 tourAutoStart: shouldAutoStartTour,
                 tourAutoStartTimer: null,
                 dontShowTourAgain: false,
+                tourCompleted: tourCompleted, // Локальное состояние завершенности тура
                 
                 async persistTourState(completed) {
                     const isAuthenticated = JSON.parse(`{{ "true" if current_user.is_authenticated else "false" }}`);
+                    
+                    // Обновляем локальное состояние сразу
+                    this.tourCompleted = completed;
                     
                     if (isAuthenticated) {
                         // Для авторизованных пользователей сохраняем в БД
@@ -6148,6 +6158,23 @@
                             
                             if (!response.ok) {
                                 throw new Error('Failed to save tour state');
+                            }
+                            
+                            const result = await response.json();
+                            // Обновляем локальное состояние на основе ответа сервера
+                            if (result.success && result.tour_completed !== undefined) {
+                                this.tourCompleted = result.tour_completed;
+                            }
+                            
+                            // Также сохраняем в localStorage для надежности (но не используем для проверки)
+                            try {
+                                localStorage.setItem('learningMapTourCompleted', completed ? 'true' : 'false');
+                            } catch (localStorageError) {
+                                console.warn('Could not persist tour state to localStorage:', localStorageError);
+                            }
+                            
+                            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                                console.log('✅ Tour state saved to database and localStorage:', completed);
                             }
                         } catch (e) {
                             console.warn('Could not persist tour state to server:', e);
@@ -6197,12 +6224,8 @@
                     this.tourActive = true;
                     this.tourStep = 1;
                     
-                    // Если чекбокс отмечен, сохраняем состояние как завершенное
-                    if (this.dontShowTourAgain) {
-                        this.persistTourState(true);
-                    } else {
-                        this.persistTourState(false);
-                    }
+                    // НЕ сохраняем состояние здесь - только в endTour() или skipTour()
+                    // Это позволяет пользователю пройти тур, даже если чекбокс отмечен
                     
                     const behavior = autoLaunch ? 'auto' : 'smooth';
                     this.$nextTick(() => {
@@ -6227,18 +6250,23 @@
                         });
                     }
                 },
-                endTour() {
+                async endTour() {
                     this.tourActive = false;
                     this.tourStep = 0;
                     this.tourAutoStart = false;
+                    this.showTourOverlay = false;
                     
-                    // Если чекбокс отмечен, сохраняем состояние как завершенное
-                    // Если не отмечен, тоже сохраняем как завершенное (пользователь прошел весь тур)
-                    this.persistTourState(true);
+                    // Если пользователь прошел весь тур до конца, всегда сохраняем как завершенный
+                    // Чекбокс "Не показывать снова" означает, что пользователь не хочет видеть тур вообще
+                    // Но если тур завершен, он не должен показываться автоматически в любом случае
+                    await this.persistTourState(true);
+                    
+                    // Убеждаемся, что оверлей скрыт после сохранения
+                    this.showTourOverlay = false;
                     
                     this.lockScroll(false);
                 },
-                skipTour() {
+                async skipTour() {
                     if (this.tourAutoStartTimer) {
                         clearTimeout(this.tourAutoStartTimer);
                         this.tourAutoStartTimer = null;
@@ -6248,12 +6276,13 @@
                     this.tourActive = false;
                     this.tourStep = 0;
                     
-                    // Если чекбокс отмечен, сохраняем состояние как завершенное
+                    // Если чекбокс отмечен, сохраняем состояние как завершенное (больше не показывать)
                     if (this.dontShowTourAgain) {
-                        this.persistTourState(true);
-                    } else {
-                        this.persistTourState(false);
+                        await this.persistTourState(true);
+                        // Убеждаемся, что оверлей скрыт после сохранения
+                        this.showTourOverlay = false;
                     }
+                    // Если чекбокс не отмечен, не сохраняем состояние (можно показать снова)
                     
                     this.lockScroll(false);
                 },
@@ -6827,6 +6856,10 @@
                     // Запуск IRT теста с заданным количеством вопросов
                     console.log(`Starting IRT test with ${questionCount} questions`);
                     
+                    // КРИТИЧНО: Проверяем, прошёл ли пользователь диагностику
+                    // IRT тесты - это диагностика, поэтому их можно запускать всегда
+                    // Но если это первый раз, лучше направить на диагностику
+                    
                     // Определяем тип теста на основе количества вопросов
                     let diagnosticType = 'quick_30';
                     if (questionCount === 60) {
@@ -6856,16 +6889,34 @@
                 },
                 
                 startPremiumTerms() {
+                    // КРИТИЧНО: Проверяем диагностику перед запуском терминов
+                    if (!this.diagnosticCompleted) {
+                        alert('Для изучения терминов необходимо сначала пройти диагностический тест.');
+                        this.startDiagnostic('quick_30');
+                        return;
+                    }
                     // Redirect to flashcards daily session with premium access
                     window.location.href = `/flashcards/daily-session?premium=true`;
                 },
                 
                 startPremiumEnglish() {
+                    // КРИТИЧНО: Проверяем диагностику перед запуском английского
+                    if (!this.diagnosticCompleted) {
+                        alert('Для чтения английских текстов необходимо сначала пройти диагностический тест.');
+                        this.startDiagnostic('quick_30');
+                        return;
+                    }
                     // Redirect to English reading with premium access
                     window.location.href = `/english/practice?premium=true`;
                 },
                 
                 startPremiumVP() {
+                    // КРИТИЧНО: Проверяем диагностику перед запуском виртуальных пациентов
+                    if (!this.diagnosticCompleted) {
+                        alert('Для работы с виртуальными пациентами необходимо сначала пройти диагностический тест.');
+                        this.startDiagnostic('quick_30');
+                        return;
+                    }
                     // Redirect to virtual patients with premium access
                     window.location.href = `/virtual-patients?premium=true`;
                 },
@@ -7284,6 +7335,13 @@
                 },
                 
                 async startVirtualPatientSession(scenarioId) {
+                    // КРИТИЧНО: Проверяем диагностику перед запуском виртуальных пациентов
+                    if (!this.diagnosticCompleted) {
+                        alert('Для работы с виртуальными пациентами необходимо сначала пройти диагностический тест.');
+                        this.startDiagnostic('quick_30');
+                        return;
+                    }
+                    
                     try {
                         // 1. Создать attempt
                         const attemptResponse = await fetch('/api/vp/start-attempt', {
@@ -7512,6 +7570,13 @@
                 },
 
                 async startVirtualPatient() {
+                    // КРИТИЧНО: Проверяем диагностику перед запуском виртуальных пациентов
+                    if (!this.diagnosticCompleted) {
+                        alert('Для работы с виртуальными пациентами необходимо сначала пройти диагностический тест.');
+                        this.startDiagnostic('quick_30');
+                        return;
+                    }
+                    
                     // Start virtual patient session
                     console.log('Start VP clicked, todayVPScenario:', this.todayVPScenario);
                     
