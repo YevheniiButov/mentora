@@ -1275,6 +1275,10 @@ def learning_map(lang, path_id=None):
             total_terms_studied = 0
             current_language_streak = 0
         
+        # КРИТИЧНО: Обновляем объект пользователя из БД перед рендерингом
+        # Это гарантирует, что learning_map_tour_completed загружается актуально
+        db.session.refresh(current_user)
+        
         return render_template(
                     "learning/learning_map_modern_style.html",  # Новая современная карта обучения
                     title='Learning Map',

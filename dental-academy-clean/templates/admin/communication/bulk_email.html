@@ -715,28 +715,47 @@ function updatePreview() {
     .then(result => {
         if (result.success && result.html) {
             const iframe = document.getElementById('previewFrame');
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-            iframeDoc.open();
-            iframeDoc.write(result.html);
-            iframeDoc.close();
+            // Заменяем CID изображения на placeholder для preview в браузере
+            // CID работает только в email клиентах, в браузере нужно использовать placeholder
+            let previewHtml = result.html;
+            // Заменяем cid: на placeholder изображение (SVG placeholder)
+            previewHtml = previewHtml.replace(/src="cid:([^"]+)"/g, (match, cid) => {
+                // Создаем простой SVG placeholder
+                const svgPlaceholder = encodeURIComponent(`
+                    <svg width="600" height="300" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100%" height="100%" fill="#f0f0f0"/>
+                        <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="14" fill="#999999" 
+                              text-anchor="middle" dominant-baseline="middle">
+                            Image will appear here in email
+                        </text>
+                    </svg>
+                `.trim());
+                return `src="data:image/svg+xml,${svgPlaceholder}" alt="Image placeholder" style="max-width: 100%; height: auto;"`;
+            });
+            // Используем srcdoc вместо document.write для современного подхода
+            iframe.srcdoc = previewHtml;
         } else {
             console.error('Preview generation failed:', result.error || 'Unknown error');
+            const iframe = document.getElementById('previewFrame');
+            iframe.srcdoc = `
+                <div style="padding: 20px; color: #dc3545;">
+                    <h3>Ошибка генерации предпросмотра</h3>
+                    <p>${result.error || 'Неизвестная ошибка'}</p>
+                </div>
+            `;
         }
     })
     .catch(error => {
         console.error('Error updating preview:', error);
         // Показываем ошибку пользователю
         const iframe = document.getElementById('previewFrame');
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        iframeDoc.open();
-        iframeDoc.write(`
+        iframe.srcdoc = `
             <div style="padding: 20px; color: #dc3545;">
                 <h3>Ошибка загрузки предпросмотра</h3>
                 <p>${error.message || 'Неизвестная ошибка'}</p>
                 <p style="font-size: 12px; color: #666;">Проверьте консоль браузера для подробностей</p>
             </div>
-        `);
-        iframeDoc.close();
+        `;
     });
 }
 

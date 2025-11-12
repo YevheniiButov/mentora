@@ -5988,8 +5988,29 @@
                 }
                 
                 // Финальное состояние тура: для авторизованных - только БД, для неавторизованных - localStorage
-                // Используем значение из шаблона как начальное, но для авторизованных проверим через API
+                // ВАЖНО: Для авторизованных пользователей проверяем актуальный статус через API синхронно
                 let tourCompleted = isAuthenticated ? serverTourCompleted : localStorageTourCompleted;
+                
+                // Для авторизованных пользователей делаем синхронную проверку статуса через API
+                // Это критично, чтобы получить актуальное значение из БД перед определением shouldLaunchTour
+                if (isAuthenticated && !resetTourParam && tourParam !== '1') {
+                    // Используем синхронный XMLHttpRequest для получения статуса тура
+                    try {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', `/{{ lang }}/learning-map/api/tour/status`, false); // false = синхронный запрос
+                        xhr.send();
+                        if (xhr.status === 200) {
+                            const data = JSON.parse(xhr.responseText);
+                            if (data.success && data.tour_completed !== undefined) {
+                                tourCompleted = data.tour_completed;
+                                serverTourCompleted = data.tour_completed;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('Could not fetch tour status synchronously, using template value:', e);
+                        // Используем значение из шаблона как fallback
+                    }
+                }
                 
                 // Отладочное логирование (только в development)
                 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
