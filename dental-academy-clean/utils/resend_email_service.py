@@ -6,6 +6,7 @@ Resend Email Service for Mentora
 
 import requests
 import json
+from datetime import datetime
 from flask import current_app
 from models import User
 from utils.email_service import get_confirmation_email_html, get_confirmation_email_text, get_invitation_with_password_html, get_invitation_with_password_text
@@ -436,20 +437,41 @@ def send_email_via_resend(to_email, subject, html_content, from_name="Mentora Te
             "Content-Type": "application/json"
         }
         
-        response = requests.post("https://api.resend.com/emails", headers=headers, json=email_data)
-        response.raise_for_status()
+        response = requests.post("https://api.resend.com/emails", headers=headers, json=email_data, timeout=30)
         
-        response_json = response.json()
-        print(f"✅ Email sent successfully via Resend to {to_email}")
-        print(f"📧 Email ID: {response_json.get('id')}")
-        
-        return True
+        # Проверяем статус ответа
+        if response.status_code == 200:
+            response_json = response.json()
+            print(f"✅ Email sent successfully via Resend to {to_email}")
+            print(f"📧 Email ID: {response_json.get('id')}")
+            return True
+        else:
+            # Логируем детали ошибки
+            error_details = {
+                'status_code': response.status_code,
+                'response_text': response.text,
+                'api_key_present': bool(api_key),
+                'api_key_length': len(api_key) if api_key else 0
+            }
+            print(f"❌ Resend API request failed: {error_details}")
+            current_app.logger.error(f"Resend API error for {to_email}: {error_details}")
+            
+            # Для 401 ошибки даем более понятное сообщение
+            if response.status_code == 401:
+                print("❌ Resend API: Unauthorized - Check RESEND_API_KEY configuration")
+                current_app.logger.error("Resend API: Invalid or missing API key")
+            
+            return False
         
     except requests.exceptions.RequestException as e:
-        print(f"❌ Resend API request failed: {e}")
+        error_msg = f"Resend API request failed: {str(e)}"
+        print(f"❌ {error_msg}")
+        current_app.logger.error(f"{error_msg} for {to_email}")
         return False
     except Exception as e:
-        print(f"❌ Failed to send email via Resend API: {e}")
+        error_msg = f"Failed to send email via Resend API: {str(e)}"
+        print(f"❌ {error_msg}")
+        current_app.logger.error(f"{error_msg} for {to_email}", exc_info=True)
         return False
 
 def get_password_reset_html_resend(user, reset_url):
