@@ -90,12 +90,11 @@ def bulk_email():
                         if isinstance(cta_url, str):
                             cta_url = cta_url.strip()
                         
-                        # Для preview используем пустой base64, так как файл не загружен
+                        # Для preview используем has_gif флаг, но файл не загружен
                         html_content = generate_learning_map_welcome_email(
                             greeting_name=greeting_name,
                             cta_url=cta_url,
-                            has_gif=bool(has_gif),
-                            gif_base64=None  # В preview файл не доступен
+                            has_gif=bool(has_gif)
                         )
                     else:
                         greeting_name = data.get('greeting_name', 'Иван') or 'Иван'
@@ -240,20 +239,12 @@ def bulk_email():
             if not recipients:
                 return jsonify({'success': False, 'error': 'Нет получателей для рассылки'}), 400
             
-            # Обрабатываем GIF файл, если загружен (для встраивания в HTML)
-            gif_base64 = None
-            if gif_file and gif_file.filename:
-                import base64
-                gif_content = gif_file.read()
-                gif_base64 = base64.b64encode(gif_content).decode('utf-8')
-            
             # Генерируем HTML на основе выбранного шаблона
             if email_template_type == 'learning_map_welcome':
                 html_content = generate_learning_map_welcome_email(
                     greeting_name=greeting_name,
                     cta_url=cta_url,
-                    has_gif=bool(gif_file and gif_file.filename),
-                    gif_base64=gif_base64
+                    has_gif=bool(gif_file and gif_file.filename)
                 )
             else:
                 # Обрабатываем value_prop_items (может быть строкой или списком) только для универсального шаблона
@@ -276,8 +267,18 @@ def bulk_email():
                     motivation_text=motivation_text
                 )
             
-            # GIF теперь встроен в HTML через base64, вложения не нужны
+            # Обрабатываем GIF файл как встроенное изображение через CID
             attachments = None
+            if gif_file and gif_file.filename:
+                import base64
+                gif_content = gif_file.read()
+                gif_base64 = base64.b64encode(gif_content).decode('utf-8')
+                # Используем CID для встроенного изображения в Resend API
+                attachments = [{
+                    "filename": gif_file.filename,
+                    "content": gif_base64,
+                    "cid": "learning_map_gif"  # Content-ID для встраивания в HTML
+                }]
             
             # Отправляем через Resend API
             from utils.resend_email_service import send_email_via_resend
@@ -353,16 +354,17 @@ def bulk_email():
                          total_contacts=total_contacts,
                          all_users=all_users)
 
-def generate_learning_map_welcome_email(greeting_name="there", cta_url="https://bigmentor.nl/en/learning-map", has_gif=False, gif_base64=None):
+def generate_learning_map_welcome_email(greeting_name="there", cta_url="https://bigmentor.nl/en/learning-map", has_gif=False):
     """Генерирует HTML шаблон welcome email для карты обучения с GIF"""
     
     gif_section = ''
-    if has_gif and gif_base64:
-        # Используем base64 data URI для встроенного изображения
-        gif_section = f'''
+    if has_gif:
+        # Используем CID (Content-ID) для встроенного изображения
+        # Resend API будет использовать CID из attachments для встраивания изображения
+        gif_section = '''
             <!-- GIF SECTION -->
             <div class="gif-section">
-                <img src="data:image/gif;base64,{gif_base64}" alt="Mentora Learning Map Demo" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                <img src="cid:learning_map_gif" alt="Mentora Learning Map Demo" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
             </div>
         '''
     

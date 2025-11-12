@@ -1307,7 +1307,8 @@ def learning_map(lang, path_id=None):
 def tour_status(lang):
     """Get or update learning map tour completion status for user"""
     if request.method == 'GET':
-        # Return current tour status
+        # Return current tour status - обновляем объект из БД для актуальности
+        db.session.refresh(current_user)
         tour_completed = getattr(current_user, 'learning_map_tour_completed', False)
         return jsonify({
             'success': True,
@@ -1319,8 +1320,12 @@ def tour_status(lang):
             data = request.get_json()
             completed = data.get('completed', False)
             
+            # Обновляем значение в БД
             current_user.learning_map_tour_completed = bool(completed)
             db.session.commit()
+            
+            # Обновляем объект из БД для подтверждения сохранения
+            db.session.refresh(current_user)
             
             return jsonify({
                 'success': True,
@@ -1328,6 +1333,7 @@ def tour_status(lang):
             })
         except Exception as e:
             db.session.rollback()
+            current_app.logger.error(f"Error updating tour status: {str(e)}")
             return jsonify({
                 'success': False,
                 'error': str(e)

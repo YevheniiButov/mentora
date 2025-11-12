@@ -5974,7 +5974,8 @@
                 let shouldAutoStartTour = false;
                 
                 // Получаем состояние тура из базы данных (передается с сервера)
-                const serverTourCompleted = JSON.parse(`{{ "true" if current_user.is_authenticated and current_user.learning_map_tour_completed else "false" }}`);
+                // ВАЖНО: Это начальное значение, но мы также проверим через API для актуальности
+                let serverTourCompleted = JSON.parse(`{{ "true" if current_user.is_authenticated and current_user.learning_map_tour_completed else "false" }}`);
                 const isAuthenticated = JSON.parse(`{{ "true" if current_user.is_authenticated else "false" }}`);
                 
                 // Проверяем localStorage для неавторизованных пользователей
@@ -5987,7 +5988,8 @@
                 }
                 
                 // Финальное состояние тура: для авторизованных - только БД, для неавторизованных - localStorage
-                const tourCompleted = isAuthenticated ? serverTourCompleted : localStorageTourCompleted;
+                // Используем значение из шаблона как начальное, но для авторизованных проверим через API
+                let tourCompleted = isAuthenticated ? serverTourCompleted : localStorageTourCompleted;
                 
                 // Отладочное логирование (только в development)
                 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
@@ -6137,6 +6139,27 @@
                 tourAutoStartTimer: null,
                 dontShowTourAgain: false,
                 tourCompleted: tourCompleted, // Локальное состояние завершенности тура
+                
+                // Инициализация: проверяем актуальный статус тура из БД при загрузке
+                async initTourStatus() {
+                    const isAuthenticated = JSON.parse(`{{ "true" if current_user.is_authenticated else "false" }}`);
+                    if (isAuthenticated) {
+                        try {
+                            const response = await fetch(`/{{ lang }}/learning-map/api/tour/status`);
+                            const data = await response.json();
+                            if (data.success && data.tour_completed !== undefined) {
+                                this.tourCompleted = data.tour_completed;
+                                // Если тур уже завершен, скрываем оверлей
+                                if (this.tourCompleted && this.showTourOverlay) {
+                                    this.showTourOverlay = false;
+                                    this.tourAutoStart = false;
+                                }
+                            }
+                        } catch (e) {
+                            console.warn('Could not fetch tour status from API:', e);
+                        }
+                    }
+                },
                 
                 async persistTourState(completed) {
                     const isAuthenticated = JSON.parse(`{{ "true" if current_user.is_authenticated else "false" }}`);
@@ -6517,6 +6540,10 @@
                 async init() {
                     console.log('🚀 Learning Map initialized');
                     console.log('Initial activeTab:', this.activeTab);
+                    
+                    // Проверяем актуальный статус тура из БД перед загрузкой остальных данных
+                    // Это гарантирует, что тур не показывается, если он уже был завершен
+                    await this.initTourStatus();
                     
                     // Start countdown timer
                     this.startCountdown();
