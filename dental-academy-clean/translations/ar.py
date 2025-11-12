@@ -2847,5 +2847,25 @@ translations = {
     # Cycle info
     "current_cycle": "الدورة",
     "day_in_cycle": "اليوم في الدورة",
-    "difficulty": "الصعوبة"
+    "difficulty": "الصعوبة",
+    
+    # Archive
+    "archive": "الأرشيف",
+    "archive_description": "عرض جميع أنشطة التعلم المكتملة. راجع النصوص الإنجليزية السابقة والمصطلحات المدروسة والاختبارات الطبية والمرضى الافتراضيين. قم بالتصفية والبحث ومراجعة تاريخ التعلم الخاص بك.",
+    "english_passages": "النصوص الإنجليزية",
+    "dutch_terms": "المصطلحات الهولندية",
+    "medical_tests": "الاختبارات الطبية",
+    "virtual_patients": "المرضى الافتراضيين",
+    "search_placeholder": "بحث...",
+    "sort_by_date": "ترتيب حسب التاريخ",
+    "sort_by_score": "ترتيب حسب النتيجة",
+    "sort_by_time": "ترتيب حسب الوقت",
+    "descending": "تنازلي",
+    "ascending": "تصاعدي",
+    "loading": "جاري التحميل...",
+    "no_items_found": "لم يتم العثور على عناصر",
+    "tip_filter_archive": "استخدم المرشحات للعثور على عناصر محددة",
+    "tip_search_archive": "البحث بالاسم أو الفئة",
+    "tip_revisit_content": "راجع المحتوى المكتمل لتعزيز التعلم",
+    "tip_track_progress": "تتبع تاريخ التعلم والتقدم الخاص بك"
 }

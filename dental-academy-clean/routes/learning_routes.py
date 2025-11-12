@@ -1425,8 +1425,10 @@ def search_drugs(lang):
 @learning_bp.route('/knowledge-base')
 @login_required  
 def knowledge_base():
-    # Пока просто заглушка
-    return render_template('learning/knowledge_base.html')
+    """Knowledge Base page - скрыта от пользователей"""
+    from flask import abort
+    # Скрываем страницу от всех пользователей
+    abort(404)
 
 @learning_bp.route('/learning-cards/<path:path>')
 @login_required

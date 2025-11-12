@@ -902,9 +902,9 @@ def select_terms_for_today(user, count=10, use_fixed_assignments=True):
             )
             
             for sr_term in sr_terms_sorted:
-                selected_ids.append(sr_term.term_id)
-                if len(selected_ids) >= target_count:
-                    return selected_ids[:target_count]
+                    selected_ids.append(sr_term.term_id)
+                    if len(selected_ids) >= target_count:
+                        return selected_ids[:target_count]
             
             # 2. Get new terms (terms without UserTermProgress)
             remaining = target_count - len(selected_ids)

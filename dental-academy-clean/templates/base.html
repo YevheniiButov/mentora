@@ -468,7 +468,7 @@
             // Ждем полной загрузки Alpine.js перед инициализацией Bootstrap
             function initBootstrapDropdowns() {
                 // Инициализация всех выпадающих меню Bootstrap (только для элементов БЕЗ Alpine.js)
-                try {
+            try {
                     // Исключаем элементы с x-data (Alpine.js dropdown)
                     var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'))
                         .filter(function(el) {
@@ -477,10 +477,10 @@
                         });
                     
                     var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
-                        return new bootstrap.Dropdown(dropdownToggleEl);
+                    return new bootstrap.Dropdown(dropdownToggleEl);
                     });
                 } catch (error) {
-                    console.error('❌ Bootstrap dropdown error:', error);
+                console.error('❌ Bootstrap dropdown error:', error);
                 }
             }
             
@@ -510,18 +510,18 @@
             // Добавляем обработчик для закрытия dropdown меню по клику вне (только для Bootstrap dropdown)
             // Примечание: Dropdown меню в шапке управляются через Alpine.js и не требуют этого обработчика
             if (typeof dropdownList !== 'undefined' && dropdownList.length > 0) {
-                document.addEventListener('click', function(event) {
+            document.addEventListener('click', function(event) {
                     // Проверяем, что клик не по Alpine.js dropdown (они имеют x-data)
                     // И не по элементам внутри Alpine.js dropdown
                     const alpineDropdown = event.target.closest('.dropdown[x-data]');
                     if (!alpineDropdown) {
-                        dropdownList.forEach(function(dropdown) {
+                    dropdownList.forEach(function(dropdown) {
                             try {
-                                dropdown.hide();
+                        dropdown.hide();
                             } catch (e) {
                                 // Игнорируем ошибки для Alpine.js dropdown
                             }
-                        });
+                    });
                     }
                 });
             }

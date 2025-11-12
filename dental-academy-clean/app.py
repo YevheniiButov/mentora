@@ -595,6 +595,10 @@ try:
     # Регистрация Calendar Plan API blueprint
     app.register_blueprint(calendar_plan_bp)
     
+    # Регистрация Archive API blueprint
+    from routes.archive_api import archive_api_bp
+    app.register_blueprint(archive_api_bp)
+    
     # Регистрация Email Test blueprint
     app.register_blueprint(email_test_bp)
     

@@ -108,7 +108,7 @@ class MobileEnhancements {
                 // Вибрация только после первого взаимодействия пользователя
                 if (userInteracted && navigator.vibrate) {
                     try {
-                        navigator.vibrate(10);
+                    navigator.vibrate(10);
                     } catch (e) {
                         // Игнорируем ошибки вибрации
                     }

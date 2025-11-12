@@ -126,13 +126,10 @@ def _adapt_daily_plan_for_template(daily_plan_result):
 @daily_learning_bp.route('/knowledge-base', strict_slashes=False)
 @login_required  
 def knowledge_base(lang):
-    """Knowledge Base coming soon page"""
-    from flask import render_template, g
-    return render_template('coming_soon.html', 
-                         lang=lang,
-                         feature_name='Knowledge Base',
-                         feature_description='Our comprehensive knowledge base is being developed and will be available soon.',
-                         feature_type='knowledge_base')
+    """Knowledge Base coming soon page - скрыта от пользователей"""
+    from flask import abort
+    # Скрываем страницу от всех пользователей
+    abort(404)
 
 # API Endpoints for Knowledge Base
 @daily_learning_bp.route('/api/subject/<int:subject_id>/stats')

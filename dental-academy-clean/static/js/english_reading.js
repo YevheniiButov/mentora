@@ -87,7 +87,7 @@ async function loadLesson() {
         } else if (data.passage) {
             // Old format - fallback
             console.warn('Using old format, some features may not be available');
-            questions = data.questions || [];
+        questions = data.questions || [];
             renderOldFormat(data.passage, questions);
         }
         
@@ -278,7 +278,7 @@ function showVocabularyTooltip(element, vocabId) {
             if (!tooltip.contains(e.target) && e.target !== element) {
                 tooltip.remove();
                 document.removeEventListener('click', removeTooltip);
-            }
+                }
         });
     }, 100);
 }
@@ -421,7 +421,7 @@ document.addEventListener('change', (e) => {
         const answerId = e.target.value;
         userAnswers[questionId] = answerId;
         updateProgress();
-    }
+        }
 });
 
 // Submit answers

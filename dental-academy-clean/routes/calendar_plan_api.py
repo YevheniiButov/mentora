@@ -191,7 +191,7 @@ def health_check():
             'success': False,
             'status': 'unhealthy',
             'error': str(e)
-        }), 500
+        }), 500 
 
 @calendar_plan_bp.route('/upcoming-plans', methods=['GET'])
 @login_required

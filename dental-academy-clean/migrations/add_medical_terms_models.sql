@@ -103,3 +103,4 @@ SELECT COUNT(*) as user_term_progress_count FROM user_term_progress;
 
 
 
+
