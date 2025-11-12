@@ -960,7 +960,7 @@ def handle_create_path():
         db.session.commit()
         
         flash(f'Путь обучения "{path_name}" создан', 'success')
-        return redirect(url_for('daily_learning.learning_map', lang='ru'))
+        return redirect(url_for('learning_map_bp.learning_map', lang='ru'))
         
     except Exception as e:
         flash(f'Ошибка при создании пути: {str(e)}', 'error')

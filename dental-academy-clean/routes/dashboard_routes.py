@@ -22,7 +22,7 @@ def index():
     """Enhanced main dashboard with gamification widgets"""
     if not getattr(current_user, 'is_admin', False):
         lang = g.get('lang') or session.get('lang') or 'nl'
-        return redirect(url_for('daily_learning.learning_map', lang=lang))
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
 
     # Проверка необходимости диагностики (временно отключено для предварительного запуска)
     # if current_user.requires_diagnostic:
@@ -115,7 +115,7 @@ def achievements():
     """Redirect to learning map with gamification tab"""
     lang = g.get('lang', 'en')
     # Редирект на карту обучения с параметром для открытия таба gamification
-    return redirect(url_for('daily_learning.learning_map', lang=lang) + '?tab=games')
+    return redirect(url_for('learning_map_bp.learning_map', lang=lang) + '?tab=games')
 
 @dashboard_bp.route('/activity')
 @login_required
@@ -123,7 +123,7 @@ def activity():
     """Redirect to learning map with progress tab"""
     lang = g.get('lang', 'en')
     # Редирект на карту обучения с параметром для открытия таба progress
-    return redirect(url_for('daily_learning.learning_map', lang=lang) + '?tab=progress')
+    return redirect(url_for('learning_map_bp.learning_map', lang=lang) + '?tab=progress')
 
 @dashboard_bp.route('/reminders')
 @login_required
@@ -174,7 +174,9 @@ def learning_plan(plan_id):
         
         if not plan:
             # Redirect to diagnostic if no plan exists
-            return redirect(url_for('diagnostic.start_diagnostic'))
+            from flask import g
+            lang = g.get('lang', session.get('lang', 'en'))
+            return redirect(url_for('diagnostic.start_diagnostic', lang=lang))
     
     # Get study sessions for this plan
     study_sessions = plan.study_sessions.order_by(StudySession.started_at.desc()).limit(10).all()
@@ -398,7 +400,7 @@ def learning_planner_redirect():
     """Redirect to learning map with planner tab"""
     lang = g.get('lang', 'en')
     # Редирект на карту обучения с параметром для открытия таба planner
-    return redirect(url_for('daily_learning.learning_map', lang=lang) + '?tab=planner')
+    return redirect(url_for('learning_map_bp.learning_map', lang=lang) + '?tab=planner')
 
 @dashboard_bp.route('/create-learning-plan', methods=['GET', 'POST'])
 @login_required
@@ -500,7 +502,9 @@ def create_learning_plan():
     
     if not diagnostic_session:
         flash('Для создания плана обучения необходимо сначала пройти диагностику', 'warning')
-        return redirect(url_for('diagnostic.start_diagnostic'))
+        from flask import g
+        lang = g.get('lang', session.get('lang', 'en'))
+        return redirect(url_for('diagnostic.start_diagnostic', lang=lang))
     
     # Получаем результаты диагностики
     diagnostic_results = diagnostic_session.generate_results()

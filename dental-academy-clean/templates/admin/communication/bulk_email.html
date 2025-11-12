@@ -685,10 +685,15 @@ function updatePreview() {
     }
     
     // Отправляем запрос на генерацию превью
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
+                     document.querySelector('input[name="csrf_token"]')?.value || 
+                     '{{ csrf_token() }}';
+    
     fetch('{{ url_for("communication.bulk_email") }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken
         },
         body: JSON.stringify(data)
     })

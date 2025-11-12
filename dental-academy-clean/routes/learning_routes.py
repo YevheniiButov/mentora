@@ -750,7 +750,9 @@ def automated_test():
     
     # Get or create a test for this week
     # For now, we'll redirect to a general test
-    return redirect(url_for('diagnostic.start_diagnostic'))
+    from flask import g, session
+    lang = g.get('lang', session.get('lang', 'en'))
+    return redirect(url_for('diagnostic.start_diagnostic', lang=lang))
 
 @learning_bp.route('/automated/review')
 @login_required

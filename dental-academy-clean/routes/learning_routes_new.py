@@ -670,4 +670,5 @@ def reassessment_required(lang):
     except Exception as e:
         logger.error(f"Error in reassessment_required: {e}")
         flash('Произошла ошибка при загрузке страницы переоценки', 'error')
-        return redirect(url_for('daily_learning.learning_map')) 
+        lang = session.get('lang', 'nl')
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang)) 

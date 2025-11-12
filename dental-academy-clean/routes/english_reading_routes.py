@@ -33,6 +33,17 @@ def before_request_english_reading():
 @login_required
 def practice(passage_id=None):
     """English Reading practice page"""
+    # КРИТИЧНО: Проверяем, прошёл ли пользователь диагностику
+    from utils.diagnostic_check import check_diagnostic_completed, get_diagnostic_redirect_url
+    if not check_diagnostic_completed(current_user.id):
+        lang = getattr(g, 'lang', None) or session.get('lang', DEFAULT_LANGUAGE)
+        if lang not in SUPPORTED_LANGUAGES:
+            lang = DEFAULT_LANGUAGE
+        from flask import flash, current_app
+        flash('Для чтения английских текстов необходимо пройти диагностический тест.', 'info')
+        current_app.logger.info(f"User {current_user.id} redirected to diagnostic from english practice")
+        return redirect(get_diagnostic_redirect_url(lang))
+    
     # Получаем язык из сессии или g
     lang = getattr(g, 'lang', None) or session.get('lang', DEFAULT_LANGUAGE)
     if lang not in SUPPORTED_LANGUAGES:

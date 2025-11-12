@@ -178,6 +178,14 @@ def start_daily_session():
         lang = session.get('lang', 'nl')
         return redirect(url_for('learning_map_bp.complete_profile', lang=lang))
     
+    # КРИТИЧНО: Проверяем, прошёл ли пользователь диагностику
+    from utils.diagnostic_check import check_diagnostic_completed, get_diagnostic_redirect_url
+    if not check_diagnostic_completed(current_user.id):
+        lang = session.get('lang', 'nl')
+        flash('Для начала обучения необходимо пройти диагностический тест. Это поможет создать персонализированный план обучения.', 'info')
+        current_app.logger.info(f"User {current_user.id} redirected to diagnostic from start_daily_session")
+        return redirect(get_diagnostic_redirect_url(lang))
+    
     try:
         from utils.individual_plan_helpers import get_or_create_learning_plan, select_questions_for_today
         from models import DiagnosticSession

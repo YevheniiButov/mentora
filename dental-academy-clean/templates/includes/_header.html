@@ -50,7 +50,7 @@
           <!-- Learning Map - только после логина -->
           {% if current_user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link {{ 'active' if request.endpoint and (request.endpoint == 'daily_learning.learning_map' or request.endpoint.startswith('profession_map_bp')) }}" 
+            <a class="nav-link {{ 'active' if request.endpoint and (request.endpoint == 'learning_map_bp.learning_map' or request.endpoint.startswith('profession_map_bp')) }}" 
                href="/{{ lang|default('en') }}/learning-map"
                @click="closeMobileMenu()">
               {{ t('learning_map', lang|default('en'))|default('Learning Map') }}

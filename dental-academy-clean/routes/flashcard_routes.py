@@ -14,7 +14,7 @@ Routes:
 - POST /flashcards/api/session-complete - Mark session complete
 """
 
-from flask import Blueprint, render_template, jsonify, request, redirect, url_for, current_app, session
+from flask import Blueprint, render_template, jsonify, request, redirect, url_for, current_app, session, flash
 from flask_login import login_required, current_user
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import func
@@ -39,6 +39,15 @@ def daily_session():
     Daily study session - shows all terms from all categories
     Used by learning map
     """
+    # КРИТИЧНО: Проверяем, прошёл ли пользователь диагностику
+    from utils.diagnostic_check import check_diagnostic_completed, get_diagnostic_redirect_url
+    from flask import g
+    if not check_diagnostic_completed(current_user.id):
+        lang = getattr(g, 'lang', session.get('lang', 'nl'))
+        flash('Для изучения терминов необходимо пройти диагностический тест.', 'info')
+        current_app.logger.info(f"User {current_user.id} redirected to diagnostic from flashcard daily_session")
+        return redirect(get_diagnostic_redirect_url(lang))
+    
     try:
         current_app.logger.info(f"Daily session started for user: {current_user.id}")
         

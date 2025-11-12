@@ -655,7 +655,7 @@ def get_learning_map_url_by_profession(profession):
     """Получить URL карты обучения в зависимости от профессии"""
     current_lang = session.get('lang', 'nl')
     
-    # ИСПРАВЛЕНИЕ: Используем правильный роут daily_learning.learning_map
+    # ИСПРАВЛЕНИЕ: Используем правильный роут learning_map_bp.learning_map
     profession_routes = {
         'tandarts': f'/daily-learning/learning-map?lang={current_lang}',
         'apotheker': f'/daily-learning/learning-map?lang={current_lang}',

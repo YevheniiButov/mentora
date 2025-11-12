@@ -30,14 +30,32 @@ from utils.mastery_helpers import update_item_mastery
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Create Blueprint
-diagnostic_bp = Blueprint('diagnostic', __name__, url_prefix='/big-diagnostic')
+# Create Blueprint with language support
+diagnostic_bp = Blueprint('diagnostic', __name__, url_prefix='/<string:lang>/big-diagnostic')
+
+# Поддерживаемые языки
+SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
+DEFAULT_LANGUAGE = 'en'
 
 # Rate limiter instance
 rate_limiter = RateLimiter()
 
 # Session validator instance
 session_validator = SessionValidator()
+
+@diagnostic_bp.before_request
+def before_request_diagnostic():
+    """Обработка языка для всех маршрутов diagnostic"""
+    lang_from_url = request.view_args.get('lang') if request.view_args else None
+    
+    if lang_from_url and lang_from_url in SUPPORTED_LANGUAGES:
+        g.lang = lang_from_url
+    else:
+        g.lang = session.get('lang') or DEFAULT_LANGUAGE
+    
+    # Обновляем сессию
+    if session.get('lang') != g.lang:
+        session['lang'] = g.lang
 
 def rate_limit(requests_per_minute=60):
     """Rate limiting decorator"""
@@ -88,7 +106,7 @@ def validate_session(f):
 @diagnostic_bp.route('/start', methods=['GET', 'POST'])
 @login_required
 @rate_limit(requests_per_minute=10)
-def start_diagnostic():
+def start_diagnostic(lang):
     """Start new diagnostic session"""
     try:
         if request.method == 'POST':
@@ -128,7 +146,7 @@ def start_diagnostic():
                     }), 200
                 else:
                     flash('У вас уже есть активная диагностическая сессия', 'warning')
-                    return redirect(url_for('diagnostic.show_question', session_id=active_session.id))
+                    return redirect(url_for('diagnostic.show_question', lang=lang, session_id=active_session.id))
 
             # Get first question using IRT with diagnostic type BEFORE creating session
             # For Quick Test, use TOP-10 configuration instead of IRT
@@ -272,9 +290,9 @@ def start_diagnostic():
             if request.is_json:
                 # Determine correct redirect URL based on type
                 if diagnostic_type in ['learning_30', 'learning']:
-                    redirect_url = url_for('diagnostic.show_learning_question', session_id=diagnostic_session.id)
+                    redirect_url = url_for('diagnostic.show_learning_question', lang=lang, session_id=diagnostic_session.id)
                 else:
-                    redirect_url = url_for('diagnostic.show_question', session_id=diagnostic_session.id)
+                    redirect_url = url_for('diagnostic.show_question', lang=lang, session_id=diagnostic_session.id)
                 
                 return safe_jsonify({
                     'success': True,
@@ -286,13 +304,13 @@ def start_diagnostic():
                 # Redirect to appropriate question route based on type
                 if diagnostic_type in ['learning_30', 'learning']:
                     logger.info(f"DEBUG: Redirecting to learning question for session {diagnostic_session.id}")
-                    return redirect(url_for('diagnostic.show_learning_question', session_id=diagnostic_session.id))
+                    return redirect(url_for('diagnostic.show_learning_question', lang=lang, session_id=diagnostic_session.id))
                 else:
                     logger.info(f"DEBUG: Redirecting to regular question for session {diagnostic_session.id}")
-                    return redirect(url_for('diagnostic.show_question', session_id=diagnostic_session.id))
+                    return redirect(url_for('diagnostic.show_question', lang=lang, session_id=diagnostic_session.id))
         
         # GET request - redirect directly to Quick Test
-        return redirect(url_for('diagnostic.start_quick_test'))
+        return redirect(url_for('diagnostic.start_quick_test', lang=lang))
         
     except Exception as e:
         logger.error(f"Error starting diagnostic: {str(e)}")
@@ -303,13 +321,13 @@ def start_diagnostic():
             }), 500
         else:
             flash('Ошибка при запуске диагностики', 'error')
-            return redirect(url_for('diagnostic.start_quick_test'))
+            return redirect(url_for('diagnostic.start_quick_test', lang=lang))
 
 @diagnostic_bp.route('/next-question', methods=['POST'])
 @login_required
 @rate_limit(requests_per_minute=100)  # Увеличено для диагностических тестов (может потребоваться 40+ вопросов)
 @validate_session
-def get_next_question():
+def get_next_question(lang):
     """Get next question in diagnostic session"""
     try:
         import traceback
@@ -384,7 +402,7 @@ def get_next_question():
                     'success': True,
                     'session_completed': True,
                     'message': 'Diagnostic completed successfully',
-                    'redirect_url': f'/big-diagnostic/results/{diagnostic_session.id}'
+                    'redirect_url': url_for('diagnostic.show_results', lang=lang, session_id=diagnostic_session.id)
                 })
             
             logger.info("About to call irt_engine.select_next_question()...")
@@ -413,7 +431,7 @@ def get_next_question():
                 'success': True,
                 'session_completed': True,
                 'message': 'Diagnostic completed - no more questions available',
-                'redirect_url': f'/big-diagnostic/results/{diagnostic_session.id}'
+                'redirect_url': url_for('diagnostic.show_results', lang=lang, session_id=diagnostic_session.id)
             })
         
         # ИСПРАВЛЕНИЕ: Принудительно перезагружаем объект Question
@@ -542,7 +560,7 @@ def get_next_question():
 
 @diagnostic_bp.route('/learning-answer/<int:session_id>', methods=['POST'])
 @login_required
-def submit_learning_answer(session_id):
+def submit_learning_answer(lang, session_id):
     """Submit answer in learning mode with immediate feedback"""
     try:
         diagnostic_session = DiagnosticSession.query.get_or_404(session_id)
@@ -552,7 +570,7 @@ def submit_learning_answer(session_id):
         diagnostic_type = session_data.get('diagnostic_type')
         if diagnostic_type not in ['learning_30', 'learning']:
             current_app.logger.info(f"Not a learning session: diagnostic_type={diagnostic_type}, redirecting to regular answer")
-            return redirect(url_for('diagnostic.submit_answer', session_id=session_id))
+            return redirect(url_for('diagnostic.submit_answer', lang=lang, session_id=session_id))
         
         # Get answer data
         if request.is_json:
@@ -633,7 +651,7 @@ def submit_learning_answer(session_id):
                 'correct_answer': correct_answer,
                 'explanation': question.explanation or 'No explanation available.',
                 'completed': True,
-                'results_url': url_for('diagnostic.show_results', session_id=session_id)
+                'results_url': url_for('diagnostic.show_results', lang=lang, session_id=session_id)
             })
         
         # Get next question
@@ -650,7 +668,7 @@ def submit_learning_answer(session_id):
                 'is_correct': is_correct,
                 'correct_answer': correct_answer,
                 'explanation': question.explanation or 'No explanation available.',
-                'next_question_url': url_for('diagnostic.show_learning_question', session_id=session_id)
+                'next_question_url': url_for('diagnostic.show_learning_question', lang=lang, session_id=session_id)
             })
         else:
             # Complete session
@@ -672,7 +690,7 @@ def submit_learning_answer(session_id):
                 'correct_answer': correct_answer,
                 'explanation': question.explanation or 'No explanation available.',
                 'completed': True,
-                'results_url': url_for('diagnostic.show_results', session_id=session_id)
+                'results_url': url_for('diagnostic.show_results', lang=lang, session_id=session_id)
             })
         
     except Exception as e:
@@ -681,7 +699,7 @@ def submit_learning_answer(session_id):
 
 @diagnostic_bp.route('/submit-answer/<int:session_id>', methods=['POST'])
 @login_required
-def submit_answer(session_id):
+def submit_answer(lang, session_id):
     """Submit answer for diagnostic session with enhanced validation"""
     try:
         logger.info(f"Submit answer called for session {session_id}")
@@ -1065,13 +1083,10 @@ def show_simple_test_results(diagnostic_session, lang='nl'):
 @diagnostic_bp.route('/results/<int:session_id>')
 @login_required
 @validate_session
-def show_results(session_id):
+def show_results(lang, session_id):
     """Show diagnostic/test results with appropriate UI"""
     print(f"🔍 ОТЛАДКА: show_results вызвана для session_id = {session_id}")
     current_app.logger.info(f"Showing results for session {session_id}")
-    
-    # Получаем язык из сессии или используем дефолтный
-    lang = session.get('lang', 'nl')
     
     try:
         diagnostic_session = g.current_session
@@ -1082,7 +1097,7 @@ def show_results(session_id):
         if diagnostic_session.status != 'completed':
             print(f"🔍 ОТЛАДКА: сессия не завершена, возвращаем HTML страницу с ошибкой")
             flash('Тестирование еще не завершено. Пожалуйста, завершите все вопросы.', 'warning')
-            return redirect(url_for('diagnostic.show_question', session_id=session_id))
+            return redirect(url_for('diagnostic.show_question', lang=lang, session_id=session_id))
         
         # Определяем тип сессии - это диагностика или простое тестирование
         session_data = diagnostic_session.get_session_data()
@@ -1374,7 +1389,7 @@ def show_results(session_id):
 @diagnostic_bp.route('/session/<int:session_id>/status')
 @login_required
 @validate_session
-def get_session_status(session_id):
+def get_session_status(lang, session_id):
     """Get current session status"""
     try:
         diagnostic_session = g.current_session
@@ -1402,7 +1417,7 @@ def get_session_status(session_id):
 @diagnostic_bp.route('/session/<int:session_id>/end', methods=['POST'])
 @login_required
 @validate_session
-def end_session(session_id):
+def end_session(lang, session_id):
     """End diagnostic session"""
     try:
         diagnostic_session = g.current_session
@@ -1433,7 +1448,7 @@ def end_session(session_id):
             'message': 'Session ended successfully',
             'session_id': session_id,
             'status': diagnostic_session.status,
-            'redirect_url': url_for('diagnostic.show_results', session_id=session_id)
+            'redirect_url': url_for('diagnostic.show_results', lang=lang, session_id=session_id)
         })
         
     except Exception as e:
@@ -1448,7 +1463,7 @@ def end_session(session_id):
 @diagnostic_bp.route('/restart', methods=['POST'])
 @login_required
 @rate_limit(requests_per_minute=10)
-def restart_diagnostic():
+def restart_diagnostic(lang):
     """Restart diagnostic session (general endpoint)"""
     try:
         # Find active session
@@ -1499,7 +1514,7 @@ def restart_diagnostic():
         return safe_jsonify({
             'success': True,
             'session_id': new_session.id,
-            'redirect_url': url_for('diagnostic.show_question', session_id=new_session.id)
+            'redirect_url': url_for('diagnostic.show_question', lang=lang, session_id=new_session.id)
         })
         
     except Exception as e:
@@ -1512,7 +1527,7 @@ def restart_diagnostic():
 @diagnostic_bp.route('/session/<int:session_id>/restart', methods=['POST'])
 @login_required
 @validate_session
-def restart_session(session_id):
+def restart_session(lang, session_id):
     """Restart diagnostic session"""
     try:
         diagnostic_session = g.current_session
@@ -1575,7 +1590,7 @@ def restart_session(session_id):
 @diagnostic_bp.route('/questions/<int:question_id>')
 @login_required
 @rate_limit(requests_per_minute=60)
-def get_question_details(question_id):
+def get_question_details(lang, question_id):
     """Get detailed question information"""
     try:
         question = Question.query.get_or_404(question_id)
@@ -1595,7 +1610,7 @@ def get_question_details(question_id):
 @diagnostic_bp.route('/generate-learning-plan', methods=['POST'])
 @login_required
 @rate_limit(requests_per_minute=10)
-def generate_learning_plan():
+def generate_learning_plan(lang):
     """Generate personalized learning plan based on diagnostic results"""
     try:
         # Получение ID сессии из запроса
@@ -1611,7 +1626,7 @@ def generate_learning_plan():
 
         if not latest_diagnostic:
             flash('Необходимо пройти диагностику перед созданием плана', 'warning')
-            return redirect(url_for('diagnostic.start_quick_test'))
+            return redirect(url_for('diagnostic.start_quick_test', lang=lang))
         
         data = request.get_json()
         if not data:
@@ -1747,7 +1762,7 @@ def generate_learning_plan():
             'success': True,
             'message': 'Learning plan successfully created!',
             'plan_id': plan.id,
-                            'redirect_url': url_for('daily_learning.learning_map', lang='en'),
+                            'redirect_url': url_for('learning_map_bp.learning_map', lang='en'),
             'plan_summary': {
                 'current_ability': plan.current_ability,
                 'target_ability': plan.target_ability,
@@ -1959,7 +1974,7 @@ def handle_internal_error(error):
 @diagnostic_bp.route('/api/domains')
 @login_required
 @rate_limit(requests_per_minute=60)
-def get_all_domains():
+def get_all_domains(lang):
     """Получить список всех доменов"""
     try:
         domains = BIGDomain.query.filter_by(is_active=True).order_by(BIGDomain.weight_percentage.desc()).all()
@@ -1989,7 +2004,7 @@ def get_all_domains():
 @diagnostic_bp.route('/api/domains/<domain_code>')
 @login_required
 @rate_limit(requests_per_minute=60)
-def get_domain_info(domain_code):
+def get_domain_info(lang, domain_code):
     """Получить информацию о конкретном домене"""
     try:
         domain = BIGDomain.query.filter_by(code=domain_code).first()
@@ -2024,7 +2039,7 @@ def get_domain_info(domain_code):
 @diagnostic_bp.route('/api/domains/<domain_code>/start', methods=['POST'])
 @login_required
 @rate_limit(requests_per_minute=10)
-def start_domain_diagnostic(domain_code):
+def start_domain_diagnostic(lang, domain_code):
     """Запустить диагностику для конкретного домена"""
     domain = BIGDomain.query.filter_by(code=domain_code).first()
     if not domain:
@@ -2070,12 +2085,12 @@ def start_domain_diagnostic(domain_code):
 
 @diagnostic_bp.route('/domain/<domain_code>')
 @login_required
-def domain_diagnostic_page(domain_code):
+def domain_diagnostic_page(lang, domain_code):
     """Страница доменной диагностики"""
     domain = BIGDomain.query.filter_by(code=domain_code).first()
     if not domain:
         flash('Domain not found', 'error')
-        return redirect(url_for('diagnostic_bp.start_diagnostic'))
+        return redirect(url_for('diagnostic.start_diagnostic', lang=lang))
     
     return render_template('assessment/domain_diagnostic.html', domain=domain)
     """Запустить диагностику для конкретного домена"""
@@ -2253,7 +2268,7 @@ def format_question_for_frontend(question: Question) -> dict:
 @diagnostic_bp.route('/diagnostic-types', methods=['GET'])
 @login_required
 @rate_limit(requests_per_minute=60)
-def get_diagnostic_types():
+def get_diagnostic_types(lang):
     """Получить информацию о доступных типах диагностики"""
     try:
         # Получить количество доменов
@@ -2304,13 +2319,13 @@ def get_diagnostic_types():
 
 @diagnostic_bp.route('/choose-type')
 @login_required
-def choose_diagnostic_type():
+def choose_diagnostic_type(lang):
     """Redirect directly to quick test - no selection needed"""
-    return redirect(url_for('diagnostic.start_quick_test'))
+    return redirect(url_for('diagnostic.start_quick_test', lang=lang))
 
 @diagnostic_bp.route('/learning-question/<int:session_id>', methods=['GET'])
 @login_required
-def show_learning_question(session_id):
+def show_learning_question(lang, session_id):
     """Show question in learning mode with immediate feedback"""
     try:
         diagnostic_session = DiagnosticSession.query.get_or_404(session_id)
@@ -2323,7 +2338,7 @@ def show_learning_question(session_id):
         
         if diagnostic_type not in ['learning_30', 'learning']:
             current_app.logger.info(f"Not a learning session: diagnostic_type={diagnostic_type}, redirecting to regular question")
-            return redirect(url_for('diagnostic.show_question', session_id=session_id))
+            return redirect(url_for('diagnostic.show_question', lang=lang, session_id=session_id))
         
         # Get current question
         if not diagnostic_session.current_question_id:
@@ -2331,16 +2346,13 @@ def show_learning_question(session_id):
             irt_engine = IRTEngine(diagnostic_session, user=current_user)
             question = irt_engine.select_next_question()
             if not question:
-                return redirect(url_for('diagnostic.show_results', session_id=session_id))
+                return redirect(url_for('diagnostic.show_results', lang=lang, session_id=session_id))
             diagnostic_session.current_question_id = question.id
             db.session.commit()
         else:
             question = Question.query.get(diagnostic_session.current_question_id)
             if not question:
-                return redirect(url_for('diagnostic.show_results', session_id=session_id))
-        
-        # Get language
-        lang = session.get('lang', 'nl')
+                return redirect(url_for('diagnostic.show_results', lang=lang, session_id=session_id))
         
         return render_template('assessment/learning_question.html', 
                              question=question, 
@@ -2350,11 +2362,19 @@ def show_learning_question(session_id):
     except Exception as e:
         current_app.logger.error(f"Error in show_learning_question: {str(e)}", exc_info=True)
         flash('Er is een fout opgetreden bij het laden van de vraag.', 'error')
-        return redirect(url_for('main.index', lang=session.get('lang', 'nl')))
+        # Завершаем проблемную сессию
+        try:
+            if 'diagnostic_session' in locals():
+                diagnostic_session.status = 'abandoned'
+                diagnostic_session.completed_at = datetime.now(timezone.utc)
+                db.session.commit()
+        except:
+            pass
+        return redirect(url_for('diagnostic.start_quick_test', lang=lang))
 
 @diagnostic_bp.route('/question/<int:session_id>', methods=['GET'])
 @login_required
-def show_question(session_id):
+def show_question(lang, session_id):
     try:
         # ВАЖНО: Принудительно обновляем сессию из БД чтобы получить актуальный current_question_id
         db.session.expire_all()  # Очищаем кэш
@@ -2365,7 +2385,7 @@ def show_question(session_id):
         # Проверяем, что сессия активна
         if diagnostic_session.status != 'active':
             flash('Диагностическая сессия завершена', 'warning')
-            return redirect(url_for('diagnostic.start_quick_test'))
+            return redirect(url_for('diagnostic.start_quick_test', lang=lang))
         
         # Получить текущий вопрос для пользователя
         # NOTE: current_question_id должен быть уже установлен через get_next_question API
@@ -2379,7 +2399,7 @@ def show_question(session_id):
             first_question = irt.select_initial_question()
             if not first_question:
                 flash('Нет доступных вопросов', 'error')
-                return redirect(url_for('diagnostic.start_quick_test'))
+                return redirect(url_for('diagnostic.start_quick_test', lang=lang))
             
             diagnostic_session.current_question_id = first_question.id
             db.session.commit()
@@ -2388,7 +2408,11 @@ def show_question(session_id):
         question = Question.query.get(diagnostic_session.current_question_id)
         if not question:
             flash('Вопрос не найден', 'error')
-            return redirect(url_for('diagnostic.start_quick_test'))
+            # Завершаем проблемную сессию, чтобы избежать циклов
+            diagnostic_session.status = 'abandoned'
+            diagnostic_session.completed_at = datetime.now(timezone.utc)
+            db.session.commit()
+            return redirect(url_for('diagnostic.start_quick_test', lang=lang))
         
         # Для шаблона нужны номер вопроса, всего вопросов и т.д.
         question_num = diagnostic_session.questions_answered + 1
@@ -2427,17 +2451,30 @@ def show_question(session_id):
                              question_num=question_num, 
                              total_questions=total_questions, 
                              session_id=session_id,
-                             remaining_time=remaining_time)
+                             remaining_time=remaining_time,
+                             lang=lang)
                              
     except Exception as e:
         logger.error(f"Error showing question: {str(e)}")
         flash('Ошибка при загрузке вопроса', 'error')
-        return redirect(url_for('diagnostic.choose_diagnostic_type')) 
+        # Проверяем, есть ли активная сессия, и завершаем её, чтобы избежать циклов
+        try:
+            active_session = DiagnosticSession.query.filter_by(
+                user_id=current_user.id,
+                status='active'
+            ).first()
+            if active_session:
+                active_session.status = 'abandoned'
+                active_session.completed_at = datetime.now(timezone.utc)
+                db.session.commit()
+        except:
+            pass
+        return redirect(url_for('diagnostic.start_quick_test', lang=lang)) 
 
 @diagnostic_bp.route('/session/terminate', methods=['POST'])
 @login_required
 @rate_limit(requests_per_minute=10)
-def terminate_active_session():
+def terminate_active_session(lang):
     """Terminate user's active diagnostic session"""
     try:
         # Находим активную сессию пользователя
@@ -2475,7 +2512,7 @@ def terminate_active_session():
 
 @diagnostic_bp.route('/quick-test', methods=['GET'])
 @login_required
-def start_quick_test():
+def start_quick_test(lang):
     """Start Quick Test directly - bypass selection template"""
     try:
         # Start diagnostic directly with quick_30 type (simulate POST request)
@@ -2488,8 +2525,18 @@ def start_quick_test():
         ).first()
         
         if active_session:
-            flash('У вас уже есть активная диагностическая сессия', 'warning')
-            return redirect(url_for('diagnostic.show_question', session_id=active_session.id))
+            # Проверяем, что сессия валидна (есть текущий вопрос)
+            if active_session.current_question_id:
+                question = Question.query.get(active_session.current_question_id)
+                if question:
+                    flash('У вас уже есть активная диагностическая сессия', 'warning')
+                    return redirect(url_for('diagnostic.show_question', lang=lang, session_id=active_session.id))
+            
+            # Если сессия проблемная, завершаем её и создаём новую
+            logger.warning(f"Found invalid active session {active_session.id}, abandoning it")
+            active_session.status = 'abandoned'
+            active_session.completed_at = datetime.now(timezone.utc)
+            db.session.commit()
 
         # Get first question using TOP-10 configuration for Quick Test
         selected_questions = select_questions_for_quick_test(current_user, 'quick_30')
@@ -2520,7 +2567,7 @@ def start_quick_test():
         db.session.commit()
         
         # Redirect to first question
-        return redirect(url_for('diagnostic.show_question', session_id=diagnostic_session.id))
+        return redirect(url_for('diagnostic.show_question', lang=lang, session_id=diagnostic_session.id))
         
     except Exception as e:
         logger.error(f"Error starting Quick Test: {e}")
@@ -2530,7 +2577,7 @@ def start_quick_test():
 @diagnostic_bp.route('/quick-test', methods=['POST'])
 @login_required
 @rate_limit(requests_per_minute=10)
-def quick_test():
+def quick_test(lang):
     """Quick test endpoint for testing learning planning system"""
     try:
         if not request.is_json:
@@ -2588,7 +2635,7 @@ def quick_test():
         return safe_jsonify({
             'success': True,
             'session_id': diagnostic_session.id,
-            'redirect_url': url_for('diagnostic.show_results', session_id=diagnostic_session.id)
+            'redirect_url': url_for('diagnostic.show_results', lang=lang, session_id=diagnostic_session.id)
         })
         
     except Exception as e:
@@ -2669,7 +2716,7 @@ def save_test_responses(diagnostic_session, test_results):
 
 @diagnostic_bp.route('/reassessment/<int:plan_id>')
 @login_required
-def start_reassessment(plan_id):
+def start_reassessment(lang, plan_id):
     """Start a new diagnostic session for reassessment"""
     try:
         # Get the learning plan
@@ -2693,7 +2740,7 @@ def start_reassessment(plan_id):
         db.session.commit()
         
         flash('Начинаем переоценку вашего прогресса обучения.', 'info')
-        return redirect(f'/big-diagnostic/question/{diagnostic_session.id}')
+        return redirect(url_for('diagnostic.show_question', lang=lang, session_id=diagnostic_session.id))
         
     except Exception as e:
         logger.error(f"Error starting reassessment: {e}")
@@ -2703,7 +2750,7 @@ def start_reassessment(plan_id):
 @diagnostic_bp.route('/session/<int:session_id>/complete', methods=['POST'])
 @login_required
 @validate_session
-def complete_session(session_id):
+def complete_session(lang, session_id):
     """Force complete diagnostic session and create learning plan"""
     print(f"🔍 ОТЛАДКА: complete_session вызвана для session_id = {session_id}")
     
@@ -2807,7 +2854,7 @@ def complete_session(session_id):
                     'success': True,
                     'message': 'Session completed and learning plan created',
                     'plan_id': plan.id,
-                    'redirect_url': url_for('daily_learning.learning_map', lang='en')
+                    'redirect_url': url_for('learning_map_bp.learning_map', lang='en')
                 })
             else:
                 print(f"🔍 ОТЛАДКА: активный план уже существует {existing_plan.id}")
@@ -2818,7 +2865,7 @@ def complete_session(session_id):
                     'success': True,
                     'message': 'Session completed successfully',
                     'plan_id': existing_plan.id,
-                    'redirect_url': url_for('daily_learning.learning_map', lang='en')
+                    'redirect_url': url_for('learning_map_bp.learning_map', lang='en')
                 })
                 
         except Exception as e:
@@ -2908,7 +2955,7 @@ def update_plan_after_reassessment():
             'current_ability': plan.current_ability,
             'estimated_readiness': plan.estimated_readiness,
             'next_diagnostic_date': plan.next_diagnostic_date.isoformat() if plan.next_diagnostic_date else None,
-            'redirect_url': url_for('daily_learning.learning_map', lang='en')
+            'redirect_url': url_for('learning_map_bp.learning_map', lang='en')
         })
         
     except Exception as e:
@@ -3167,7 +3214,7 @@ def select_questions_for_quick_test(user, diagnostic_type='quick_30'):
 # API endpoint for checking diagnostic completion status
 @diagnostic_bp.route('/api/status')
 @login_required
-def get_diagnostic_status():
+def get_diagnostic_status(lang):
     """Check if user has completed any diagnostic sessions"""
     try:
         from models import DiagnosticSession

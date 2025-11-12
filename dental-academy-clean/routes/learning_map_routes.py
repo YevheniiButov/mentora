@@ -1087,6 +1087,13 @@ def learning_map(lang, path_id=None):
             or getattr(current_user, 'requires_diagnostic', False)
             or (active_plan and not schedule_valid)
         )
+        
+        # КРИТИЧНО: Если диагностика не пройдена, перенаправляем на диагностику
+        if diagnostic_required and not has_completed_diagnostic:
+            flash('Для начала обучения необходимо пройти диагностический тест. Это поможет создать персонализированный план обучения.', 'info')
+            current_app.logger.info(f"User {current_user.id} redirected to diagnostic - no completed diagnostic found")
+            # Используем правильный URL для диагностики
+            return redirect(f'/{current_lang}/big-diagnostic/start')
 
         # Получаем все пути обучения
         learning_paths = LearningPath.query.filter_by(is_active=True).all()

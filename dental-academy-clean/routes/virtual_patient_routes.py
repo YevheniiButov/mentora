@@ -60,6 +60,15 @@ def scenario_detail(scenario_id):
 @login_required
 def start_scenario(scenario_id):
     """Начать новый сценарий"""
+    # КРИТИЧНО: Проверяем, прошёл ли пользователь диагностику
+    from utils.diagnostic_check import check_diagnostic_completed, get_diagnostic_redirect_url
+    from flask import session, g
+    if not check_diagnostic_completed(current_user.id):
+        lang = getattr(g, 'lang', session.get('lang', 'nl'))
+        flash('Для работы с виртуальными пациентами необходимо пройти диагностический тест.', 'info')
+        current_app.logger.info(f"User {current_user.id} redirected to diagnostic from start_scenario")
+        return redirect(get_diagnostic_redirect_url(lang))
+    
     scenario = VirtualPatientScenario.query.get_or_404(scenario_id)
     
     # Создаем новую попытку

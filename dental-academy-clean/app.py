@@ -557,7 +557,8 @@ try:
     app.register_blueprint(ai_assistant_bp)
     
     # Регистрация Diagnostic blueprint (ВКЛЮЧЕНО с декораторами блокировки)
-    app.register_blueprint(diagnostic_bp, url_prefix='/big-diagnostic')
+    # url_prefix уже указан в blueprint: /<string:lang>/big-diagnostic
+    app.register_blueprint(diagnostic_bp)
     
     # Регистрация Testing blueprint (ВКЛЮЧЕНО с декораторами блокировки)
     app.register_blueprint(testing_bp, url_prefix='/testing')

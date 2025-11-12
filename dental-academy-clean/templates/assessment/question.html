@@ -351,7 +351,7 @@ async function nextQuestion() {
         if (submitResult && submitResult.success) {
             // Get next question via API instead of reloading the page
             console.log('📡 Fetching next question...');
-            const nextResponse = await fetch('{{ url_for("diagnostic.get_next_question") }}', {
+            const nextResponse = await fetch('{{ url_for("diagnostic.get_next_question", lang=lang) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -368,11 +368,11 @@ async function nextQuestion() {
             if (nextData.session_completed) {
                 // Test is complete, go to results
                 console.log('✅ Test completed, redirecting to results');
-                window.location.href = '{{ url_for("diagnostic.show_results", session_id=session_id) }}';
+                window.location.href = '{{ url_for("diagnostic.show_results", lang=lang, session_id=session_id) }}';
             } else if (nextData.success && nextData.question) {
                 // Reload page with new question (force refresh without cache)
                 console.log(`🔄 Loading next question ID: ${nextData.question.id}`);
-                const url = '{{ url_for("diagnostic.show_question", session_id=session_id) }}' + '?t=' + Date.now();
+                const url = '{{ url_for("diagnostic.show_question", lang=lang, session_id=session_id) }}' + '?t=' + Date.now();
                 // Use replace to avoid back button issues
                 window.location.replace(url);
             } else {
@@ -403,7 +403,7 @@ async function finishAssessment() {
         const result = await submitAnswer();
         if (result && result.success) {
             // Go to results
-            window.location.href = '{{ url_for("diagnostic.show_results", session_id=session_id) }}';
+            window.location.href = '{{ url_for("diagnostic.show_results", lang=lang, session_id=session_id) }}';
         }
     } catch (error) {
         console.error('Error in finishAssessment:', error);
@@ -425,7 +425,7 @@ async function completeDiagnostic() {
     showLoading('{{ t("completing_diagnostic", lang) | default("Completing diagnostic") }}...');
     
     try {
-        const response = await fetch('{{ url_for("diagnostic.complete_session", session_id=session_id) }}', {
+        const response = await fetch('{{ url_for("diagnostic.complete_session", lang=lang, session_id=session_id) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -437,7 +437,7 @@ async function completeDiagnostic() {
         
         if (response.ok) {
             // Go to results
-            window.location.href = '{{ url_for("diagnostic.show_results", session_id=session_id) }}';
+            window.location.href = '{{ url_for("diagnostic.show_results", lang=lang, session_id=session_id) }}';
         } else {
             const data = await response.json();
             throw new Error(data.error || '{{ t("diagnostic_completion_error", lang) | default("Diagnostic completion error") }}');
@@ -474,7 +474,7 @@ async function submitAnswer() {
         formData.append('confidence', confidenceLevel);
         formData.append('csrf_token', '{{ csrf_token() }}');
         
-        const response = await fetch('{{ url_for("diagnostic.submit_answer", session_id=session_id) }}', {
+        const response = await fetch('{{ url_for("diagnostic.submit_answer", lang=lang, session_id=session_id) }}', {
             method: 'POST',
             body: formData
         });

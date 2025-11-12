@@ -122,10 +122,27 @@ class DailyLearningAlgorithm:
                 status='active'
             ).first()
             
+            # КРИТИЧНО: Проверяем, нужно ли обновить план на новый день
+            from datetime import date, datetime, timezone
+            today = date.today()
+            today_start = datetime.combine(today, datetime.min.time()).replace(tzinfo=timezone.utc)
+            
+            # Удаляем старые незавершенные StudySession из предыдущих дней
+            if active_plan:
+                old_planned_sessions = StudySession.query.filter(
+                    StudySession.learning_plan_id == active_plan.id,
+                    StudySession.status == 'planned',
+                    StudySession.started_at < today_start
+                ).all()
+                
+                if old_planned_sessions:
+                    logger.info(f"User {user_id}: Removing {len(old_planned_sessions)} old planned sessions from previous days")
+                    for old_session in old_planned_sessions:
+                        db.session.delete(old_session)
+                    db.session.commit()
+            
             # ПРОВЕРКА ПРОСРОЧЕННОЙ ПЕРЕОЦЕНКИ (ПЕРВЫЙ ПРИОРИТЕТ)
             if active_plan and active_plan.next_diagnostic_date:
-                from datetime import date
-                today = date.today()
                 
                 if active_plan.next_diagnostic_date < today:
                     days_overdue = (today - active_plan.next_diagnostic_date).days
@@ -174,6 +191,20 @@ class DailyLearningAlgorithm:
                     # Прошло 14 дней без переоценки - добавляем предупреждение
                     reassessment_warning = True
                     logger.warning(f"User {user_id} needs reassessment but continuing with existing data")
+            
+            # КРИТИЧНО: Проверяем, есть ли уже план на сегодня
+            if active_plan:
+                today_planned_sessions = StudySession.query.filter(
+                    StudySession.learning_plan_id == active_plan.id,
+                    StudySession.status == 'planned',
+                    StudySession.started_at >= today_start
+                ).all()
+                
+                # Если есть запланированные сессии на сегодня, возвращаем существующий план
+                if today_planned_sessions:
+                    logger.info(f"User {user_id}: Found {len(today_planned_sessions)} planned sessions for today, returning existing plan")
+                    # Формируем план из существующих сессий
+                    return self._format_existing_plan(today_planned_sessions, user, active_plan, reassessment_warning)
             
             # Используем интегрированную систему IRT + Spaced Repetition
             try:
@@ -1148,6 +1179,7 @@ class DailyLearningAlgorithm:
                 if isinstance(theory_items, list):
                     for item in theory_items:
                         if isinstance(item, dict) and 'id' in item:
+                            from datetime import datetime, timezone
                             session = StudySession(
                                 learning_plan_id=active_plan.id,
                                 session_type='theory',
@@ -1155,7 +1187,8 @@ class DailyLearningAlgorithm:
                                 content_ids=self._serialize_content_ids([item['id']], item.get('type', 'lesson')),
                                 planned_duration=item.get('duration', 15),
                                 difficulty_level=float(item.get('difficulty', 0.0)) if isinstance(item.get('difficulty'), (int, float)) else 0.0,
-                                status='planned'
+                                status='planned',
+                                started_at=datetime.now(timezone.utc)  # Используем started_at как created_at для проверки даты
                             )
                             db.session.add(session)
                             study_sessions.append(session)
@@ -1165,6 +1198,7 @@ class DailyLearningAlgorithm:
                 if isinstance(practice_items, list):
                     for item in practice_items:
                         if isinstance(item, dict) and 'id' in item:
+                            from datetime import datetime, timezone
                             session = StudySession(
                                 learning_plan_id=active_plan.id,
                                 session_type='practice',
@@ -1172,7 +1206,8 @@ class DailyLearningAlgorithm:
                                 content_ids=self._serialize_content_ids([item['id']], item.get('type', 'question')),
                                 planned_duration=item.get('duration', 15),
                                 difficulty_level=float(item.get('difficulty', 0.0)) if isinstance(item.get('difficulty'), (int, float)) else 0.0,
-                                status='planned'
+                                status='planned',
+                                started_at=datetime.now(timezone.utc)  # Используем started_at как created_at для проверки даты
                             )
                             db.session.add(session)
                             study_sessions.append(session)
@@ -1182,6 +1217,7 @@ class DailyLearningAlgorithm:
                 if isinstance(review_items, list):
                     for item in review_items:
                         if isinstance(item, dict) and 'id' in item:
+                            from datetime import datetime, timezone
                             session = StudySession(
                                 learning_plan_id=active_plan.id,
                                 session_type='review',
@@ -1189,7 +1225,8 @@ class DailyLearningAlgorithm:
                                 content_ids=self._serialize_content_ids([item['id']], item.get('type', 'lesson')),
                                 planned_duration=item.get('duration', 10),
                                 difficulty_level=float(item.get('difficulty', 0.0)) if isinstance(item.get('difficulty'), (int, float)) else 0.0,
-                                status='planned'
+                                status='planned',
+                                started_at=datetime.now(timezone.utc)  # Используем started_at как created_at для проверки даты
                             )
                             db.session.add(session)
                             study_sessions.append(session)
@@ -1538,6 +1575,129 @@ class DailyLearningAlgorithm:
                 'message': 'Ошибка при создании плана обучения. Необходимо пройти диагностику.'
             }
     
+    def _format_existing_plan(self, study_sessions: List[StudySession], user: User,
+                             active_plan: PersonalLearningPlan, reassessment_warning: bool) -> Dict:
+        """
+        Форматирует существующий план из StudySession записей
+        
+        Args:
+            study_sessions: Список StudySession с status='planned' на сегодня
+            user: User object
+            active_plan: PersonalLearningPlan object
+            reassessment_warning: Флаг предупреждения о переоценке
+            
+        Returns:
+            Словарь с отформатированным планом
+        """
+        try:
+            from datetime import datetime, timezone
+            import json
+            
+            theory_items = []
+            practice_items = []
+            review_items = []
+            
+            for session in study_sessions:
+                try:
+                    content_ids_data = json.loads(session.content_ids) if session.content_ids else {}
+                    item_ids = content_ids_data.get('ids', [])
+                    content_type = content_ids_data.get('type', 'question')
+                    
+                    for item_id in item_ids:
+                        item = {
+                            'id': item_id,
+                            'type': content_type,
+                            'session_id': session.id,
+                            'estimated_time': session.planned_duration or 15,
+                            'difficulty': session.difficulty_level or 0.0
+                        }
+                        
+                        # Добавляем название в зависимости от типа
+                        if content_type == 'lesson':
+                            from models import Lesson
+                            lesson = Lesson.query.get(item_id)
+                            if lesson:
+                                item['title'] = lesson.title
+                            else:
+                                item['title'] = f'Урок #{item_id}'
+                        elif content_type == 'question':
+                            from models import Question
+                            question = Question.query.get(item_id)
+                            if question:
+                                title = question.text
+                                if len(title) > 50:
+                                    title = title[:50] + '...'
+                                item['title'] = title
+                            else:
+                                item['title'] = f'Вопрос #{item_id}'
+                        else:
+                            item['title'] = f'{content_type.title()} #{item_id}'
+                        
+                        # Распределяем по секциям в зависимости от типа сессии
+                        if session.session_type == 'theory':
+                            theory_items.append(item)
+                        elif session.session_type == 'practice':
+                            practice_items.append(item)
+                        elif session.session_type == 'review':
+                            review_items.append(item)
+                        else:
+                            # По умолчанию добавляем в практику
+                            practice_items.append(item)
+                            
+                except Exception as e:
+                    logger.warning(f"Error formatting session {session.id}: {e}")
+                    continue
+            
+            # Формируем структуру плана
+            formatted_plan = {
+                'success': True,
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email
+                },
+                'plan_date': datetime.now(timezone.utc).strftime('%Y-%m-%d'),
+                'target_minutes': sum(s.planned_duration or 15 for s in study_sessions),
+                'sections': {
+                    'theory': {
+                        'title': 'Теория',
+                        'items': theory_items,
+                        'total_items': len(theory_items),
+                        'estimated_time': sum(item.get('estimated_time', 15) for item in theory_items)
+                    },
+                    'practice': {
+                        'title': 'Практика',
+                        'items': practice_items,
+                        'total_items': len(practice_items),
+                        'estimated_time': sum(item.get('estimated_time', 15) for item in practice_items)
+                    },
+                    'review': {
+                        'title': 'Повторение',
+                        'items': review_items,
+                        'total_items': len(review_items),
+                        'estimated_time': sum(item.get('estimated_time', 15) for item in review_items)
+                    }
+                },
+                'theory': {'items': theory_items},  # Для обратной совместимости
+                'practice': {'items': practice_items},
+                'review': {'items': review_items}
+            }
+            
+            if reassessment_warning:
+                formatted_plan['reassessment_warning'] = True
+                formatted_plan['reassessment_message'] = 'Рекомендуется пройти повторную диагностику'
+            
+            return formatted_plan
+            
+        except Exception as e:
+            logger.error(f"Error formatting existing plan: {e}")
+            # В случае ошибки возвращаем пустой план
+            return {
+                'success': False,
+                'error': str(e),
+                'message': 'Ошибка при форматировании существующего плана'
+            }
+    
     def _format_integrated_plan(self, integrated_plan: Dict, user: User, 
                               active_plan: PersonalLearningPlan, reassessment_warning: bool) -> Dict:
         """Форматирует интегрированный план для совместимости с существующим API"""
@@ -1633,32 +1793,33 @@ class DailyLearningAlgorithm:
         study_sessions = []
         
         try:
+            from datetime import datetime, timezone
             for section in formatted_plan.get('sections', []):
                 if section['type'] == 'review':
                     # Создаем сессию для повторений
                     session = StudySession(
-                        user_id=user.id,
                         learning_plan_id=active_plan.id,
                         session_type='review',
                         content_ids=self._serialize_content_ids(
                             [item['id'] for item in section['items']], 'question'
                         ),
-                        estimated_duration=len(section['items']) * 3,  # 3 минуты на элемент
-                        status='scheduled'
+                        planned_duration=len(section['items']) * 3,  # 3 минуты на элемент
+                        status='planned',
+                        started_at=datetime.now(timezone.utc)  # Используем started_at для проверки даты
                     )
                     study_sessions.append(session)
                 
                 elif section['type'] == 'new_content':
                     # Создаем сессию для нового контента
                     session = StudySession(
-                        user_id=user.id,
                         learning_plan_id=active_plan.id,
-                        session_type='study',
+                        session_type='practice',
                         content_ids=self._serialize_content_ids(
                             [item['id'] for item in section['items']], 'lesson'
                         ),
-                        estimated_duration=formatted_plan.get('estimated_time', {}).get('new_content', 15),
-                        status='scheduled'
+                        planned_duration=formatted_plan.get('estimated_time', {}).get('new_content', 15),
+                        status='planned',
+                        started_at=datetime.now(timezone.utc)  # Используем started_at для проверки даты
                     )
                     study_sessions.append(session)
             

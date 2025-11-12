@@ -17,7 +17,7 @@
             {% if learning_state and learning_state.stage == 'pre_diagnostic' %}
             <div class="learning-paths pre-diagnostic-stage">
                 <div class="learning-path-item">
-                    <a href="{{ url_for('diagnostic.choose_diagnostic_type') }}" 
+                    <a href="{{ url_for('diagnostic.choose_diagnostic_type', lang=g.get('lang', session.get('lang', 'en'))) }}" 
                        class="diagnostic-link">
                         <div class="diagnostic-link-content">
                             <i class="bi bi-clipboard-pulse"></i>
@@ -373,7 +373,7 @@
                     </button>
                   {% else %}
                     <p>{{ t('learning_in_progress_explanation', lang)|default('U bent al bezig met uw leertraject. Ga verder waar u gebleven bent!') }}</p>
-                    <button class="btn-continue-learning" onclick="window.location.href='{{ url_for('daily_learning.learning_map', lang=lang) }}'">
+                    <button class="btn-continue-learning" onclick="window.location.href='{{ url_for('learning_map_bp.learning_map', lang=lang) }}'">
                       {{ t('continue_learning', lang)|default('Ga verder met leren') }}
                     </button>
                   {% endif %}
