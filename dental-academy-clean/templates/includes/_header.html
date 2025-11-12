@@ -893,19 +893,64 @@ header.modern-header .navbar-toggler {
   .dropdown-menu {
     position: static !important;
     width: 100% !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
     margin-top: 0.5rem !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     border: none !important;
     box-shadow: none !important;
     max-height: none !important;
     overflow-y: visible !important;
+    transform: none !important;
+    max-width: 100% !important;
+    min-width: auto !important;
   }
   
   .language-menu {
     position: static !important;
     width: 100% !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
     margin-top: 0.5rem !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     border: none !important;
     box-shadow: none !important;
+    transform: none !important;
+    max-width: 100% !important;
+    min-width: auto !important;
+  }
+  
+  /* Переопределяем inline стили на мобильных - используем более специфичный селектор */
+  .language-menu[style*="position: absolute"],
+  .language-menu[style*="right: 0"],
+  .language-dropdown .language-menu {
+    position: static !important;
+    right: auto !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+  }
+  
+  /* Переопределяем :style binding на мобильных через CSS */
+  .language-menu[style*="display: block"] {
+    position: static !important;
+    right: auto !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: auto !important;
+  }
+  
+  /* Убеждаемся, что родительские контейнеры не обрезают меню */
+  .navbar-actions,
+  .navbar-collapse,
+  .navbar {
+    overflow: visible !important;
   }
 }
 
@@ -1477,6 +1522,7 @@ body {
 @media (max-width: 768px) {
   .language-dropdown {
     width: 100% !important;
+    position: relative !important;
   }
   
   .language-dropdown .dropdown-toggle {
@@ -1484,13 +1530,52 @@ body {
     justify-content: space-between !important;
   }
   
-  .language-menu {
+  /* Агрессивное переопределение всех inline стилей на мобильных */
+  .language-dropdown .language-menu,
+  .language-menu.language-menu,
+  ul.language-menu.dropdown-menu {
     position: static !important;
     width: 100% !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
     margin-top: 0.5rem !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     border: none !important;
     box-shadow: none !important;
     background: rgba(255, 255, 255, 0.05) !important;
+    transform: none !important;
+    max-width: 100% !important;
+    min-width: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    overflow-y: visible !important;
+    overflow-x: visible !important;
+  }
+  
+  /* Переопределяем inline стили через атрибут селекторы */
+  .language-menu[style*="position"],
+  .language-menu[style*="right"],
+  .language-menu[style*="absolute"] {
+    position: static !important;
+    right: auto !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
+  }
+  
+  /* Переопределяем :style binding на мобильных через CSS */
+  .language-menu[style*="display: block"],
+  .language-menu[style*="visibility: visible"] {
+    position: static !important;
+    right: auto !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: auto !important;
   }
   
   /* ТЕМНАЯ ТЕМА НА МОБИЛЬНЫХ */
@@ -1500,6 +1585,21 @@ body {
   
   [data-theme="gradient"] .language-menu {
     background: rgba(0, 0, 0, 0.8) !important;
+  }
+  
+  /* Убеждаемся, что родительские контейнеры не обрезают меню */
+  .navbar-actions,
+  .navbar-collapse,
+  .navbar,
+  header {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+  }
+  
+  /* Убеждаемся, что dropdown контейнер не обрезает */
+  .language-dropdown {
+    overflow: visible !important;
   }
   }
 </style>
