@@ -151,8 +151,8 @@ def auth_register_redirect(lang):
 
 @main_bp.route('/coming-soon')
 def coming_soon(lang):
-    """Coming Soon page"""
-    return render_template('coming_soon.html', lang=lang)
+    """Coming Soon page - перенаправляет на карту обучения"""
+    return redirect(url_for('learning_map_bp.learning_map', lang=lang))
 
 
 @main_bp.route('/farmacie/advanced-drug-checker')
