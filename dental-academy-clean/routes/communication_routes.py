@@ -17,6 +17,22 @@ def check_resend_config():
     if not resend_api_key:
         flash('Resend API не настроен! Проверьте конфигурацию email.', 'error')
 
+# Обработка CSRF токена из JSON для preview запросов
+@communication_bp.before_request
+def handle_json_csrf():
+    """Извлекает CSRF токен из JSON тела запроса и устанавливает в заголовок"""
+    if request.method == 'POST' and request.is_json:
+        try:
+            # Используем get_data с cache=True чтобы можно было прочитать данные несколько раз
+            raw_data = request.get_data(cache=True)
+            if raw_data:
+                data = json.loads(raw_data)
+                if 'csrf_token' in data and 'X-CSRFToken' not in request.headers:
+                    # Устанавливаем токен в заголовок через environ (Flask-WTF проверяет заголовки)
+                    request.environ['HTTP_X_CSRFTOKEN'] = data['csrf_token']
+        except (json.JSONDecodeError, TypeError):
+            pass  # Если не удалось распарсить, продолжаем без изменений
+
 # Главная страница Communication Hub
 @communication_bp.route('/')
 @login_required

@@ -684,11 +684,15 @@ function updatePreview() {
         }
     }
     
-    // Отправляем запрос на генерацию превью
+    // Получаем CSRF токен
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
                      document.querySelector('input[name="csrf_token"]')?.value || 
                      '{{ csrf_token() }}';
     
+    // Добавляем CSRF токен в тело запроса (Flask-WTF проверяет и заголовок, и тело)
+    data.csrf_token = csrfToken;
+    
+    // Отправляем запрос на генерацию превью
     fetch('{{ url_for("communication.bulk_email") }}', {
         method: 'POST',
         headers: {
