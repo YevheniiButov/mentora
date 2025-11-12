@@ -1314,6 +1314,7 @@ def tour_status(lang):
         # Return current tour status - обновляем объект из БД для актуальности
         db.session.refresh(current_user)
         tour_completed = getattr(current_user, 'learning_map_tour_completed', False)
+        current_app.logger.debug(f"Tour status GET for user {current_user.id}: {tour_completed}")
         return jsonify({
             'success': True,
             'tour_completed': tour_completed
@@ -1324,12 +1325,18 @@ def tour_status(lang):
             data = request.get_json()
             completed = data.get('completed', False)
             
+            current_app.logger.info(f"Tour status update request for user {current_user.id}: completed={completed}")
+            
             # Обновляем значение в БД
+            old_value = getattr(current_user, 'learning_map_tour_completed', False)
             current_user.learning_map_tour_completed = bool(completed)
             db.session.commit()
             
             # Обновляем объект из БД для подтверждения сохранения
             db.session.refresh(current_user)
+            new_value = current_user.learning_map_tour_completed
+            
+            current_app.logger.info(f"Tour status updated for user {current_user.id}: {old_value} -> {new_value}")
             
             return jsonify({
                 'success': True,
@@ -1337,7 +1344,7 @@ def tour_status(lang):
             })
         except Exception as e:
             db.session.rollback()
-            current_app.logger.error(f"Error updating tour status: {str(e)}")
+            current_app.logger.error(f"Error updating tour status for user {current_user.id}: {str(e)}", exc_info=True)
             return jsonify({
                 'success': False,
                 'error': str(e)

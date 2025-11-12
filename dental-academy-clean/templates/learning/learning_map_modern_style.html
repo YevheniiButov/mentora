@@ -5975,7 +5975,9 @@
                 
                 // Получаем состояние тура из базы данных (передается с сервера)
                 // ВАЖНО: Это начальное значение, но мы также проверим через API для актуальности
-                let serverTourCompleted = JSON.parse(`{{ "true" if current_user.is_authenticated and current_user.learning_map_tour_completed else "false" }}`);
+                // Используем явное приведение к boolean для надежности
+                const serverTourCompletedRaw = {% if current_user.is_authenticated and current_user.learning_map_tour_completed %}true{% else %}false{% endif %};
+                let serverTourCompleted = serverTourCompletedRaw === true;
                 const isAuthenticated = JSON.parse(`{{ "true" if current_user.is_authenticated else "false" }}`);
                 
                 // Проверяем localStorage для неавторизованных пользователей
@@ -5987,9 +5989,23 @@
                     // Игнорируем ошибки localStorage
                 }
                 
-                // Финальное состояние тура: для авторизованных - только БД, для неавторизованных - localStorage
+                // Финальное состояние тура: для авторизованных - БД + localStorage (приоритет БД)
+                // Для неавторизованных - только localStorage
                 // ВАЖНО: Для авторизованных пользователей проверяем актуальный статус через API синхронно
+                // Но также учитываем localStorage как резервный вариант
                 let tourCompleted = isAuthenticated ? serverTourCompleted : localStorageTourCompleted;
+                
+                // ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Если в localStorage есть значение "completed", 
+                // используем его как резервный вариант даже для авторизованных пользователей
+                // Это защита на случай, если API не ответил или БД недоступна
+                if (isAuthenticated && localStorageTourCompleted && !serverTourCompleted) {
+                    // Если localStorage говорит "completed", но БД еще не обновилась - используем localStorage
+                    // Это может произойти сразу после сохранения, до обновления БД
+                    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                        console.log('⚠️ Using localStorage value as fallback (DB might not be updated yet)');
+                    }
+                    tourCompleted = true;
+                }
                 
                 // Для авторизованных пользователей делаем синхронную проверку статуса через API
                 // Это критично, чтобы получить актуальное значение из БД перед определением shouldLaunchTour
@@ -5998,17 +6014,50 @@
                     try {
                         const xhr = new XMLHttpRequest();
                         xhr.open('GET', `/{{ lang }}/learning-map/api/tour/status`, false); // false = синхронный запрос
+                        // Добавляем CSRF токен если нужно
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                        if (csrfToken) {
+                            xhr.setRequestHeader('X-CSRFToken', csrfToken);
+                        }
                         xhr.send();
                         if (xhr.status === 200) {
                             const data = JSON.parse(xhr.responseText);
                             if (data.success && data.tour_completed !== undefined) {
                                 tourCompleted = data.tour_completed;
                                 serverTourCompleted = data.tour_completed;
+                                
+                                // Синхронизируем localStorage с БД (БД имеет приоритет)
+                                if (data.tour_completed !== localStorageTourCompleted) {
+                                    try {
+                                        localStorage.setItem('learningMapTourCompleted', data.tour_completed ? 'true' : 'false');
+                                    } catch (e) {
+                                        // Игнорируем ошибки синхронизации
+                                    }
+                                }
+                                
+                                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                                    console.log('✅ Tour status loaded from API and synced with localStorage:', tourCompleted);
+                                }
+                            }
+                        } else {
+                            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                                console.warn('⚠️ Failed to fetch tour status, status:', xhr.status);
+                                // Если API не ответил, используем localStorage как fallback
+                                if (localStorageTourCompleted) {
+                                    tourCompleted = true;
+                                    console.log('⚠️ Using localStorage value as fallback (API failed)');
+                                }
                             }
                         }
                     } catch (e) {
-                        console.warn('Could not fetch tour status synchronously, using template value:', e);
-                        // Используем значение из шаблона как fallback
+                        console.warn('Could not fetch tour status synchronously, using template/localStorage value:', e);
+                        // Используем значение из шаблона или localStorage как fallback
+                        if (localStorageTourCompleted) {
+                            tourCompleted = true;
+                            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                                console.log('⚠️ Using localStorage value as fallback (sync request failed)');
+                            }
+                        }
                     }
                 }
                 
@@ -6161,82 +6210,135 @@
                 dontShowTourAgain: false,
                 tourCompleted: tourCompleted, // Локальное состояние завершенности тура
                 
-                // Инициализация: проверяем актуальный статус тура из БД при загрузке
+                // Инициализация: проверяем актуальный статус тура из БД и localStorage при загрузке
                 async initTourStatus() {
                     const isAuthenticated = JSON.parse(`{{ "true" if current_user.is_authenticated else "false" }}`);
+                    
+                    // Сначала проверяем localStorage (быстро и надежно)
+                    let localStorageCompleted = false;
+                    try {
+                        const stored = localStorage.getItem('learningMapTourCompleted');
+                        if (stored !== null) {
+                            localStorageCompleted = stored === 'true';
+                        }
+                    } catch (e) {
+                        console.warn('Could not read from localStorage:', e);
+                    }
+                    
+                    // Если в localStorage тур завершен, сразу обновляем состояние
+                    if (localStorageCompleted) {
+                        this.tourCompleted = true;
+                        console.log('✅ Tour completed (from localStorage)');
+                    }
+                    
                     if (isAuthenticated) {
+                        // Для авторизованных пользователей также проверяем БД
                         try {
                             const response = await fetch(`/{{ lang }}/learning-map/api/tour/status`);
                             const data = await response.json();
                             if (data.success && data.tour_completed !== undefined) {
+                                const wasCompleted = this.tourCompleted;
                                 this.tourCompleted = data.tour_completed;
+                                
+                                // Синхронизируем localStorage с БД (БД имеет приоритет)
+                                if (data.tour_completed !== localStorageCompleted) {
+                                    try {
+                                        localStorage.setItem('learningMapTourCompleted', data.tour_completed ? 'true' : 'false');
+                                        console.log('🔄 Synced localStorage with database');
+                                    } catch (e) {
+                                        // Игнорируем ошибки синхронизации
+                                    }
+                                }
+                                
+                                console.log('🔍 initTourStatus: tour status from API:', {
+                                    wasCompleted,
+                                    nowCompleted: this.tourCompleted,
+                                    localStorageCompleted,
+                                    showTourOverlay: this.showTourOverlay
+                                });
+                                
                                 // Если тур уже завершен, скрываем оверлей
                                 if (this.tourCompleted && this.showTourOverlay) {
+                                    console.log('✅ Hiding tour overlay - tour already completed');
                                     this.showTourOverlay = false;
                                     this.tourAutoStart = false;
                                 }
                             }
                         } catch (e) {
                             console.warn('Could not fetch tour status from API:', e);
+                            // Если API не ответил, используем значение из localStorage
+                            if (localStorageCompleted) {
+                                console.log('⚠️ Using localStorage value as fallback (API failed)');
+                                this.tourCompleted = true;
+                            }
                         }
+                    } else {
+                        // Для неавторизованных пользователей используем только localStorage
+                        this.tourCompleted = localStorageCompleted;
                     }
                 },
                 
                 async persistTourState(completed) {
                     const isAuthenticated = JSON.parse(`{{ "true" if current_user.is_authenticated else "false" }}`);
                     
+                    console.log('💾 persistTourState called:', { completed, isAuthenticated });
+                    
                     // Обновляем локальное состояние сразу
                     this.tourCompleted = completed;
                     
+                    // КРИТИЧНО: Сначала сохраняем в localStorage (быстро и надежно)
+                    // Это гарантирует, что состояние сохранится даже если API запрос упадет
+                    try {
+                        localStorage.setItem('learningMapTourCompleted', completed ? 'true' : 'false');
+                        console.log('✅ Tour state saved to localStorage:', completed);
+                    } catch (localStorageError) {
+                        console.warn('Could not persist tour state to localStorage:', localStorageError);
+                    }
+                    
                     if (isAuthenticated) {
-                        // Для авторизованных пользователей сохраняем в БД
+                        // Для авторизованных пользователей также сохраняем в БД
                         try {
                             const lang = '{{ lang }}';
+                            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
+                                             document.querySelector('input[name="csrf_token"]')?.value;
+                            
                             const response = await fetch(`/${lang}/learning-map/api/tour/status`, {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
+                                    'X-CSRFToken': csrfToken || ''
                                 },
                                 body: JSON.stringify({ completed: completed })
                             });
                             
                             if (!response.ok) {
-                                throw new Error('Failed to save tour state');
-                            }
-                            
-                            const result = await response.json();
-                            // Обновляем локальное состояние на основе ответа сервера
-                            if (result.success && result.tour_completed !== undefined) {
-                                this.tourCompleted = result.tour_completed;
-                            }
-                            
-                            // Также сохраняем в localStorage для надежности (но не используем для проверки)
-                            try {
-                                localStorage.setItem('learningMapTourCompleted', completed ? 'true' : 'false');
-                            } catch (localStorageError) {
-                                console.warn('Could not persist tour state to localStorage:', localStorageError);
-                            }
-                            
-                            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                                console.log('✅ Tour state saved to database and localStorage:', completed);
+                                const errorText = await response.text();
+                                console.error('❌ Failed to save tour state to server:', response.status, errorText);
+                                // НЕ выбрасываем ошибку - localStorage уже сохранен, это достаточно
+                                console.log('⚠️ Tour state saved to localStorage only (server save failed)');
+                            } else {
+                                const result = await response.json();
+                                console.log('✅ Tour state saved to server:', result);
+                                
+                                // Обновляем локальное состояние на основе ответа сервера
+                                if (result.success && result.tour_completed !== undefined) {
+                                    this.tourCompleted = result.tour_completed;
+                                    // Также обновляем localStorage на основе ответа сервера для синхронизации
+                                    try {
+                                        localStorage.setItem('learningMapTourCompleted', result.tour_completed ? 'true' : 'false');
+                                    } catch (e) {
+                                        // Игнорируем ошибки localStorage при обновлении
+                                    }
+                                    console.log('✅ Tour state updated locally and in localStorage:', this.tourCompleted);
+                                }
                             }
                         } catch (e) {
                             console.warn('Could not persist tour state to server:', e);
-                            // Fallback to localStorage if API fails
-                            try {
-                                localStorage.setItem('learningMapTourCompleted', completed ? 'true' : 'false');
-                            } catch (localStorageError) {
-                                console.warn('Could not persist tour state to localStorage:', localStorageError);
-                            }
-                        }
-                    } else {
-                        // Для неавторизованных пользователей используем localStorage
-                        try {
-                            localStorage.setItem('learningMapTourCompleted', completed ? 'true' : 'false');
-                        } catch (e) {
-                            console.warn('Could not persist tour state to localStorage:', e);
+                            // localStorage уже сохранен выше, так что это не критично
+                            console.log('⚠️ Tour state saved to localStorage only (server request failed)');
                         }
                     }
+                    // Для неавторизованных пользователей localStorage уже сохранен выше
                 },
                 lockScroll(shouldLock) {
                     try {
@@ -6322,9 +6424,13 @@
                     
                     // Если чекбокс отмечен, сохраняем состояние как завершенное (больше не показывать)
                     if (this.dontShowTourAgain) {
+                        console.log('💾 Saving tour state: completed=true (dontShowTourAgain checked)');
                         await this.persistTourState(true);
                         // Убеждаемся, что оверлей скрыт после сохранения
                         this.showTourOverlay = false;
+                        console.log('✅ Tour state saved, overlay hidden');
+                    } else {
+                        console.log('⏭️ Tour skipped but dontShowTourAgain not checked, state not saved');
                     }
                     // Если чекбокс не отмечен, не сохраняем состояние (можно показать снова)
                     
@@ -6565,6 +6671,17 @@
                     // Проверяем актуальный статус тура из БД перед загрузкой остальных данных
                     // Это гарантирует, что тур не показывается, если он уже был завершен
                     await this.initTourStatus();
+                    
+                    // КРИТИЧНО: Если тур завершен, принудительно скрываем оверлей и отменяем автозапуск
+                    if (this.tourCompleted) {
+                        console.log('✅ Tour is completed - forcing overlay and autostart to false');
+                        this.showTourOverlay = false;
+                        this.tourAutoStart = false;
+                        if (this.tourAutoStartTimer) {
+                            clearTimeout(this.tourAutoStartTimer);
+                            this.tourAutoStartTimer = null;
+                        }
+                    }
                     
                     // Start countdown timer
                     this.startCountdown();
