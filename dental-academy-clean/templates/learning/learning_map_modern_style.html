@@ -661,6 +661,7 @@
             gap: 2rem;
             align-items: start;
         }
+        
 
         /* Левая колонка */
         .left-column {
@@ -1101,6 +1102,64 @@
             font-weight: 600;
             margin-top: 1.5rem;
             margin-bottom: 0.75rem;
+        }
+        
+        /* Archive Sidebar Stats */
+        .archive-sidebar-stats {
+            margin-top: 1rem;
+        }
+        
+        .sidebar-stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+        
+        .sidebar-stat-item:hover {
+            background: #f1f3f5;
+            transform: translateX(2px);
+        }
+        
+        .sidebar-stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .sidebar-stat-info {
+            flex: 1;
+        }
+        
+        .sidebar-stat-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+        }
+        
+        .sidebar-stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1a202c;
+            line-height: 1.2;
+        }
+        
+        .sidebar-stat-avg {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.25rem;
         }
 
         /* IRT Diagnostic Styles */
@@ -2036,6 +2095,7 @@
                 top: auto !important;
                 margin-top: 1.5rem;
             }
+            
         }
         
         .calendar-day:hover {
@@ -4173,6 +4233,332 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ============================================================
+           ARCHIVE SECTION STYLES - MODERN GLASS MORPHISM
+           ============================================================ */
+        
+        .archive-container {
+            /* Белый фон-карточка, как у других вкладок */
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px) !important;
+            border-radius: 20px !important;
+            padding: 2rem !important;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+            width: 100% !important;
+        }
+        
+        .archive-container .archive-categories {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 0.75rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+        
+        .archive-container .category-btn {
+            background: rgba(255, 255, 255, 0.7) !important;
+            backdrop-filter: blur(30px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.9) !important;
+            border-radius: 12px !important;
+            padding: 0.75rem 1.25rem !important;
+            cursor: pointer !important;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.625rem !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03), 0 8px 16px rgba(0, 0, 0, 0.06) !important;
+            position: relative !important;
+            overflow: hidden !important;
+            white-space: nowrap !important;
+        }
+        
+        .archive-container .category-btn:hover {
+            transform: translateY(-2px) !important;
+            border-color: rgba(62, 205, 193, 0.4) !important;
+            background: rgba(255, 255, 255, 0.85) !important;
+            box-shadow: 0 4px 12px rgba(62, 205, 193, 0.15) !important;
+        }
+        
+        .archive-container .category-btn.active {
+            background: linear-gradient(135deg, rgba(62, 205, 193, 0.95) 0%, rgba(50, 163, 154, 0.95) 100%) !important;
+            color: white !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+            box-shadow: 0 4px 12px rgba(62, 205, 193, 0.25) !important;
+        }
+        
+        .archive-container .category-icon {
+            font-size: 1.25rem !important;
+            color: #3ECDC1 !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .archive-container .category-btn.active .category-icon {
+            color: white !important;
+        }
+        
+        .archive-container .category-text {
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+        }
+        
+        .archive-container .category-title {
+            font-size: 0.9rem !important;
+            font-weight: 600 !important;
+            color: #1a202c !important;
+            margin: 0 !important;
+        }
+        
+        .archive-container .category-btn.active .category-title {
+            color: white !important;
+        }
+        
+        .archive-container .category-count {
+            font-size: 0.75rem !important;
+            color: #94a3b8 !important;
+            background: rgba(255, 255, 255, 0.5) !important;
+            padding: 0.125rem 0.5rem !important;
+            border-radius: 8px !important;
+        }
+        
+        .archive-container .category-btn.active .category-count {
+            color: white !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        .archive-container .archive-filters {
+            display: flex !important;
+            gap: 0.75rem !important;
+            margin-bottom: 1.5rem !important;
+            flex-wrap: wrap !important;
+        }
+        
+        .archive-container .filter-search {
+            flex: 1 !important;
+            min-width: 220px !important;
+            padding: 0.625rem 0.875rem 0.625rem 2.5rem !important;
+            border: 1.5px solid rgba(62, 205, 193, 0.2) !important;
+            border-radius: 10px !important;
+            background: rgba(255, 255, 255, 0.6) !important;
+            backdrop-filter: blur(20px) !important;
+            font-size: 0.875rem !important;
+        }
+        
+        .archive-container .filter-search-wrapper {
+            position: relative !important;
+            flex: 1 !important;
+            min-width: 220px !important;
+        }
+        
+        .archive-container .filter-search-wrapper i {
+            position: absolute !important;
+            left: 0.875rem !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            color: #cbd5e1 !important;
+            pointer-events: none !important;
+            font-size: 0.875rem !important;
+        }
+        
+        .archive-container .filter-select {
+            padding: 0.625rem 0.875rem !important;
+            border: 1.5px solid rgba(62, 205, 193, 0.2) !important;
+            border-radius: 10px !important;
+            background: rgba(255, 255, 255, 0.6) !important;
+            backdrop-filter: blur(20px) !important;
+            min-width: 140px !important;
+            font-size: 0.875rem !important;
+        }
+        
+        .archive-container .archive-items {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
+            gap: 1rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+        
+        .archive-container .archive-item {
+            background: rgba(255, 255, 255, 0.65) !important;
+            backdrop-filter: blur(25px) !important;
+            border: 1.5px solid rgba(62, 205, 193, 0.15) !important;
+            border-radius: 14px !important;
+            padding: 1.25rem !important;
+            cursor: pointer !important;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03), 0 8px 16px rgba(0, 0, 0, 0.06) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+        }
+        
+        .archive-container .archive-item:hover {
+            transform: translateY(-4px) !important;
+            border-color: rgba(62, 205, 193, 0.4) !important;
+            background: rgba(255, 255, 255, 0.8) !important;
+            box-shadow: 0 4px 12px rgba(62, 205, 193, 0.2) !important;
+        }
+        
+        .archive-container .item-score-badge {
+            position: absolute !important;
+            top: 1rem !important;
+            right: 1rem !important;
+            padding: 0.375rem 0.75rem !important;
+            border-radius: 20px !important;
+            font-weight: 600 !important;
+            font-size: 0.8rem !important;
+            color: white !important;
+            z-index: 2 !important;
+        }
+        
+        .archive-container .item-score-badge.score-high {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        }
+        
+        .archive-container .item-score-badge.score-medium {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+        }
+        
+        .archive-container .item-score-badge.score-low {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        }
+        
+        .archive-container .item-header {
+            padding-right: 3.5rem !important;
+        }
+        
+        .archive-container .item-title {
+            font-size: 1rem !important;
+            font-weight: 600 !important;
+            color: #1a202c !important;
+            margin: 0 !important;
+            line-height: 1.4 !important;
+        }
+        
+        .archive-container .item-meta {
+            display: flex !important;
+            gap: 0.625rem !important;
+            flex-wrap: wrap !important;
+            padding-bottom: 0.75rem !important;
+            border-bottom: 1px solid rgba(62, 205, 193, 0.1) !important;
+        }
+        
+        .archive-container .meta-item {
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.375rem !important;
+            background: rgba(62, 205, 193, 0.08) !important;
+            padding: 0.375rem 0.625rem !important;
+            border-radius: 8px !important;
+            color: #64748b !important;
+            font-size: 0.8rem !important;
+        }
+        
+        .archive-container .meta-item i {
+            color: #3ECDC1 !important;
+            font-size: 0.875rem !important;
+        }
+        
+        .archive-container .item-footer {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+        }
+        
+        .archive-container .item-category {
+            font-size: 0.7rem !important;
+            font-weight: 600 !important;
+            color: #3ECDC1 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+        }
+        
+        .archive-container .item-arrow {
+            color: #cbd5e1 !important;
+            font-size: 1.125rem !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .archive-container .archive-item:hover .item-arrow {
+            color: #3ECDC1 !important;
+            transform: translateX(3px) !important;
+        }
+        
+        .archive-container .archive-pagination {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            gap: 1rem !important;
+            margin-top: 1.5rem !important;
+        }
+        
+        .archive-container .page-btn {
+            width: 36px !important;
+            height: 36px !important;
+            border: 1.5px solid rgba(62, 205, 193, 0.2) !important;
+            border-radius: 8px !important;
+            background: rgba(255, 255, 255, 0.6) !important;
+            backdrop-filter: blur(20px) !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            font-size: 0.875rem !important;
+        }
+        
+        .archive-container .page-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, rgba(62, 205, 193, 0.9) 0%, rgba(50, 163, 154, 0.9) 100%) !important;
+            color: white !important;
+            transform: translateY(-2px) !important;
+        }
+        
+        .archive-container .page-info {
+            font-size: 0.875rem !important;
+            color: #64748b !important;
+            font-weight: 500 !important;
+        }
+        
+        .archive-container .archive-loading {
+            padding: 3rem 0 !important;
+            text-align: center !important;
+        }
+        
+        .archive-container .archive-empty {
+            padding: 3rem 0 !important;
+            text-align: center !important;
+            color: #94a3b8 !important;
+        }
+        
+        @media (max-width: 768px) {
+            .archive-container {
+                padding: 1.25rem !important;
+            }
+            
+            .archive-container .archive-categories {
+                gap: 0.5rem !important;
+            }
+            
+            .archive-container .category-btn {
+                padding: 0.625rem 1rem !important;
+                font-size: 0.85rem !important;
+            }
+            
+            .archive-container .category-icon {
+                font-size: 1.125rem !important;
+            }
+            
+            .archive-container .archive-filters {
+                flex-direction: column !important;
+                gap: 0.5rem !important;
+            }
+            
+            .archive-container .archive-items {
+                grid-template-columns: 1fr !important;
+                gap: 0.75rem !important;
+            }
+            
+            .archive-container .archive-item {
+                padding: 1rem !important;
+            }
+        }
     </style>
     <script>
       // Remove residual Debug Info blocks at runtime (safety net)
@@ -4221,10 +4607,10 @@
                             <a class="nav-link active" href="/{{ lang }}/learning-map">{{ t('learning_map', lang)|default('Learning Map') }}</a>
                         </li>
                         
-                        <!-- Knowledge Base -->
-                        <li class="nav-item">
+                        <!-- Knowledge Base скрыта от пользователей -->
+                        <!-- <li class="nav-item">
                             <a class="nav-link" :class="{'tour-highlight': tourActive && tourStep === 5}" href="/{{ lang }}/knowledge-base">{{ t('knowledge_base', lang)|default('Knowledge Base') }}</a>
-                        </li>
+                        </li> -->
                         
                         <!-- Community -->
                         <li class="nav-item">
@@ -4451,11 +4837,176 @@
                             </div>
                             <div class="tab-label">{{ t('planner', lang)|default('Planner') }}</div>
                         </div>
+
+                        <!-- Archive Tab - Always Enabled -->
+                        <div class="tab-circle" :class="{ 'active': activeTab === 'archive' }" @click="selectTab('archive')">
+                            <div class="circle-button">
+                                <div class="circle-glow"></div>
+                                <div class="circle-inner"><i class="bi bi-archive-fill"></i></div>
+                            </div>
+                            <div class="tab-label">{{ t('archive', lang)|default('Archive') }}</div>
+                        </div>
                     </div>
                 </div>
                 
+                <!-- ARCHIVE TAB CONTENT - в левой колонке -->
+                <div x-show="activeTab === 'archive'" 
+                     x-data="archiveComponent()"
+                     @load="init()"
+                     class="archive-container">
+                    
+                    <!-- Category Tabs - Красивые карточки -->
+                    <div class="archive-categories">
+                        <button @click="activeCategory = 'english'; pagination = null; loadItems()" 
+                                :class="{ 'active': activeCategory === 'english' }"
+                                class="category-btn">
+                            <div class="category-icon">
+                                <i class="bi bi-book-fill"></i>
+                            </div>
+                            <div class="category-text">
+                                <div class="category-title">{{ t('english_passages', lang)|default('English Passages') }}</div>
+                                <div class="category-count" x-text="(stats?.english?.total || 0) + ' items'"></div>
+                            </div>
+                        </button>
+                        <button @click="activeCategory = 'terms'; pagination = null; loadItems()" 
+                                :class="{ 'active': activeCategory === 'terms' }"
+                                class="category-btn">
+                            <div class="category-icon">
+                                <i class="bi bi-card-list"></i>
+                            </div>
+                            <div class="category-text">
+                                <div class="category-title">{{ t('dutch_terms', lang)|default('Dutch Terms') }}</div>
+                                <div class="category-count" x-text="(stats?.terms?.total || 0) + ' items'"></div>
+                            </div>
+                        </button>
+                        <button @click="activeCategory = 'tests'; pagination = null; loadItems()" 
+                                :class="{ 'active': activeCategory === 'tests' }"
+                                class="category-btn">
+                            <div class="category-icon">
+                                <i class="bi bi-clipboard-check"></i>
+                            </div>
+                            <div class="category-text">
+                                <div class="category-title">{{ t('medical_tests', lang)|default('Medical Tests') }}</div>
+                                <div class="category-count" x-text="(stats?.tests?.total || 0) + ' items'"></div>
+                            </div>
+                        </button>
+                        <button @click="activeCategory = 'virtual-patients'; pagination = null; loadItems()" 
+                                :class="{ 'active': activeCategory === 'virtual-patients' }"
+                                class="category-btn">
+                            <div class="category-icon">
+                                <i class="bi bi-person-check"></i>
+                            </div>
+                            <div class="category-text">
+                                <div class="category-title">{{ t('virtual_patients', lang)|default('Virtual Patients') }}</div>
+                                <div class="category-count" x-text="(stats?.virtual_patients?.total || 0) + ' items'"></div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Filters - Поиск и сортировка -->
+                    <div class="archive-filters">
+                        <div class="filter-search-wrapper">
+                            <i class="bi bi-search"></i>
+                            <input type="text" 
+                                   x-model="searchQuery" 
+                                   @input.debounce.300ms="loadItems()"
+                                   placeholder="{{ t('search_placeholder', lang)|default('Search items...') }}"
+                                   class="filter-search">
+                        </div>
+                        
+                        <select x-model="sortBy" @change="loadItems()" class="filter-select">
+                            <option value="date">{{ t('sort_by_date', lang)|default('Sort by Date') }}</option>
+                            <option value="score">{{ t('sort_by_score', lang)|default('Sort by Score') }}</option>
+                            <option value="time">{{ t('sort_by_time', lang)|default('Sort by Time') }}</option>
+                        </select>
+                        
+                        <select x-model="sortOrder" @change="loadItems()" class="filter-select">
+                            <option value="desc">{{ t('descending', lang)|default('Descending') }}</option>
+                            <option value="asc">{{ t('ascending', lang)|default('Ascending') }}</option>
+                        </select>
+                    </div>
+
+                    <!-- Items Grid - Красивые карточки элементов -->
+                    <div class="archive-items" x-show="!loading && items.length > 0">
+                        <template x-for="item in items" :key="item.id">
+                            <div class="archive-item" @click="viewItem(item)">
+                                <!-- Score Badge -->
+                                <div class="item-score-badge" 
+                                     :class="getScoreClass(item.score_percentage || item.score || item.accuracy || 0)">
+                                    <span x-text="formatScore(item)"></span>
+                                </div>
+                                <!-- Item Header -->
+                                <div class="item-header">
+                                    <h4 class="item-title" x-text="item.title || item.term_nl || item.session_type_label || 'Unknown'"></h4>
+                                </div>
+                                <!-- Item Meta Info -->
+                                <div class="item-meta">
+                                    <!-- Date -->
+                                    <div class="meta-item" x-show="item.completed_at || item.last_reviewed || item.started_at">
+                                        <i class="bi bi-calendar3"></i>
+                                        <span x-text="formatDate(item.completed_at || item.last_reviewed || item.started_at)"></span>
+                                    </div>
+                                    <!-- Time -->
+                                    <div class="meta-item" x-show="item.time_spent">
+                                        <i class="bi bi-clock"></i>
+                                        <span x-text="formatTime(item.time_spent)"></span>
+                                    </div>
+                                    <!-- Questions -->
+                                    <div class="meta-item" x-show="item.total_questions || item.questions_answered">
+                                        <i class="bi bi-question-circle"></i>
+                                        <span x-text="(item.total_questions || item.questions_answered) + ' Q'"></span>
+                                    </div>
+                                </div>
+                                <!-- Item Footer - Description -->
+                                <div class="item-footer">
+                                    <div class="item-category" x-text="getCategoryLabel()"></div>
+                                    <div class="item-arrow">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="archive-pagination" x-show="pagination && pagination.pages > 1">
+                        <button @click="changePage((pagination?.page || 1) - 1)" 
+                                :disabled="!pagination || pagination.page <= 1"
+                                class="page-btn prev-btn"
+                                title="{{ t('previous', lang)|default('Previous') }}">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        
+                        <div class="page-info">
+                            <span x-text="pagination?.page || 1"></span>
+                            <span class="page-separator">/</span>
+                            <span x-text="pagination?.pages || 1"></span>
+                        </div>
+                        
+                        <button @click="changePage((pagination?.page || 1) + 1)" 
+                                :disabled="!pagination || pagination.page >= pagination.pages"
+                                class="page-btn next-btn"
+                                title="{{ t('next', lang)|default('Next') }}">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div class="archive-loading" x-show="loading">
+                        <div class="spinner"></div>
+                        <p>{{ t('loading', lang)|default('Loading...') }}</p>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="archive-empty" x-show="!loading && items.length === 0">
+                        <i class="bi bi-inbox"></i>
+                        <h3>{{ t('no_items', lang)|default('No items found') }}</h3>
+                        <p>{{ t('no_items_description', lang)|default('Try changing your filters or search terms') }}</p>
+                    </div>
+                </div>
+
                 <!-- Карточки -->
-                <div class="cards-area" x-show="activeTab !== 'individual' && activeTab !== 'planner'">
+                <div class="cards-area" x-show="activeTab !== 'individual' && activeTab !== 'planner' && activeTab !== 'archive'">
                     
                     <!-- IRT Test Cards -->
                     <div class="info-card test-card" x-show="activeTab === 'irt'" @click="startIRTTest(30)" style="cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
@@ -5276,8 +5827,81 @@
                     </div>
                 </div>
                 
+                <!-- ARCHIVE INFO (для правой колонки) -->
+                <div x-show="activeTab === 'archive'" 
+                     class="description-card archive-info">
+                    <h3>
+                        <i class="bi bi-archive-fill"></i>
+                        <span>{{ t('archive', lang)|default('Archive') }}</span>
+                    </h3>
+                    <p>{{ t('archive_description', lang)|default('View all your completed learning activities. Review past English passages, studied terms, medical tests, and virtual patients. Filter, search, and revisit your learning history.') }}</p>
+                    
+                    <!-- Статистика по категориям -->
+                    <div x-show="$store.archive?.stats" class="archive-sidebar-stats">
+                        <h4 style="margin-top: 1.5rem; margin-bottom: 1rem; color: #1a202c; font-size: 1rem;">
+                            <i class="bi bi-graph-up"></i> {{ t('statistics', lang)|default('Statistics') }}
+                        </h4>
+                        
+                        <div class="sidebar-stat-item">
+                            <div class="sidebar-stat-icon" style="background: linear-gradient(135deg, #3ECDC1 0%, #32A39A 100%);">
+                                <i class="bi bi-book"></i>
+                            </div>
+                            <div class="sidebar-stat-info">
+                                <div class="sidebar-stat-label">{{ t('english_passages', lang)|default('English Passages') }}</div>
+                                <div class="sidebar-stat-value" x-text="$store.archive?.stats?.english?.total || 0"></div>
+                                <div class="sidebar-stat-avg" x-text="'Avg: ' + ($store.archive?.stats?.english?.avg_score || 0) + '%'"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="sidebar-stat-item">
+                            <div class="sidebar-stat-icon" style="background: linear-gradient(135deg, #6C5CE7 0%, #5A4FCF 100%);">
+                                <i class="bi bi-card-text"></i>
+                            </div>
+                            <div class="sidebar-stat-info">
+                                <div class="sidebar-stat-label">{{ t('dutch_terms', lang)|default('Dutch Terms') }}</div>
+                                <div class="sidebar-stat-value" x-text="$store.archive?.stats?.terms?.total || 0"></div>
+                                <div class="sidebar-stat-avg" x-text="'Mastery: ' + ($store.archive?.stats?.terms?.avg_mastery || 0)"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="sidebar-stat-item">
+                            <div class="sidebar-stat-icon" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);">
+                                <i class="bi bi-clipboard-check"></i>
+                            </div>
+                            <div class="sidebar-stat-info">
+                                <div class="sidebar-stat-label">{{ t('medical_tests', lang)|default('Medical Tests') }}</div>
+                                <div class="sidebar-stat-value" x-text="$store.archive?.stats?.tests?.total || 0"></div>
+                                <div class="sidebar-stat-avg" x-text="'Avg: ' + ($store.archive?.stats?.tests?.avg_score || 0) + '%'"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="sidebar-stat-item">
+                            <div class="sidebar-stat-icon" style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);">
+                                <i class="bi bi-person-badge"></i>
+                            </div>
+                            <div class="sidebar-stat-info">
+                                <div class="sidebar-stat-label">{{ t('virtual_patients', lang)|default('Virtual Patients') }}</div>
+                                <div class="sidebar-stat-value" x-text="$store.archive?.stats?.virtual_patients?.total || 0"></div>
+                                <div class="sidebar-stat-avg" x-text="'Avg: ' + ($store.archive?.stats?.virtual_patients?.avg_score || 0) + '%'"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4 style="margin-top: 1.5rem; margin-bottom: 1rem; color: #1a202c; font-size: 1rem;">
+                        💡 {{ t('how_to_use', lang)|default('How to use') }}
+                    </h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <template x-for="tip in getTabTips('archive')" :key="tip">
+                            <li style="padding: 0.5rem 0; color: #64748b; font-size: 0.9rem;">
+                                <i class="bi bi-check-circle" style="color: #3ECDC1; margin-right: 0.5rem;"></i>
+                                <span x-text="tip"></span>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+
                 <!-- Обычные подсказки (для других вкладок) -->
-                <div x-show="activeTab !== 'planner' || !plannerSelectedDayPlan" class="description-card">
+                <div x-show="(activeTab !== 'planner' && activeTab !== 'archive') || (activeTab === 'planner' && !plannerSelectedDayPlan)" class="description-card">
                     <h3>
                         <i :class="`bi bi-${getTabIcon(activeTab)}`"></i>
                         <span x-text="getTabTitle(activeTab)"></span>
@@ -5308,28 +5932,33 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const tabParam = urlParams.get('tab');
                 const reloadParam = urlParams.get('reload');
-                const validTabs = ['irt', 'premium', 'individual', 'games', 'progress', 'planner'];
+                const validTabs = ['irt', 'premium', 'individual', 'games', 'progress', 'planner', 'archive'];
                 const tourParam = urlParams.get('tour');
                 
                 let shouldLaunchTour = false;
                 let shouldAutoStartTour = false;
-                let storedTourState = null;
                 
-                try {
-                    storedTourState = localStorage.getItem('learningMapTourCompleted');
-                    shouldLaunchTour = storedTourState !== 'true';
-                } catch (e) {
-                    shouldLaunchTour = true;
+                // Получаем состояние тура из базы данных (передается с сервера)
+                const serverTourCompleted = JSON.parse(`{{ "true" if current_user.is_authenticated and current_user.learning_map_tour_completed else "false" }}`);
+                const isAuthenticated = JSON.parse(`{{ "true" if current_user.is_authenticated else "false" }}`);
+                
+                // Для авторизованных пользователей используем состояние из БД
+                // Для неавторизованных - показываем тур (fallback)
+                if (isAuthenticated) {
+                    shouldLaunchTour = !serverTourCompleted;
+                } else {
+                    // Для неавторизованных пользователей используем localStorage как fallback
+                    try {
+                        const storedTourState = localStorage.getItem('learningMapTourCompleted');
+                        shouldLaunchTour = storedTourState !== 'true';
+                    } catch (e) {
+                        shouldLaunchTour = true;
+                    }
                 }
                 
                 if (tourParam === '1') {
                     shouldLaunchTour = true;
                     shouldAutoStartTour = true;
-                    try {
-                        localStorage.setItem('learningMapTourCompleted', 'false');
-                    } catch (e) {
-                        console.warn('Could not reset tour state in localStorage:', e);
-                    }
                 }
                 
                 // Приоритет: URL параметр > localStorage > дефолт
@@ -5390,7 +6019,7 @@
                 }
             
             // Базовые доступные вкладки
-            const baseEnabledTabs = ['irt', 'individual', 'progress', 'games', 'planner'];
+            const baseEnabledTabs = ['irt', 'individual', 'progress', 'games', 'planner', 'archive'];
             
             // Добавляем premium только для премиум пользователей
             const enabledTabsList = [...baseEnabledTabs];
@@ -5415,11 +6044,40 @@
                 tourAutoStart: shouldAutoStartTour,
                 tourAutoStartTimer: null,
                 
-                persistTourState(completed) {
-                    try {
-                        localStorage.setItem('learningMapTourCompleted', completed ? 'true' : 'false');
-                    } catch (e) {
-                        console.warn('Could not persist tour state:', e);
+                async persistTourState(completed) {
+                    const isAuthenticated = JSON.parse(`{{ "true" if current_user.is_authenticated else "false" }}`);
+                    
+                    if (isAuthenticated) {
+                        // Для авторизованных пользователей сохраняем в БД
+                        try {
+                            const lang = '{{ lang }}';
+                            const response = await fetch(`/${lang}/learning-map/api/tour/status`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ completed: completed })
+                            });
+                            
+                            if (!response.ok) {
+                                throw new Error('Failed to save tour state');
+                            }
+                        } catch (e) {
+                            console.warn('Could not persist tour state to server:', e);
+                            // Fallback to localStorage if API fails
+                            try {
+                                localStorage.setItem('learningMapTourCompleted', completed ? 'true' : 'false');
+                            } catch (localStorageError) {
+                                console.warn('Could not persist tour state to localStorage:', localStorageError);
+                            }
+                        }
+                    } else {
+                        // Для неавторизованных пользователей используем localStorage
+                        try {
+                            localStorage.setItem('learningMapTourCompleted', completed ? 'true' : 'false');
+                        } catch (e) {
+                            console.warn('Could not persist tour state to localStorage:', e);
+                        }
                     }
                 },
                 lockScroll(shouldLock) {
@@ -5929,7 +6587,8 @@
                         'individual': 'person-fill',
                         'games': 'controller',
                         'progress': 'graph-up',
-                        'planner': 'calendar-check-fill'
+                        'planner': 'calendar-check-fill',
+                        'archive': 'archive-fill'
                     }[tab] || 'circle';
                 },
                 getTabTitle(tab) {
@@ -5939,7 +6598,8 @@
                         'individual': 'Individual Learning',
                         'games': 'Gamification & Achievements',
                         'progress': 'Your Progress',
-                        'planner': 'Learning Planner'
+                        'planner': 'Learning Planner',
+                        'archive': '{{ t("archive", lang)|default("Archive") }}'
                     }[tab] || 'Unknown';
                 },
                 getTabDescription(tab) {
@@ -5949,7 +6609,8 @@
                         'individual': '{{ t("individual_description", lang)|default("Personalized learning modules tailored to your needs. Study at your own pace with comprehensive materials and interactive exercises. After a short diagnostic we build your daily plan. If something felt off the first time, open the IRT tab and retake the quick diagnostic so the system recalibrates and focuses on the areas you missed.") }}',           
                         'games': '{{ t("games_description", lang)|default("Relax and improve your cognitive skills with fun games! Play Sudoku for logic training, Medical Memory to learn terminology, or Quick Quiz for fast knowledge checks. Earn achievements and compete on the leaderboard!") }}',
                         'progress': '{{ t("progress_description", lang)|default("Track your learning journey with detailed analytics. Monitor your performance across all modules, see your study time, and identify areas for improvement.") }}',
-                        'planner': '{{ t("planner_description", lang)|default("Plan your learning schedule effectively. Set daily and weekly goals, track deadlines, and stay organized with our intelligent learning planner.") }}'
+                        'planner': '{{ t("planner_description", lang)|default("Plan your learning schedule effectively. Set daily and weekly goals, track deadlines, and stay organized with our intelligent learning planner.") }}',
+                        'archive': '{{ t("archive_description", lang)|default("View all your completed learning activities. Review past English passages, studied terms, medical tests, and virtual patients. Filter, search, and revisit your learning history.") }}'
                     };
                     
                     if (!this.isLaunched && !this.enabledTabs.includes(tab)) {
@@ -5965,7 +6626,8 @@
                         'individual': ['{{ t("tip_choose_modules", lang)|default("Choose modules based on your learning goals") }}', '{{ t("tip_complete_quizzes", lang)|default("Complete quizzes to reinforce your knowledge") }}', '{{ t("tip_unlock_modules", lang)|default("Unlock new modules by progressing through the curriculum") }}', '{{ t("tip_retake_diagnostic", lang)|default("If something felt off, open the IRT tab and repeat the quick diagnostic to refresh your plan") }}'],                                                          
                         'games': ['{{ t("tip_play_sudoku", lang)|default("Play Sudoku to improve logical thinking") }}', '{{ t("tip_medical_memory", lang)|default("Medical Memory helps learn terminology quickly") }}', '{{ t("tip_quick_quiz", lang)|default("Quick Quiz tests your knowledge in seconds") }}', '{{ t("tip_earn_achievements", lang)|default("Earn achievements and climb the leaderboard") }}', '{{ t("tip_take_breaks", lang)|default("Take breaks with games to refresh your mind") }}'],
                         'progress': ['{{ t("tip_review_statistics", lang)|default("Review your statistics regularly") }}', '{{ t("tip_set_goals", lang)|default("Set weekly and monthly goals") }}', '{{ t("tip_track_time", lang)|default("Track time spent on each learning activity") }}', '{{ t("tip_identify_weak_areas", lang)|default("Identify weak areas and focus on improvement") }}'],
-                        'planner': ['{{ t("tip_schedule_sessions", lang)|default("Schedule study sessions in advance") }}', '{{ t("tip_set_reminders", lang)|default("Set reminders for important deadlines") }}', '{{ t("tip_balance_activities", lang)|default("Balance different types of learning activities") }}', '{{ t("tip_review_plan", lang)|default("Review and adjust your plan weekly") }}']
+                        'planner': ['{{ t("tip_schedule_sessions", lang)|default("Schedule study sessions in advance") }}', '{{ t("tip_set_reminders", lang)|default("Set reminders for important deadlines") }}', '{{ t("tip_balance_activities", lang)|default("Balance different types of learning activities") }}', '{{ t("tip_review_plan", lang)|default("Review and adjust your plan weekly") }}'],
+                        'archive': ['{{ t("tip_filter_archive", lang)|default("Use filters to find specific items") }}', '{{ t("tip_search_archive", lang)|default("Search by name or category") }}', '{{ t("tip_revisit_content", lang)|default("Revisit completed content to reinforce learning") }}', '{{ t("tip_track_progress", lang)|default("Track your learning history and progress") }}']
                     };
                     
                     if (!this.isLaunched && !this.enabledTabs.includes(tab)) {
@@ -7216,6 +7878,155 @@
       // Make plannerCalendar available globally for Alpine.js
       if (typeof Alpine !== 'undefined') {
           Alpine.data('plannerCalendar', plannerCalendar);
+      }
+
+      // Archive Store (глобальное состояние для правой колонки)
+      if (typeof Alpine !== 'undefined') {
+          Alpine.store('archive', {
+              stats: null
+          });
+      }
+
+      // Archive Component
+      function archiveComponent() {
+          return {
+              activeCategory: 'english',
+              items: [],
+              stats: null,
+              loading: false,
+              searchQuery: '',
+              sortBy: 'date',
+              sortOrder: 'desc',
+              pagination: null,
+              
+              async init() {
+                  console.log('Archive component initialized');
+                  await this.loadStats();
+                  await this.loadItems();
+              },
+              
+              async loadStats() {
+                  try {
+                      const response = await fetch('/api/archive/stats');
+                      if (response.ok) {
+                          const data = await response.json();
+                          if (data.success) {
+                              this.stats = data.stats;
+                              if (typeof Alpine !== 'undefined' && Alpine.store('archive')) {
+                                  Alpine.store('archive').stats = data.stats;
+                              }
+                          }
+                      }
+                  } catch (error) {
+                      console.error('Error loading archive stats:', error);
+                  }
+              },
+              
+              async loadItems() {
+                  this.loading = true;
+                  try {
+                      const params = new URLSearchParams({
+                          page: this.pagination?.page || 1,
+                          per_page: 12,
+                          sort_by: this.sortBy,
+                          sort_order: this.sortOrder
+                      });
+                      
+                      if (this.searchQuery) {
+                          params.append('search', this.searchQuery);
+                      }
+                      
+                      const endpoint = `/api/archive/${this.activeCategory}`;
+                      const response = await fetch(`${endpoint}?${params}`);
+                      
+                      if (!response.ok) {
+                          throw new Error('Failed to load items');
+                      }
+                      
+                      const data = await response.json();
+                      if (data.success) {
+                          this.items = data.items || [];
+                          this.pagination = data.pagination || null;
+                      }
+                  } catch (error) {
+                      console.error('Error loading archive items:', error);
+                      this.items = [];
+                  } finally {
+                      this.loading = false;
+                  }
+              },
+              
+              changePage(page) {
+                  if (!this.pagination) return;
+                  if (page >= 1 && page <= this.pagination.pages) {
+                      this.pagination.page = page;
+                      this.loadItems();
+                  }
+              },
+              
+              viewItem(item) {
+                  if (item.type === 'english' && item.passage_id) {
+                      window.location.href = `/english/practice?passage_id=${item.passage_id}`;
+                  } else if (item.type === 'terms' && item.term_id) {
+                      window.location.href = `/flashcards/study?term_id=${item.term_id}`;
+                  } else if (item.type === 'tests' && item.id) {
+                      window.location.href = `/big-diagnostic/results/${item.id}`;
+                  } else if (item.type === 'virtual_patients' && item.scenario_id) {
+                      window.location.href = `/virtual-patient/${item.scenario_id}`;
+                  }
+              },
+              
+              formatScore(item) {
+                  if (item.score_percentage !== undefined) {
+                      return item.score_percentage + '%';
+                  } else if (item.score !== undefined) {
+                      return item.score + '%';
+                  } else if (item.accuracy !== undefined) {
+                      return item.accuracy + '%';
+                  }
+                  return 'N/A';
+              },
+              
+              getScoreClass(score) {
+                  if (score >= 80) return 'score-high';
+                  if (score >= 60) return 'score-medium';
+                  return 'score-low';
+              },
+              
+              getCategoryLabel() {
+                  switch(this.activeCategory) {
+                      case 'english': return 'English';
+                      case 'terms': return 'Terms';
+                      case 'tests': return 'Tests';
+                      case 'virtual-patients': return 'VP';
+                      default: return 'Item';
+                  }
+              },
+              
+              formatDate(dateString) {
+                  if (!dateString) return 'N/A';
+                  const date = new Date(dateString);
+                  return date.toLocaleDateString('nl-NL', { 
+                      month: 'short', 
+                      day: 'numeric' 
+                  });
+              },
+              
+              formatTime(seconds) {
+                  if (!seconds) return '0m';
+                  const minutes = Math.floor(seconds / 60);
+                  const secs = seconds % 60;
+                  if (minutes > 0) {
+                      return `${minutes}m`;
+                  }
+                  return `${secs}s`;
+              }
+          };
+      }
+      
+      // Make archiveComponent available globally for Alpine.js
+      if (typeof Alpine !== 'undefined') {
+          Alpine.data('archiveComponent', archiveComponent);
       }
       
     </script>

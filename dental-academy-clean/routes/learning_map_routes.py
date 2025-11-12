@@ -1295,6 +1295,37 @@ def learning_map(lang, path_id=None):
         return redirect(url_for('main.index', lang=current_lang))
 
 # --- НОВЫЙ API-маршрут для запуска модуля ---
+@learning_map_bp.route("/api/tour/status", methods=['GET', 'POST'])
+@login_required
+def tour_status(lang):
+    """Get or update learning map tour completion status for user"""
+    if request.method == 'GET':
+        # Return current tour status
+        tour_completed = getattr(current_user, 'learning_map_tour_completed', False)
+        return jsonify({
+            'success': True,
+            'tour_completed': tour_completed
+        })
+    else:
+        # POST - update tour status
+        try:
+            data = request.get_json()
+            completed = data.get('completed', False)
+            
+            current_user.learning_map_tour_completed = bool(completed)
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'tour_completed': current_user.learning_map_tour_completed
+            })
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
 @learning_map_bp.route("/api/start-module/<int:module_id>")
 @login_required
 def start_module(lang, module_id):

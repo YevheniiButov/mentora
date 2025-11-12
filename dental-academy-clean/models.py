@@ -148,6 +148,7 @@ class User(db.Model, UserMixin):
     
     # Learning flow control
     requires_diagnostic = db.Column(db.Boolean, default=True)  # Flag to redirect new users to diagnostic
+    learning_map_tour_completed = db.Column(db.Boolean, default=False)  # Flag to track if user has completed learning map tour
     
     # Timestamps
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))

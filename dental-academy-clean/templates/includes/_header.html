@@ -25,15 +25,18 @@
       <!-- Navigation -->
       <div class="navbar-collapse" 
            id="navbarMain"
-           :class="{ 'show': mobileMenuOpen || isDesktop }"
-           x-show="isDesktop ? true : mobileMenuOpen"
+           :class="{ 'show': (isDesktop || mobileMenuOpen) }"
+           x-show="isDesktop || mobileMenuOpen"
+           x-cloak
+           x-init="console.log('Navbar collapse initialized, isDesktop:', isDesktop, 'mobileMenuOpen:', mobileMenuOpen); $el.style.display = (isDesktop || mobileMenuOpen) ? 'flex' : 'none';"
+           :style="(isDesktop || mobileMenuOpen) ? 'display: flex !important; visibility: visible !important; opacity: 1 !important;' : 'display: none !important; visibility: hidden !important; opacity: 0 !important;'"
            x-transition:enter="transition ease-out duration-200"
            x-transition:enter-start="opacity-0 transform -translate-y-2"
            x-transition:enter-end="opacity-100 transform translate-y-0"
            x-transition:leave="transition ease-in duration-150"
            x-transition:leave-start="opacity-100 transform translate-y-0"
            x-transition:leave-end="opacity-0 transform -translate-y-2"
-           @click.away="if (!isDesktop) mobileMenuOpen = false">
+           @click.away="if (!isDesktop) { mobileMenuOpen = false; console.log('Menu closed by click away'); }">
         <ul class="navbar-nav me-auto">
           <!-- Hoofdpagina - всегда видна -->
           <li class="nav-item">
@@ -53,13 +56,14 @@
               {{ t('learning_map', lang|default('en'))|default('Learning Map') }}
             </a>
           </li>
-          <li class="nav-item">
+          <!-- Knowledge Base скрыта от пользователей -->
+          <!-- <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'daily_learning.knowledge_base' }}" 
                href="/{{ lang|default('en') }}/knowledge-base"
                @click="closeMobileMenu()">
               {{ t('knowledge_base', lang|default('en'))|default('Knowledge Base') }}
             </a>
-          </li>
+          </li> -->
           {% endif %}
 
           <!-- Community - всегда видна -->
@@ -341,7 +345,8 @@ header.modern-header .navbar-brand img {
 }
 
 header.modern-header .navbar-collapse {
-  display: flex !important;
+  /* display управляется через Alpine.js x-show и :style */
+  /* display: flex !important; */
   align-items: center !important;
   justify-content: space-between !important;
   flex: 1 !important;
@@ -458,11 +463,16 @@ header.modern-header .navbar-toggler {
     align-items: stretch !important;
     height: auto !important;
     z-index: 1001 !important;
+    /* По умолчанию скрыто на мобильных устройствах */
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
   }
   
-  /* Alpine.js управляет видимостью через x-show */
+  /* Alpine.js управляет видимостью через x-show и :style */
   header.modern-header .navbar-collapse.show {
-    display: flex !important;
+    /* display управляется через Alpine.js x-show и :style */
+    /* display: flex !important; */
   }
   
   header.modern-header .navbar-nav {
@@ -495,7 +505,8 @@ header.modern-header .navbar-toggler {
   /* НА ПЛАНШЕТАХ НАВИГАЦИЯ ОСТАЕТСЯ ГОРИЗОНТАЛЬНОЙ */
   header.modern-header .navbar-collapse {
     position: static !important;
-    display: flex !important;
+    /* display управляется через Alpine.js x-show и :style */
+    /* display: flex !important; */
     flex-direction: row !important;
     background: transparent !important;
     backdrop-filter: none !important;
@@ -563,11 +574,16 @@ header.modern-header .navbar-toggler {
     align-items: stretch !important;
     height: auto !important;
     z-index: 1001 !important;
+    /* По умолчанию скрыто на мобильных устройствах */
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
   }
   
-  /* Alpine.js управляет видимостью через x-show */
+  /* Alpine.js управляет видимостью через x-show и :style */
   header.modern-header .navbar-collapse.show {
-    display: flex !important;
+    /* display управляется через Alpine.js x-show и :style */
+    /* display: flex !important; */
   }
 }
 
@@ -648,7 +664,8 @@ header.modern-header .navbar-toggler {
 
 /* Фиксированная навигация */
 .navbar-collapse {
-  display: flex;
+  /* display управляется через Alpine.js x-show и :style */
+  /* display: flex; */
   justify-content: space-between;
   align-items: center;
   flex: 1;
@@ -2083,15 +2100,32 @@ window.headerNav = function() {
     isDesktop: false,
     
     init() {
+      // Принудительно закрываем меню при инициализации
+      this.mobileMenuOpen = false;
+      
       // Определяем размер экрана при загрузке
       this.checkDesktop();
+      
+      // Закрываем мобильное меню если это десктоп
+      if (this.isDesktop) {
+        this.mobileMenuOpen = false;
+      } else {
+        // На мобильном устройстве меню должно быть закрыто
+        this.mobileMenuOpen = false;
+      }
+      
+      console.log('HeaderNav initialized:', {
+        isDesktop: this.isDesktop,
+        mobileMenuOpen: this.mobileMenuOpen,
+        windowWidth: window.innerWidth
+      });
       
       // Слушаем изменения размера окна
       const handleResize = () => {
         const wasDesktop = this.isDesktop;
         this.checkDesktop();
         // Закрываем мобильное меню при переходе на десктоп
-        if (this.isDesktop && !wasDesktop) {
+        if (this.isDesktop) {
           this.mobileMenuOpen = false;
         }
       };
@@ -2106,9 +2140,11 @@ window.headerNav = function() {
     toggleMobileMenu() {
       // На десктопе не переключаем меню
       if (this.isDesktop) {
+        this.mobileMenuOpen = false;
         return;
       }
       this.mobileMenuOpen = !this.mobileMenuOpen;
+      console.log('Mobile menu toggled:', this.mobileMenuOpen);
     },
     
     closeMobileMenu() {
