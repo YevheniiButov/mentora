@@ -3554,6 +3554,7 @@ translations = {
     'tour_intro_body': 'We prepared a short guided tour so you always know where to begin.',
     'tour_start_button': 'Start guided tour',
     'tour_skip_button': 'Skip for now',
+    'tour_dont_show_again': "Don't show this again",
     'tour_prev_button': 'Back',
     'tour_next_button': 'Next',
     'tour_finish_button': 'Finish',

@@ -157,6 +157,16 @@
                 </select>
             </div>
             <div class="col-md-2">
+                <label for="consent_filter" class="form-label">Согласия</label>
+                <select class="form-select" id="consent_filter" name="consent_filter" autocomplete="off">
+                    <option value="all" {% if consent_filter == 'all' %}selected{% endif %}>Все</option>
+                    <option value="required_yes" {% if consent_filter == 'required_yes' %}selected{% endif %}>Обязательные: Да</option>
+                    <option value="required_no" {% if consent_filter == 'required_no' %}selected{% endif %}>Обязательные: Нет</option>
+                    <option value="marketing_yes" {% if consent_filter == 'marketing_yes' %}selected{% endif %}>Маркетинг: Да</option>
+                    <option value="marketing_no" {% if consent_filter == 'marketing_no' %}selected{% endif %}>Маркетинг: Нет</option>
+                </select>
+            </div>
+            <div class="col-md-2">
                 <label for="role" class="form-label">Роль</label>
                 <select class="form-select" id="role" name="role" autocomplete="off">
                     <option value="all" {% if role_filter == 'all' %}selected{% endif %}>Все</option>
@@ -223,6 +233,8 @@
                             <th>Email</th>
                             <th>Роль</th>
                             <th>Статус</th>
+                            <th>Обязательные согласия</th>
+                            <th>Маркетинг</th>
                             <th>Последний вход</th>
                             <th>Регистрация</th>
                             <th>Действия</th>
@@ -278,6 +290,28 @@
                                 <span class="badge bg-success">Активен</span>
                                 {% else %}
                                 <span class="badge bg-warning">Неактивен</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.required_consents %}
+                                <span class="badge bg-success" title="Согласие дано">
+                                    <i class="bi bi-check-circle"></i> Да
+                                </span>
+                                {% else %}
+                                <span class="badge bg-danger" title="Согласие не дано">
+                                    <i class="bi bi-x-circle"></i> Нет
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.optional_consents %}
+                                <span class="badge bg-info" title="Согласие на маркетинг дано">
+                                    <i class="bi bi-check-circle"></i> Да
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary" title="Согласие на маркетинг не дано">
+                                    <i class="bi bi-x-circle"></i> Нет
+                                </span>
                                 {% endif %}
                             </td>
                             <td>
@@ -340,7 +374,7 @@
                         {% endfor %}
                         {% else %}
                         <tr>
-                            <td colspan="8" class="text-center py-4">
+                            <td colspan="10" class="text-center py-4">
                                 <i class="bi bi-person-x fa-3x text-muted mb-3"></i>
                                 <p class="text-muted">Нет пользователей для отображения</p>
                             </td>

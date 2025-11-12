@@ -3325,6 +3325,7 @@ translations = {
     'tour_intro_body': 'Ми підготували короткий гід, щоб ви завжди знали, з чого почати.',
     'tour_start_button': 'Розпочати тур',
     'tour_skip_button': 'Пропустити зараз',
+    'tour_dont_show_again': 'Більше не показувати',
     'tour_prev_button': 'Назад',
     'tour_next_button': 'Далі',
     'tour_finish_button': 'Готово',

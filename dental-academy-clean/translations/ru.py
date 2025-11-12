@@ -3301,6 +3301,7 @@ translations = {
     'tour_intro_body': 'Мы подготовили короткий гид, чтобы вы всегда знали, с чего начать.',
     'tour_start_button': 'Начать тур',
     'tour_skip_button': 'Пропустить сейчас',
+    'tour_dont_show_again': 'Больше не показывать',
     'tour_prev_button': 'Назад',
     'tour_next_button': 'Далее',
     'tour_finish_button': 'Готово',

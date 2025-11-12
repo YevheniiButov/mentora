@@ -3087,6 +3087,7 @@ translations = {
     'tour_intro_body': 'یک راهنمای کوتاه آماده کرده‌ایم تا همیشه بدانید از کجا شروع کنید.',
     'tour_start_button': 'شروع راهنمایی',
     'tour_skip_button': 'فعلاً رد کن',
+    'tour_dont_show_again': 'دیگر نمایش نده',
     'tour_prev_button': 'قبلی',
     'tour_next_button': 'بعدی',
     'tour_finish_button': 'پایان',

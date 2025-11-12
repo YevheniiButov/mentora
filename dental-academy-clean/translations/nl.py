@@ -3352,6 +3352,7 @@ translations = {
     'tour_intro_body': 'We begeleiden je kort zodat je altijd weet waar je moet beginnen.',
     'tour_start_button': 'Start rondleiding',
     'tour_skip_button': 'Sla voorlopig over',
+    'tour_dont_show_again': 'Niet meer tonen',
     'tour_prev_button': 'Terug',
     'tour_next_button': 'Volgende',
     'tour_finish_button': 'Afronden',

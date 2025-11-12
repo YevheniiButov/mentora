@@ -2828,6 +2828,7 @@ translations = {
     "tour_intro_body": "أعددنا جولة سريعة كي تعرف دائماً من أين تبدأ.",
     "tour_start_button": "ابدأ الجولة",
     "tour_skip_button": "تخطَّ الآن",
+    "tour_dont_show_again": "عدم إظهار هذا مرة أخرى",
     "tour_prev_button": "السابق",
     "tour_next_button": "التالي",
     "tour_finish_button": "إنهاء",

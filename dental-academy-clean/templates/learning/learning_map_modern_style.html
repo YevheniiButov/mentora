@@ -4104,7 +4104,35 @@
             font-size: 1rem;
             line-height: 1.7;
             color: rgba(226, 232, 240, 0.9);
-            margin-bottom: 32px;
+            margin-bottom: 24px;
+        }
+        
+        .tour-dont-show-checkbox {
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .tour-dont-show-checkbox label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            color: rgba(226, 232, 240, 0.9);
+            font-size: 0.95rem;
+            user-select: none;
+        }
+        
+        .tour-dont-show-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #3b82f6;
+            border-radius: 4px;
+        }
+        
+        .tour-dont-show-checkbox label:hover {
+            color: #f8fafc;
         }
         
         .tour-intro-actions {
@@ -4704,6 +4732,12 @@
                 <img src="/static/images/logo.png" alt="Mentora" class="tour-intro-logo" loading="lazy">
                 <h2>{{ t('tour_intro_title', lang)|default('Welcome to your Learning Map') }}</h2>
                 <p>{{ t('tour_intro_body', lang)|default('Let us guide you through the main sections so you always know where to start.') }}</p>
+                <div class="tour-dont-show-checkbox">
+                    <label>
+                        <input type="checkbox" x-model="dontShowTourAgain">
+                        <span>{{ t('tour_dont_show_again', lang)|default("Don't show this again") }}</span>
+                    </label>
+                </div>
                 <div class="tour-intro-actions">
                     <button class="primary" @click="startTour(true)">{{ t('tour_start_button', lang)|default('Start guided tour') }}</button>
                     <button class="secondary" @click="skipTour()">{{ t('tour_skip_button', lang)|default('Skip for now') }}</button>
@@ -5928,12 +5962,13 @@
             const now = new Date();
             const isLaunched = now >= launchDate;
             
-            // Получаем параметр tab из URL
+                // Получаем параметр tab из URL
                 const urlParams = new URLSearchParams(window.location.search);
                 const tabParam = urlParams.get('tab');
                 const reloadParam = urlParams.get('reload');
                 const validTabs = ['irt', 'premium', 'individual', 'games', 'progress', 'planner', 'archive'];
                 const tourParam = urlParams.get('tour');
+                const resetTourParam = urlParams.get('reset_tour');
                 
                 let shouldLaunchTour = false;
                 let shouldAutoStartTour = false;
@@ -5942,23 +5977,74 @@
                 const serverTourCompleted = JSON.parse(`{{ "true" if current_user.is_authenticated and current_user.learning_map_tour_completed else "false" }}`);
                 const isAuthenticated = JSON.parse(`{{ "true" if current_user.is_authenticated else "false" }}`);
                 
-                // Для авторизованных пользователей используем состояние из БД
-                // Для неавторизованных - показываем тур (fallback)
-                if (isAuthenticated) {
-                    shouldLaunchTour = !serverTourCompleted;
+                // Отладочное логирование (только в development)
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    console.log('🔍 Tour Debug Info:', {
+                        isAuthenticated,
+                        serverTourCompleted,
+                        tourParam,
+                        resetTourParam,
+                        localStorageState: localStorage.getItem('learningMapTourCompleted')
+                    });
+                }
+                
+                // Если есть параметр reset_tour, сбрасываем состояние тура
+                if (resetTourParam === '1') {
+                    if (isAuthenticated) {
+                        // Сбрасываем в БД через API
+                        fetch(`/{{ lang }}/learning-map/api/tour/status`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ completed: false })
+                        }).then(() => {
+                            console.log('✅ Tour state reset in database');
+                        }).catch(e => console.warn('Could not reset tour state:', e));
+                    } else {
+                        // Сбрасываем в localStorage
+                        try {
+                            localStorage.removeItem('learningMapTourCompleted');
+                            console.log('✅ Tour state reset in localStorage');
+                        } catch (e) {
+                            console.warn('Could not reset tour state in localStorage:', e);
+                        }
+                    }
+                    // Принудительно показываем тур
+                    shouldLaunchTour = true;
+                    shouldAutoStartTour = false;
                 } else {
-                    // Для неавторизованных пользователей используем localStorage как fallback
-                    try {
-                        const storedTourState = localStorage.getItem('learningMapTourCompleted');
-                        shouldLaunchTour = storedTourState !== 'true';
-                    } catch (e) {
-                        shouldLaunchTour = true;
+                    // Для авторизованных пользователей используем состояние из БД
+                    // Для неавторизованных - показываем тур (fallback)
+                    if (isAuthenticated) {
+                        shouldLaunchTour = !serverTourCompleted;
+                    } else {
+                        // Для неавторизованных пользователей используем localStorage как fallback
+                        try {
+                            const storedTourState = localStorage.getItem('learningMapTourCompleted');
+                            shouldLaunchTour = storedTourState !== 'true';
+                        } catch (e) {
+                            shouldLaunchTour = true;
+                        }
                     }
                 }
                 
+                // URL параметр tour=1 имеет приоритет над всеми остальными
                 if (tourParam === '1') {
                     shouldLaunchTour = true;
                     shouldAutoStartTour = true;
+                }
+                
+                // Финальное логирование
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    console.log('🎯 Final Tour Decision:', {
+                        shouldLaunchTour,
+                        shouldAutoStartTour,
+                        reason: resetTourParam === '1' ? 'reset_tour parameter' : 
+                                tourParam === '1' ? 'tour=1 parameter' :
+                                isAuthenticated ? (serverTourCompleted ? 'already completed in DB' : 'not completed in DB') :
+                                'not authenticated, checking localStorage'
+                    });
                 }
                 
                 // Приоритет: URL параметр > localStorage > дефолт
@@ -6043,6 +6129,7 @@
                 showTourOverlay: shouldLaunchTour,
                 tourAutoStart: shouldAutoStartTour,
                 tourAutoStartTimer: null,
+                dontShowTourAgain: false,
                 
                 async persistTourState(completed) {
                     const isAuthenticated = JSON.parse(`{{ "true" if current_user.is_authenticated else "false" }}`);
@@ -6109,7 +6196,13 @@
                     this.lockScroll(true);
                     this.tourActive = true;
                     this.tourStep = 1;
-                    this.persistTourState(false);
+                    
+                    // Если чекбокс отмечен, сохраняем состояние как завершенное
+                    if (this.dontShowTourAgain) {
+                        this.persistTourState(true);
+                    } else {
+                        this.persistTourState(false);
+                    }
                     
                     const behavior = autoLaunch ? 'auto' : 'smooth';
                     this.$nextTick(() => {
@@ -6138,7 +6231,11 @@
                     this.tourActive = false;
                     this.tourStep = 0;
                     this.tourAutoStart = false;
+                    
+                    // Если чекбокс отмечен, сохраняем состояние как завершенное
+                    // Если не отмечен, тоже сохраняем как завершенное (пользователь прошел весь тур)
                     this.persistTourState(true);
+                    
                     this.lockScroll(false);
                 },
                 skipTour() {
@@ -6150,7 +6247,14 @@
                     this.showTourOverlay = false;
                     this.tourActive = false;
                     this.tourStep = 0;
-                    this.persistTourState(true);
+                    
+                    // Если чекбокс отмечен, сохраняем состояние как завершенное
+                    if (this.dontShowTourAgain) {
+                        this.persistTourState(true);
+                    } else {
+                        this.persistTourState(false);
+                    }
+                    
                     this.lockScroll(false);
                 },
                 restartTour() {

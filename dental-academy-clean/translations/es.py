@@ -3043,6 +3043,7 @@ translations = {
     'tour_intro_body': 'Hemos preparado una breve guía para que siempre sepas por dónde empezar.',
     'tour_start_button': 'Iniciar recorrido',
     'tour_skip_button': 'Omitir por ahora',
+    'tour_dont_show_again': 'No volver a mostrar',
     'tour_prev_button': 'Atrás',
     'tour_next_button': 'Siguiente',
     'tour_finish_button': 'Finalizar',

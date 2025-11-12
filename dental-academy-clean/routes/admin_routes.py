@@ -2576,6 +2576,7 @@ def users_list():
         search = request.args.get('search', '')
         status_filter = request.args.get('status', 'all')
         role_filter = request.args.get('role', 'all')
+        consent_filter = request.args.get('consent_filter', 'all')
         sort_by = request.args.get('sort', 'created_at')
         sort_order = request.args.get('order', 'desc')
         
@@ -2610,6 +2611,17 @@ def users_list():
         # Apply role filter
         if role_filter != 'all':
             query = query.filter(User.role == role_filter)
+        
+        # Apply consent filter
+        if consent_filter != 'all':
+            if consent_filter == 'required_yes':
+                query = query.filter(User.required_consents == True)
+            elif consent_filter == 'required_no':
+                query = query.filter(User.required_consents == False)
+            elif consent_filter == 'marketing_yes':
+                query = query.filter(User.optional_consents == True)
+            elif consent_filter == 'marketing_no':
+                query = query.filter(User.optional_consents == False)
         
         # Apply sorting
         if sort_by == 'name':
@@ -2681,6 +2693,7 @@ def users_list():
                              search=search,
                              status_filter=status_filter,
                              role_filter=role_filter,
+                             consent_filter=consent_filter,
                              sort_by=sort_by,
                              sort_order=sort_order,
                              error_message=None)
@@ -2703,6 +2716,7 @@ def users_list():
                              search='',
                              status_filter='all',
                              role_filter='all',
+                             consent_filter='all',
                              sort_by='created_at',
                              sort_order='desc',
                              error_message=str(e))

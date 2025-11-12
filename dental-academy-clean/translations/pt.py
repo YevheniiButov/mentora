@@ -2999,6 +2999,7 @@ translations = {
     'tour_intro_body': 'Preparamos um breve tour para que você sempre saiba por onde começar.',
     'tour_start_button': 'Iniciar tour guiado',
     'tour_skip_button': 'Pular por enquanto',
+    'tour_dont_show_again': 'Não mostrar novamente',
     'tour_prev_button': 'Voltar',
     'tour_next_button': 'Avançar',
     'tour_finish_button': 'Concluir',

@@ -2960,6 +2960,7 @@ translations = {
     'tour_intro_body': 'Her zaman nereden başlayacağınızı bilmeniz için kısa bir tur hazırladık.',
     'tour_start_button': 'Rehberli turu başlat',
     'tour_skip_button': 'Şimdilik atla',
+    'tour_dont_show_again': 'Bir daha gösterme',
     'tour_prev_button': 'Geri',
     'tour_next_button': 'İleri',
     'tour_finish_button': 'Bitir',

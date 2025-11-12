@@ -189,6 +189,46 @@
                 </div>
                 {% endif %}
                 <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Обязательные согласия:</strong></div>
+                    <div class="col-sm-8">
+                        {% if user.required_consents %}
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle"></i> Дано
+                        </span>
+                        <small class="text-muted d-block mt-1">
+                            Пользователь согласился с условиями использования, политикой конфиденциальности и обработкой данных
+                        </small>
+                        {% else %}
+                        <span class="badge bg-danger">
+                            <i class="bi bi-x-circle"></i> Не дано
+                        </span>
+                        <small class="text-muted d-block mt-1">
+                            Пользователь не дал обязательные согласия
+                        </small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-4"><strong>Согласие на маркетинг:</strong></div>
+                    <div class="col-sm-8">
+                        {% if user.optional_consents %}
+                        <span class="badge bg-info">
+                            <i class="bi bi-check-circle"></i> Дано
+                        </span>
+                        <small class="text-muted d-block mt-1">
+                            Пользователь согласился получать маркетинговые рассылки и рекламные материалы
+                        </small>
+                        {% else %}
+                        <span class="badge bg-secondary">
+                            <i class="bi bi-x-circle"></i> Не дано
+                        </span>
+                        <small class="text-muted d-block mt-1">
+                            Пользователь не дал согласие на маркетинговые рассылки
+                        </small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row mb-3">
                     <div class="col-sm-4"><strong>Регистрация:</strong></div>
                     <div class="col-sm-8">{{ user.created_at.strftime('%d.%m.%Y %H:%M:%S') }}</div>
                 </div>
@@ -445,7 +485,10 @@ function updateOnlineStatus() {
         .then(data => {
             // Update online indicator if needed
         })
-        .catch(error =>}
+        .catch(error => {
+            console.error('Error updating online status:', error);
+        });
+}
 
 // Update every 60 seconds
 setInterval(updateOnlineStatus, 60000);
