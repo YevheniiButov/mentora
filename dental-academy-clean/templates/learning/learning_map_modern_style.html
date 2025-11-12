@@ -6308,7 +6308,10 @@
                                     'Content-Type': 'application/json',
                                     'X-CSRFToken': csrfToken || ''
                                 },
-                                body: JSON.stringify({ completed: completed })
+                                body: JSON.stringify({ 
+                                    completed: completed,
+                                    csrf_token: csrfToken || ''  // Также передаем в теле запроса для before_request hook
+                                })
                             });
                             
                             if (!response.ok) {
