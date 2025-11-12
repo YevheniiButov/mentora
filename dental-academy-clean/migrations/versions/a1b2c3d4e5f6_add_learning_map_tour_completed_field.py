@@ -1,7 +1,7 @@
 """Add learning_map_tour_completed field to User model
 
 Revision ID: a1b2c3d4e5f6
-Revises: bdd626cb7589
+Revises: dffdc5ac1334
 Create Date: 2025-11-12 02:00:00.000000
 
 """
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'a1b2c3d4e5f6'
-down_revision = 'bdd626cb7589'  # Latest migration
+down_revision = 'dffdc5ac1334'  # Last migration in chain after merge
 branch_labels = None
 depends_on = None
 
