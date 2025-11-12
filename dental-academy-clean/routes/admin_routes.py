@@ -2565,11 +2565,56 @@ def get_performance_metrics():
 # ENHANCED USER MANAGEMENT ROUTES
 # ========================================
 
-@admin_bp.route('/users/list')
+@admin_bp.route('/users/list', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def users_list():
     """Enhanced users list with filters and pagination"""
+    # Handle POST request for creating new user
+    if request.method == 'POST':
+        try:
+            first_name = request.form.get('first_name')
+            last_name = request.form.get('last_name')
+            email = request.form.get('email')
+            password = request.form.get('password')
+            role = request.form.get('role', 'user')
+            
+            # Validate required fields
+            if not all([first_name, last_name, email, password]):
+                flash('Все поля обязательны для заполнения', 'error')
+                return redirect(url_for('admin.users_list'))
+            
+            # Check if user with this email already exists
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user:
+                flash('Пользователь с таким email уже существует', 'error')
+                return redirect(url_for('admin.users_list'))
+            
+            # Create new user
+            from werkzeug.security import generate_password_hash
+            new_user = User(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                password_hash=generate_password_hash(password),
+                role=role,
+                is_active=True,
+                email_confirmed=False
+            )
+            
+            db.session.add(new_user)
+            db.session.commit()
+            
+            flash(f'Пользователь {first_name} {last_name} успешно создан', 'success')
+            return redirect(url_for('admin.users_list'))
+            
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error creating user: {str(e)}")
+            flash(f'Ошибка при создании пользователя: {str(e)}', 'error')
+            return redirect(url_for('admin.users_list'))
+    
+    # Handle GET request - show users list
     try:
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 20, type=int)
