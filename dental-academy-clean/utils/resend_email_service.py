@@ -368,12 +368,20 @@ def send_password_reset_email_resend(user, token):
         current_app.logger.error(f"Failed to send password reset via Resend to {user.email}: {str(e)}")
         return False
 
-def send_email_via_resend(to_email, subject, html_content, from_name="Mentora Team"):
+def send_email_via_resend(to_email, subject, html_content, from_name="Mentora Team", attachments=None):
     """
     Универсальная функция для отправки email через Resend API
+    
+    Args:
+        to_email: Email получателя
+        subject: Тема письма
+        html_content: HTML содержимое письма
+        from_name: Имя отправителя
+        attachments: Список вложений в формате [{"filename": "file.gif", "content": base64_content, "cid": "learning_map_gif"}]
     """
     try:
         from flask import current_app
+        import base64
         
         # Проверяем, отключена ли отправка email
         mail_suppress = current_app.config.get('MAIL_SUPPRESS_SEND', False)
@@ -386,6 +394,8 @@ def send_email_via_resend(to_email, subject, html_content, from_name="Mentora Te
             print(f"📧 Subject: {subject}")
             print(f"📧 From: {from_name}")
             print(f"📧 Content: HTML email with professional template")
+            if attachments:
+                print(f"📧 Attachments: {len(attachments)} file(s)")
             print(f"{'='*60}\n")
             return True
         
@@ -406,6 +416,19 @@ def send_email_via_resend(to_email, subject, html_content, from_name="Mentora Te
             "click_tracking": False,
             "open_tracking": False
         }
+        
+        # Добавляем вложения, если есть
+        if attachments:
+            email_data["attachments"] = []
+            for att in attachments:
+                attachment_data = {
+                    "filename": att.get("filename", "attachment"),
+                    "content": att.get("content")  # base64 encoded content
+                }
+                # Если указан CID, добавляем его для встроенных изображений
+                if att.get("cid"):
+                    attachment_data["cid"] = att.get("cid")
+                email_data["attachments"].append(attachment_data)
         
         # Отправляем через Resend API
         headers = {

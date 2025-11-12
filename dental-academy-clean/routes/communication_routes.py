@@ -40,51 +40,147 @@ def bulk_email():
     if request.method == 'POST':
         try:
             # Получаем данные из формы
-            data = request.get_json() if request.is_json else request.form
+            if request.is_json:
+                data = request.get_json() or {}
+            else:
+                # Обрабатываем FormData (может содержать файлы)
+                data = request.form.to_dict()
+                # Получаем множественные значения
+                if 'value_prop_items' in request.form:
+                    data['value_prop_items'] = request.form.getlist('value_prop_items')
+                if 'recipient_emails' in request.form:
+                    data['recipient_emails'] = request.form.getlist('recipient_emails')
+                if 'selected_user_ids' in request.form:
+                    data['selected_user_ids'] = request.form.getlist('selected_user_ids')
+                # Преобразуем строковые значения в нужные типы
+                if 'preview' in data:
+                    data['preview'] = data['preview'].lower() in ('true', '1', 'yes', 'on')
             
             # Если это запрос на превью, возвращаем только HTML
-            if data.get('preview'):
-                greeting_name = data.get('greeting_name', 'Иван').strip()
-                main_title = data.get('main_title', '🎯 Начните свой путь к успеху').strip()
-                main_subtitle = data.get('main_subtitle', 'Карта Обучения MENTORA готова помочь вам').strip()
-                intro_text = data.get('intro_text', '').strip()
-                value_prop_title = data.get('value_prop_title', '💡 Почему стоит начать прямо сейчас:').strip()
-                value_prop_items = data.get('value_prop_items', [])
-                if isinstance(value_prop_items, str):
-                    value_prop_items = [item.strip() for item in value_prop_items.split('\n') if item.strip()]
-                cta_text = data.get('cta_text', '🚀 Открыть Карту Обучения').strip()
-                cta_url = data.get('cta_url', 'https://bigmentor.nl/learning-map').strip()
-                motivation_title = data.get('motivation_title', '💪 Начните с малого').strip()
-                motivation_text = data.get('motivation_text', '').strip()
-                
-                html_content = generate_email_template(
-                    greeting_name=greeting_name,
-                    main_title=main_title,
-                    main_subtitle=main_subtitle,
-                    intro_text=intro_text,
-                    value_prop_title=value_prop_title,
-                    value_prop_items=value_prop_items,
-                    cta_text=cta_text,
-                    cta_url=cta_url,
-                    motivation_title=motivation_title,
-                    motivation_text=motivation_text
-                )
-                
-                return jsonify({'success': True, 'html': html_content})
+            preview_request = data.get('preview', False)
+            if isinstance(preview_request, str):
+                preview_request = preview_request.lower() in ('true', '1', 'yes', 'on')
+            
+            if preview_request:
+                try:
+                    email_template_type = data.get('email_template_type', 'universal')
+                    has_gif = data.get('has_gif', False) or data.get('gif_file')  # Для превью
+                    
+                    if email_template_type == 'learning_map_welcome':
+                        greeting_name = data.get('greeting_name', 'there') or 'there'
+                        if isinstance(greeting_name, str):
+                            greeting_name = greeting_name.strip()
+                        cta_url = data.get('cta_url', 'https://bigmentor.nl/en/learning-map') or 'https://bigmentor.nl/en/learning-map'
+                        if isinstance(cta_url, str):
+                            cta_url = cta_url.strip()
+                        
+                        html_content = generate_learning_map_welcome_email(
+                            greeting_name=greeting_name,
+                            cta_url=cta_url,
+                            has_gif=bool(has_gif)
+                        )
+                    else:
+                        greeting_name = data.get('greeting_name', 'Иван') or 'Иван'
+                        if isinstance(greeting_name, str):
+                            greeting_name = greeting_name.strip()
+                        main_title = data.get('main_title', '🎯 Начните свой путь к успеху') or '🎯 Начните свой путь к успеху'
+                        if isinstance(main_title, str):
+                            main_title = main_title.strip()
+                        main_subtitle = data.get('main_subtitle', 'Карта Обучения MENTORA готова помочь вам') or 'Карта Обучения MENTORA готова помочь вам'
+                        if isinstance(main_subtitle, str):
+                            main_subtitle = main_subtitle.strip()
+                        intro_text = data.get('intro_text', '') or ''
+                        if isinstance(intro_text, str):
+                            intro_text = intro_text.strip()
+                        value_prop_title = data.get('value_prop_title', '💡 Почему стоит начать прямо сейчас:') or '💡 Почему стоит начать прямо сейчас:'
+                        if isinstance(value_prop_title, str):
+                            value_prop_title = value_prop_title.strip()
+                        value_prop_items = data.get('value_prop_items', [])
+                        if isinstance(value_prop_items, str):
+                            value_prop_items = [item.strip() for item in value_prop_items.split('\n') if item.strip()]
+                        elif not isinstance(value_prop_items, list):
+                            value_prop_items = []
+                        cta_text = data.get('cta_text', '🚀 Открыть Карту Обучения') or '🚀 Открыть Карту Обучения'
+                        if isinstance(cta_text, str):
+                            cta_text = cta_text.strip()
+                        cta_url = data.get('cta_url', 'https://bigmentor.nl/learning-map') or 'https://bigmentor.nl/learning-map'
+                        if isinstance(cta_url, str):
+                            cta_url = cta_url.strip()
+                        motivation_title = data.get('motivation_title', '💪 Начните с малого') or '💪 Начните с малого'
+                        if isinstance(motivation_title, str):
+                            motivation_title = motivation_title.strip()
+                        motivation_text = data.get('motivation_text', '') or ''
+                        if isinstance(motivation_text, str):
+                            motivation_text = motivation_text.strip()
+                        
+                        html_content = generate_email_template(
+                            greeting_name=greeting_name,
+                            main_title=main_title,
+                            main_subtitle=main_subtitle,
+                            intro_text=intro_text,
+                            value_prop_title=value_prop_title,
+                            value_prop_items=value_prop_items,
+                            cta_text=cta_text,
+                            cta_url=cta_url,
+                            motivation_title=motivation_title,
+                            motivation_text=motivation_text
+                        )
+                    
+                    return jsonify({'success': True, 'html': html_content})
+                except Exception as e:
+                    current_app.logger.error(f'Error generating preview: {str(e)}', exc_info=True)
+                    return jsonify({'success': False, 'error': f'Ошибка генерации превью: {str(e)}'}), 400
             
             subject = data.get('subject', '').strip()
-            greeting_name = data.get('greeting_name', 'Иван').strip()
-            main_title = data.get('main_title', '🎯 Начните свой путь к успеху').strip()
-            main_subtitle = data.get('main_subtitle', 'Карта Обучения MENTORA готова помочь вам').strip()
-            intro_text = data.get('intro_text', '').strip()
-            value_prop_title = data.get('value_prop_title', '💡 Почему стоит начать прямо сейчас:').strip()
-            value_prop_items = data.get('value_prop_items', []).strip() if isinstance(data.get('value_prop_items'), str) else data.get('value_prop_items', [])
-            cta_text = data.get('cta_text', '🚀 Открыть Карту Обучения').strip()
-            cta_url = data.get('cta_url', 'https://bigmentor.nl/learning-map').strip()
-            motivation_title = data.get('motivation_title', '💪 Начните с малого').strip()
-            motivation_text = data.get('motivation_text', '').strip()
-            recipient_type = data.get('recipient_type', 'all')  # all, users, contacts, custom
+            email_template_type = data.get('email_template_type', 'universal')  # universal или learning_map_welcome
+            gif_file = request.files.get('gif_file')  # Загруженный GIF файл
+            
+            # Для welcome шаблона нужны только эти поля
+            if email_template_type == 'learning_map_welcome':
+                greeting_name = data.get('greeting_name', 'there') or 'there'
+                if isinstance(greeting_name, str):
+                    greeting_name = greeting_name.strip()
+                cta_url = data.get('cta_url', 'https://bigmentor.nl/en/learning-map') or 'https://bigmentor.nl/en/learning-map'
+                if isinstance(cta_url, str):
+                    cta_url = cta_url.strip()
+            else:
+                # Для универсального шаблона все поля
+                greeting_name = data.get('greeting_name', 'Иван') or 'Иван'
+                if isinstance(greeting_name, str):
+                    greeting_name = greeting_name.strip()
+                main_title = data.get('main_title', '🎯 Начните свой путь к успеху') or '🎯 Начните свой путь к успеху'
+                if isinstance(main_title, str):
+                    main_title = main_title.strip()
+                main_subtitle = data.get('main_subtitle', 'Карта Обучения MENTORA готова помочь вам') or 'Карта Обучения MENTORA готова помочь вам'
+                if isinstance(main_subtitle, str):
+                    main_subtitle = main_subtitle.strip()
+                intro_text = data.get('intro_text', '') or ''
+                if isinstance(intro_text, str):
+                    intro_text = intro_text.strip()
+                value_prop_title = data.get('value_prop_title', '💡 Почему стоит начать прямо сейчас:') or '💡 Почему стоит начать прямо сейчас:'
+                if isinstance(value_prop_title, str):
+                    value_prop_title = value_prop_title.strip()
+                value_prop_items = data.get('value_prop_items', [])
+                if isinstance(value_prop_items, str):
+                    value_prop_items = value_prop_items.strip()
+                elif isinstance(value_prop_items, list):
+                    value_prop_items = [item.strip() if isinstance(item, str) else str(item) for item in value_prop_items]
+                cta_text = data.get('cta_text', '🚀 Открыть Карту Обучения') or '🚀 Открыть Карту Обучения'
+                if isinstance(cta_text, str):
+                    cta_text = cta_text.strip()
+                cta_url = data.get('cta_url', 'https://bigmentor.nl/learning-map') or 'https://bigmentor.nl/learning-map'
+                if isinstance(cta_url, str):
+                    cta_url = cta_url.strip()
+                motivation_title = data.get('motivation_title', '💪 Начните с малого') or '💪 Начните с малого'
+                if isinstance(motivation_title, str):
+                    motivation_title = motivation_title.strip()
+                motivation_text = data.get('motivation_text', '') or ''
+                if isinstance(motivation_text, str):
+                    motivation_text = motivation_text.strip()
+            
+            recipient_type = data.get('recipient_type', 'all')  # all, users, contacts, custom, selected
             recipient_emails = data.get('recipient_emails', [])  # Список email для custom
+            selected_user_ids = data.get('selected_user_ids', [])  # Список ID выбранных пользователей
             filter_marketing_consent = data.get('filter_marketing_consent', False)  # Только с согласием на маркетинг
             
             # Валидация
@@ -104,6 +200,20 @@ def bulk_email():
                 if filter_marketing_consent:
                     query = query.filter(User.optional_consents == True)
                 recipients = [user.email for user in query.all()]
+            elif recipient_type == 'selected':
+                # Выбранные пользователи из списка
+                if selected_user_ids:
+                    if isinstance(selected_user_ids, str):
+                        selected_user_ids = [int(id.strip()) for id in selected_user_ids.split(',') if id.strip()]
+                    elif not isinstance(selected_user_ids, list):
+                        selected_user_ids = []
+                    recipients = [user.email for user in User.query.filter(
+                        User.id.in_(selected_user_ids),
+                        User.email.isnot(None),
+                        User.is_active == True
+                    ).all()]
+                else:
+                    recipients = []
             elif recipient_type == 'contacts':
                 recipients = [contact.email for contact in Contact.query.filter(Contact.email.isnot(None)).all()]
             elif recipient_type == 'custom':
@@ -112,26 +222,45 @@ def bulk_email():
             if not recipients:
                 return jsonify({'success': False, 'error': 'Нет получателей для рассылки'}), 400
             
-            # Обрабатываем value_prop_items (может быть строкой или списком)
-            if isinstance(value_prop_items, str):
-                # Разбиваем по строкам, если передана строка
-                value_prop_items = [item.strip() for item in value_prop_items.split('\n') if item.strip()]
-            elif not isinstance(value_prop_items, list):
-                value_prop_items = []
+            # Генерируем HTML на основе выбранного шаблона
+            if email_template_type == 'learning_map_welcome':
+                html_content = generate_learning_map_welcome_email(
+                    greeting_name=greeting_name,
+                    cta_url=cta_url,
+                    has_gif=bool(gif_file and gif_file.filename)
+                )
+            else:
+                # Обрабатываем value_prop_items (может быть строкой или списком) только для универсального шаблона
+                if isinstance(value_prop_items, str):
+                    # Разбиваем по строкам, если передана строка
+                    value_prop_items = [item.strip() for item in value_prop_items.split('\n') if item.strip()]
+                elif not isinstance(value_prop_items, list):
+                    value_prop_items = []
+                
+                html_content = generate_email_template(
+                    greeting_name=greeting_name,
+                    main_title=main_title,
+                    main_subtitle=main_subtitle,
+                    intro_text=intro_text,
+                    value_prop_title=value_prop_title,
+                    value_prop_items=value_prop_items,
+                    cta_text=cta_text,
+                    cta_url=cta_url,
+                    motivation_title=motivation_title,
+                    motivation_text=motivation_text
+                )
             
-            # Генерируем HTML на основе шаблона
-            html_content = generate_email_template(
-                greeting_name=greeting_name,
-                main_title=main_title,
-                main_subtitle=main_subtitle,
-                intro_text=intro_text,
-                value_prop_title=value_prop_title,
-                value_prop_items=value_prop_items,
-                cta_text=cta_text,
-                cta_url=cta_url,
-                motivation_title=motivation_title,
-                motivation_text=motivation_text
-            )
+            # Обрабатываем GIF файл, если загружен
+            attachments = None
+            if gif_file and gif_file.filename:
+                import base64
+                gif_content = gif_file.read()
+                gif_base64 = base64.b64encode(gif_content).decode('utf-8')
+                attachments = [{
+                    "filename": gif_file.filename,
+                    "content": gif_base64,
+                    "cid": "learning_map_gif"  # Content-ID для встраивания в HTML
+                }]
             
             # Отправляем через Resend API
             from utils.resend_email_service import send_email_via_resend
@@ -146,7 +275,8 @@ def bulk_email():
                         to_email=recipient_email,
                         subject=subject,
                         html_content=html_content,
-                        from_name="Mentora Team"
+                        from_name="Mentora Team",
+                        attachments=attachments
                     )
                     
                     if success:
@@ -187,7 +317,8 @@ def bulk_email():
                 }), 400
                 
         except Exception as e:
-            current_app.logger.error(f'Bulk email sending failed: {str(e)}')
+            current_app.logger.error(f'Bulk email sending failed: {str(e)}', exc_info=True)
+            # Всегда возвращаем JSON, даже при ошибках
             return jsonify({'success': False, 'error': str(e)}), 500
     
     # GET запрос - показываем форму
@@ -196,10 +327,421 @@ def bulk_email():
     users_with_marketing = User.query.filter(User.email.isnot(None), User.is_active == True, User.optional_consents == True).count()
     total_contacts = Contact.query.filter(Contact.email.isnot(None)).count()
     
+    # Получаем список всех пользователей для выбора
+    all_users = User.query.filter(User.email.isnot(None), User.is_active == True).order_by(User.email).all()
+    
     return render_template('admin/communication/bulk_email.html',
                          total_users=total_users,
                          users_with_marketing=users_with_marketing,
-                         total_contacts=total_contacts)
+                         total_contacts=total_contacts,
+                         all_users=all_users)
+
+def generate_learning_map_welcome_email(greeting_name="there", cta_url="https://bigmentor.nl/en/learning-map", has_gif=False):
+    """Генерирует HTML шаблон welcome email для карты обучения с GIF"""
+    
+    gif_section = ''
+    if has_gif:
+        gif_section = '''
+            <!-- GIF SECTION -->
+            <div class="gif-section">
+                <img src="cid:learning_map_gif" alt="Mentora Learning Map Demo" style="max-width: 100%;">
+            </div>
+        '''
+    
+    return f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Learning Map is Ready</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #1f2937;
+            line-height: 1.6;
+        }}
+        
+        .container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }}
+        
+        /* HEADER */
+        .header {{
+            background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+            padding: 40px 24px;
+            text-align: center;
+            color: white;
+        }}
+        
+        .logo {{
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }}
+        
+        .header-subtitle {{
+            font-size: 14px;
+            opacity: 0.95;
+            font-weight: 400;
+        }}
+        
+        /* MAIN CONTENT */
+        .content {{
+            padding: 40px 24px;
+        }}
+        
+        .greeting {{
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1f2937;
+        }}
+        
+        .intro-text {{
+            font-size: 15px;
+            color: #4b5563;
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }}
+        
+        /* GIF SECTION */
+        .gif-section {{
+            margin: 32px 0;
+            text-align: center;
+        }}
+        
+        .gif-section img {{
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }}
+        
+        /* TABS SHOWCASE */
+        .tabs-section {{
+            margin: 40px 0;
+        }}
+        
+        .tabs-title {{
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+            text-align: center;
+        }}
+        
+        .tabs-grid {{
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }}
+        
+        .tab-card {{
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            background-color: #f9fafb;
+            transition: all 0.2s ease;
+        }}
+        
+        .tab-card:hover {{
+            border-color: #8B5CF6;
+            background-color: #faf5ff;
+        }}
+        
+        .tab-icon {{
+            font-size: 24px;
+            margin-bottom: 8px;
+        }}
+        
+        .tab-name {{
+            font-size: 13px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }}
+        
+        .tab-desc {{
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.4;
+        }}
+        
+        /* THREE COLUMN SECTION */
+        .value-section {{
+            margin: 40px 0;
+            padding: 24px;
+            background-color: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #8B5CF6;
+        }}
+        
+        .value-title {{
+            font-size: 14px;
+            font-weight: 600;
+            color: #8B5CF6;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }}
+        
+        .value-items {{
+            display: grid;
+            gap: 12px;
+        }}
+        
+        .value-item {{
+            display: flex;
+            gap: 12px;
+            font-size: 14px;
+            color: #374151;
+        }}
+        
+        .value-icon {{
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8B5CF6;
+            font-weight: 600;
+        }}
+        
+        /* CTA SECTION */
+        .cta-section {{
+            margin: 40px 0;
+            text-align: center;
+        }}
+        
+        .cta-button {{
+            display: inline-block;
+            background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+            color: white;
+            padding: 16px 40px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }}
+        
+        .cta-button:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+        }}
+        
+        /* STATS SECTION */
+        .stats-section {{
+            background: linear-gradient(135deg, #f0f4ff 0%, #fef3f8 100%);
+            padding: 24px;
+            border-radius: 8px;
+            margin: 40px 0;
+        }}
+        
+        .stats-title {{
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+            text-align: center;
+        }}
+        
+        .stat {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+            font-size: 14px;
+        }}
+        
+        .stat:last-child {{
+            border-bottom: none;
+        }}
+        
+        .stat-label {{
+            color: #4b5563;
+        }}
+        
+        .stat-value {{
+            font-weight: 600;
+            color: #8B5CF6;
+            font-size: 15px;
+        }}
+        
+        /* FOOTER */
+        .footer {{
+            background-color: #f9fafb;
+            padding: 24px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+        }}
+        
+        .footer-links {{
+            margin-top: 12px;
+        }}
+        
+        .footer-links a {{
+            color: #8B5CF6;
+            text-decoration: none;
+            margin: 0 8px;
+        }}
+        
+        /* RESPONSIVE */
+        @media (max-width: 480px) {{
+            .content {{
+                padding: 24px 16px;
+            }}
+            
+            .greeting {{
+                font-size: 18px;
+            }}
+            
+            .tabs-grid {{
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }}
+            
+            .cta-button {{
+                padding: 14px 32px;
+                font-size: 15px;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo">Mentora</div>
+            <div class="header-subtitle">Your Learning Map is Ready</div>
+        </div>
+        
+        <!-- MAIN CONTENT -->
+        <div class="content">
+            <div class="greeting">Hi {greeting_name}! 👋</div>
+            
+            <div class="intro-text">
+                You've just joined Mentora. Here's what you need to know: your personal <strong>learning map is already built</strong> — the system has created a study schedule tailored to your profile that actually works.
+                <br><br>
+                This isn't just another study app. It combines adaptive tests, medical terminology learning, English reading, and virtual patient scenarios — all in one place. The system picks the right difficulty level for you, tracks your progress, and shows exactly what's improving.
+            </div>
+            
+            {gif_section}
+            
+            <!-- TABS SHOWCASE -->
+            <div class="tabs-section">
+                <div class="tabs-title">Here's what you'll find inside:</div>
+                <div class="tabs-grid">
+                    <div class="tab-card">
+                        <div class="tab-icon">🎯</div>
+                        <div class="tab-name">Daily Plan</div>
+                        <div class="tab-desc">Personalized tasks</div>
+                    </div>
+                    <div class="tab-card">
+                        <div class="tab-icon">🧪</div>
+                        <div class="tab-name">IRT Tests</div>
+                        <div class="tab-desc">Adaptive testing</div>
+                    </div>
+                    <div class="tab-card">
+                        <div class="tab-icon">🇳🇱</div>
+                        <div class="tab-name">Dutch Terms</div>
+                        <div class="tab-desc">Medical terminology</div>
+                    </div>
+                    <div class="tab-card">
+                        <div class="tab-icon">📖</div>
+                        <div class="tab-name">English Reading</div>
+                        <div class="tab-desc">Reading passages</div>
+                    </div>
+                    <div class="tab-card">
+                        <div class="tab-icon">👨‍⚕️</div>
+                        <div class="tab-name">Virtual Patients</div>
+                        <div class="tab-desc">Clinical scenarios</div>
+                    </div>
+                    <div class="tab-card">
+                        <div class="tab-icon">📈</div>
+                        <div class="tab-name">Progress</div>
+                        <div class="tab-desc">Charts & achievements</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- VALUE PROPOSITION -->
+            <div class="value-section">
+                <div class="value-title">Why This Works</div>
+                <div class="value-items">
+                    <div class="value-item">
+                        <div class="value-icon">✓</div>
+                        <div>The system picks questions at your exact level — not boring, not too hard</div>
+                    </div>
+                    <div class="value-item">
+                        <div class="value-icon">✓</div>
+                        <div>See your progress every day — points, streaks, badges, achievements</div>
+                    </div>
+                    <div class="value-item">
+                        <div class="value-icon">✓</div>
+                        <div>Everything's organized by subject — no guessing what to study</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- STATS -->
+            <div class="stats-section">
+                <div class="stats-title">Average Results Over 3 Months</div>
+                <div class="stat">
+                    <span class="stat-label">📝 Questions answered</span>
+                    <span class="stat-value">1,200+</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">🧠 Terms learned</span>
+                    <span class="stat-value">250+</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">👨‍⚕️ Virtual patients</span>
+                    <span class="stat-value">8+</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">🔥 Consecutive study days</span>
+                    <span class="stat-value">42+</span>
+                </div>
+            </div>
+            
+            <!-- CTA -->
+            <div class="cta-section">
+                <a href="{cta_url}" class="cta-button">Open Your Learning Map</a>
+            </div>
+            
+            <!-- PS -->
+            <div style="margin-top: 32px; padding: 16px; background-color: #fef3f8; border-radius: 6px; font-size: 14px; color: #4b5563; border-left: 3px solid #8B5CF6;">
+                <strong>P.S.</strong> Try it right now — it'll take 15 minutes to see how it works. All features are available for you.
+            </div>
+        </div>
+        
+        <!-- FOOTER -->
+        <div class="footer">
+            <p>Mentora — Platform for BIG Exam Preparation in the Netherlands</p>
+            <p style="margin-top: 12px; color: #9ca3af;">© 2025 Mentora. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>'''
 
 def generate_email_template(greeting_name, main_title, main_subtitle, intro_text,
                            value_prop_title, value_prop_items, cta_text, cta_url,

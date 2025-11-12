@@ -80,7 +80,9 @@
 
 .form-group input[type="text"],
 .form-group input[type="url"],
-.form-group textarea {
+.form-group input[type="file"],
+.form-group textarea,
+.form-group select {
     width: 100%;
     padding: 12px 16px;
     border: 2px solid #e2e8f0;
@@ -92,7 +94,9 @@
 
 .form-group input[type="text"]:focus,
 .form-group input[type="url"]:focus,
-.form-group textarea:focus {
+.form-group input[type="file"]:focus,
+.form-group textarea:focus,
+.form-group select:focus {
     outline: none;
     border-color: #3ECDC1;
     box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.1);
@@ -363,10 +367,38 @@
 
     <div id="alert-container"></div>
 
-    <form id="bulkEmailForm">
+    <form id="bulkEmailForm" enctype="multipart/form-data">
         <div class="email-editor-layout">
             <!-- Левая панель: Редактор -->
             <div class="editor-panel">
+                <!-- Выбор шаблона -->
+                <div class="form-section">
+                    <h3><i class="bi bi-file-earmark-text"></i> Шаблон письма</h3>
+                    
+                    <div class="form-group">
+                        <label for="email_template_type">Тип шаблона</label>
+                        <select id="email_template_type" name="email_template_type" class="form-control">
+                            <option value="universal">Универсальный шаблон</option>
+                            <option value="learning_map_welcome">Learning Map Welcome (с GIF)</option>
+                        </select>
+                        <small>Выберите шаблон письма. Learning Map Welcome включает GIF и специальный дизайн.</small>
+                    </div>
+
+                    <div class="form-group" id="gifUploadGroup" style="display: none;">
+                        <label for="gif_file">GIF файл для встраивания</label>
+                        <input type="file" id="gif_file" name="gif_file" accept="image/gif">
+                        <small>Загрузите GIF файл для встраивания в письмо (только для Learning Map Welcome)</small>
+                    </div>
+
+                    <div class="form-group" id="welcomeCtaGroup" style="display: none;">
+                        <label for="cta_url_welcome">URL кнопки "Open Your Learning Map"</label>
+                        <input type="url" id="cta_url_welcome" name="cta_url" 
+                               value="https://bigmentor.nl/en/learning-map"
+                               placeholder="https://bigmentor.nl/en/learning-map">
+                        <small>URL для кнопки призыва к действию в welcome письме</small>
+                    </div>
+                </div>
+
                 <!-- Основная информация -->
                 <div class="form-section">
                     <h3><i class="bi bi-envelope"></i> Основная информация</h3>
@@ -374,7 +406,7 @@
                     <div class="form-group">
                         <label for="subject">Тема письма *</label>
                         <input type="text" id="subject" name="subject" required 
-                               value="🎯 Начните свой путь к успеху"
+                               value="Your Learning Map is Ready"
                                placeholder="Введите тему письма">
                         <small>Тема письма, которую увидят получатели</small>
                     </div>
@@ -382,9 +414,9 @@
                     <div class="form-group">
                         <label for="greeting_name">Имя в приветствии</label>
                         <input type="text" id="greeting_name" name="greeting_name" 
-                               value="Иван"
-                               placeholder="Имя">
-                        <small>Имя, которое будет использовано в приветствии (например, "Привет, Иван!")</small>
+                               value="there"
+                               placeholder="Имя или 'there'">
+                        <small>Имя, которое будет использовано в приветствии (например, "Hi there!" или "Hi John!")</small>
                     </div>
                 </div>
 
@@ -537,6 +569,11 @@
                             <input type="radio" id="recipient_custom" name="recipient_type" value="custom">
                             <label for="recipient_custom">Произвольный список email</label>
                         </div>
+                        
+                        <div class="recipient-option">
+                            <input type="radio" id="recipient_selected" name="recipient_type" value="selected">
+                            <label for="recipient_selected">Выбрать из списка пользователей</label>
+                        </div>
                     </div>
 
                     <div class="custom-emails-input" id="customEmailsInput" style="display: none;">
@@ -544,6 +581,29 @@
                         <textarea id="recipient_emails" name="recipient_emails" rows="6"
                                   placeholder="user1@example.com&#10;user2@example.com&#10;user3@example.com"></textarea>
                         <small>Введите email адреса, по одному на строку</small>
+                    </div>
+
+                    <div class="selected-users-input" id="selectedUsersInput" style="display: none; margin-top: 20px;">
+                        <label>Выберите пользователей из списка:</label>
+                        <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-top: 8px;">
+                            <div style="margin-bottom: 8px;">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAllUsers()">Выбрать всех</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="deselectAllUsers()">Снять выбор</button>
+                            </div>
+                            {% for user in all_users %}
+                            <div style="padding: 8px; border-bottom: 1px solid #f1f5f9;">
+                                <label style="display: flex; align-items: center; cursor: pointer; margin: 0;">
+                                    <input type="checkbox" name="selected_user_ids" value="{{ user.id }}" 
+                                           class="user-checkbox" style="margin-right: 8px;">
+                                    <span>{{ user.email }}</span>
+                                    {% if user.first_name or user.last_name %}
+                                    <span style="color: #64748b; margin-left: 8px;">({{ user.first_name }} {{ user.last_name }})</span>
+                                    {% endif %}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <small>Выберите пользователей, которым нужно отправить письмо</small>
                     </div>
                 </div>
 
@@ -586,8 +646,12 @@ function updatePreview() {
     const formData = new FormData(document.getElementById('bulkEmailForm'));
     const data = {};
     
-    // Собираем данные формы
+    // Собираем данные формы (исключаем файлы для превью)
     for (let [key, value] of formData.entries()) {
+        if (key === 'gif_file') {
+            // Пропускаем файл для превью (будет показан placeholder)
+            continue;
+        }
         if (key === 'value_prop_items') {
             if (!data[key]) data[key] = [];
             data[key].push(value);
@@ -605,18 +669,39 @@ function updatePreview() {
     });
     data.value_prop_items = valuePropItems;
     
+    // Добавляем флаг превью
+    data.preview = true;
+    
+    // Для learning_map_welcome шаблона проверяем наличие GIF и берем CTA URL
+    if (data.email_template_type === 'learning_map_welcome') {
+        const gifFile = document.getElementById('gif_file').files[0];
+        data.has_gif = !!gifFile;
+        // Используем специальное поле для welcome шаблона
+        const welcomeCtaUrl = document.getElementById('cta_url_welcome');
+        if (welcomeCtaUrl) {
+            data.cta_url = welcomeCtaUrl.value || 'https://bigmentor.nl/en/learning-map';
+        }
+    }
+    
     // Отправляем запрос на генерацию превью
     fetch('{{ url_for("communication.bulk_email") }}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            ...data,
-            preview: true
-        })
+        body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(response => {
+        // Проверяем, что ответ JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            return response.text().then(text => {
+                console.error('Server returned non-JSON response:', text.substring(0, 200));
+                throw new Error('Server returned HTML instead of JSON. Check server logs.');
+            });
+        }
+        return response.json();
+    })
     .then(result => {
         if (result.success && result.html) {
             const iframe = document.getElementById('previewFrame');
@@ -624,10 +709,24 @@ function updatePreview() {
             iframeDoc.open();
             iframeDoc.write(result.html);
             iframeDoc.close();
+        } else {
+            console.error('Preview generation failed:', result.error || 'Unknown error');
         }
     })
     .catch(error => {
         console.error('Error updating preview:', error);
+        // Показываем ошибку пользователю
+        const iframe = document.getElementById('previewFrame');
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        iframeDoc.open();
+        iframeDoc.write(`
+            <div style="padding: 20px; color: #dc3545;">
+                <h3>Ошибка загрузки предпросмотра</h3>
+                <p>${error.message || 'Неизвестная ошибка'}</p>
+                <p style="font-size: 12px; color: #666;">Проверьте консоль браузера для подробностей</p>
+            </div>
+        `);
+        iframeDoc.close();
     });
 }
 
@@ -648,16 +747,22 @@ function removeValuePropItem(btn) {
     btn.parentElement.remove();
 }
 
-// Показ/скрытие поля для произвольных email
+// Показ/скрытие поля для произвольных email и списка пользователей
 document.querySelectorAll('input[name="recipient_type"]').forEach(radio => {
     radio.addEventListener('change', function() {
         const customInput = document.getElementById('customEmailsInput');
+        const selectedInput = document.getElementById('selectedUsersInput');
         const marketingConsent = document.getElementById('filter_marketing_consent');
         
         if (this.value === 'custom') {
             customInput.style.display = 'block';
+            selectedInput.style.display = 'none';
+        } else if (this.value === 'selected') {
+            customInput.style.display = 'none';
+            selectedInput.style.display = 'block';
         } else {
             customInput.style.display = 'none';
+            selectedInput.style.display = 'none';
         }
         
         if (this.id === 'recipient_marketing') {
@@ -667,6 +772,55 @@ document.querySelectorAll('input[name="recipient_type"]').forEach(radio => {
         }
     });
 });
+
+// Показ/скрытие поля загрузки GIF и других полей при выборе шаблона
+document.getElementById('email_template_type').addEventListener('change', function() {
+    const gifUploadGroup = document.getElementById('gifUploadGroup');
+    const isWelcomeTemplate = this.value === 'learning_map_welcome';
+    
+    const welcomeCtaGroup = document.getElementById('welcomeCtaGroup');
+    
+    if (isWelcomeTemplate) {
+        gifUploadGroup.style.display = 'block';
+        welcomeCtaGroup.style.display = 'block';
+        // Скрываем поля, которые не используются в welcome шаблоне
+        document.querySelectorAll('.form-section').forEach(section => {
+            const h3 = section.querySelector('h3');
+            if (h3) {
+                const text = h3.textContent || h3.innerText;
+                // Скрываем секции, которые не нужны для welcome шаблона
+                if (text.includes('Заголовок письма') || 
+                    text.includes('Вступление') || 
+                    text.includes('Преимущества') || 
+                    text.includes('Мотивационный блок') ||
+                    text.includes('Кнопка призыва к действию')) {
+                    section.style.display = 'none';
+                }
+            }
+        });
+    } else {
+        gifUploadGroup.style.display = 'none';
+        welcomeCtaGroup.style.display = 'none';
+        // Показываем все секции для универсального шаблона
+        document.querySelectorAll('.form-section').forEach(section => {
+            section.style.display = 'block';
+        });
+    }
+    updatePreview();
+});
+
+// Функции для выбора всех/снятия выбора пользователей
+function selectAllUsers() {
+    document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+        checkbox.checked = true;
+    });
+}
+
+function deselectAllUsers() {
+    document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+}
 
 // Автообновление превью при изменении полей
 const autoUpdateFields = ['subject', 'greeting_name', 'main_title', 'main_subtitle', 
@@ -704,12 +858,6 @@ document.getElementById('bulkEmailForm').addEventListener('submit', async functi
     e.preventDefault();
     
     const formData = new FormData(this);
-    const data = {};
-    
-    // Собираем данные
-    for (let [key, value] of formData.entries()) {
-        data[key] = value;
-    }
     
     // Собираем преимущества
     const valuePropItems = [];
@@ -718,19 +866,35 @@ document.getElementById('bulkEmailForm').addEventListener('submit', async functi
             valuePropItems.push(input.value.trim());
         }
     });
-    data.value_prop_items = valuePropItems;
+    
+    // Добавляем преимущества в FormData
+    valuePropItems.forEach(item => {
+        formData.append('value_prop_items', item);
+    });
     
     // Обработка фильтра маркетинга
-    if (data.recipient_type === 'users' && document.getElementById('recipient_marketing').checked) {
-        data.filter_marketing_consent = true;
+    if (formData.get('recipient_type') === 'users' && document.getElementById('recipient_marketing').checked) {
+        formData.set('filter_marketing_consent', 'true');
     } else {
-        data.filter_marketing_consent = false;
+        formData.set('filter_marketing_consent', 'false');
     }
     
     // Обработка произвольных email
-    if (data.recipient_type === 'custom') {
-        const emailsText = data.recipient_emails || '';
-        data.recipient_emails = emailsText.split('\n').map(email => email.trim()).filter(email => email);
+    if (formData.get('recipient_type') === 'custom') {
+        const emailsText = formData.get('recipient_emails') || '';
+        const emails = emailsText.split('\n').map(email => email.trim()).filter(email => email);
+        formData.delete('recipient_emails');
+        emails.forEach(email => formData.append('recipient_emails', email));
+    }
+    
+    // Обработка выбранных пользователей
+    if (formData.get('recipient_type') === 'selected') {
+        const selectedIds = [];
+        document.querySelectorAll('.user-checkbox:checked').forEach(checkbox => {
+            selectedIds.push(checkbox.value);
+        });
+        formData.delete('selected_user_ids');
+        selectedIds.forEach(id => formData.append('selected_user_ids', id));
     }
     
     // Показываем загрузку
@@ -738,12 +902,10 @@ document.getElementById('bulkEmailForm').addEventListener('submit', async functi
     document.getElementById('sendBtn').disabled = true;
     
     try {
+        // Используем FormData для поддержки файлов
         const response = await fetch('{{ url_for("communication.bulk_email") }}', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
+            body: formData  // FormData автоматически устанавливает правильный Content-Type с boundary
         });
         
         const result = await response.json();
