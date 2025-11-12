@@ -30,6 +30,311 @@ def hub():
     return render_template('admin/communication/hub.html', 
                          users=users, contacts=contacts)
 
+# НОВЫЙ: Массовая рассылка с визуальным редактором
+@communication_bp.route('/bulk-email', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def bulk_email():
+    """Массовая рассылка с визуальным редактором на основе фирменного шаблона"""
+    
+    if request.method == 'POST':
+        try:
+            # Получаем данные из формы
+            data = request.get_json() if request.is_json else request.form
+            
+            # Если это запрос на превью, возвращаем только HTML
+            if data.get('preview'):
+                greeting_name = data.get('greeting_name', 'Иван').strip()
+                main_title = data.get('main_title', '🎯 Начните свой путь к успеху').strip()
+                main_subtitle = data.get('main_subtitle', 'Карта Обучения MENTORA готова помочь вам').strip()
+                intro_text = data.get('intro_text', '').strip()
+                value_prop_title = data.get('value_prop_title', '💡 Почему стоит начать прямо сейчас:').strip()
+                value_prop_items = data.get('value_prop_items', [])
+                if isinstance(value_prop_items, str):
+                    value_prop_items = [item.strip() for item in value_prop_items.split('\n') if item.strip()]
+                cta_text = data.get('cta_text', '🚀 Открыть Карту Обучения').strip()
+                cta_url = data.get('cta_url', 'https://bigmentor.nl/learning-map').strip()
+                motivation_title = data.get('motivation_title', '💪 Начните с малого').strip()
+                motivation_text = data.get('motivation_text', '').strip()
+                
+                html_content = generate_email_template(
+                    greeting_name=greeting_name,
+                    main_title=main_title,
+                    main_subtitle=main_subtitle,
+                    intro_text=intro_text,
+                    value_prop_title=value_prop_title,
+                    value_prop_items=value_prop_items,
+                    cta_text=cta_text,
+                    cta_url=cta_url,
+                    motivation_title=motivation_title,
+                    motivation_text=motivation_text
+                )
+                
+                return jsonify({'success': True, 'html': html_content})
+            
+            subject = data.get('subject', '').strip()
+            greeting_name = data.get('greeting_name', 'Иван').strip()
+            main_title = data.get('main_title', '🎯 Начните свой путь к успеху').strip()
+            main_subtitle = data.get('main_subtitle', 'Карта Обучения MENTORA готова помочь вам').strip()
+            intro_text = data.get('intro_text', '').strip()
+            value_prop_title = data.get('value_prop_title', '💡 Почему стоит начать прямо сейчас:').strip()
+            value_prop_items = data.get('value_prop_items', []).strip() if isinstance(data.get('value_prop_items'), str) else data.get('value_prop_items', [])
+            cta_text = data.get('cta_text', '🚀 Открыть Карту Обучения').strip()
+            cta_url = data.get('cta_url', 'https://bigmentor.nl/learning-map').strip()
+            motivation_title = data.get('motivation_title', '💪 Начните с малого').strip()
+            motivation_text = data.get('motivation_text', '').strip()
+            recipient_type = data.get('recipient_type', 'all')  # all, users, contacts, custom
+            recipient_emails = data.get('recipient_emails', [])  # Список email для custom
+            filter_marketing_consent = data.get('filter_marketing_consent', False)  # Только с согласием на маркетинг
+            
+            # Валидация
+            if not subject:
+                return jsonify({'success': False, 'error': 'Тема письма обязательна'}), 400
+            
+            # Определяем получателей
+            recipients = []
+            
+            if recipient_type == 'all':
+                query = User.query.filter(User.email.isnot(None), User.is_active == True)
+                if filter_marketing_consent:
+                    query = query.filter(User.optional_consents == True)
+                recipients = [user.email for user in query.all()]
+            elif recipient_type == 'users':
+                query = User.query.filter(User.email.isnot(None), User.is_active == True)
+                if filter_marketing_consent:
+                    query = query.filter(User.optional_consents == True)
+                recipients = [user.email for user in query.all()]
+            elif recipient_type == 'contacts':
+                recipients = [contact.email for contact in Contact.query.filter(Contact.email.isnot(None)).all()]
+            elif recipient_type == 'custom':
+                recipients = [email.strip() for email in recipient_emails if email.strip()]
+            
+            if not recipients:
+                return jsonify({'success': False, 'error': 'Нет получателей для рассылки'}), 400
+            
+            # Обрабатываем value_prop_items (может быть строкой или списком)
+            if isinstance(value_prop_items, str):
+                # Разбиваем по строкам, если передана строка
+                value_prop_items = [item.strip() for item in value_prop_items.split('\n') if item.strip()]
+            elif not isinstance(value_prop_items, list):
+                value_prop_items = []
+            
+            # Генерируем HTML на основе шаблона
+            html_content = generate_email_template(
+                greeting_name=greeting_name,
+                main_title=main_title,
+                main_subtitle=main_subtitle,
+                intro_text=intro_text,
+                value_prop_title=value_prop_title,
+                value_prop_items=value_prop_items,
+                cta_text=cta_text,
+                cta_url=cta_url,
+                motivation_title=motivation_title,
+                motivation_text=motivation_text
+            )
+            
+            # Отправляем через Resend API
+            from utils.resend_email_service import send_email_via_resend
+            
+            sent_count = 0
+            failed_count = 0
+            errors = []
+            
+            for recipient_email in recipients:
+                try:
+                    success = send_email_via_resend(
+                        to_email=recipient_email,
+                        subject=subject,
+                        html_content=html_content,
+                        from_name="Mentora Team"
+                    )
+                    
+                    if success:
+                        sent_count += 1
+                        current_app.logger.info(f'Bulk email sent to {recipient_email} via Resend')
+                    else:
+                        failed_count += 1
+                        errors.append(f"Failed to send to {recipient_email}")
+                        current_app.logger.error(f'Failed to send bulk email to {recipient_email}')
+                        
+                except Exception as e:
+                    failed_count += 1
+                    errors.append(f"Error sending to {recipient_email}: {str(e)}")
+                    current_app.logger.error(f'Error sending bulk email to {recipient_email}: {str(e)}')
+            
+            # Результат
+            if sent_count > 0:
+                if failed_count == 0:
+                    return jsonify({
+                        'success': True,
+                        'message': f'✅ Email успешно отправлен {sent_count} получателям!',
+                        'sent': sent_count,
+                        'failed': failed_count
+                    })
+                else:
+                    return jsonify({
+                        'success': True,
+                        'message': f'⚠️ Email отправлен {sent_count} получателям, {failed_count} не удалось отправить',
+                        'sent': sent_count,
+                        'failed': failed_count,
+                        'errors': errors[:10]  # Первые 10 ошибок
+                    })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Не удалось отправить email ни одному получателю',
+                    'errors': errors[:10]
+                }), 400
+                
+        except Exception as e:
+            current_app.logger.error(f'Bulk email sending failed: {str(e)}')
+            return jsonify({'success': False, 'error': str(e)}), 500
+    
+    # GET запрос - показываем форму
+    # Получаем статистику пользователей
+    total_users = User.query.filter(User.email.isnot(None), User.is_active == True).count()
+    users_with_marketing = User.query.filter(User.email.isnot(None), User.is_active == True, User.optional_consents == True).count()
+    total_contacts = Contact.query.filter(Contact.email.isnot(None)).count()
+    
+    return render_template('admin/communication/bulk_email.html',
+                         total_users=total_users,
+                         users_with_marketing=users_with_marketing,
+                         total_contacts=total_contacts)
+
+def generate_email_template(greeting_name, main_title, main_subtitle, intro_text,
+                           value_prop_title, value_prop_items, cta_text, cta_url,
+                           motivation_title, motivation_text):
+    """Генерирует HTML шаблон email на основе переданных данных"""
+    
+    # Формируем список преимуществ
+    value_prop_html = ''
+    if value_prop_items:
+        for item in value_prop_items:
+            if item and str(item).strip():
+                value_prop_html += f'<li style="margin-bottom: 10px;">{str(item).strip()}</li>'
+    
+    # Если нет элементов, добавляем дефолтные
+    if not value_prop_html:
+        value_prop_html = '''
+        <li style="margin-bottom: 10px;"><strong style="color: #3ECDC1;">Персонализированный подход</strong> — система адаптируется под ваш уровень</li>
+        <li style="margin-bottom: 10px;"><strong style="color: #3ECDC1;">Экономия времени</strong> — четкий план действий каждый день</li>
+        <li style="margin-bottom: 10px;"><strong style="color: #3ECDC1;">Отслеживание прогресса</strong> — видите свой рост в реальном времени</li>
+        <li style="margin-bottom: 0;"><strong style="color: #3ECDC1;">Гибкость</strong> — учитесь в своем темпе, когда удобно</li>
+        '''
+    
+    return f'''<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{main_title}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f7fa; line-height: 1.6;">
+    
+    <!-- Email Container -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f7fa; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                
+                <!-- Main Content Card -->
+                <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08); overflow: hidden; max-width: 600px;">
+                    
+                    <!-- Header with Gradient -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #3ECDC1 0%, #32A39A 100%); padding: 40px 40px 30px 40px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
+                                {main_title}
+                            </h1>
+                            <p style="margin: 16px 0 0 0; color: rgba(255, 255, 255, 0.95); font-size: 18px; font-weight: 400;">
+                                {main_subtitle}
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Main Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            
+                            <!-- Personal Greeting -->
+                            <p style="margin: 0 0 20px 0; color: #1a202c; font-size: 18px; font-weight: 600; line-height: 1.7;">
+                                Привет, {greeting_name}!
+                            </p>
+                            
+                            <p style="margin: 0 0 24px 0; color: #64748b; font-size: 16px; line-height: 1.7;">
+                                {intro_text if intro_text else 'Подготовка к экзамену BI-toets — это важный шаг в вашей карьере. Мы создали <strong style="color: #3ECDC1;">Карту Обучения MENTORA</strong> — ваш персональный помощник, который сделает этот путь эффективным и структурированным.'}
+                            </p>
+                            
+                            <!-- Value Proposition -->
+                            <div style="background: linear-gradient(135deg, rgba(62, 205, 193, 0.1) 0%, rgba(50, 163, 154, 0.1) 100%); border-radius: 16px; padding: 24px; margin: 24px 0; border-left: 4px solid #3ECDC1;">
+                                <h3 style="margin: 0 0 12px 0; color: #1a202c; font-size: 20px; font-weight: 700;">
+                                    {value_prop_title}
+                                </h3>
+                                <ul style="margin: 0; padding-left: 24px; color: #64748b; font-size: 15px; line-height: 1.8;">
+                                    {value_prop_html}
+                                </ul>
+                            </div>
+                            
+                            <!-- Main CTA Button -->
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0 40px 0;">
+                                <tr>
+                                    <td align="center">
+                                        <a href="{cta_url}" 
+                                           style="display: inline-block; background: linear-gradient(135deg, #3ECDC1 0%, #32A39A 100%); color: #ffffff; text-decoration: none; padding: 18px 48px; border-radius: 12px; font-weight: 600; font-size: 18px; box-shadow: 0 4px 16px rgba(62, 205, 193, 0.3); transition: transform 0.2s;">
+                                            {cta_text}
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <!-- Motivation Section -->
+                            <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%); border-radius: 16px; padding: 28px; margin: 30px 0; text-align: center;">
+                                <h3 style="margin: 0 0 16px 0; color: #1a202c; font-size: 20px; font-weight: 700;">
+                                    {motivation_title}
+                                </h3>
+                                <p style="margin: 0; color: #64748b; font-size: 16px; line-height: 1.7;">
+                                    {motivation_text if motivation_text else 'Не нужно сразу проходить все модули. Начните с <strong style="color: #3ECDC1;">15-20 минут в день</strong> — этого достаточно, чтобы поддерживать регулярность и видеть прогресс.'}
+                                </p>
+                            </div>
+                            
+                            <!-- Help & Support -->
+                            <div style="border-top: 1px solid #e2e8f0; padding-top: 24px; margin-top: 30px; text-align: center;">
+                                <p style="margin: 0 0 12px 0; color: #94a3b8; font-size: 14px;">
+                                    💡 <strong style="color: #64748b;">Совет:</strong> При первом входе вы увидите интерактивный тур, 
+                                    который поможет быстро освоиться с платформой.
+                                </p>
+                                <p style="margin: 0; color: #94a3b8; font-size: 14px;">
+                                    Возникли вопросы? Напишите нам на 
+                                    <a href="mailto:support@mentora.nl" style="color: #3ECDC1; text-decoration: none; font-weight: 500;">support@mentora.nl</a>
+                                </p>
+                            </div>
+                            
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background: #f8fafc; padding: 30px 40px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <p style="margin: 0 0 12px 0; color: #64748b; font-size: 14px;">
+                                <strong style="color: #1a202c;">MENTORA</strong> - Ваш путь к успешной сдаче экзамена BI-toets
+                            </p>
+                            <p style="margin: 0; color: #94a3b8; font-size: 12px;">
+                                © 2025 MENTORA. Все права защищены.
+                            </p>
+                            <p style="margin: 16px 0 0 0; color: #94a3b8; font-size: 12px;">
+                                <a href="#" style="color: #94a3b8; text-decoration: underline;">Отписаться от рассылки</a>
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+                
+            </td>
+        </tr>
+    </table>
+    
+</body>
+</html>'''
+
 # Отправка профессиональных email
 @communication_bp.route('/send-professional', methods=['GET', 'POST'])
 @login_required

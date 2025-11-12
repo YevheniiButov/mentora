@@ -1,0 +1,802 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Массовая рассылка - Communication Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+.bulk-email-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.email-editor-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+@media (max-width: 1200px) {
+    .email-editor-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.editor-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.preview-panel {
+    background: white;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 20px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+
+.form-section {
+    margin-bottom: 30px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.form-section h3 {
+    color: #1a202c;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-section h3 i {
+    color: #3ECDC1;
+    font-size: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: #4a5568;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="url"],
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="url"]:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3ECDC1;
+    box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.1);
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-group small {
+    display: block;
+    color: #718096;
+    font-size: 0.85rem;
+    margin-top: 6px;
+}
+
+.recipient-selector {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.recipient-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 10px;
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.recipient-option:hover {
+    border-color: #3ECDC1;
+    background: #f0fdfa;
+}
+
+.recipient-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #3ECDC1;
+}
+
+.recipient-option label {
+    flex: 1;
+    cursor: pointer;
+    margin: 0;
+    font-weight: 500;
+}
+
+.recipient-option .badge {
+    background: #3ECDC1;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.custom-emails-input {
+    margin-top: 15px;
+}
+
+.custom-emails-input textarea {
+    min-height: 120px;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.preview-frame {
+    width: 100%;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f5f7fa;
+    min-height: 600px;
+}
+
+.preview-frame iframe {
+    width: 100%;
+    height: 600px;
+    border: none;
+    background: white;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 2px solid #e2e8f0;
+}
+
+.btn {
+    flex: 1;
+    padding: 16px 24px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3ECDC1 0%, #32A39A 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(62, 205, 193, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(62, 205, 193, 0.4);
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e1;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.loading-spinner {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3ECDC1;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.alert {
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.value-prop-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.value-prop-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.value-prop-item input {
+    flex: 1;
+}
+
+.value-prop-item button {
+    padding: 10px 16px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.value-prop-item button:hover {
+    background: #dc2626;
+}
+
+.add-item-btn {
+    padding: 10px 20px;
+    background: #3ECDC1;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.add-item-btn:hover {
+    background: #32A39A;
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="bulk-email-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-0">📧 Массовая рассылка</h1>
+            <p class="text-muted mb-0">Создайте красивое письмо и отправьте его пользователям через Resend</p>
+        </div>
+        <a href="{{ url_for('communication.hub') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Назад в Hub
+        </a>
+    </div>
+
+    <div id="alert-container"></div>
+
+    <form id="bulkEmailForm">
+        <div class="email-editor-layout">
+            <!-- Левая панель: Редактор -->
+            <div class="editor-panel">
+                <!-- Основная информация -->
+                <div class="form-section">
+                    <h3><i class="bi bi-envelope"></i> Основная информация</h3>
+                    
+                    <div class="form-group">
+                        <label for="subject">Тема письма *</label>
+                        <input type="text" id="subject" name="subject" required 
+                               value="🎯 Начните свой путь к успеху"
+                               placeholder="Введите тему письма">
+                        <small>Тема письма, которую увидят получатели</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="greeting_name">Имя в приветствии</label>
+                        <input type="text" id="greeting_name" name="greeting_name" 
+                               value="Иван"
+                               placeholder="Имя">
+                        <small>Имя, которое будет использовано в приветствии (например, "Привет, Иван!")</small>
+                    </div>
+                </div>
+
+                <!-- Заголовок -->
+                <div class="form-section">
+                    <h3><i class="bi bi-type-h1"></i> Заголовок письма</h3>
+                    
+                    <div class="form-group">
+                        <label for="main_title">Главный заголовок</label>
+                        <input type="text" id="main_title" name="main_title" 
+                               value="🎯 Начните свой путь к успеху"
+                               placeholder="Главный заголовок">
+                        <small>Большой заголовок в верхней части письма</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="main_subtitle">Подзаголовок</label>
+                        <input type="text" id="main_subtitle" name="main_subtitle" 
+                               value="Карта Обучения MENTORA готова помочь вам"
+                               placeholder="Подзаголовок">
+                        <small>Текст под главным заголовком</small>
+                    </div>
+                </div>
+
+                <!-- Вступление -->
+                <div class="form-section">
+                    <h3><i class="bi bi-text-paragraph"></i> Вступление</h3>
+                    
+                    <div class="form-group">
+                        <label for="intro_text">Вступительный текст</label>
+                        <textarea id="intro_text" name="intro_text" rows="4"
+                                  placeholder="Введите вступительный текст...">Подготовка к экзамену BI-toets — это важный шаг в вашей карьере. Мы создали Карту Обучения MENTORA — ваш персональный помощник, который сделает этот путь эффективным и структурированным.</textarea>
+                        <small>Основной текст письма после приветствия</small>
+                    </div>
+                </div>
+
+                <!-- Преимущества -->
+                <div class="form-section">
+                    <h3><i class="bi bi-star"></i> Преимущества</h3>
+                    
+                    <div class="form-group">
+                        <label for="value_prop_title">Заголовок блока преимуществ</label>
+                        <input type="text" id="value_prop_title" name="value_prop_title" 
+                               value="💡 Почему стоит начать прямо сейчас:"
+                               placeholder="Заголовок">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Список преимуществ</label>
+                        <div class="value-prop-items" id="valuePropItems">
+                            <div class="value-prop-item">
+                                <input type="text" class="value-prop-input" 
+                                       value="Персонализированный подход — система адаптируется под ваш уровень"
+                                       placeholder="Введите преимущество">
+                                <button type="button" class="remove-item-btn" onclick="removeValuePropItem(this)">×</button>
+                            </div>
+                            <div class="value-prop-item">
+                                <input type="text" class="value-prop-input" 
+                                       value="Экономия времени — четкий план действий каждый день"
+                                       placeholder="Введите преимущество">
+                                <button type="button" class="remove-item-btn" onclick="removeValuePropItem(this)">×</button>
+                            </div>
+                            <div class="value-prop-item">
+                                <input type="text" class="value-prop-input" 
+                                       value="Отслеживание прогресса — видите свой рост в реальном времени"
+                                       placeholder="Введите преимущество">
+                                <button type="button" class="remove-item-btn" onclick="removeValuePropItem(this)">×</button>
+                            </div>
+                            <div class="value-prop-item">
+                                <input type="text" class="value-prop-input" 
+                                       value="Гибкость — учитесь в своем темпе, когда удобно"
+                                       placeholder="Введите преимущество">
+                                <button type="button" class="remove-item-btn" onclick="removeValuePropItem(this)">×</button>
+                            </div>
+                        </div>
+                        <button type="button" class="add-item-btn" onclick="addValuePropItem()">
+                            <i class="bi bi-plus"></i> Добавить преимущество
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Кнопка призыва к действию -->
+                <div class="form-section">
+                    <h3><i class="bi bi-cursor-click"></i> Кнопка призыва к действию</h3>
+                    
+                    <div class="form-group">
+                        <label for="cta_text">Текст кнопки</label>
+                        <input type="text" id="cta_text" name="cta_text" 
+                               value="🚀 Открыть Карту Обучения"
+                               placeholder="Текст кнопки">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cta_url">URL кнопки</label>
+                        <input type="url" id="cta_url" name="cta_url" 
+                               value="https://bigmentor.nl/learning-map"
+                               placeholder="https://example.com">
+                    </div>
+                </div>
+
+                <!-- Мотивация -->
+                <div class="form-section">
+                    <h3><i class="bi bi-heart"></i> Мотивационный блок</h3>
+                    
+                    <div class="form-group">
+                        <label for="motivation_title">Заголовок мотивации</label>
+                        <input type="text" id="motivation_title" name="motivation_title" 
+                               value="💪 Начните с малого"
+                               placeholder="Заголовок">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="motivation_text">Текст мотивации</label>
+                        <textarea id="motivation_text" name="motivation_text" rows="3"
+                                  placeholder="Введите мотивационный текст...">Не нужно сразу проходить все модули. Начните с 15-20 минут в день — этого достаточно, чтобы поддерживать регулярность и видеть прогресс.</textarea>
+                    </div>
+                </div>
+
+                <!-- Получатели -->
+                <div class="form-section">
+                    <h3><i class="bi bi-people"></i> Получатели</h3>
+                    
+                    <div class="recipient-selector">
+                        <div class="recipient-option">
+                            <input type="radio" id="recipient_all" name="recipient_type" value="all" checked>
+                            <label for="recipient_all">Все активные пользователи</label>
+                            <span class="badge">{{ total_users }}</span>
+                        </div>
+                        
+                        <div class="recipient-option">
+                            <input type="radio" id="recipient_users" name="recipient_type" value="users">
+                            <label for="recipient_users">Только пользователи</label>
+                            <span class="badge">{{ total_users }}</span>
+                        </div>
+                        
+                        <div class="recipient-option">
+                            <input type="radio" id="recipient_marketing" name="recipient_type" value="users">
+                            <label for="recipient_marketing">Пользователи с согласием на маркетинг</label>
+                            <span class="badge">{{ users_with_marketing }}</span>
+                            <input type="hidden" id="filter_marketing_consent" name="filter_marketing_consent" value="false">
+                        </div>
+                        
+                        <div class="recipient-option">
+                            <input type="radio" id="recipient_contacts" name="recipient_type" value="contacts">
+                            <label for="recipient_contacts">Только контакты</label>
+                            <span class="badge">{{ total_contacts }}</span>
+                        </div>
+                        
+                        <div class="recipient-option">
+                            <input type="radio" id="recipient_custom" name="recipient_type" value="custom">
+                            <label for="recipient_custom">Произвольный список email</label>
+                        </div>
+                    </div>
+
+                    <div class="custom-emails-input" id="customEmailsInput" style="display: none;">
+                        <label for="recipient_emails">Список email (по одному на строку)</label>
+                        <textarea id="recipient_emails" name="recipient_emails" rows="6"
+                                  placeholder="user1@example.com&#10;user2@example.com&#10;user3@example.com"></textarea>
+                        <small>Введите email адреса, по одному на строку</small>
+                    </div>
+                </div>
+
+                <!-- Кнопки действий -->
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="updatePreview()">
+                        <i class="bi bi-eye"></i> Обновить превью
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="sendBtn">
+                        <i class="bi bi-send"></i> Отправить рассылку
+                    </button>
+                </div>
+            </div>
+
+            <!-- Правая панель: Превью -->
+            <div class="preview-panel">
+                <h3 class="mb-3">
+                    <i class="bi bi-eye" style="color: #3ECDC1;"></i> Предпросмотр письма
+                </h3>
+                <div class="preview-frame">
+                    <iframe id="previewFrame" src="about:blank"></iframe>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Отправка писем...</p>
+        <small>Пожалуйста, подождите</small>
+    </div>
+</div>
+
+<script>
+// Обновление превью
+function updatePreview() {
+    const formData = new FormData(document.getElementById('bulkEmailForm'));
+    const data = {};
+    
+    // Собираем данные формы
+    for (let [key, value] of formData.entries()) {
+        if (key === 'value_prop_items') {
+            if (!data[key]) data[key] = [];
+            data[key].push(value);
+        } else {
+            data[key] = value;
+        }
+    }
+    
+    // Собираем преимущества
+    const valuePropItems = [];
+    document.querySelectorAll('.value-prop-input').forEach(input => {
+        if (input.value.trim()) {
+            valuePropItems.push(input.value.trim());
+        }
+    });
+    data.value_prop_items = valuePropItems;
+    
+    // Отправляем запрос на генерацию превью
+    fetch('{{ url_for("communication.bulk_email") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            ...data,
+            preview: true
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success && result.html) {
+            const iframe = document.getElementById('previewFrame');
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(result.html);
+            iframeDoc.close();
+        }
+    })
+    .catch(error => {
+        console.error('Error updating preview:', error);
+    });
+}
+
+// Добавление элемента преимущества
+function addValuePropItem() {
+    const container = document.getElementById('valuePropItems');
+    const newItem = document.createElement('div');
+    newItem.className = 'value-prop-item';
+    newItem.innerHTML = `
+        <input type="text" class="value-prop-input" placeholder="Введите преимущество">
+        <button type="button" class="remove-item-btn" onclick="removeValuePropItem(this)">×</button>
+    `;
+    container.appendChild(newItem);
+}
+
+// Удаление элемента преимущества
+function removeValuePropItem(btn) {
+    btn.parentElement.remove();
+}
+
+// Показ/скрытие поля для произвольных email
+document.querySelectorAll('input[name="recipient_type"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const customInput = document.getElementById('customEmailsInput');
+        const marketingConsent = document.getElementById('filter_marketing_consent');
+        
+        if (this.value === 'custom') {
+            customInput.style.display = 'block';
+        } else {
+            customInput.style.display = 'none';
+        }
+        
+        if (this.id === 'recipient_marketing') {
+            marketingConsent.value = 'true';
+        } else {
+            marketingConsent.value = 'false';
+        }
+    });
+});
+
+// Автообновление превью при изменении полей
+const autoUpdateFields = ['subject', 'greeting_name', 'main_title', 'main_subtitle', 
+                          'intro_text', 'value_prop_title', 'cta_text', 'cta_url', 
+                          'motivation_title', 'motivation_text'];
+autoUpdateFields.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (field) {
+        field.addEventListener('input', debounce(updatePreview, 500));
+    }
+});
+
+// Обновление при изменении преимуществ
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('value-prop-input')) {
+        debounce(updatePreview, 500)();
+    }
+});
+
+// Debounce функция
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Отправка формы
+document.getElementById('bulkEmailForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {};
+    
+    // Собираем данные
+    for (let [key, value] of formData.entries()) {
+        data[key] = value;
+    }
+    
+    // Собираем преимущества
+    const valuePropItems = [];
+    document.querySelectorAll('.value-prop-input').forEach(input => {
+        if (input.value.trim()) {
+            valuePropItems.push(input.value.trim());
+        }
+    });
+    data.value_prop_items = valuePropItems;
+    
+    // Обработка фильтра маркетинга
+    if (data.recipient_type === 'users' && document.getElementById('recipient_marketing').checked) {
+        data.filter_marketing_consent = true;
+    } else {
+        data.filter_marketing_consent = false;
+    }
+    
+    // Обработка произвольных email
+    if (data.recipient_type === 'custom') {
+        const emailsText = data.recipient_emails || '';
+        data.recipient_emails = emailsText.split('\n').map(email => email.trim()).filter(email => email);
+    }
+    
+    // Показываем загрузку
+    document.getElementById('loadingOverlay').classList.add('active');
+    document.getElementById('sendBtn').disabled = true;
+    
+    try {
+        const response = await fetch('{{ url_for("communication.bulk_email") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        // Скрываем загрузку
+        document.getElementById('loadingOverlay').classList.remove('active');
+        document.getElementById('sendBtn').disabled = false;
+        
+        // Показываем результат
+        const alertContainer = document.getElementById('alert-container');
+        if (result.success) {
+            alertContainer.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle"></i>
+                    <div>
+                        <strong>Успешно!</strong> ${result.message}
+                        <br><small>Отправлено: ${result.sent}, Не удалось: ${result.failed || 0}</small>
+                    </div>
+                </div>
+            `;
+        } else {
+            alertContainer.innerHTML = `
+                <div class="alert alert-error">
+                    <i class="bi bi-x-circle"></i>
+                    <div>
+                        <strong>Ошибка!</strong> ${result.error || 'Не удалось отправить письма'}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Прокручиваем к алерту
+        alertContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+    } catch (error) {
+        document.getElementById('loadingOverlay').classList.remove('active');
+        document.getElementById('sendBtn').disabled = false;
+        
+        document.getElementById('alert-container').innerHTML = `
+            <div class="alert alert-error">
+                <i class="bi bi-x-circle"></i>
+                <div>
+                    <strong>Ошибка!</strong> ${error.message}
+                </div>
+            </div>
+        `;
+    }
+});
+
+// Инициализация превью при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    updatePreview();
+});
+</script>
+{% endblock %}
+
