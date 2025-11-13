@@ -476,9 +476,8 @@
             left: 0 !important;
             right: 0 !important;
             width: 100% !important;
-            height: 70px !important;
-            min-height: 70px !important;
-            max-height: 70px !important;
+            height: calc(70px + env(safe-area-inset-top)) !important; /* Высота + safe area для iPhone */
+            min-height: calc(70px + env(safe-area-inset-top)) !important;
             z-index: 1000 !important;
             background: var(--card-bg) !important;
             backdrop-filter: blur(10px) !important;
@@ -487,6 +486,8 @@
             display: flex !important;
             align-items: center !important;
             padding: 0 !important;
+            padding-top: env(safe-area-inset-top) !important; /* Для iPhone с вырезом */
+            padding-bottom: 0 !important;
             margin: 0 !important;
             overflow: visible !important;
         }
@@ -512,6 +513,8 @@
             max-height: 100% !important;
             margin: 0 auto !important;
             padding: 0 1.5rem !important;
+            padding-left: calc(1.5rem + env(safe-area-inset-left)) !important; /* Для iPhone с вырезом */
+            padding-right: calc(1.5rem + env(safe-area-inset-right)) !important; /* Для iPhone с вырезом */
             display: flex !important;
             align-items: center !important;
             justify-content: space-between !important;
@@ -790,9 +793,9 @@
         /* Мобильные устройства */
         @media (max-width: 992px) {
             header.modern-header {
-                height: 60px !important;
-                min-height: 60px !important;
-                max-height: 60px !important;
+                height: calc(60px + env(safe-area-inset-top)) !important; /* Высота + safe area для iPhone */
+                min-height: calc(60px + env(safe-area-inset-top)) !important;
+                padding-top: env(safe-area-inset-top) !important; /* Для iPhone с вырезом */
             }
             
             header.modern-header .navbar-brand img {
@@ -895,7 +898,9 @@
         /* ТОЛЬКО ТЕЛЕФОНЫ (до 768px) */
         @media (max-width: 767px) {
             header.modern-header {
-                height: 60px !important;
+                height: calc(60px + env(safe-area-inset-top)) !important; /* Высота + safe area для iPhone */
+                min-height: calc(60px + env(safe-area-inset-top)) !important;
+                padding-top: env(safe-area-inset-top) !important; /* Для iPhone с вырезом */
             }
             
             header.modern-header .navbar-brand img {
@@ -1010,9 +1015,11 @@
         .learning-map-container {
             position: relative;
             z-index: 2;
-            margin-top: 70px;
-            min-height: calc(100vh - 70px);
+            margin-top: calc(70px + env(safe-area-inset-top)); /* Учитываем высоту header + safe area для iPhone */
+            min-height: calc(100vh - 70px - env(safe-area-inset-top));
             padding: 2rem;
+            padding-left: calc(2rem + env(safe-area-inset-left)); /* Для iPhone с вырезом */
+            padding-right: calc(2rem + env(safe-area-inset-right)); /* Для iPhone с вырезом */
             max-width: 1800px;
             margin-left: auto;
             margin-right: auto;
@@ -1620,7 +1627,9 @@
             /* Контейнер карты обучения */
             .learning-map-container {
                 padding: 1rem;
-                margin-top: 60px;
+                padding-left: calc(1rem + env(safe-area-inset-left)); /* Для iPhone с вырезом */
+                padding-right: calc(1rem + env(safe-area-inset-right)); /* Для iPhone с вырезом */
+                margin-top: calc(60px + env(safe-area-inset-top)); /* Учитываем высоту header + safe area для iPhone */
             }
             
             /* Узлы - горизонтальная прокрутка для мобильных */
