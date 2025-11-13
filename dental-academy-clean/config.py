@@ -76,6 +76,10 @@ class Config:
     RESEND_API_KEY = os.environ.get('RESEND_API_KEY', None)
     RESEND_FROM_EMAIL = os.environ.get('RESEND_FROM_EMAIL', 'Mentora <info@bigmentor.nl>')
     
+    # Telegram Bot Configuration
+    TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', None)
+    TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID', None)
+    
     # Base URL for email links
     BASE_URL = os.environ.get('BASE_URL', 'https://www.mentora.com.in')
     APPLICATION_ROOT = os.environ.get('APPLICATION_ROOT', '/')

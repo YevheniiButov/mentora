@@ -967,7 +967,18 @@ def handle_exception(e):
     """Handle all unhandled exceptions"""
     db.session.rollback()
     
-    # Логируем ошибку в систему мониторинга
+    # Игнорируем CSRF ошибки (истекшие токены) - это нормальное поведение
+    from flask_wtf.csrf import CSRFError
+    if isinstance(e, CSRFError):
+        # Логируем как warning, а не как критическую ошибку
+        logger.warning(f"CSRF token expired or invalid: {request.path}")
+        # Для API запросов возвращаем JSON, для обычных - HTML
+        if request.is_json or request.path.startswith('/api/'):
+            from flask import jsonify
+            return jsonify({'error': 'CSRF token expired. Please refresh the page.'}), 400
+        return render_template('errors/500.html'), 400
+    
+    # Логируем ошибку в систему мониторинга (только для не-CSRF ошибок)
     try:
         from utils.system_monitor import log_error
         log_error(

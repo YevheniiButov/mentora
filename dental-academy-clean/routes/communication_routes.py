@@ -299,28 +299,52 @@ def bulk_email():
             
             # Отправляем через Resend API
             from utils.resend_email_service import send_email_via_resend
+            import time
             
             sent_count = 0
             failed_count = 0
             errors = []
             
-            for recipient_email in recipients:
+            # Resend API лимит: 2 запроса в секунду, добавляем задержку 0.6 сек между запросами
+            delay_between_emails = 0.6  # 600 мс для надежности (чуть больше чем минимум 0.5 сек)
+            
+            for idx, recipient_email in enumerate(recipients):
                 try:
-                    success = send_email_via_resend(
-                        to_email=recipient_email,
-                        subject=subject,
-                        html_content=html_content,
-                        from_name="Mentora Team",
-                        attachments=attachments
-                    )
+                    # Добавляем задержку перед каждым запросом (кроме первого)
+                    if idx > 0:
+                        time.sleep(delay_between_emails)
+                    
+                    # Попытка отправки с retry при rate limit
+                    max_retries = 3
+                    retry_delay = 1.0  # Начальная задержка для retry
+                    success = False
+                    
+                    for attempt in range(max_retries):
+                        success = send_email_via_resend(
+                            to_email=recipient_email,
+                            subject=subject,
+                            html_content=html_content,
+                            from_name="Mentora Team",
+                            attachments=attachments
+                        )
+                        
+                        if success:
+                            break
+                        
+                        # Если это не последняя попытка и была ошибка rate limit, ждем и повторяем
+                        if attempt < max_retries - 1:
+                            # Проверяем, была ли это ошибка rate limit (429)
+                            # send_email_via_resend возвращает False при любой ошибке
+                            # Добавляем дополнительную задержку перед retry
+                            time.sleep(retry_delay * (attempt + 1))  # Экспоненциальная задержка
                     
                     if success:
                         sent_count += 1
                         current_app.logger.info(f'Bulk email sent to {recipient_email} via Resend')
                     else:
                         failed_count += 1
-                        errors.append(f"Failed to send to {recipient_email}")
-                        current_app.logger.error(f'Failed to send bulk email to {recipient_email}')
+                        errors.append(f"Failed to send to {recipient_email} after {max_retries} attempts")
+                        current_app.logger.error(f'Failed to send bulk email to {recipient_email} after {max_retries} attempts')
                         
                 except Exception as e:
                     failed_count += 1
@@ -1259,11 +1283,21 @@ def send_professional():
                 return redirect(url_for('communication.send_professional'))
             
             # РЕАЛЬНАЯ отправка через Resend API
+            from utils.resend_email_service import send_email_via_resend
+            import time
+            
             sent_count = 0
             failed_count = 0
             
-            for recipient_email in recipients:
+            # Resend API лимит: 2 запроса в секунду, добавляем задержку 0.6 сек между запросами
+            delay_between_emails = 0.6  # 600 мс для надежности
+            
+            for idx, recipient_email in enumerate(recipients):
                 try:
+                    # Добавляем задержку перед каждым запросом (кроме первого)
+                    if idx > 0:
+                        time.sleep(delay_between_emails)
+                    
                     # Генерируем HTML контент
                     html_content = render_template(
                         f'admin/communication/email_templates/{template_type}.html',
@@ -1273,7 +1307,6 @@ def send_professional():
                     )
                     
                     # Отправляем через Resend API
-                    from utils.resend_email_service import send_email_via_resend
                     success = send_email_via_resend(
                         to_email=recipient_email,
                         subject=subject,

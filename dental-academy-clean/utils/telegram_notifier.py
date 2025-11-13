@@ -12,9 +12,28 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# Telegram Bot Configuration
-TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+
+def get_telegram_config():
+    """
+    Получает конфигурацию Telegram из Flask конфигурации или переменных окружения.
+    Читает динамически при каждом вызове, чтобы учитывать изменения переменных окружения.
+    """
+    try:
+        from flask import current_app
+        # Пытаемся получить из Flask конфигурации (приоритет)
+        bot_token = current_app.config.get('TELEGRAM_BOT_TOKEN')
+        chat_id = current_app.config.get('TELEGRAM_CHAT_ID')
+        
+        # Если не найдено в конфигурации, используем переменные окружения
+        if not bot_token:
+            bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+        if not chat_id:
+            chat_id = os.getenv('TELEGRAM_CHAT_ID')
+        
+        return bot_token, chat_id
+    except RuntimeError:
+        # Нет контекста приложения, используем только переменные окружения
+        return os.getenv('TELEGRAM_BOT_TOKEN'), os.getenv('TELEGRAM_CHAT_ID')
 
 
 def send_telegram_message(message: str, parse_mode: str = 'HTML') -> bool:
@@ -28,14 +47,16 @@ def send_telegram_message(message: str, parse_mode: str = 'HTML') -> bool:
     Returns:
         bool: True если сообщение отправлено успешно
     """
-    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+    bot_token, chat_id = get_telegram_config()
+    
+    if not bot_token or not chat_id:
         logger.warning("Telegram bot token or chat ID not configured")
         return False
     
     try:
-        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
         payload = {
-            'chat_id': TELEGRAM_CHAT_ID,
+            'chat_id': chat_id,
             'text': message,
             'parse_mode': parse_mode
         }
