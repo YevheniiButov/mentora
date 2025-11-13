@@ -2,14 +2,25 @@
 <html lang="{{ lang }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ t('learning_map', lang)|default('Learning Map') }} - {{ t('modern_style', lang)|default('Modern Style') }}</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3ECDC1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mentora">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="Interactive learning map for BIG exam preparation">
     
     <!-- Favicon -->
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" />
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/favicon.png') }}">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest-learning-map.json') }}">
     
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -32,6 +43,54 @@
             --primary-color: #3b82f6;
             --primary-dark: #2563eb;
             --secondary-color: #6366f1;
+            
+            /* Light theme colors (default) */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #e0e7ff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border-color: #e5e7eb;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --card-bg: #ffffff;
+            --gradient-start: #f8fafc;
+            --gradient-middle: #e0e7ff;
+            --gradient-end: #dbeafe;
+        }
+        
+        /* Dark theme colors */
+        [data-theme="dark"] {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #0f172a;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --border-color: #334155;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+            --card-bg: #1e293b;
+            --gradient-start: #0f172a;
+            --gradient-middle: #1e293b;
+            --gradient-end: #334155;
+        }
+        
+        /* Auto theme based on system preference */
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme]) {
+                --bg-primary: #1a1a2e;
+                --bg-secondary: #16213e;
+                --bg-tertiary: #0f172a;
+                --text-primary: #f1f5f9;
+                --text-secondary: #cbd5e1;
+                --text-tertiary: #94a3b8;
+                --border-color: #334155;
+                --shadow-color: rgba(0, 0, 0, 0.5);
+                --card-bg: #1e293b;
+                --gradient-start: #0f172a;
+                --gradient-middle: #1e293b;
+                --gradient-end: #334155;
+            }
         }
 
         * {
@@ -43,9 +102,388 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             overflow-x: hidden;
-            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 50%, #dbeafe 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-middle) 50%, var(--gradient-end) 100%);
+            color: var(--text-primary);
             min-height: 100vh;
+            min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
             position: relative;
+            transition: background 0.3s ease, color 0.3s ease;
+            /* PWA fullscreen support */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+        
+        /* PWA Standalone mode styles */
+        @media all and (display-mode: standalone) {
+            body {
+                /* Additional styles for standalone mode */
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }
+        }
+        
+        /* PWA Install Banner - ненавязчивый баннер */
+        .pwa-install-banner {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            max-width: 320px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            padding: 16px;
+            z-index: 9999;
+            display: none;
+            animation: slideInUp 0.3s ease-out;
+            border: 1px solid rgba(62, 205, 193, 0.2);
+        }
+        
+        .pwa-install-banner.show {
+            display: block;
+        }
+        
+        .pwa-install-banner.hidden {
+            display: none !important;
+        }
+        
+        @keyframes slideInUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .pwa-install-banner-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .pwa-install-banner-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #3ECDC1, #2dd4bf);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .pwa-install-banner-icon i {
+            font-size: 24px;
+            color: white;
+        }
+        
+        .pwa-install-banner-text {
+            flex: 1;
+        }
+        
+        .pwa-install-banner-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        
+        .pwa-install-banner-description {
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+        
+        .pwa-install-banner-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .pwa-install-btn {
+            flex: 1;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #3ECDC1, #2dd4bf);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .pwa-install-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(62, 205, 193, 0.3);
+        }
+        
+        .pwa-install-btn:active {
+            transform: translateY(0);
+        }
+        
+        .pwa-close-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 16px;
+            padding: 0;
+        }
+        
+        .pwa-close-btn:hover {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        /* Мобильная версия баннера */
+        @media (max-width: 768px) {
+            .pwa-install-banner {
+                bottom: 10px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
+        
+        /* Скрываем баннер в standalone режиме */
+        @media all and (display-mode: standalone) {
+            .pwa-install-banner {
+                display: none !important;
+            }
+        }
+        
+        /* Theme Toggle Button */
+        .theme-toggle,
+        .focus-toggle {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 20px;
+        }
+        
+        .theme-toggle:hover,
+        .focus-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+        
+        .theme-toggle:active,
+        .focus-toggle:active {
+            transform: translateY(0);
+        }
+        
+        .focus-toggle.active {
+            background: linear-gradient(135deg, #3ECDC1, #2dd4bf);
+            color: white;
+            border-color: transparent;
+        }
+        
+        /* Focus Mode Styles */
+        body.focus-mode .morphing-shapes {
+            display: none;
+        }
+        
+        body.focus-mode header.modern-header .navbar-nav .nav-item:not(.focus-essential) {
+            display: none;
+        }
+        
+        body.focus-mode .sidebar,
+        body.focus-mode .achievements-section,
+        body.focus-mode .social-widgets {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        
+        body.focus-mode .learning-content {
+            max-width: 100%;
+        }
+        
+        /* Quick Actions Button */
+        .quick-actions-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3ECDC1, #2dd4bf);
+            color: white;
+            border: none;
+            box-shadow: 0 8px 24px rgba(62, 205, 193, 0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            z-index: 9998;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-actions-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 32px rgba(62, 205, 193, 0.5);
+        }
+        
+        .quick-actions-btn.active {
+            transform: rotate(45deg);
+        }
+        
+        /* Quick Actions Menu */
+        .quick-actions-menu {
+            position: fixed;
+            bottom: 90px;
+            right: 24px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 12px 40px var(--shadow-color);
+            padding: 12px;
+            min-width: 200px;
+            z-index: 9997;
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            border: 1px solid var(--border-color);
+            animation: slideUp 0.3s ease-out;
+        }
+        
+        .quick-actions-menu.show {
+            display: flex;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .quick-action-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .quick-action-item:hover {
+            background: rgba(62, 205, 193, 0.1);
+            transform: translateX(4px);
+        }
+        
+        .quick-action-item i {
+            width: 20px;
+            font-size: 18px;
+            color: var(--primary-color);
+        }
+        
+        .quick-action-item span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .quick-actions-btn {
+                bottom: 80px;
+                right: 16px;
+                width: 52px;
+                height: 52px;
+            }
+            
+            .quick-actions-menu {
+                bottom: 140px;
+                right: 16px;
+                left: 16px;
+                min-width: auto;
+            }
+        }
+        
+        /* Dark theme adjustments for header */
+        [data-theme="dark"] header.modern-header {
+            background: rgba(30, 41, 59, 0.95);
+            border-bottom-color: var(--border-color);
+        }
+        
+        [data-theme="dark"] header.modern-header .btn,
+        [data-theme="dark"] header.modern-header .language-btn-modern,
+        [data-theme="dark"] header.modern-header .user-btn-modern {
+            background: rgba(30, 41, 59, 0.8);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+        
+        [data-theme="dark"] header.modern-header .dropdown-menu {
+            background: var(--card-bg);
+            border-color: var(--border-color);
+        }
+        
+        [data-theme="dark"] header.modern-header .dropdown-item {
+            color: var(--text-secondary);
+        }
+        
+        [data-theme="dark"] header.modern-header .dropdown-item:hover {
+            background: rgba(62, 205, 193, 0.1);
+            color: var(--primary-color);
+        }
+        
+        /* Dark theme for cards */
+        [data-theme="dark"] .card,
+        [data-theme="dark"] .learning-path-item,
+        [data-theme="dark"] .module-card {
+            background: var(--card-bg);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        /* Dark theme for PWA install banner */
+        [data-theme="dark"] .pwa-install-banner {
+            background: var(--card-bg);
+            border-color: var(--border-color);
+        }
+        
+        [data-theme="dark"] .pwa-install-banner-title {
+            color: var(--text-primary);
+        }
+        
+        [data-theme="dark"] .pwa-install-banner-description {
+            color: var(--text-secondary);
         }
 
         /* ===== МОРФИРУЮЩИЕ ФОРМЫ ===== */
@@ -1936,17 +2374,61 @@
             border-radius: 12px;
             color: white;
             box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .streak-widget::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            animation: streakGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes streakGlow {
+            0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+        }
+        
+        .streak-widget:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
         }
         
         .streak-animation {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .streak-animation i {
+            font-size: 28px;
+            animation: streakPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes streakPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
         
         .streak-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .streak-count-wrapper {
             display: flex;
             align-items: baseline;
             gap: 4px;
@@ -1958,12 +2440,42 @@
         }
 
         .streak-count {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
+            line-height: 1;
+        }
+        
+        .streak-count.high {
+            animation: streakCountBounce 0.5s ease;
+        }
+        
+        @keyframes streakCountBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
         }
 
         .streak-label {
-            font-size: 14px;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .streak-milestone {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+        
+        /* Streak milestones colors */
+        .streak-widget.milestone-7 {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+        }
+        
+        .streak-widget.milestone-30 {
+            background: linear-gradient(135deg, #8b5cf6, #a855f7);
+        }
+        
+        .streak-widget.milestone-100 {
+            background: linear-gradient(135deg, #ec4899, #f43f5e);
         }
 
         .daily-tasks-card {
@@ -4596,6 +5108,25 @@
     </script>
 </head>
 <body>
+    <!-- PWA Install Banner - показывается только на мобильных и только если не установлено -->
+    <div id="pwa-install-banner" class="pwa-install-banner">
+        <button class="pwa-close-btn" onclick="dismissPWAInstallBanner()" aria-label="Закрыть">
+            <i class="bi bi-x"></i>
+        </button>
+        <div class="pwa-install-banner-content">
+            <div class="pwa-install-banner-icon">
+                <i class="bi bi-download"></i>
+            </div>
+            <div class="pwa-install-banner-text">
+                <div class="pwa-install-banner-title">Установить приложение</div>
+                <div class="pwa-install-banner-description">Добавьте Mentora на главный экран для быстрого доступа</div>
+                <div class="pwa-install-banner-actions">
+                    <button class="pwa-install-btn" onclick="installPWA()">Установить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Морфирующие формы -->
     <div class="morphing-shapes">
         <div class="shape shape-1"></div>
@@ -4653,6 +5184,16 @@
                     
                     <!-- Right Side Actions -->
                     <div class="navbar-actions d-flex align-items-center">
+                        <!-- Focus Mode Toggle -->
+                        <button class="focus-toggle me-3" onclick="toggleFocusMode()" aria-label="Режим фокуса" title="Режим фокуса - убрать отвлекающие элементы" id="focus-toggle-btn">
+                            <i class="bi bi-eye-slash"></i>
+                        </button>
+                        
+                        <!-- Theme Toggle -->
+                        <button class="theme-toggle me-3" onclick="toggleTheme()" aria-label="Переключить тему" title="Темная/Светлая тема">
+                            <i class="bi bi-moon-stars" id="theme-icon"></i>
+                        </button>
+                        
                         <!-- Language Dropdown -->
                         <div class="dropdown me-3 language-dropdown" style="position: relative; z-index: 9999;">
                             <button class="btn language-btn-modern" 
@@ -8370,5 +8911,536 @@
       }
       
     </script>
+    <!-- PWA Service Worker Registration -->
+    <script>
+        // Register Service Worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('{{ url_for("static", filename="sw-learning-map.js") }}')
+                    .then(function(registration) {
+                        console.log('[PWA] Service Worker registered successfully:', registration.scope);
+                        
+                        // Check for updates
+                        registration.addEventListener('updatefound', function() {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', function() {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New service worker available, show update notification
+                                    if (confirm('Новая версия приложения доступна! Обновить?')) {
+                                        newWorker.postMessage({ action: 'skipWaiting' });
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch(function(error) {
+                        console.log('[PWA] Service Worker registration failed:', error);
+                    });
+            });
+            
+            // Listen for service worker updates
+            navigator.serviceWorker.addEventListener('controllerchange', function() {
+                window.location.reload();
+            });
+        }
+        
+        // Handle install prompt
+        let deferredPrompt;
+        const PWA_BANNER_DISMISSED_KEY = 'pwa_install_banner_dismissed';
+        const PWA_BANNER_DISMISSED_TIME_KEY = 'pwa_install_banner_dismissed_time';
+        const PWA_BANNER_DISMISSED_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 дней
+        
+        window.addEventListener('beforeinstallprompt', function(e) {
+            // Prevent Chrome 67 and earlier from automatically showing the prompt
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Проверяем, не был ли баннер закрыт недавно
+            const dismissed = localStorage.getItem(PWA_BANNER_DISMISSED_KEY);
+            const dismissedTime = localStorage.getItem(PWA_BANNER_DISMISSED_TIME_KEY);
+            
+            if (dismissed === 'true' && dismissedTime) {
+                const timeSinceDismissed = Date.now() - parseInt(dismissedTime);
+                // Если прошло меньше 7 дней, не показываем баннер
+                if (timeSinceDismissed < PWA_BANNER_DISMISSED_DURATION) {
+                    return;
+                }
+            }
+            
+            // Проверяем, не установлено ли уже приложение
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                return;
+            }
+            
+            // Показываем баннер только на мобильных устройствах
+            if (window.innerWidth <= 768) {
+                setTimeout(function() {
+                    showPWAInstallBanner();
+                }, 3000); // Показываем через 3 секунды после загрузки
+            }
+        });
+        
+        // Track app installation
+        window.addEventListener('appinstalled', function(evt) {
+            console.log('[PWA] App was installed');
+            deferredPrompt = null;
+            hidePWAInstallBanner();
+        });
+        
+        // Функции для управления баннером
+        function showPWAInstallBanner() {
+            const banner = document.getElementById('pwa-install-banner');
+            if (banner && !banner.classList.contains('hidden')) {
+                banner.classList.add('show');
+            }
+        }
+        
+        function hidePWAInstallBanner() {
+            const banner = document.getElementById('pwa-install-banner');
+            if (banner) {
+                banner.classList.remove('show');
+                banner.classList.add('hidden');
+            }
+        }
+        
+        function dismissPWAInstallBanner() {
+            hidePWAInstallBanner();
+            // Сохраняем выбор пользователя на 7 дней
+            localStorage.setItem(PWA_BANNER_DISMISSED_KEY, 'true');
+            localStorage.setItem(PWA_BANNER_DISMISSED_TIME_KEY, Date.now().toString());
+        }
+        
+        function installPWA() {
+            if (!deferredPrompt) {
+                // Если нет deferredPrompt, показываем инструкции для iOS
+                if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                    alert('Для установки приложения:\n1. Нажмите кнопку "Поделиться"\n2. Выберите "На экран «Домой»"');
+                } else {
+                    alert('Установка доступна через меню браузера');
+                }
+                dismissPWAInstallBanner();
+                return;
+            }
+            
+            // Показываем установочный промпт
+            deferredPrompt.prompt();
+            
+            // Ждем ответа пользователя
+            deferredPrompt.userChoice.then(function(choiceResult) {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('[PWA] User accepted the install prompt');
+                } else {
+                    console.log('[PWA] User dismissed the install prompt');
+                }
+                deferredPrompt = null;
+                dismissPWAInstallBanner();
+            });
+        }
+        
+        // Проверяем при загрузке, не установлено ли уже приложение
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            hidePWAInstallBanner();
+        }
+        
+        // ===== THEME MANAGEMENT =====
+        const THEME_STORAGE_KEY = 'mentora_theme';
+        const THEME_AUTO_KEY = 'mentora_theme_auto';
+        
+        // Initialize theme on page load
+        function initTheme() {
+            const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+            const autoTheme = localStorage.getItem(THEME_AUTO_KEY);
+            
+            // If auto theme is enabled, use system preference
+            if (autoTheme === 'true') {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                applyTheme(prefersDark ? 'dark' : 'light', true);
+            } else if (savedTheme) {
+                applyTheme(savedTheme, false);
+            } else {
+                // Default to system preference if no saved preference
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                applyTheme(prefersDark ? 'dark' : 'light', true);
+            }
+        }
+        
+        // Apply theme
+        function applyTheme(theme, isAuto) {
+            const root = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (theme === 'dark') {
+                root.setAttribute('data-theme', 'dark');
+                if (themeIcon) {
+                    themeIcon.className = 'bi bi-sun';
+                }
+            } else {
+                root.removeAttribute('data-theme');
+                if (themeIcon) {
+                    themeIcon.className = 'bi bi-moon-stars';
+                }
+            }
+            
+            // Update meta theme-color for mobile browsers
+            let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+            if (!metaThemeColor) {
+                metaThemeColor = document.createElement('meta');
+                metaThemeColor.name = 'theme-color';
+                document.head.appendChild(metaThemeColor);
+            }
+            metaThemeColor.content = theme === 'dark' ? '#1a1a2e' : '#3ECDC1';
+        }
+        
+        // Toggle theme
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            // Disable auto theme when manually toggling
+            localStorage.setItem(THEME_AUTO_KEY, 'false');
+            localStorage.setItem(THEME_STORAGE_KEY, newTheme);
+            
+            applyTheme(newTheme, false);
+            
+            // Haptic feedback on mobile
+            if ('vibrate' in navigator) {
+                navigator.vibrate(50);
+            }
+        }
+        
+        // Listen for system theme changes (if auto theme is enabled)
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+            const autoTheme = localStorage.getItem(THEME_AUTO_KEY);
+            if (autoTheme === 'true') {
+                applyTheme(e.matches ? 'dark' : 'light', true);
+            }
+        });
+        
+        // Initialize theme when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initTheme);
+        } else {
+            initTheme();
+        }
+        
+        // ===== SMART NOTIFICATIONS =====
+        const NOTIFICATION_PERMISSION_KEY = 'mentora_notification_permission_asked';
+        
+        // Request notification permission
+        function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                console.log('[Notifications] This browser does not support notifications');
+                return;
+            }
+            
+            // Check if already asked
+            const alreadyAsked = localStorage.getItem(NOTIFICATION_PERMISSION_KEY);
+            if (alreadyAsked === 'true') {
+                return;
+            }
+            
+            // Request permission
+            Notification.requestPermission().then(function(permission) {
+                localStorage.setItem(NOTIFICATION_PERMISSION_KEY, 'true');
+                
+                if (permission === 'granted') {
+                    console.log('[Notifications] Permission granted');
+                    scheduleDailyReminders();
+                } else {
+                    console.log('[Notifications] Permission denied');
+                }
+            });
+        }
+        
+        // Schedule daily learning reminders
+        function scheduleDailyReminders() {
+            if (!('serviceWorker' in navigator) || !('Notification' in window)) {
+                return;
+            }
+            
+            if (Notification.permission !== 'granted') {
+                return;
+            }
+            
+            // Schedule reminder for tomorrow at 9 AM
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(9, 0, 0, 0);
+            
+            const delay = tomorrow.getTime() - now.getTime();
+            
+            // Send message to service worker
+            if (navigator.serviceWorker.controller) {
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'SCHEDULE_NOTIFICATION',
+                    title: 'Mentora - Время учиться!',
+                    body: 'Не забудьте пройти сегодняшние задания',
+                    delay: delay
+                });
+            }
+        }
+        
+        // Request permission after user interaction (not immediately)
+        document.addEventListener('click', function() {
+            // Request permission on first user interaction
+            if (localStorage.getItem(NOTIFICATION_PERMISSION_KEY) !== 'true') {
+                setTimeout(requestNotificationPermission, 5000); // After 5 seconds of interaction
+            }
+        }, { once: true });
+        
+        // Check if notifications are already enabled
+        if (Notification.permission === 'granted') {
+            scheduleDailyReminders();
+        }
+        
+        // ===== FOCUS MODE =====
+        const FOCUS_MODE_KEY = 'mentora_focus_mode';
+        
+        function toggleFocusMode() {
+            const body = document.body;
+            const btn = document.getElementById('focus-toggle-btn');
+            if (!btn) return;
+            
+            const icon = btn.querySelector('i');
+            
+            if (body.classList.contains('focus-mode')) {
+                body.classList.remove('focus-mode');
+                btn.classList.remove('active');
+                if (icon) icon.className = 'bi bi-eye-slash';
+                localStorage.setItem(FOCUS_MODE_KEY, 'false');
+            } else {
+                body.classList.add('focus-mode');
+                btn.classList.add('active');
+                if (icon) icon.className = 'bi bi-eye';
+                localStorage.setItem(FOCUS_MODE_KEY, 'true');
+            }
+            
+            // Haptic feedback
+            if ('vibrate' in navigator) {
+                navigator.vibrate(50);
+            }
+        }
+        
+        // Initialize focus mode
+        if (localStorage.getItem(FOCUS_MODE_KEY) === 'true') {
+            document.body.classList.add('focus-mode');
+            const btn = document.getElementById('focus-toggle-btn');
+            if (btn) {
+                btn.classList.add('active');
+                const icon = btn.querySelector('i');
+                if (icon) icon.className = 'bi bi-eye';
+            }
+        }
+        
+        // ===== QUICK ACTIONS =====
+        function toggleQuickActions() {
+            const menu = document.getElementById('quick-actions-menu');
+            const btn = document.getElementById('quick-actions-btn');
+            
+            if (!menu || !btn) return;
+            
+            if (menu.classList.contains('show')) {
+                menu.classList.remove('show');
+                btn.classList.remove('active');
+            } else {
+                menu.classList.add('show');
+                btn.classList.add('active');
+            }
+        }
+        
+        function closeQuickActions() {
+            const menu = document.getElementById('quick-actions-menu');
+            const btn = document.getElementById('quick-actions-btn');
+            if (menu) menu.classList.remove('show');
+            if (btn) btn.classList.remove('active');
+        }
+        
+        // Close quick actions when clicking outside
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('quick-actions-menu');
+            const btn = document.getElementById('quick-actions-btn');
+            
+            if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+                closeQuickActions();
+            }
+        });
+        
+        // Quick action functions
+        function quickActionDiagnostic() {
+            closeQuickActions();
+            window.location.href = '/{{ lang }}/big-diagnostic/start';
+        }
+        
+        function quickActionToday() {
+            closeQuickActions();
+            // Scroll to today's tasks
+            const todaySection = document.querySelector('[data-section="today"]');
+            if (todaySection) {
+                todaySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                // Try to find progress tab
+                const progressTab = document.querySelector('[data-tab="progress"]');
+                if (progressTab) progressTab.click();
+            }
+        }
+        
+        function quickActionStats() {
+            closeQuickActions();
+            // Open stats tab
+            const statsTab = document.querySelector('[data-tab="progress"]');
+            if (statsTab) {
+                statsTab.click();
+            }
+        }
+        
+        function quickActionExport() {
+            closeQuickActions();
+            exportStatistics();
+        }
+        
+        // ===== STREAK COUNTER ENHANCEMENT =====
+        function enhanceStreakCounter() {
+            const streakWidget = document.querySelector('.streak-widget');
+            if (!streakWidget) return;
+            
+            const streakCountEl = streakWidget.querySelector('.streak-count');
+            if (!streakCountEl) return;
+            
+            const streakCount = parseInt(streakCountEl.textContent) || 0;
+            
+            // Add milestone classes
+            if (streakCount >= 100) {
+                streakWidget.classList.add('milestone-100');
+            } else if (streakCount >= 30) {
+                streakWidget.classList.add('milestone-30');
+            } else if (streakCount >= 7) {
+                streakWidget.classList.add('milestone-7');
+            }
+            
+            // Add milestone message
+            let milestoneMsg = '';
+            if (streakCount >= 100) {
+                milestoneMsg = '🔥 Легенда!';
+            } else if (streakCount >= 30) {
+                milestoneMsg = '⭐ Отлично!';
+            } else if (streakCount >= 7) {
+                milestoneMsg = '💪 Продолжай!';
+            } else if (streakCount >= 3) {
+                milestoneMsg = '🚀 Хороший старт!';
+            } else {
+                milestoneMsg = '💡 Начни серию!';
+            }
+            
+            // Add milestone message if not exists
+            let milestoneEl = streakWidget.querySelector('.streak-milestone');
+            if (!milestoneEl) {
+                milestoneEl = document.createElement('div');
+                milestoneEl.className = 'streak-milestone';
+                const streakInfo = streakWidget.querySelector('.streak-info');
+                if (streakInfo) {
+                    streakInfo.appendChild(milestoneEl);
+                }
+            }
+            milestoneEl.textContent = milestoneMsg;
+            
+            // Add bounce animation for high streaks
+            if (streakCount >= 7) {
+                streakCountEl.classList.add('high');
+            }
+        }
+        
+        // Initialize streak enhancement
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', enhanceStreakCounter);
+        } else {
+            enhanceStreakCounter();
+        }
+        
+        // ===== EXPORT STATISTICS =====
+        async function exportStatistics() {
+            try {
+                // Try to fetch user statistics
+                const response = await fetch('/{{ lang }}/api/user-statistics', {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+                
+                let data;
+                if (response.ok) {
+                    data = await response.json();
+                } else {
+                    // Fallback: create basic stats from page data
+                    data = {
+                        export_date: new Date().toISOString(),
+                        user: {
+                            name: '{{ current_user.get_display_name() if current_user.is_authenticated else "User" }}',
+                            email: '{{ current_user.email if current_user.is_authenticated else "" }}'
+                        },
+                        statistics: {
+                            note: 'Полная статистика доступна после авторизации'
+                        }
+                    };
+                }
+                
+                // Create JSON file
+                const jsonData = JSON.stringify(data, null, 2);
+                const blob = new Blob([jsonData], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                // Download
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `mentora-statistics-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // Show success message
+                if ('vibrate' in navigator) {
+                    navigator.vibrate([100, 50, 100]);
+                }
+                
+                // Simple success notification
+                const notification = document.createElement('div');
+                notification.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:white;padding:12px 20px;border-radius:8px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
+                notification.textContent = '✓ Статистика экспортирована!';
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 3000);
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Ошибка при экспорте статистики. Попробуйте позже.');
+            }
+        }
+    </script>
+    
+    <!-- Quick Actions Floating Button -->
+    <button class="quick-actions-btn" id="quick-actions-btn" onclick="toggleQuickActions()" aria-label="Быстрые действия">
+        <i class="bi bi-plus-lg"></i>
+    </button>
+    
+    <!-- Quick Actions Menu -->
+    <div class="quick-actions-menu" id="quick-actions-menu">
+        <button class="quick-action-item" onclick="quickActionDiagnostic()">
+            <i class="bi bi-clipboard-pulse"></i>
+            <span>Диагностика</span>
+        </button>
+        <button class="quick-action-item" onclick="quickActionToday()">
+            <i class="bi bi-calendar-day"></i>
+            <span>Сегодняшние задания</span>
+        </button>
+        <button class="quick-action-item" onclick="quickActionStats()">
+            <i class="bi bi-graph-up"></i>
+            <span>Статистика</span>
+        </button>
+        <button class="quick-action-item" onclick="quickActionExport()">
+            <i class="bi bi-download"></i>
+            <span>Экспорт данных</span>
+        </button>
+    </div>
 </body>
 </html>
