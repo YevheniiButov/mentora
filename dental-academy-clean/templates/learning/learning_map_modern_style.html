@@ -5976,8 +5976,8 @@
                 // Получаем состояние тура из базы данных (передается с сервера)
                 // ВАЖНО: Это начальное значение, но мы также проверим через API для актуальности
                 // Используем явное приведение к boolean для надежности
-                const serverTourCompletedRaw = {% if current_user.is_authenticated and current_user.learning_map_tour_completed %}true{% else %}false{% endif %};
-                let serverTourCompleted = serverTourCompletedRaw === true;
+                const serverTourCompletedRaw = JSON.parse(`{{ "true" if current_user.is_authenticated and current_user.learning_map_tour_completed else "false" }}`);
+                let serverTourCompleted = serverTourCompletedRaw === true || String(serverTourCompletedRaw) === "true";
                 const isAuthenticated = JSON.parse(`{{ "true" if current_user.is_authenticated else "false" }}`);
                 
                 // Проверяем localStorage для неавторизованных пользователей

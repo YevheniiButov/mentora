@@ -381,6 +381,7 @@
                         <select id="email_template_type" name="email_template_type" class="form-control">
                             <option value="universal">Универсальный шаблон</option>
                             <option value="learning_map_welcome">Learning Map Welcome (с GIF)</option>
+                            <option value="big_preparation">BIG Preparation - Ready to Start</option>
                         </select>
                         <small>Выберите шаблон письма. Learning Map Welcome включает GIF и специальный дизайн.</small>
                     </div>
@@ -684,6 +685,14 @@ function updatePreview() {
         }
     }
     
+    // Для big_preparation шаблона берем CTA URL
+    if (data.email_template_type === 'big_preparation') {
+        const welcomeCtaUrl = document.getElementById('cta_url_welcome');
+        if (welcomeCtaUrl) {
+            data.cta_url = welcomeCtaUrl.value || 'https://bigmentor.nl/en/learning-map';
+        }
+    }
+    
     // Получаем CSRF токен
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
                      document.querySelector('input[name="csrf_token"]')?.value || 
@@ -806,18 +815,23 @@ document.querySelectorAll('input[name="recipient_type"]').forEach(radio => {
 document.getElementById('email_template_type').addEventListener('change', function() {
     const gifUploadGroup = document.getElementById('gifUploadGroup');
     const isWelcomeTemplate = this.value === 'learning_map_welcome';
+    const isBigPreparationTemplate = this.value === 'big_preparation';
     
     const welcomeCtaGroup = document.getElementById('welcomeCtaGroup');
     
-    if (isWelcomeTemplate) {
-        gifUploadGroup.style.display = 'block';
+    if (isWelcomeTemplate || isBigPreparationTemplate) {
+        if (isWelcomeTemplate) {
+            gifUploadGroup.style.display = 'block';
+        } else {
+            gifUploadGroup.style.display = 'none';
+        }
         welcomeCtaGroup.style.display = 'block';
-        // Скрываем поля, которые не используются в welcome шаблоне
+        // Скрываем поля, которые не используются в welcome/big_preparation шаблонах
         document.querySelectorAll('.form-section').forEach(section => {
             const h3 = section.querySelector('h3');
             if (h3) {
                 const text = h3.textContent || h3.innerText;
-                // Скрываем секции, которые не нужны для welcome шаблона
+                // Скрываем секции, которые не нужны для welcome/big_preparation шаблонов
                 if (text.includes('Заголовок письма') || 
                     text.includes('Вступление') || 
                     text.includes('Преимущества') || 

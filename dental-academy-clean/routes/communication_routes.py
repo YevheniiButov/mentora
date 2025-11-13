@@ -82,7 +82,19 @@ def bulk_email():
                     email_template_type = data.get('email_template_type', 'universal')
                     has_gif = data.get('has_gif', False) or data.get('gif_file')  # Для превью
                     
-                    if email_template_type == 'learning_map_welcome':
+                    if email_template_type == 'big_preparation':
+                        greeting_name = data.get('greeting_name', 'there') or 'there'
+                        if isinstance(greeting_name, str):
+                            greeting_name = greeting_name.strip()
+                        cta_url = data.get('cta_url', 'https://bigmentor.nl/en/learning-map') or 'https://bigmentor.nl/en/learning-map'
+                        if isinstance(cta_url, str):
+                            cta_url = cta_url.strip()
+                        
+                        html_content = generate_big_preparation_email(
+                            greeting_name=greeting_name,
+                            cta_url=cta_url
+                        )
+                    elif email_template_type == 'learning_map_welcome':
                         greeting_name = data.get('greeting_name', 'there') or 'there'
                         if isinstance(greeting_name, str):
                             greeting_name = greeting_name.strip()
@@ -240,7 +252,12 @@ def bulk_email():
                 return jsonify({'success': False, 'error': 'Нет получателей для рассылки'}), 400
             
             # Генерируем HTML на основе выбранного шаблона
-            if email_template_type == 'learning_map_welcome':
+            if email_template_type == 'big_preparation':
+                html_content = generate_big_preparation_email(
+                    greeting_name=greeting_name,
+                    cta_url=cta_url
+                )
+            elif email_template_type == 'learning_map_welcome':
                 html_content = generate_learning_map_welcome_email(
                     greeting_name=greeting_name,
                     cta_url=cta_url,
@@ -353,6 +370,339 @@ def bulk_email():
                          users_with_marketing=users_with_marketing,
                          total_contacts=total_contacts,
                          all_users=all_users)
+
+def generate_big_preparation_email(greeting_name="there", cta_url="https://bigmentor.nl/en/learning-map"):
+    """Генерирует HTML шаблон письма 'Ready to Start Your BIG Preparation?'"""
+    
+    return f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ready to Start Your BIG Preparation?</title>
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #1f2937;
+            line-height: 1.6;
+        }}
+        
+        .container {{
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }}
+        
+        /* HEADER */
+        .header {{
+            background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+            padding: 40px 24px;
+            text-align: center;
+            color: white;
+        }}
+        
+        .logo {{
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }}
+        
+        .header-subtitle {{
+            font-size: 14px;
+            opacity: 0.95;
+            font-weight: 400;
+        }}
+        
+        /* MAIN CONTENT */
+        .content {{
+            padding: 40px 24px;
+        }}
+        
+        .greeting {{
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1f2937;
+        }}
+        
+        .intro-text {{
+            font-size: 15px;
+            color: #4b5563;
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }}
+        
+        /* PROBLEM SECTION */
+        .problem-section {{
+            background-color: #fef3f8;
+            border-left: 4px solid #EC4899;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 32px 0;
+            font-size: 14px;
+            color: #4b5563;
+            line-height: 1.7;
+        }}
+        
+        .problem-title {{
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }}
+        
+        /* SOLUTION SECTION */
+        .solution-section {{
+            margin: 40px 0;
+            padding: 24px;
+            background: linear-gradient(135deg, #f0f4ff 0%, #fef3f8 100%);
+            border-radius: 8px;
+            border-left: 4px solid #8B5CF6;
+        }}
+        
+        .solution-title {{
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }}
+        
+        .feature-list {{
+            display: grid;
+            gap: 14px;
+        }}
+        
+        .feature {{
+            display: flex;
+            gap: 12px;
+            font-size: 14px;
+            color: #374151;
+        }}
+        
+        .feature-icon {{
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8B5CF6;
+            font-weight: 700;
+        }}
+        
+        /* WHY NOW SECTION */
+        .why-now {{
+            background-color: #fef3f8;
+            padding: 24px;
+            border-radius: 8px;
+            margin: 32px 0;
+            border-left: 4px solid #EC4899;
+        }}
+        
+        .why-now-title {{
+            font-size: 14px;
+            font-weight: 600;
+            color: #EC4899;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }}
+        
+        .why-now-text {{
+            font-size: 14px;
+            color: #4b5563;
+            line-height: 1.7;
+        }}
+        
+        .highlight {{
+            font-weight: 600;
+            color: #1f2937;
+        }}
+        
+        /* CTA SECTION */
+        .cta-section {{
+            margin: 40px 0;
+            text-align: center;
+        }}
+        
+        .cta-button {{
+            display: inline-block;
+            background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%);
+            color: white;
+            padding: 16px 40px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }}
+        
+        .cta-button:hover {{
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+        }}
+        
+        .cta-secondary {{
+            display: block;
+            margin-top: 12px;
+            font-size: 14px;
+            color: #8B5CF6;
+            text-decoration: none;
+        }}
+        
+        /* SOCIAL PROOF */
+        .social-proof {{
+            margin: 32px 0;
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+        }}
+        
+        .proof-item {{
+            display: inline-block;
+            padding: 0 12px;
+        }}
+        
+        /* FOOTER */
+        .footer {{
+            background-color: #f9fafb;
+            padding: 24px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+        }}
+        
+        /* RESPONSIVE */
+        @media (max-width: 480px) {{
+            .content {{
+                padding: 24px 16px;
+            }}
+            
+            .greeting {{
+                font-size: 18px;
+            }}
+            
+            .cta-button {{
+                padding: 14px 32px;
+                font-size: 15px;
+                width: 100%;
+            }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo">Mentora</div>
+            <div class="header-subtitle">Your BIG Preparation Starts Here</div>
+        </div>
+        
+        <!-- MAIN CONTENT -->
+        <div class="content">
+            <div class="greeting">You're Ready to Begin 🚀</div>
+            
+            <div class="intro-text">
+                You created your Mentora account — that's the first step. Now comes the important part: actually starting to prepare for the BIG exam.
+                <br><br>
+                If you're thinking "where do I even begin?" or "there's so much material" — that's exactly why Mentora exists.
+            </div>
+            
+            <!-- THE PROBLEM -->
+            <div class="problem-section">
+                <div class="problem-title">Here's the reality:</div>
+                You need to pass a complex exam. There are thousands of questions. Limited exam spots. And you don't know where to start.
+                <br><br>
+                Most people try to study everything at once — and burn out in 2 weeks.
+            </div>
+            
+            <!-- THE SOLUTION -->
+            <div class="solution-section">
+                <div class="solution-title">Here's what Mentora does:</div>
+                <div class="feature-list">
+                    <div class="feature">
+                        <div class="feature-icon">1</div>
+                        <div><strong>Creates a personalized study plan</strong> based on your level — no guessing</div>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">2</div>
+                        <div><strong>Picks the right difficulty</strong> for each question — challenging but not overwhelming</div>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">3</div>
+                        <div><strong>Shows your progress daily</strong> — so you actually feel motivated to continue</div>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">4</div>
+                        <div><strong>Covers all areas:</strong> Tests, Medical Terminology, English Reading, Virtual Patients</div>
+                    </div>
+                    <div class="feature">
+                        <div class="feature-icon">5</div>
+                        <div><strong>Works in your language</strong> — 9 languages supported</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- WHY NOW -->
+            <div class="why-now">
+                <div class="why-now-title">⏰ Why Start Now?</div>
+                <div class="why-now-text">
+                    The sooner you start, the more time you have to practice. Most people who pass BIG didn't cram — they started early and built consistency.
+                    <br><br>
+                    Think about it: <span class="highlight">just 30 minutes a day, 5 days a week = 130 hours of study in 3 months.</span> That's the difference between passing and not passing.
+                </div>
+            </div>
+            
+            <!-- FIRST STEP -->
+            <div style="margin: 32px 0; padding: 20px; background-color: #f9fafb; border-radius: 6px; border: 1px dashed #d1d5db;">
+                <div style="font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 8px;">Your first step takes 15 minutes:</div>
+                <div style="font-size: 14px; color: #4b5563; line-height: 1.6;">
+                    1. Log in to your account<br>
+                    2. Take a quick diagnostic test<br>
+                    3. See your personalized learning plan<br>
+                    4. Start your first daily tasks
+                </div>
+            </div>
+            
+            <!-- CTA -->
+            <div class="cta-section">
+                <a href="{cta_url}" class="cta-button">Start Learning Now</a>
+                <a href="https://bigmentor.nl/en/login" class="cta-secondary">Log in to your account</a>
+            </div>
+            
+            <!-- SOCIAL PROOF -->
+            <div class="social-proof">
+                Users report:<br>
+                <div class="proof-item">✓ 1,200+ questions answered</div>
+                <div class="proof-item">✓ 250+ terms learned</div>
+                <div class="proof-item">✓ 8+ clinical scenarios</div>
+            </div>
+            
+            <!-- PS -->
+            <div style="margin-top: 32px; padding: 16px; background-color: #fef3f8; border-radius: 6px; font-size: 14px; color: #4b5563; border-left: 3px solid #8B5CF6;">
+                <strong>P.S.</strong> Still not sure? The best way to know if Mentora works for you is to try it. Log in, take one diagnostic test, see if it makes sense. That's 10 minutes. Worth trying, right?
+            </div>
+        </div>
+        
+        <!-- FOOTER -->
+        <div class="footer">
+            <p>Mentora — Platform for BIG Exam Preparation in the Netherlands</p>
+            <p style="margin-top: 12px; color: #9ca3af;">© 2025 Mentora. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>'''
 
 def generate_learning_map_welcome_email(greeting_name="there", cta_url="https://bigmentor.nl/en/learning-map", has_gif=False):
     """Генерирует HTML шаблон welcome email для карты обучения с GIF"""
