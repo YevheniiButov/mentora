@@ -1,0 +1,337 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Event Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .event-detail-card {
+        background: white;
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .event-header-detail {
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .event-title-detail {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .detail-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+    }
+    
+    .detail-value {
+        color: #6c757d;
+        word-break: break-word;
+    }
+    
+    .traceback-box {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        border-radius: 6px;
+        padding: 1.5rem;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        white-space: pre-wrap;
+        max-height: 500px;
+        overflow-y: auto;
+        margin-top: 0.5rem;
+    }
+    
+    .metadata-box {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 1rem;
+        font-family: monospace;
+        font-size: 0.85rem;
+        white-space: pre-wrap;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .severity-badge-large {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        text-transform: uppercase;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+    
+    .severity-critical { background: #dc3545; color: white; }
+    .severity-error { background: #fd7e14; color: white; }
+    .severity-warning { background: #ffc107; color: #212529; }
+    .severity-info { background: #17a2b8; color: white; }
+    
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .event-detail-card {
+            padding: 1rem;
+        }
+        
+        .event-title-detail {
+            font-size: 1.2rem;
+        }
+        
+        .detail-section {
+            margin-bottom: 1rem;
+        }
+        
+        .traceback-box {
+            font-size: 0.75rem;
+            padding: 1rem;
+            max-height: 300px;
+        }
+        
+        .metadata-box {
+            font-size: 0.75rem;
+            padding: 0.75rem;
+            max-height: 200px;
+        }
+        
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .d-flex.justify-content-between > div {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">📋 Event Details</h1>
+                <div>
+                    <a href="{{ url_for('monitoring.events') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Events
+                    </a>
+                </div>
+            </div>
+            
+            {% if error %}
+            <div class="alert alert-danger">
+                <strong>Error:</strong> {{ error }}
+            </div>
+            {% elif event %}
+            <div class="event-detail-card">
+                <div class="event-header-detail">
+                    <span class="severity-badge-large severity-{{ event.severity }}">{{ event.severity }}</span>
+                    <div class="event-title-detail">{{ event.title }}</div>
+                    <div class="text-muted">
+                        <i class="bi bi-clock"></i> {{ event.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') if event.created_at else 'N/A' }}
+                        {% if event.resolved %}
+                        | <span class="text-success"><i class="bi bi-check-circle"></i> Resolved</span>
+                        {% if event.resolved_at %}
+                        on {{ event.resolved_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-section">
+                            <div class="detail-label">Event Type</div>
+                            <div class="detail-value">
+                                <span class="badge bg-secondary">{{ event.event_type }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-section">
+                            <div class="detail-label">Severity</div>
+                            <div class="detail-value">
+                                <span class="severity-badge-large severity-{{ event.severity }}">{{ event.severity }}</span>
+                            </div>
+                        </div>
+                        
+                        {% if event.user_email or event.user_id %}
+                        <div class="detail-section">
+                            <div class="detail-label">User</div>
+                            <div class="detail-value">
+                                {% if event.user_email %}
+                                <i class="bi bi-person"></i> {{ event.user_email }}
+                                {% endif %}
+                                {% if event.user_id %}
+                                (ID: {{ event.user_id }})
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if event.ip_address %}
+                        <div class="detail-section">
+                            <div class="detail-label">IP Address</div>
+                            <div class="detail-value">{{ event.ip_address }}</div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if event.request_url %}
+                        <div class="detail-section">
+                            <div class="detail-label">Request URL</div>
+                            <div class="detail-value">
+                                <a href="{{ event.request_url }}" target="_blank">{{ event.request_url }}</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if event.request_method %}
+                        <div class="detail-section">
+                            <div class="detail-label">Request Method</div>
+                            <div class="detail-value">{{ event.request_method }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-md-6">
+                        {% if event.user_agent %}
+                        <div class="detail-section">
+                            <div class="detail-label">User Agent</div>
+                            <div class="detail-value" style="font-size: 0.85rem;">{{ event.user_agent }}</div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="detail-section">
+                            <div class="detail-label">Email Notification</div>
+                            <div class="detail-value">
+                                {% if event.email_sent %}
+                                <span class="badge bg-success">Sent</span>
+                                {% if event.email_sent_at %}
+                                on {{ event.email_sent_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}
+                                {% endif %}
+                                {% else %}
+                                <span class="badge bg-secondary">Not Sent</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        {% if event.resolved %}
+                        <div class="detail-section">
+                            <div class="detail-label">Resolved By</div>
+                            <div class="detail-value">
+                                {% if event.resolver %}
+                                {{ event.resolver.email }} (ID: {{ event.resolved_by }})
+                                {% else %}
+                                User ID: {{ event.resolved_by }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if event.message %}
+                <div class="detail-section">
+                    <div class="detail-label">Message</div>
+                    <div class="detail-value" style="background: #f8f9fa; padding: 1rem; border-radius: 6px; white-space: pre-wrap;">{{ event.message }}</div>
+                </div>
+                {% endif %}
+                
+                {% if event.error_traceback %}
+                <div class="detail-section">
+                    <div class="detail-label">Error Traceback</div>
+                    <div class="traceback-box">{{ event.error_traceback }}</div>
+                </div>
+                {% endif %}
+                
+                {% if event.get_metadata() %}
+                <div class="detail-section">
+                    <div class="detail-label">Metadata</div>
+                    <div class="metadata-box">{{ event.get_metadata() | tojson }}</div>
+                </div>
+                {% endif %}
+                
+                <div class="mt-4 pt-3 border-top">
+                    {% if not event.resolved %}
+                    <button class="btn btn-success" onclick="resolveEvent({{ event.id }})">
+                        <i class="bi bi-check-circle"></i> Mark as Resolved
+                    </button>
+                    {% else %}
+                    <button class="btn btn-warning" onclick="unresolveEvent({{ event.id }})">
+                        <i class="bi bi-x-circle"></i> Mark as Unresolved
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i> Event not found.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function resolveEvent(eventId) {
+    if (!confirm('Mark this event as resolved?')) return;
+    
+    fetch(`/admin/monitoring/events/${eventId}/resolve`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to resolve event'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to resolve event');
+    });
+}
+
+function unresolveEvent(eventId) {
+    if (!confirm('Mark this event as unresolved?')) return;
+    
+    fetch(`/admin/monitoring/events/${eventId}/unresolve`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + (data.error || 'Failed to unresolve event'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to unresolve event');
+    });
+}
+</script>
+{% endblock %}
+

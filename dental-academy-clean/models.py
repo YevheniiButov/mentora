@@ -6617,3 +6617,70 @@ class UserItemMastery(db.Model):
     def __repr__(self):
         status = '✓' if self.mastered_at else '…'
         return f'<UserItemMastery user={self.user_id} {self.item_type}:{self.item_id} {status}>'
+
+
+# ========================================
+# SYSTEM MONITORING & EVENTS
+# ========================================
+
+class SystemEvent(db.Model, JSONSerializableMixin):
+    """System events and errors for monitoring and notifications"""
+    __tablename__ = 'system_events'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    event_type = db.Column(db.String(50), nullable=False, index=True)  # 'error', 'login', 'registration', 'warning', 'info'
+    severity = db.Column(db.String(20), nullable=False, index=True)  # 'critical', 'error', 'warning', 'info'
+    title = db.Column(db.String(255), nullable=False)
+    message = db.Column(db.Text, nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True, index=True)
+    user_email = db.Column(db.String(120), nullable=True, index=True)  # Store email for deleted users
+    ip_address = db.Column(db.String(45), nullable=True)  # IPv4 or IPv6
+    user_agent = db.Column(db.String(500), nullable=True)
+    request_url = db.Column(db.String(500), nullable=True)
+    request_method = db.Column(db.String(10), nullable=True)
+    error_traceback = db.Column(db.Text, nullable=True)  # Full traceback for errors
+    event_metadata = db.Column(db.Text, nullable=True)  # JSON with additional data (renamed from metadata - reserved in SQLAlchemy)
+    email_sent = db.Column(db.Boolean, default=False)  # Whether notification email was sent
+    email_sent_at = db.Column(db.DateTime, nullable=True)
+    resolved = db.Column(db.Boolean, default=False)  # Mark as resolved by admin
+    resolved_at = db.Column(db.DateTime, nullable=True)
+    resolved_by = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    
+    user = db.relationship('User', foreign_keys=[user_id], backref='system_events')
+    resolver = db.relationship('User', foreign_keys=[resolved_by])
+    
+    def get_metadata(self):
+        """Get metadata as dict"""
+        if self.event_metadata:
+            try:
+                return json.loads(self.event_metadata)
+            except:
+                return {}
+        return {}
+    
+    def set_metadata(self, data):
+        """Set metadata from dict"""
+        self.event_metadata = safe_json_dumps(data) if data else None
+    
+    def to_dict(self):
+        """Convert to dictionary for JSON serialization"""
+        return {
+            'id': self.id,
+            'event_type': self.event_type,
+            'severity': self.severity,
+            'title': self.title,
+            'message': self.message,
+            'user_id': self.user_id,
+            'user_email': self.user_email,
+            'ip_address': self.ip_address,
+            'request_url': self.request_url,
+            'request_method': self.request_method,
+            'email_sent': self.email_sent,
+            'resolved': self.resolved,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'metadata': self.get_metadata()
+        }
+    
+    def __repr__(self):
+        return f'<SystemEvent {self.event_type} {self.severity}: {self.title[:50]}>'

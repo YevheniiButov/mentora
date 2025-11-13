@@ -947,6 +947,42 @@ def not_found_error(error):
 def internal_error(error):
     """Handle 500 errors"""
     db.session.rollback()
+    
+    # Логируем критическую ошибку в систему мониторинга
+    try:
+        from utils.system_monitor import log_error
+        log_error(
+            title=f"Internal Server Error: {request.path}",
+            message=str(error),
+            exception=error,
+            send_email=True
+        )
+    except Exception as e:
+        logger.error(f"Failed to log 500 error to system monitor: {e}")
+    
+    return render_template('errors/500.html'), 500
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """Handle all unhandled exceptions"""
+    db.session.rollback()
+    
+    # Логируем ошибку в систему мониторинга
+    try:
+        from utils.system_monitor import log_error
+        log_error(
+            title=f"Unhandled Exception: {type(e).__name__}",
+            message=str(e),
+            exception=e,
+            send_email=True
+        )
+    except Exception as log_error:
+        logger.error(f"Failed to log exception to system monitor: {log_error}")
+    
+    # Если это не критическая ошибка, просто логируем
+    logger.error(f"Unhandled exception: {e}", exc_info=True)
+    
+    # Возвращаем стандартную страницу ошибки
     return render_template('errors/500.html'), 500
 
 # ========================================

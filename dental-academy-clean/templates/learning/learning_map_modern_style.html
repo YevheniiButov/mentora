@@ -7679,7 +7679,8 @@
                     if (task.type === 'big_test') {
                         return '60 vragen uit laatste 2 weken';
                     } else if (task.type === 'diagnostic_test') {
-                        return task.title.includes('Intensief') ? '20 adaptieve vragen' : '10 adaptieve vragen';
+                        // Используем task.target для динамического отображения количества вопросов
+                        return `${task.target || 10} adaptieve vragen`;
                     } else if (task.type === 'flashcards') {
                         return `${task.target} medische woorden`;
                     } else if (task.type === 'virtual_patient') {

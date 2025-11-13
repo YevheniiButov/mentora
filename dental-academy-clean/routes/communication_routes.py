@@ -681,14 +681,6 @@ def generate_big_preparation_email(greeting_name="there", cta_url="https://bigme
                 <a href="https://bigmentor.nl/login/auth/login" class="cta-secondary">Log in to your account</a>
             </div>
             
-            <!-- SOCIAL PROOF -->
-            <div class="social-proof">
-                Users report:<br>
-                <div class="proof-item">✓ 1,200+ questions answered</div>
-                <div class="proof-item">✓ 250+ terms learned</div>
-                <div class="proof-item">✓ 8+ clinical scenarios</div>
-            </div>
-            
             <!-- PS -->
             <div style="margin-top: 32px; padding: 16px; background-color: #fef3f8; border-radius: 6px; font-size: 14px; color: #4b5563; border-left: 3px solid #8B5CF6;">
                 <strong>P.S.</strong> Still not sure? The best way to know if Mentora works for you is to try it. Log in, take one diagnostic test, see if it makes sense. That's 10 minutes. Worth trying, right?

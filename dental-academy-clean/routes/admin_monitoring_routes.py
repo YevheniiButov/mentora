@@ -5,9 +5,10 @@ Admin monitoring routes for registration logs and system health
 from flask import Blueprint, render_template, request, jsonify, current_app
 from flask_login import login_required, current_user
 from utils.decorators import admin_required
+from models import SystemEvent, db
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import re
 
 # Create blueprint for monitoring
@@ -522,3 +523,167 @@ def _mark_notification_read(notification_id):
     
     except Exception as e:
         current_app.logger.error(f"Error marking notification as read: {str(e)}")
+
+
+# ========================================
+# SYSTEM EVENTS ROUTES (NEW MONITORING SYSTEM)
+# ========================================
+
+@monitoring_bp.route('/events')
+@login_required
+@admin_required
+def events():
+    """View system events from database"""
+    try:
+        event_type = request.args.get('type', 'all')  # all, error, login, registration, warning, info
+        severity = request.args.get('severity', 'all')  # all, critical, error, warning, info
+        resolved = request.args.get('resolved', 'all')  # all, true, false
+        search = request.args.get('search', '').strip()
+        page = request.args.get('page', 1, type=int)
+        per_page = 50
+        
+        # Build query
+        query = SystemEvent.query
+        
+        # Filter by event type
+        if event_type != 'all':
+            query = query.filter(SystemEvent.event_type == event_type)
+        
+        # Filter by severity
+        if severity != 'all':
+            query = query.filter(SystemEvent.severity == severity)
+        
+        # Filter by resolved status
+        if resolved == 'true':
+            query = query.filter(SystemEvent.resolved == True)
+        elif resolved == 'false':
+            query = query.filter(SystemEvent.resolved == False)
+        
+        # Search filter
+        if search:
+            query = query.filter(
+                db.or_(
+                    SystemEvent.title.ilike(f'%{search}%'),
+                    SystemEvent.message.ilike(f'%{search}%'),
+                    SystemEvent.user_email.ilike(f'%{search}%')
+                )
+            )
+        
+        # Order by created_at desc
+        query = query.order_by(SystemEvent.created_at.desc())
+        
+        # Pagination
+        total_events = query.count()
+        events = query.offset((page - 1) * per_page).limit(per_page).all()
+        
+        total_pages = (total_events + per_page - 1) // per_page
+        
+        return render_template('admin/monitoring/events.html',
+                             events=events,
+                             event_type=event_type,
+                             severity=severity,
+                             resolved=resolved,
+                             search=search,
+                             page=page,
+                             total_pages=total_pages,
+                             total_events=total_events)
+    
+    except Exception as e:
+        current_app.logger.error(f"Error loading system events: {str(e)}")
+        return render_template('admin/monitoring/events.html',
+                             events=[],
+                             error=str(e))
+
+@monitoring_bp.route('/events/<int:event_id>')
+@login_required
+@admin_required
+def event_detail(event_id):
+    """View detailed information about a specific event"""
+    try:
+        event = SystemEvent.query.get_or_404(event_id)
+        return render_template('admin/monitoring/event_detail.html', event=event)
+    except Exception as e:
+        current_app.logger.error(f"Error loading event detail: {str(e)}")
+        return render_template('admin/monitoring/event_detail.html',
+                             event=None,
+                             error=str(e))
+
+@monitoring_bp.route('/events/<int:event_id>/resolve', methods=['POST'])
+@login_required
+@admin_required
+def resolve_event(event_id):
+    """Mark event as resolved"""
+    try:
+        event = SystemEvent.query.get_or_404(event_id)
+        event.resolved = True
+        event.resolved_at = datetime.now(timezone.utc)
+        event.resolved_by = current_user.id
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Event marked as resolved'})
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error resolving event: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@monitoring_bp.route('/events/<int:event_id>/unresolve', methods=['POST'])
+@login_required
+@admin_required
+def unresolve_event(event_id):
+    """Mark event as unresolved"""
+    try:
+        event = SystemEvent.query.get_or_404(event_id)
+        event.resolved = False
+        event.resolved_at = None
+        event.resolved_by = None
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Event marked as unresolved'})
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error unresolving event: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@monitoring_bp.route('/api/events/stats')
+@login_required
+@admin_required
+def api_events_stats():
+    """Get statistics about system events"""
+    try:
+        from sqlalchemy import func
+        
+        # Get stats for last 24 hours
+        cutoff_time = datetime.now(timezone.utc) - timedelta(hours=24)
+        
+        stats = {
+            'total_events': SystemEvent.query.filter(SystemEvent.created_at >= cutoff_time).count(),
+            'critical_errors': SystemEvent.query.filter(
+                SystemEvent.severity == 'critical',
+                SystemEvent.created_at >= cutoff_time
+            ).count(),
+            'errors': SystemEvent.query.filter(
+                SystemEvent.severity == 'error',
+                SystemEvent.created_at >= cutoff_time
+            ).count(),
+            'warnings': SystemEvent.query.filter(
+                SystemEvent.severity == 'warning',
+                SystemEvent.created_at >= cutoff_time
+            ).count(),
+            'logins': SystemEvent.query.filter(
+                SystemEvent.event_type == 'login',
+                SystemEvent.created_at >= cutoff_time
+            ).count(),
+            'registrations': SystemEvent.query.filter(
+                SystemEvent.event_type == 'registration',
+                SystemEvent.created_at >= cutoff_time
+            ).count(),
+            'unresolved_critical': SystemEvent.query.filter(
+                SystemEvent.severity.in_(['critical', 'error']),
+                SystemEvent.resolved == False
+            ).count()
+        }
+        
+        return jsonify({'success': True, 'stats': stats})
+    except Exception as e:
+        current_app.logger.error(f"Error getting events stats: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500

@@ -587,6 +587,13 @@ def login(lang=None):
             user.last_login = datetime.now(timezone.utc)
             db.session.commit()
             
+            # Логируем успешный вход
+            try:
+                from utils.system_monitor import log_user_login
+                log_user_login(user.id, user.email, success=True)
+            except Exception as e:
+                current_app.logger.error(f"Failed to log user login: {e}")
+            
             # Check if profile is complete
             if not user.registration_completed:
                 # Force profile completion for new users
@@ -620,6 +627,13 @@ def login(lang=None):
                 'redirect_url': redirect_url
             })
         else:
+            # Логируем неудачную попытку входа
+            try:
+                from utils.system_monitor import log_user_login
+                log_user_login(None, email, success=False, error_message='Invalid email or password')
+            except Exception as e:
+                current_app.logger.error(f"Failed to log failed login: {e}")
+            
             return jsonify({
                 'success': False,
                 'error': 'Invalid email or password'
@@ -1164,6 +1178,13 @@ def quick_register(lang=None):
         except Exception as e:
             safe_log('log_database_error', 'quick_registration', 'create_user', str(e), data)
             raise
+        
+        # Логируем регистрацию нового пользователя
+        try:
+            from utils.system_monitor import log_user_registration
+            log_user_registration(user.id, user.email, registration_method='email')
+        except Exception as e:
+            current_app.logger.error(f"Failed to log user registration: {e}")
         
         # ✅ Отправляем welcome email с данными для входа
         try:
