@@ -323,118 +323,6 @@
             max-width: 100%;
         }
         
-        /* Quick Actions Button */
-        .quick-actions-btn {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            width: 56px;
-            height: 56px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #3ECDC1, #2dd4bf);
-            color: white;
-            border: none;
-            box-shadow: 0 8px 24px rgba(62, 205, 193, 0.4);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            z-index: 9998;
-            transition: all 0.3s ease;
-        }
-        
-        .quick-actions-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 12px 32px rgba(62, 205, 193, 0.5);
-        }
-        
-        .quick-actions-btn.active {
-            transform: rotate(45deg);
-        }
-        
-        /* Quick Actions Menu */
-        .quick-actions-menu {
-            position: fixed;
-            bottom: 90px;
-            right: 24px;
-            background: var(--card-bg);
-            border-radius: 16px;
-            box-shadow: 0 12px 40px var(--shadow-color);
-            padding: 12px;
-            min-width: 200px;
-            z-index: 9997;
-            display: none;
-            flex-direction: column;
-            gap: 8px;
-            border: 1px solid var(--border-color);
-            animation: slideUp 0.3s ease-out;
-        }
-        
-        .quick-actions-menu.show {
-            display: flex;
-        }
-        
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .quick-action-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            border-radius: 10px;
-            color: var(--text-primary);
-            text-decoration: none;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            border: none;
-            background: transparent;
-            width: 100%;
-            text-align: left;
-        }
-        
-        .quick-action-item:hover {
-            background: rgba(62, 205, 193, 0.1);
-            transform: translateX(4px);
-        }
-        
-        .quick-action-item i {
-            width: 20px;
-            font-size: 18px;
-            color: var(--primary-color);
-        }
-        
-        .quick-action-item span {
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        /* Mobile adjustments */
-        @media (max-width: 768px) {
-            .quick-actions-btn {
-                bottom: 80px;
-                right: 16px;
-                width: 52px;
-                height: 52px;
-            }
-            
-            .quick-actions-menu {
-                bottom: 140px;
-                right: 16px;
-                left: 16px;
-                min-width: auto;
-            }
-        }
-        
         /* Dark theme adjustments for header */
         [data-theme="dark"] header.modern-header {
             background: rgba(42, 58, 79, 0.95) !important; /* Светлее чем было */
@@ -5152,8 +5040,11 @@
 </head>
 <body>
     <!-- PWA Install Banner - показывается только на мобильных и только если не установлено -->
-    <div id="pwa-install-banner" class="pwa-install-banner">
-        <button class="pwa-close-btn" onclick="dismissPWAInstallBanner()" aria-label="Закрыть">
+    <div id="pwa-install-banner" class="pwa-install-banner" 
+         data-lang="{{ lang }}"
+         data-ios-install-text="{{ t('ios_install_instructions', lang)|default('To install the app:\n1. Tap the Share button\n2. Select \"Add to Home Screen\"') }}"
+         data-browser-install-text="{{ t('browser_install_available', lang)|default('Installation available through browser menu') }}">
+        <button class="pwa-close-btn" onclick="dismissPWAInstallBanner()" aria-label="{{ t('close', lang)|default('Close') }}">
             <i class="bi bi-x"></i>
         </button>
         <div class="pwa-install-banner-content">
@@ -5161,10 +5052,10 @@
                 <i class="bi bi-download"></i>
             </div>
             <div class="pwa-install-banner-text">
-                <div class="pwa-install-banner-title">Установить приложение</div>
-                <div class="pwa-install-banner-description">Добавьте Mentora на главный экран для быстрого доступа</div>
+                <div class="pwa-install-banner-title">{{ t('install_app', lang)|default('Install App') }}</div>
+                <div class="pwa-install-banner-description">{{ t('add_mentora_to_home_screen', lang)|default('Add Mentora to your home screen for quick access') }}</div>
                 <div class="pwa-install-banner-actions">
-                    <button class="pwa-install-btn" onclick="installPWA()">Установить</button>
+                    <button class="pwa-install-btn" onclick="installPWA()">{{ t('install', lang)|default('Install') }}</button>
                 </div>
             </div>
         </div>
@@ -9057,10 +8948,14 @@
         function installPWA() {
             if (!deferredPrompt) {
                 // Если нет deferredPrompt, показываем инструкции для iOS
+                const banner = document.getElementById('pwa-install-banner');
+                const iosText = banner ? banner.getAttribute('data-ios-install-text') : 'To install the app:\n1. Tap the Share button\n2. Select "Add to Home Screen"';
+                const browserText = banner ? banner.getAttribute('data-browser-install-text') : 'Installation available through browser menu';
+                
                 if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-                    alert('Для установки приложения:\n1. Нажмите кнопку "Поделиться"\n2. Выберите "На экран «Домой»"');
+                    alert(iosText);
                 } else {
-                    alert('Установка доступна через меню браузера');
+                    alert(browserText);
                 }
                 dismissPWAInstallBanner();
                 return;
@@ -9277,72 +9172,6 @@
             }
         }
         
-        // ===== QUICK ACTIONS =====
-        function toggleQuickActions() {
-            const menu = document.getElementById('quick-actions-menu');
-            const btn = document.getElementById('quick-actions-btn');
-            
-            if (!menu || !btn) return;
-            
-            if (menu.classList.contains('show')) {
-                menu.classList.remove('show');
-                btn.classList.remove('active');
-            } else {
-                menu.classList.add('show');
-                btn.classList.add('active');
-            }
-        }
-        
-        function closeQuickActions() {
-            const menu = document.getElementById('quick-actions-menu');
-            const btn = document.getElementById('quick-actions-btn');
-            if (menu) menu.classList.remove('show');
-            if (btn) btn.classList.remove('active');
-        }
-        
-        // Close quick actions when clicking outside
-        document.addEventListener('click', function(e) {
-            const menu = document.getElementById('quick-actions-menu');
-            const btn = document.getElementById('quick-actions-btn');
-            
-            if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
-                closeQuickActions();
-            }
-        });
-        
-        // Quick action functions
-        function quickActionDiagnostic() {
-            closeQuickActions();
-            window.location.href = '/{{ lang }}/big-diagnostic/start';
-        }
-        
-        function quickActionToday() {
-            closeQuickActions();
-            // Scroll to today's tasks
-            const todaySection = document.querySelector('[data-section="today"]');
-            if (todaySection) {
-                todaySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else {
-                // Try to find progress tab
-                const progressTab = document.querySelector('[data-tab="progress"]');
-                if (progressTab) progressTab.click();
-            }
-        }
-        
-        function quickActionStats() {
-            closeQuickActions();
-            // Open stats tab
-            const statsTab = document.querySelector('[data-tab="progress"]');
-            if (statsTab) {
-                statsTab.click();
-            }
-        }
-        
-        function quickActionExport() {
-            closeQuickActions();
-            exportStatistics();
-        }
-        
         // ===== STREAK COUNTER ENHANCEMENT =====
         function enhanceStreakCounter() {
             const streakWidget = document.querySelector('.streak-widget');
@@ -9424,7 +9253,7 @@
                             email: '{{ current_user.email if current_user.is_authenticated else "" }}'
                         },
                         statistics: {
-                            note: 'Полная статистика доступна после авторизации'
+                            note: '{{ t("full_statistics_available_after_auth", lang)|default("Full statistics available after authentication") }}'
                         }
                     };
                 }
@@ -9451,39 +9280,15 @@
                 // Simple success notification
                 const notification = document.createElement('div');
                 notification.style.cssText = 'position:fixed;top:20px;right:20px;background:#10b981;color:white;padding:12px 20px;border-radius:8px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,0.15);';
-                notification.textContent = '✓ Статистика экспортирована!';
+                notification.textContent = '✓ {{ t("statistics_exported", lang)|default("Statistics exported!") }}';
                 document.body.appendChild(notification);
                 setTimeout(() => notification.remove(), 3000);
             } catch (error) {
                 console.error('Export error:', error);
-                alert('Ошибка при экспорте статистики. Попробуйте позже.');
+                const errorText = '{{ t("export_statistics_error", lang)|default("Error exporting statistics. Please try again later.") }}';
+                alert(errorText);
             }
         }
     </script>
-    
-    <!-- Quick Actions Floating Button -->
-    <button class="quick-actions-btn" id="quick-actions-btn" onclick="toggleQuickActions()" aria-label="Быстрые действия">
-        <i class="bi bi-plus-lg"></i>
-    </button>
-    
-    <!-- Quick Actions Menu -->
-    <div class="quick-actions-menu" id="quick-actions-menu">
-        <button class="quick-action-item" onclick="quickActionDiagnostic()">
-            <i class="bi bi-clipboard-pulse"></i>
-            <span>Диагностика</span>
-        </button>
-        <button class="quick-action-item" onclick="quickActionToday()">
-            <i class="bi bi-calendar-day"></i>
-            <span>Сегодняшние задания</span>
-        </button>
-        <button class="quick-action-item" onclick="quickActionStats()">
-            <i class="bi bi-graph-up"></i>
-            <span>Статистика</span>
-        </button>
-        <button class="quick-action-item" onclick="quickActionExport()">
-            <i class="bi bi-download"></i>
-            <span>Экспорт данных</span>
-        </button>
-    </div>
 </body>
 </html>
