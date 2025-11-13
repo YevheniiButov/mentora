@@ -1311,10 +1311,17 @@ def check_all_tasks_completed_today(user):
     tasks_data = get_daily_tasks(user.id, study_day=None)
     tasks = tasks_data.get('tasks', [])
     
+    # Логирование для отладки
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"check_all_tasks_completed_today for user {user.id}: tasks_count={len(tasks)}, today={today.isoformat()}")
+    
     if not tasks:
+        logger.warning(f"⚠️ No tasks found for user {user.id} today")
         return False
     
     # Проверяем каждую задачу
+    incomplete_tasks = []
     for task in tasks:
         task_type = task.get('type')
         target = task.get('target', 0)
@@ -1327,11 +1334,20 @@ def check_all_tasks_completed_today(user):
                 DiagnosticSession.started_at >= today_start,
                 DiagnosticSession.started_at < today_end
             ).all()
-            tests_completed = len([t for t in tests_today if (
+            
+            # Для всех типов тестов проверяем количество вопросов, а не сессий
+            # Это более логично: если пользователь прошел 20 вопросов в одной сессии,
+            # а требуется 10 вопросов, то задача выполнена
+            completed_tests = [t for t in tests_today if (
                 getattr(t, 'status', None) == 'completed' or 
                 getattr(t, 'completed_at', None) is not None
-            )])
-            if tests_completed < target:
+            )]
+            questions_completed = sum(getattr(t, 'questions_answered', 0) for t in completed_tests)
+            
+            if questions_completed < target:
+                task_name = 'big_test' if task_type == 'big_test' else 'test'
+                incomplete_tasks.append(f"{task_name}: {questions_completed}/{target} questions")
+                logger.info(f"  ❌ {task_name.capitalize()} incomplete: {questions_completed}/{target} questions")
                 return False
         
         elif task_type == 'terms' or task_type == 'flashcards':
@@ -1342,6 +1358,8 @@ def check_all_tasks_completed_today(user):
             ).first()
             terms_completed = flashcard_today.terms_studied if flashcard_today else 0
             if terms_completed < target:
+                incomplete_tasks.append(f"terms: {terms_completed}/{target}")
+                logger.info(f"  ❌ Terms incomplete: {terms_completed}/{target}")
                 return False
         
         elif task_type == 'virtual_patient':
@@ -1353,6 +1371,8 @@ def check_all_tasks_completed_today(user):
             ).all()
             vp_completed = len([v for v in vp_today if getattr(v, 'completed', False)])
             if vp_completed < target:
+                incomplete_tasks.append(f"vp: {vp_completed}/{target}")
+                logger.info(f"  ❌ VP incomplete: {vp_completed}/{target}")
                 return False
         
         elif task_type == 'english' or task_type == 'english_reading':
@@ -1364,12 +1384,15 @@ def check_all_tasks_completed_today(user):
             ).all()
             english_completed = len(english_today)
             if english_completed < target:
+                incomplete_tasks.append(f"english: {english_completed}/{target}")
+                logger.info(f"  ❌ English incomplete: {english_completed}/{target}")
                 return False
         
         elif task_type == 'memory_game':
             # Игра "память" отслеживается на клиенте, считаем выполненной если другие задачи выполнены
             pass
     
+    logger.info(f"✅ All tasks completed for user {user.id} today")
     return True
 
 
@@ -1479,6 +1502,11 @@ def update_study_day_count(user):
     # Проверяем, выполнены ли все задачи сегодня
     all_completed = check_all_tasks_completed_today(user)
     
+    # Логирование для отладки
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"update_study_day_count for user {user.id}: current_day={current_study_day}, all_completed={all_completed}")
+    
     # Получаем информацию о первом успешном дне
     study_data = plan.get_domain_analysis()
     if study_data and isinstance(study_data, dict):
@@ -1495,41 +1523,73 @@ def update_study_day_count(user):
     else:
         first_successful_day = None
     
-    # Если все задачи выполнены сегодня и это новый успешный день
+    # Используем UTC для консистентности с check_all_tasks_completed_today
+    today = datetime.now(timezone.utc).date()
+    yesterday = today - timedelta(days=1)
+    
+    # Если все задачи выполнены сегодня - сохраняем дату выполнения
     if all_completed:
-        today = date.today()
+        # Сохраняем дату, когда все задачи были выполнены
+        if not study_data:
+            study_data = {}
+        if '_study_day_data' not in study_data:
+            study_data['_study_day_data'] = {}
         
-        # Проверяем, не был ли сегодняшний день уже засчитан
-        # (чтобы не увеличивать счетчик несколько раз за день)
-        last_successful_date_str = None
-        if study_data and isinstance(study_data, dict):
-            study_day_data = study_data.get('_study_day_data', {})
-            last_successful_date_str = study_day_data.get('last_successful_date')
-        
-        if not last_successful_date_str or last_successful_date_str != today.isoformat():
-            # Увеличиваем счетчик дней учебы
-            new_study_day = current_study_day + 1
-            
-            # Сохраняем в daily_goal_met_count (временное решение)
-            plan.daily_goal_met_count = new_study_day
-            
-            # Сохраняем в domain_analysis
-            if not study_data:
-                study_data = {}
-            if '_study_day_data' not in study_data:
-                study_data['_study_day_data'] = {}
-            
-            study_data['_study_day_data']['study_day_count'] = new_study_day
-            study_data['_study_day_data']['last_successful_date'] = today.isoformat()
-            
-            if not first_successful_day:
-                first_successful_day = today
-                study_data['_study_day_data']['first_successful_day'] = today.isoformat()
-            
+        # Сохраняем дату выполнения задач (если еще не сохранена)
+        tasks_completed_date_str = study_data['_study_day_data'].get('tasks_completed_date')
+        if not tasks_completed_date_str or tasks_completed_date_str != today.isoformat():
+            study_data['_study_day_data']['tasks_completed_date'] = today.isoformat()
             plan.set_domain_analysis(study_data)
             db.session.commit()
-            
-            current_study_day = new_study_day
+            logger.info(f"✅ Tasks completed date saved for user {user.id}: {today.isoformat()}")
+    
+    # Проверяем, нужно ли обновить день обучения
+    # День обновляется только когда:
+    # 1. Наступила полночь UTC (сегодня > вчера, т.е. таймер дошел до 00:00:00)
+    # 2. Вчера все задачи были выполнены (tasks_completed_date = вчера)
+    # 3. День еще не был обновлен на основе вчерашнего выполнения
+    if study_data and isinstance(study_data, dict):
+        study_day_data = study_data.get('_study_day_data', {})
+        tasks_completed_date_str = study_day_data.get('tasks_completed_date')
+        last_successful_date_str = study_day_data.get('last_successful_date')
+        
+        # Проверяем, были ли вчера выполнены все задачи
+        # И проверяем, что сегодня уже наступило (таймер дошел до нуля)
+        if tasks_completed_date_str == yesterday.isoformat():
+            # Проверяем, не был ли день уже обновлен на основе вчерашнего выполнения
+            # last_successful_date должен быть меньше сегодняшней даты (т.е. обновление еще не произошло)
+            if not last_successful_date_str or last_successful_date_str < today.isoformat():
+                # Увеличиваем счетчик дней учебы
+                new_study_day = current_study_day + 1
+                
+                # Сохраняем в daily_goal_met_count (временное решение)
+                plan.daily_goal_met_count = new_study_day
+                
+                # Сохраняем в domain_analysis
+                if not study_data:
+                    study_data = {}
+                if '_study_day_data' not in study_data:
+                    study_data['_study_day_data'] = {}
+                
+                study_data['_study_day_data']['study_day_count'] = new_study_day
+                study_data['_study_day_data']['last_successful_date'] = today.isoformat()  # Сохраняем сегодняшнюю дату как дату обновления
+                
+                if not first_successful_day:
+                    first_successful_day = yesterday
+                    study_data['_study_day_data']['first_successful_day'] = yesterday.isoformat()
+                
+                plan.set_domain_analysis(study_data)
+                db.session.commit()
+                
+                logger.info(f"✅ Study day updated for user {user.id}: {current_study_day} -> {new_study_day}, at midnight UTC (yesterday tasks completed: {yesterday.isoformat()})")
+                current_study_day = new_study_day
+            else:
+                logger.info(f"⚠️ Study day already updated for user {user.id} today (last_successful_date={last_successful_date_str})")
+        else:
+            if tasks_completed_date_str:
+                logger.info(f"⚠️ Tasks were completed on {tasks_completed_date_str}, but not yesterday ({yesterday.isoformat()}) for user {user.id}, day not updated")
+            else:
+                logger.info(f"⚠️ No tasks completed date found for user {user.id}, day not updated")
     
     # Получаем информацию о цикле
     cycle_info = get_cycle_info(current_study_day)

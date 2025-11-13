@@ -678,7 +678,7 @@ def generate_big_preparation_email(greeting_name="there", cta_url="https://bigme
             <!-- CTA -->
             <div class="cta-section">
                 <a href="{cta_url}" class="cta-button">Start Learning Now</a>
-                <a href="https://bigmentor.nl/en/login" class="cta-secondary">Log in to your account</a>
+                <a href="https://bigmentor.nl/login/auth/login" class="cta-secondary">Log in to your account</a>
             </div>
             
             <!-- SOCIAL PROOF -->

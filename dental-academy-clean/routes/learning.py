@@ -50,17 +50,19 @@ def get_daily_tasks(user_id, study_day=None):
     today_end = today_start + timedelta(days=1)
     
     # Check what user completed today
-    # Diagnostic tests
+    # Diagnostic tests - считаем количество вопросов, а не сессий
     tests_today = DiagnosticSession.query.filter(
         DiagnosticSession.user_id == user_id,
         DiagnosticSession.started_at >= today_start,
         DiagnosticSession.started_at < today_end
     ).all()
-    # Check if session is completed (either by status='completed' or completed_at is set)
-    tests_completed = len([t for t in tests_today if (
+    # Считаем количество вопросов в завершенных сессиях
+    completed_tests = [t for t in tests_today if (
         getattr(t, 'status', None) == 'completed' or 
         getattr(t, 'completed_at', None) is not None
-    )])
+    )]
+    questions_completed = sum(getattr(t, 'questions_answered', 0) for t in completed_tests)
+    tests_completed = len(completed_tests)  # Количество сессий (для обратной совместимости)
     
     # Flashcards (terms)
     flashcard_today = DailyFlashcardProgress.query.filter_by(
@@ -125,8 +127,8 @@ def get_daily_tasks(user_id, study_day=None):
                 'title': 'Medische Testen',
                 'target': int(10 * multiplier),
                 'icon': 'clipboard-check',
-                'completed': tests_completed > 0,
-                'progress': min(tests_completed, 10)
+                'completed': questions_completed >= int(10 * multiplier),
+                'progress': min(questions_completed, int(10 * multiplier))
             },
             {
                 'type': 'flashcards',
@@ -153,8 +155,8 @@ def get_daily_tasks(user_id, study_day=None):
                 'title': 'Medische Testen',
                 'target': int(10 * multiplier),
                 'icon': 'clipboard-check',
-                'completed': tests_completed > 0,
-                'progress': min(tests_completed, int(10 * multiplier))
+                'completed': questions_completed >= int(10 * multiplier),
+                'progress': min(questions_completed, int(10 * multiplier))
             },
             {
                 'type': 'flashcards',
@@ -181,8 +183,8 @@ def get_daily_tasks(user_id, study_day=None):
                 'title': 'Medische Testen (Intensief)',
                 'target': int(20 * multiplier),
                 'icon': 'clipboard-check',
-                'completed': tests_completed >= int(20 * multiplier),
-                'progress': min(tests_completed, int(20 * multiplier))
+                'completed': questions_completed >= int(20 * multiplier),
+                'progress': min(questions_completed, int(20 * multiplier))
             },
             {
                 'type': 'english_reading',
@@ -201,8 +203,8 @@ def get_daily_tasks(user_id, study_day=None):
                 'title': 'Medische Testen',
                 'target': int(10 * multiplier),
                 'icon': 'clipboard-check',
-                'completed': tests_completed > 0,
-                'progress': min(tests_completed, int(10 * multiplier))
+                'completed': questions_completed >= int(10 * multiplier),
+                'progress': min(questions_completed, int(10 * multiplier))
             },
             {
                 'type': 'flashcards',
@@ -229,8 +231,8 @@ def get_daily_tasks(user_id, study_day=None):
                 'title': 'Medische Testen',
                 'target': int(10 * multiplier),
                 'icon': 'clipboard-check',
-                'completed': tests_completed > 0,
-                'progress': min(tests_completed, int(10 * multiplier))
+                'completed': questions_completed >= int(10 * multiplier),
+                'progress': min(questions_completed, int(10 * multiplier))
             },
             {
                 'type': 'memory',
@@ -257,8 +259,8 @@ def get_daily_tasks(user_id, study_day=None):
                 'title': 'Medische Testen (Intensief)',
                 'target': int(20 * multiplier),
                 'icon': 'clipboard-check',
-                'completed': tests_completed >= int(20 * multiplier),
-                'progress': min(tests_completed, int(20 * multiplier))
+                'completed': questions_completed >= int(20 * multiplier),
+                'progress': min(questions_completed, int(20 * multiplier))
             },
             {
                 'type': 'flashcards',

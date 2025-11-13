@@ -286,6 +286,13 @@ def mark_daily_plan_item_completed():
         from utils.diagnostic_data_manager import clear_cache
         clear_cache(current_user.id)
         
+        # ✅ КРИТИЧНО: Проверяем и обновляем день обучения после завершения задач
+        try:
+            from utils.individual_plan_helpers import update_study_day_count
+            update_study_day_count(current_user)
+        except Exception as e:
+            current_app.logger.error(f"Failed to update study day count: {e}", exc_info=True)
+        
         return {'success': True, 'message': 'Item marked as completed'}
         
     except Exception as e:
@@ -329,6 +336,13 @@ def complete_study_session(session_id):
             current_app.logger.warning(f"Failed to update learning plan {learning_plan.id} from session {session.id}")
         
         db.session.commit()
+        
+        # ✅ КРИТИЧНО: Проверяем и обновляем день обучения после завершения сессии
+        try:
+            from utils.individual_plan_helpers import update_study_day_count
+            update_study_day_count(current_user)
+        except Exception as e:
+            current_app.logger.error(f"Failed to update study day count: {e}", exc_info=True)
         
         # Trigger ability recalculation for additional updates
         algorithm = DailyLearningAlgorithm()
@@ -439,6 +453,13 @@ def complete_study_session_with_irt():
             logger.warning(f"Failed to update learning plan {learning_plan.id} from session {session_id}")
         
         db.session.commit()
+        
+        # ✅ КРИТИЧНО: Проверяем и обновляем день обучения после завершения сессии
+        try:
+            from utils.individual_plan_helpers import update_study_day_count
+            update_study_day_count(current_user)
+        except Exception as e:
+            logger.error(f"Failed to update study day count: {e}", exc_info=True)
         
         # Update user ability based on responses (with conflict protection)
         try:

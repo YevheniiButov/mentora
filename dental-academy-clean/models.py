@@ -4980,9 +4980,22 @@ class SpacedRepetitionItem(db.Model):
             self.interval = 6
         else:
             self.interval = int(self.interval * self.ease_factor)
+            # Ограничиваем максимальный интервал до 365 дней (год) для предотвращения OverflowError
+            self.interval = min(self.interval, 365)
         
         # Рассчитываем дату следующего повторения
-        self.next_review = datetime.now(timezone.utc) + timedelta(days=self.interval)
+        # Дополнительная проверка на случай, если interval все еще слишком большой
+        max_interval = 365  # Максимум 1 год
+        safe_interval = min(self.interval, max_interval)
+        try:
+            self.next_review = datetime.now(timezone.utc) + timedelta(days=safe_interval)
+        except OverflowError:
+            # Если все еще ошибка, устанавливаем максимальную дату (примерно через год)
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"OverflowError prevented for SpacedRepetitionItem {self.id}: interval={self.interval}, setting to max")
+            self.interval = max_interval
+            self.next_review = datetime.now(timezone.utc) + timedelta(days=max_interval)
     
     @property
     def is_due(self):
@@ -6372,6 +6385,8 @@ class UserTermProgress(db.Model):
                 self.interval = 3
             else:
                 self.interval = int(self.interval * self.ease_factor)
+                # Ограничиваем максимальный интервал до 365 дней (год) для предотвращения OverflowError
+                self.interval = min(self.interval, 365)
             
             correct_rate = self.accuracy_rate
             if correct_rate >= 90:
@@ -6383,7 +6398,18 @@ class UserTermProgress(db.Model):
             self.mastery_level = max(0, self.mastery_level - 1)
         
         from datetime import timedelta
-        self.next_review = datetime.now(timezone.utc) + timedelta(days=self.interval)
+        # Дополнительная проверка на случай, если interval все еще слишком большой
+        max_interval = 365  # Максимум 1 год
+        safe_interval = min(self.interval, max_interval)
+        try:
+            self.next_review = datetime.now(timezone.utc) + timedelta(days=safe_interval)
+        except OverflowError:
+            # Если все еще ошибка, устанавливаем максимальную дату (примерно через год)
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"OverflowError prevented for UserTermProgress {self.id}: interval={self.interval}, setting to max")
+            self.interval = max_interval
+            self.next_review = datetime.now(timezone.utc) + timedelta(days=max_interval)
     
     def to_dict(self):
         return {
