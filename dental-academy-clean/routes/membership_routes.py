@@ -224,7 +224,8 @@ def upgrade_page():
     """Premium upgrade page - HIDDEN during testing"""
     if not current_user.is_admin:
         flash('This feature is coming soon!', 'info')
-        return redirect(url_for('dashboard.index'))
+        lang = g.get('lang') or session.get('lang') or 'nl'
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
     
     return render_template('membership/upgrade.html',
         stripe_key=current_app.config['STRIPE_PUBLISHABLE_KEY']
@@ -291,7 +292,8 @@ def success():
             return redirect(url_for('membership.card'))
     
     flash('Payment successful!', 'success')
-    return redirect(url_for('dashboard.index'))
+    lang = g.get('lang') or session.get('lang') or 'nl'
+    return redirect(url_for('learning_map_bp.learning_map', lang=lang))
 
 @membership_bp.route('/webhook', methods=['POST'])
 def webhook():

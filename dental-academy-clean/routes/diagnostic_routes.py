@@ -1384,7 +1384,8 @@ def show_results(lang, session_id):
         import traceback
         traceback.print_exc()
         flash(f'Ошибка при генерации результатов: {str(e)}', 'error')
-        return redirect(url_for('dashboard.index'))
+        lang = g.get('lang') or session.get('lang') or 'nl'
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
 
 @diagnostic_bp.route('/session/<int:session_id>/status')
 @login_required
@@ -2725,7 +2726,8 @@ def start_reassessment(lang, plan_id):
         # Check if plan belongs to current user
         if plan.user_id != current_user.id:
             flash('Access denied.', 'error')
-            return redirect('/dashboard')
+            lang = g.get('lang') or session.get('lang') or 'nl'
+            return redirect(url_for('learning_map_bp.learning_map', lang=lang))
         
         # Create new diagnostic session for reassessment
         diagnostic_session = DiagnosticSession.create_session(
@@ -2745,7 +2747,8 @@ def start_reassessment(lang, plan_id):
     except Exception as e:
         logger.error(f"Error starting reassessment: {e}")
         flash('Ошибка при запуске переоценки.', 'error')
-        return redirect('/dashboard')
+        lang = g.get('lang') or session.get('lang') or 'nl'
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
 
 @diagnostic_bp.route('/session/<int:session_id>/complete', methods=['POST'])
 @login_required

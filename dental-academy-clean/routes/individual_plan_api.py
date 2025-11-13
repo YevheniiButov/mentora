@@ -202,7 +202,8 @@ def start_daily_session():
         
         if not plan:
             flash('Kon geen leerplan vinden. Start eerst een diagnostische test.', 'warning')
-            return redirect(url_for('dashboard.index'))
+            lang = g.get('lang') or session.get('lang') or 'nl'
+            return redirect(url_for('learning_map_bp.learning_map', lang=lang))
         
         # Select today's questions
         try:

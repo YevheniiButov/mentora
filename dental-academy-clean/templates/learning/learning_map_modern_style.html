@@ -6962,7 +6962,7 @@
                         console.log('Diagnostic Type:', diagnosticType);
                         
                         // Отправляем запрос на сервер
-                        const response = await fetch('/big-diagnostic/start', {
+                        const response = await fetch('/{{ lang }}/big-diagnostic/start', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -6985,7 +6985,8 @@
                             // Уже есть активная сессия
                             this.showNotification('{{ t("active_diagnostic_session", lang)|default("You already have an active diagnostic session") }}', 'warning');
                             if (data.session_info) {
-                                window.location.href = `/big-diagnostic/question/${data.session_info.id}`;
+                                const lang = '{{ lang }}';
+                                window.location.href = `/${lang}/big-diagnostic/question/${data.session_info.id}`;
                             }
                         } else {
                             // Ошибка
@@ -7704,7 +7705,7 @@
                     if (taskType === 'diagnostic_test' || taskType === 'big_test') {
                         if (taskType === 'big_test') {
                             // BIG test - 60 questions
-                            window.location.href = '/big-diagnostic/start?type=big_test';
+                            window.location.href = '/{{ lang }}/big-diagnostic/start?type=big_test';
                         } else {
                             // Regular diagnostic test
                             if (!this.diagnosticCompleted) {
@@ -8055,12 +8056,13 @@
         }
         
         function startTask(type) {
+            const lang = '{{ lang }}';
             const routes = {
-                'diagnostic_test': '/big-diagnostic/start',
-                'flashcards': '/flashcards/study',
-                'virtual_patient': '/virtual-patient/daily',
-                'english_reading': '/english/practice',
-                'memory': '/games/memory?auto_start=true'
+                'diagnostic_test': `/${lang}/big-diagnostic/start`,
+                'flashcards': `/${lang}/flashcards/study`,
+                'virtual_patient': `/${lang}/virtual-patient/daily`,
+                'english_reading': `/${lang}/english/practice`,
+                'memory': `/${lang}/games/memory?auto_start=true`
             };
             
             const route = routes[type];

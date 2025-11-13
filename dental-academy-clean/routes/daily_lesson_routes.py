@@ -86,7 +86,8 @@ def index():
     except Exception as e:
         current_app.logger.error(f"Error loading daily lesson index: {e}")
         flash('Error loading daily lesson overview', 'error')
-        return redirect(url_for('dashboard.index'))
+        lang = g.get('lang') or session.get('lang') or 'nl'
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
 
 
 @daily_lesson_bp.route('/start/<category>')

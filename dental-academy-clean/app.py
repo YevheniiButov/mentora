@@ -434,10 +434,11 @@ def mentora_login():
         user.last_login = datetime.now(timezone.utc)
         db.session.commit()
         
+        lang = session.get('lang') or 'nl'
         return jsonify({
             'success': True, 
             'message': 'Login successful',
-            'redirect_url': url_for('dashboard')
+            'redirect_url': url_for('learning_map_bp.learning_map', lang=lang)
         })
         
     except Exception as e:
@@ -452,7 +453,6 @@ def mentora_login():
 try:
     from routes.main_routes import main_bp
     from routes.auth_routes import auth_bp
-    from routes.dashboard_routes import dashboard_bp
     from routes.learning_routes import learning_bp
     from routes.test_routes import test_bp
     from routes.admin_routes import admin_bp
@@ -536,7 +536,6 @@ try:
     # for root paths like /<lang>/ because main_bp is registered first
     app.register_blueprint(daily_learning_bp)  # /<lang>/knowledge-base (specific)
     
-    app.register_blueprint(dashboard_bp, url_prefix='/dashboard')
     app.register_blueprint(learning_bp, url_prefix='/learning')  # ВКЛЮЧЕНО с декораторами блокировки
     # app.register_blueprint(test_bp, url_prefix='/tests')  # ОТКЛЮЧЕНО для предварительного запуска
     app.register_blueprint(admin_bp, url_prefix='/admin')

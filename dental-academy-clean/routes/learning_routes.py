@@ -578,7 +578,8 @@ def automated_theory(plan_id=None, week=None):
     
     if not plan_id:
         flash('ID плана обучения не найден', 'error')
-        return redirect(url_for('dashboard.index'))
+        lang = g.get('lang') or session.get('lang') or 'nl'
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
     
     # Get the learning plan
     plan = PersonalLearningPlan.query.get_or_404(plan_id)
@@ -604,7 +605,8 @@ def automated_theory(plan_id=None, week=None):
     
     if not current_session:
         flash('Сессия обучения не найдена', 'error')
-        return redirect(url_for('dashboard.learning_plan', plan_id=plan_id))
+        lang = g.get('lang') or session.get('lang') or 'nl'
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang, path_id='irt'))
     
     # Get recommended lessons based on weak domains using smart recommendations
     weak_domains = plan.get_weak_domain_names()  # Используем полные названия
@@ -658,7 +660,8 @@ def automated_practice(plan_id=None, week=None):
     
     if not plan_id:
         flash('ID плана обучения не найден', 'error')
-        return redirect(url_for('dashboard.index'))
+        lang = g.get('lang') or session.get('lang') or 'nl'
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
     
     plan = PersonalLearningPlan.query.get_or_404(plan_id)
     
@@ -683,7 +686,8 @@ def automated_practice(plan_id=None, week=None):
     
     if not current_session:
         flash('Сессия обучения не найдена', 'error')
-        return redirect(url_for('dashboard.learning_plan', plan_id=plan_id))
+        lang = g.get('lang') or session.get('lang') or 'nl'
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang, path_id='irt'))
     
     # Get practice questions based on weak domains
     weak_domains = plan.get_weak_domain_names()  # Используем полные названия
@@ -744,7 +748,8 @@ def automated_test():
     
     if not plan_id or not current_session:
         flash('Сессия обучения не найдена', 'error')
-        return redirect(url_for('dashboard.index'))
+        lang = g.get('lang') or session.get('lang') or 'nl'
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
     
     plan = PersonalLearningPlan.query.get_or_404(plan_id)
     
@@ -765,7 +770,8 @@ def automated_review():
     
     if not plan_id or not current_session:
         flash('Сессия обучения не найдена', 'error')
-        return redirect(url_for('dashboard.index'))
+        lang = g.get('lang') or session.get('lang') or 'nl'
+        return redirect(url_for('learning_map_bp.learning_map', lang=lang))
     
     plan = PersonalLearningPlan.query.get_or_404(plan_id)
     
@@ -902,10 +908,11 @@ def complete_automated_session():
                 current_app.logger.info(f"Study schedule rebuilt from existing sessions for plan {plan.id}")
             else:
                 # Если не удалось перестроить, но это не критично - просто возвращаем на dashboard
-                current_app.logger.warning(f"Unable to rebuild study schedule for plan {plan.id}, redirecting to dashboard")
+                current_app.logger.warning(f"Unable to rebuild study schedule for plan {plan.id}, redirecting to learning map")
+                lang = g.get('lang') or session.get('lang') or 'nl'
                 return safe_jsonify({
                     'success': True,
-                    'redirect_url': url_for('dashboard.index'),
+                    'redirect_url': url_for('learning_map_bp.learning_map', lang=lang),
                     'next_session': None,
                     'completed': True
                 }), 200
@@ -959,7 +966,7 @@ def complete_automated_session():
                 session.pop('current_session', None)
                 session.pop('learning_mode', None)
                 session.pop('daily_session_diagnostic_id', None)  # Clear diagnostic session ID
-                redirect_url = url_for('dashboard.learning_plan', plan_id=plan_id)
+                redirect_url = url_for('learning_map_bp.learning_map', lang=lang, path_id='irt')
         
         current_app.logger.info(f"Redirect URL: {redirect_url}")
         
@@ -1020,15 +1027,9 @@ def test_theory():
 @login_required
 def learning_paths():
     """Отображение путей обучения в структуре BI-toets"""
-    try:
-        # Получить структуру BI-toets
-        learning_paths = LearningPath.get_bi_toets_structure()
-        
-        return render_template('dashboard/learning_paths.html', 
-                             learning_paths=learning_paths)
-    except Exception as e:
-        flash(f'Ошибка при загрузке путей обучения: {str(e)}', 'error')
-        return redirect(url_for('dashboard.index'))
+    # Redirect to learning map instead of showing learning paths page
+    lang = g.get('lang') or session.get('lang') or 'nl'
+    return redirect(url_for('learning_map_bp.learning_map', lang=lang))
 
 @learning_bp.route('/api/learning-paths/<path_id>')
 def get_learning_path(path_id):

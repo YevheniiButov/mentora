@@ -226,3 +226,4 @@ def get_daily_scenario(user):
 
 
 
+

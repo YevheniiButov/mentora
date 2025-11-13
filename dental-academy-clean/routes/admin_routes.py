@@ -3954,6 +3954,26 @@ def api_user_stats():
             'error': 'Failed to load statistics'
         }), 500
 
+@admin_bp.route('/api/users/<int:user_id>/status')
+@login_required
+@admin_required
+def api_user_status(user_id):
+    """Get user status (active/inactive)"""
+    try:
+        user = User.query.get_or_404(user_id)
+        return jsonify({
+            'success': True,
+            'user_id': user.id,
+            'is_active': user.is_active,
+            'email': user.email
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error getting user status: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @admin_bp.route('/api/users/search')
 @login_required
 @admin_required

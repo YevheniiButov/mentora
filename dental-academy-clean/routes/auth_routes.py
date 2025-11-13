@@ -1411,10 +1411,11 @@ def invite_register_submit(token):
         # Log successful registration
         registration_logger.log_registration_success('invite_registration', user.id, user.email, data)
         
+        lang = session.get('lang') or 'nl'
         return jsonify({
             'success': True,
             'message': 'Регистрация успешно завершена!',
-            'redirect_url': url_for('main.dashboard')
+            'redirect_url': url_for('learning_map_bp.learning_map', lang=lang)
         })
         
     except Exception as e:
