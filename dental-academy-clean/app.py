@@ -161,6 +161,11 @@ def before_request():
     else:
         g.locale = str(get_locale())
         g.lang = g.locale  # Добавляем g.lang для совместимости с шаблонами
+        # Сохраняем язык в session для использования в других роутах
+        if 'lang' not in session or session.get('lang') != g.lang:
+            session['lang'] = g.lang
+        if 'language' not in session or session.get('language') != g.locale:
+            session['language'] = g.locale
     
     g.supported_languages = SUPPORTED_LANGUAGES
     g.current_language = g.locale

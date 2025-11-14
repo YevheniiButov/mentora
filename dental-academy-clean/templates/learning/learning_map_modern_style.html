@@ -5333,19 +5333,6 @@
                             </div>
                         </div>
 
-                        <!-- IRT Tab - Always Enabled -->
-                        <div class="tab-circle" :class="{ 'active': activeTab === 'irt' }" @click="selectTab('irt')">
-                            <div class="circle-button">
-                                <div class="circle-glow"></div>
-                                <div class="circle-inner"><i class="bi bi-cpu-fill"></i></div>
-                                <div class="tab-status-badge" style="background: #22c55e;"><i class="bi bi-check-circle-fill"></i></div>
-                            </div>
-                            <div class="tab-label">
-                                {{ t('irt', lang)|default('IRT') }}
-                                <span class="beta-badge">{{ t('beta', lang)|default('BETA') }}</span>
-                            </div>
-                        </div>
-
                         <!-- Premium Tab - только для премиум пользователей -->
                         <div class="tab-circle" 
                              x-show="enabledTabs.includes('premium')"
@@ -5556,61 +5543,6 @@
 
                 <!-- Карточки -->
                 <div class="cards-area" x-show="activeTab !== 'individual' && activeTab !== 'planner' && activeTab !== 'archive'">
-                    
-                    <!-- IRT Test Cards -->
-                    <div class="info-card test-card" x-show="activeTab === 'irt'" @click="startIRTTest(30)" style="cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                        <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
-                            <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-lightning-charge-fill"></i></div>
-                            <div>
-                                <div class="card-title" style="color: white;">{{ t('quick_test', lang)|default('Quick Test') }}</div>
-                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">30 {{ t('questions', lang)|default('questions') }}</div>
-                            </div>
-                        </div>
-                        <div style="padding: 1rem 0;">
-                            <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.95);">
-                                {{ t('quick_test_description', lang)|default('Fast knowledge check. Results shown at the end.') }}
-                            </p>
-                        </div>
-                        <div class="play-badge" style="background: rgba(255,255,255,0.3);">
-                            <i class="bi bi-play-circle-fill"></i>
-                        </div>
-                    </div>
-
-                    <div class="info-card test-card" x-show="activeTab === 'irt'" @click="startIRTTest(60)" style="cursor: pointer; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
-                        <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
-                            <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-speedometer2"></i></div>
-                            <div>
-                                <div class="card-title" style="color: white;">{{ t('full_test', lang)|default('Full Test') }}</div>
-                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">60 questions</div>
-                            </div>
-                        </div>
-                        <div style="padding: 1rem 0;">
-                            <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.95);">
-                                Comprehensive assessment covering all domains.
-                            </p>
-                        </div>
-                        <div class="play-badge" style="background: rgba(255,255,255,0.3);">
-                            <i class="bi bi-play-circle-fill"></i>
-                        </div>
-                    </div>
-
-                    <div class="info-card test-card" x-show="activeTab === 'irt'" @click="startLearningMode()" style="cursor: pointer; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
-                        <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.2);">
-                            <div class="card-icon" style="background: rgba(255,255,255,0.2);"><i class="bi bi-book-fill"></i></div>
-                            <div>
-                                <div class="card-title" style="color: white;">{{ t('learning_mode', lang)|default('Learning Mode') }}</div>
-                                <div class="card-subtitle" style="color: rgba(255,255,255,0.9);">30 questions with explanations</div>
-                            </div>
-                        </div>
-                        <div style="padding: 1rem 0;">
-                            <p style="margin: 0; font-size: 0.9rem; color: rgba(255,255,255,0.95);">
-                                Study mode: see correct answer and explanation after each question.
-                            </p>
-                        </div>
-                        <div class="play-badge" style="background: rgba(255,255,255,0.3);">
-                            <i class="bi bi-play-circle-fill"></i>
-                        </div>
-                    </div>
 
                     <!-- Games Cards (for games tab) -->
                     <template x-for="module in displayModules" :key="module.id" x-show="activeTab === 'games'">
@@ -6481,7 +6413,7 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const tabParam = urlParams.get('tab');
                 const reloadParam = urlParams.get('reload');
-                const validTabs = ['irt', 'premium', 'individual', 'games', 'progress', 'planner', 'archive'];
+                const validTabs = ['premium', 'individual', 'games', 'progress', 'planner', 'archive'];
                 const tourParam = urlParams.get('tour');
                 const resetTourParam = urlParams.get('reset_tour');
                 
@@ -6698,7 +6630,7 @@
                 }
             
             // Базовые доступные вкладки
-            const baseEnabledTabs = ['irt', 'individual', 'progress', 'games', 'planner', 'archive'];
+            const baseEnabledTabs = ['individual', 'progress', 'games', 'planner', 'archive'];
             
             // Добавляем premium только для премиум пользователей
             const enabledTabsList = [...baseEnabledTabs];
@@ -6709,9 +6641,9 @@
             return {
                 activeTab: finalTab,
                 isStartingDiagnostic: false,
-                isLaunched: false, // ВСЕГДА false - блокируем все кроме IRT и Games
+                isLaunched: false, // ВСЕГДА false - блокируем все кроме Games
                 launchDate: launchDate,
-                // Enabled tabs (IRT, Individual, Progress, Games, и Premium только для премиум)
+                // Enabled tabs (Individual, Progress, Games, и Premium только для премиум)
                 enabledTabs: enabledTabsList,
                 
                 // Planner state
@@ -7357,11 +7289,7 @@
                 },
                 get displayModules() { return this.modules[this.activeTab] || []; },
                 get currentProgress() {
-                    if (this.activeTab === 'irt') {
-                        // Для IRT считаем прогресс на основе модулей
-                    const mods = this.displayModules;
-                        return mods.length ? Math.round(mods.reduce((s, m) => s + (typeof m.progress === 'function' ? m.progress() : m.progress), 0) / mods.length) : 0;
-                    } else if (this.activeTab === 'games') {
+                    if (this.activeTab === 'games') {
                         // Для игр не показываем прогресс
                         return 0;
                     } else {
@@ -7371,18 +7299,14 @@
                     }
                 },
                 get completedModules() { 
-                    if (this.activeTab === 'irt') {
-                        return this.displayModules.filter(m => (typeof m.progress === 'function' ? m.progress() : m.progress) === 100).length;
-                    } else if (this.activeTab === 'games') {
+                    if (this.activeTab === 'games') {
                         return 0; // Не показываем статистику для игр
                     } else {
                         return this.displayModules.filter(m => (typeof m.progress === 'function' ? m.progress() : m.progress) === 100).length;
                     }
                 },
                 get totalModules() { 
-                    if (this.activeTab === 'irt') {
-                        return this.displayModules.length; // Все IRT модули
-                    } else if (this.activeTab === 'games') {
+                    if (this.activeTab === 'games') {
                         return 3; // sudoku, memory, quiz
                     } else {
                         return this.displayModules.length;
@@ -7398,7 +7322,6 @@
                 },
                 getTabIcon(tab) {
                     return { 
-                        'irt': 'cpu-fill', 
                         'premium': 'star-fill', 
                         'individual': 'person-fill',
                         'games': 'controller',
@@ -7409,7 +7332,6 @@
                 },
                 getTabTitle(tab) {
                     return { 
-                        'irt': 'IRT Adaptive Learning (Beta)', 
                         'premium': 'Premium Access', 
                         'individual': 'Individual Learning',
                         'games': 'Gamification & Achievements',
@@ -7420,9 +7342,8 @@
                 },
                 getTabDescription(tab) {
                     const descriptions = { 
-                        'irt': '{{ t("irt_description", lang)|default("🧪 BETA: Choose your test format - Quick Test (30 questions) for rapid assessment, Full Test (60 questions) for comprehensive evaluation, or Learning Mode (30 questions with explanations) to study while testing. All tests use adaptive IRT technology.") }}',
                         'premium': '{{ t("premium_description", lang)|default("⭐ Premium Access: Unlimited access to all learning materials. Practice with all questions, terms, virtual patients, and English reading passages. Filter by categories and study without restrictions.") }}',
-                        'individual': '{{ t("individual_description", lang)|default("Personalized learning modules tailored to your needs. Study at your own pace with comprehensive materials and interactive exercises. After a short diagnostic we build your daily plan. If something felt off the first time, open the IRT tab and retake the quick diagnostic so the system recalibrates and focuses on the areas you missed.") }}',           
+                        'individual': '{{ t("individual_description", lang)|default("Personalized learning modules tailored to your needs. Study at your own pace with comprehensive materials and interactive exercises. After a short diagnostic we build your daily plan.") }}',           
                         'games': '{{ t("games_description", lang)|default("Relax and improve your cognitive skills with fun games! Play Sudoku for logic training, Medical Memory to learn terminology, or Quick Quiz for fast knowledge checks. Earn achievements and compete on the leaderboard!") }}',
                         'progress': '{{ t("progress_description", lang)|default("Track your learning journey with detailed analytics. Monitor your performance across all modules, see your study time, and identify areas for improvement.") }}',
                         'planner': '{{ t("planner_description", lang)|default("Plan your learning schedule effectively. Set daily and weekly goals, track deadlines, and stay organized with our intelligent learning planner.") }}',
@@ -7437,9 +7358,8 @@
                 },
                 getTabTips(tab) {
                     const tips = { 
-                        'irt': ['{{ t("tip_click_test_card", lang)|default("Click on any test card to start") }}', '{{ t("tip_quick_test", lang)|default("Quick Test (30q) - fast knowledge check") }}', '{{ t("tip_full_test", lang)|default("Full Test (60q) - comprehensive assessment") }}', '{{ t("tip_learning_mode", lang)|default("Learning Mode (30q) - study with instant feedback") }}'],
                         'virtual': ['{{ t("tip_read_patient_history", lang)|default("Read patient history carefully before making decisions") }}', '{{ t("tip_multiple_scenarios", lang)|default("Each case has multiple scenarios and outcomes") }}', '{{ t("tip_review_feedback", lang)|default("Review feedback to improve your clinical reasoning") }}'],
-                        'individual': ['{{ t("tip_choose_modules", lang)|default("Choose modules based on your learning goals") }}', '{{ t("tip_complete_quizzes", lang)|default("Complete quizzes to reinforce your knowledge") }}', '{{ t("tip_unlock_modules", lang)|default("Unlock new modules by progressing through the curriculum") }}', '{{ t("tip_retake_diagnostic", lang)|default("If something felt off, open the IRT tab and repeat the quick diagnostic to refresh your plan") }}'],                                                          
+                        'individual': ['{{ t("tip_choose_modules", lang)|default("Choose modules based on your learning goals") }}', '{{ t("tip_complete_quizzes", lang)|default("Complete quizzes to reinforce your knowledge") }}', '{{ t("tip_unlock_modules", lang)|default("Unlock new modules by progressing through the curriculum") }}'],                                                          
                         'games': ['{{ t("tip_play_sudoku", lang)|default("Play Sudoku to improve logical thinking") }}', '{{ t("tip_medical_memory", lang)|default("Medical Memory helps learn terminology quickly") }}', '{{ t("tip_quick_quiz", lang)|default("Quick Quiz tests your knowledge in seconds") }}', '{{ t("tip_earn_achievements", lang)|default("Earn achievements and climb the leaderboard") }}', '{{ t("tip_take_breaks", lang)|default("Take breaks with games to refresh your mind") }}'],
                         'progress': ['{{ t("tip_review_statistics", lang)|default("Review your statistics regularly") }}', '{{ t("tip_set_goals", lang)|default("Set weekly and monthly goals") }}', '{{ t("tip_track_time", lang)|default("Track time spent on each learning activity") }}', '{{ t("tip_identify_weak_areas", lang)|default("Identify weak areas and focus on improvement") }}'],
                         'planner': ['{{ t("tip_schedule_sessions", lang)|default("Schedule study sessions in advance") }}', '{{ t("tip_set_reminders", lang)|default("Set reminders for important deadlines") }}', '{{ t("tip_balance_activities", lang)|default("Balance different types of learning activities") }}', '{{ t("tip_review_plan", lang)|default("Review and adjust your plan weekly") }}'],
@@ -7535,28 +7455,6 @@
                     }, 5000);
                     
                     return notification;
-                },
-                startIRTTest(questionCount) {
-                    // Запуск IRT теста с заданным количеством вопросов
-                    console.log(`Starting IRT test with ${questionCount} questions`);
-                    
-                    // КРИТИЧНО: Проверяем, прошёл ли пользователь диагностику
-                    // IRT тесты - это диагностика, поэтому их можно запускать всегда
-                    // Но если это первый раз, лучше направить на диагностику
-                    
-                    // Определяем тип теста на основе количества вопросов
-                    let diagnosticType = 'quick_30';
-                    if (questionCount === 60) {
-                        diagnosticType = 'full_60';
-                    }
-                    
-                    // Запускаем тест
-                    this.startDiagnostic(diagnosticType);
-                },
-                startLearningMode() {
-                    // Запуск обучающего режима (30 вопросов с объяснениями)
-                    console.log('Starting learning mode with explanations');
-                    this.startDiagnostic('learning_30');
                 },
                 
                 // Premium functions

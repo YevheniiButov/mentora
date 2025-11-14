@@ -789,7 +789,24 @@ def forgot_password():
     if request.method == 'GET':
         print("=== HANDLING GET REQUEST ===")
         from flask import g
-        lang = g.get('lang', 'nl')
+        # Определяем язык: сначала из g.lang (установлен в app.before_request), 
+        # затем из session, затем из параметра URL, затем дефолт 'en'
+        lang = (g.get('lang') or 
+                session.get('lang') or 
+                session.get('language') or 
+                request.args.get('lang') or 
+                'en')
+        
+        # Убеждаемся, что язык поддерживается
+        SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
+        if lang not in SUPPORTED_LANGUAGES:
+            lang = 'en'
+        
+        # Сохраняем язык в session для последующих запросов
+        session['lang'] = lang
+        g.lang = lang
+        
+        print(f"=== DETERMINED LANGUAGE: {lang} ===")
         return render_template('auth/forgot_password.html', lang=lang)
     
     try:
