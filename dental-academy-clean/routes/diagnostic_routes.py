@@ -103,12 +103,42 @@ def validate_session(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def cleanup_old_active_sessions():
+    """Automatically mark old active sessions as abandoned (24 hours timeout)"""
+    try:
+        from datetime import timedelta
+        timeout_threshold = datetime.now(timezone.utc) - timedelta(hours=24)
+        
+        old_sessions = DiagnosticSession.query.filter(
+            DiagnosticSession.status == 'active',
+            DiagnosticSession.started_at < timeout_threshold
+        ).all()
+        
+        for session in old_sessions:
+            session.status = 'abandoned'
+            session.termination_reason = 'timeout'
+            session.completed_at = datetime.now(timezone.utc)
+            logger.info(f"Auto-abandoned old session {session.id} (started at {session.started_at})")
+        
+        if old_sessions:
+            db.session.commit()
+            logger.info(f"Cleaned up {len(old_sessions)} old active sessions")
+        
+        return len(old_sessions)
+    except Exception as e:
+        logger.error(f"Error cleaning up old sessions: {e}")
+        db.session.rollback()
+        return 0
+
 @diagnostic_bp.route('/start', methods=['GET', 'POST'])
 @login_required
 @rate_limit(requests_per_minute=10)
 def start_diagnostic(lang):
     """Start new diagnostic session"""
     try:
+        # Cleanup old active sessions before checking
+        cleanup_old_active_sessions()
+        
         if request.method == 'POST':
             # Поддержка как JSON, так и form data
             if request.is_json:
@@ -127,6 +157,18 @@ def start_diagnostic(lang):
                 user_id=current_user.id,
                 status='active'
             ).first()
+            
+            # Validate active session (check if it's not corrupted)
+            if active_session:
+                # Check if session is valid (has current question or can continue)
+                if not active_session.current_question_id and active_session.questions_answered == 0:
+                    # Invalid session - no question and no progress
+                    logger.warning(f"Found invalid active session {active_session.id}, abandoning it")
+                    active_session.status = 'abandoned'
+                    active_session.termination_reason = 'invalid_state'
+                    active_session.completed_at = datetime.now(timezone.utc)
+                    db.session.commit()
+                    active_session = None
             
             if active_session:
                 if request.is_json:
@@ -2377,6 +2419,9 @@ def show_learning_question(lang, session_id):
 @login_required
 def show_question(lang, session_id):
     try:
+        # Cleanup old active sessions before processing
+        cleanup_old_active_sessions()
+        
         # ВАЖНО: Принудительно обновляем сессию из БД чтобы получить актуальный current_question_id
         db.session.expire_all()  # Очищаем кэш
         diagnostic_session = DiagnosticSession.query.get_or_404(session_id)
@@ -2386,6 +2431,17 @@ def show_question(lang, session_id):
         # Проверяем, что сессия активна
         if diagnostic_session.status != 'active':
             flash('Диагностическая сессия завершена', 'warning')
+            return redirect(url_for('diagnostic.start_quick_test', lang=lang))
+        
+        # Check if session is too old (24 hours)
+        from datetime import timedelta
+        if diagnostic_session.started_at and (datetime.now(timezone.utc) - diagnostic_session.started_at) > timedelta(hours=24):
+            logger.warning(f"Session {session_id} is too old, abandoning it")
+            diagnostic_session.status = 'abandoned'
+            diagnostic_session.termination_reason = 'timeout'
+            diagnostic_session.completed_at = datetime.now(timezone.utc)
+            db.session.commit()
+            flash('Диагностическая сессия истекла (более 24 часов). Пожалуйста, начните новую.', 'warning')
             return redirect(url_for('diagnostic.start_quick_test', lang=lang))
         
         # Получить текущий вопрос для пользователя
@@ -2456,7 +2512,7 @@ def show_question(lang, session_id):
                              lang=lang)
                              
     except Exception as e:
-        logger.error(f"Error showing question: {str(e)}")
+        logger.error(f"Error showing question: {str(e)}", exc_info=True)
         flash('Ошибка при загрузке вопроса', 'error')
         # Проверяем, есть ли активная сессия, и завершаем её, чтобы избежать циклов
         try:
@@ -2466,10 +2522,13 @@ def show_question(lang, session_id):
             ).first()
             if active_session:
                 active_session.status = 'abandoned'
+                active_session.termination_reason = 'error'
                 active_session.completed_at = datetime.now(timezone.utc)
                 db.session.commit()
-        except:
-            pass
+                logger.info(f"Abandoned session {active_session.id} due to error in show_question")
+        except Exception as cleanup_error:
+            logger.error(f"Error cleaning up session: {cleanup_error}")
+            db.session.rollback()
         return redirect(url_for('diagnostic.start_quick_test', lang=lang)) 
 
 @diagnostic_bp.route('/session/terminate', methods=['POST'])

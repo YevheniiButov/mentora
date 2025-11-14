@@ -162,7 +162,7 @@ class DiagnosticTypeSelector {
                 }
             },
             {
-                text: 'Перезапустить',
+                text: 'Начать заново',
                 className: 'modal-btn modal-btn-warning',
                 onclick: () => {
                     hideModal();
@@ -196,12 +196,16 @@ class DiagnosticTypeSelector {
 
     createActiveSessionContent(sessionInfo) {
         const progress = sessionInfo.progress || 0;
-        const startDate = new Date(sessionInfo.created_at).toLocaleString();
+        const startDate = new Date(sessionInfo.created_at);
+        const now = new Date();
+        const hoursAgo = Math.floor((now - startDate) / (1000 * 60 * 60));
+        const isOld = hoursAgo >= 24;
         
         return `
             <div class="active-session-info">
                 <div class="session-summary">
                     <h4>У вас уже есть активная сессия диагностики:</h4>
+                    ${isOld ? '<p style="color: #f59e0b; font-weight: 600; margin: 0.5rem 0;">⚠️ Сессия старше 24 часов будет автоматически отменена</p>' : ''}
                     <div class="session-details">
                         <div class="detail-item">
                             <span class="detail-label">Тип:</span>
@@ -213,7 +217,11 @@ class DiagnosticTypeSelector {
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">Начата:</span>
-                            <span class="detail-value">${startDate}</span>
+                            <span class="detail-value">${startDate.toLocaleString()}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Вопросов отвечено:</span>
+                            <span class="detail-value">${sessionInfo.questions_answered || 0}</span>
                         </div>
                     </div>
                 </div>
