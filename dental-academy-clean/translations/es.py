@@ -2803,7 +2803,7 @@ translations = {
     'invitation_invalid': 'Enlace de invitación inválido',
     
     # Learning Map - Individual Plan Tab
-    'individual_plan': 'Plan Individual',
+    'individual_plan': 'Aprendizaje',
     'daily_study_plan': 'Tu Plan de Estudio Diario',
     'daily_streak': 'Racha Diaria',
     'days': 'días',
@@ -2959,7 +2959,7 @@ translations = {
     # Etiquetas de pestañas faltantes
     'irt': 'IRT',
     'virtual': 'Virtual',
-    'individual_plan': 'Individual',
+    'individual_plan': 'Aprendizaje',
     'games': 'Juegos',
     'planner': 'Planificador',
     'archive': 'Archivo',

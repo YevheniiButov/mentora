@@ -2628,7 +2628,7 @@ translations = {
     "invitation_expired": "انتهت صلاحية الدعوة",
     "invitation_used": "تم استخدام الدعوة بالفعل",
     "invitation_invalid": "رابط دعوة غير صالح",
-    "individual_plan": "خطة فردية",
+    "individual_plan": "التعلم",
     "daily_study_plan": "خطتك الدراسية اليومية",
     "daily_streak": "سلسلة الأيام",
     "days": "أيام",
@@ -2767,7 +2767,7 @@ translations = {
     
     "irt": "IRT",
     "virtual": "افتراضي",
-    "individual_plan": "فردي",
+    "individual_plan": "التعلم",
     "games": "ألعاب",
     "planner": "مخطط",
     "beta": "تجريبي",

@@ -3060,7 +3060,7 @@ translations = {
     'invitation_invalid': 'Недействительная ссылка приглашения',
     
     # Learning Map - Individual Plan Tab
-    'individual_plan': 'Индивидуальный План',
+    'individual_plan': 'Обучение',
     'daily_study_plan': 'Ваш ежедневный план обучения',
     'daily_streak': 'Ежедневная Серия',
     'days': 'дней',
@@ -3216,7 +3216,7 @@ translations = {
     # Отсутствующие метки вкладок
     'irt': 'IRT',
     'virtual': 'Виртуальный',
-    'individual_plan': 'Индивидуальный',
+    'individual_plan': 'Обучение',
     'games': 'Игры',
     'planner': 'Планировщик',
     'archive': 'Архив',

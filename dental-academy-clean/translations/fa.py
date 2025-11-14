@@ -2853,7 +2853,7 @@ translations = {
     'invitation_invalid': 'لینک دعوت نامعتبر است',
     
     # Learning Map translations
-    'individual_plan': 'برنامه فردی',
+    'individual_plan': 'یادگیری',
     'daily_study_plan': 'برنامه مطالعه روزانه شما',
     'daily_streak': 'سری روزانه',
     'days': 'روز',
@@ -3003,7 +3003,7 @@ translations = {
     # برچسب‌های تب گمشده
     'irt': 'IRT',
     'virtual': 'مجازی',
-    'individual_plan': 'فردی',
+    'individual_plan': 'یادگیری',
     'games': 'بازی‌ها',
     'planner': 'برنامه‌ریز',
     'archive': 'آرشیو',

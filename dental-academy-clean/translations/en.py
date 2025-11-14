@@ -3312,7 +3312,7 @@ translations = {
     'invitation_invalid': 'Invalid invitation link',
     
     # Learning Map - Individual Plan Tab
-    'individual_plan': 'Individual Plan',
+    'individual_plan': 'Learning',
     'daily_study_plan': 'Your Daily Study Plan',
     'daily_streak': 'Daily Streak',
     'days': 'days',
@@ -3468,7 +3468,7 @@ translations = {
     # Missing tab labels
     'irt': 'IRT',
     'virtual': 'Virtual',
-    'individual_plan': 'Individual',
+    'individual_plan': 'Learning',
     'games': 'Games',
     'planner': 'Planner',
     'archive': 'Archive',

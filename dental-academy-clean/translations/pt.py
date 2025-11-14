@@ -2765,7 +2765,7 @@ translations = {
     'invitation_invalid': 'Link de convite inválido',
     
     # Learning Map translations
-    'individual_plan': 'Plano Individual',
+    'individual_plan': 'Aprendizado',
     'daily_study_plan': 'Seu Plano de Estudo Diário',
     'daily_streak': 'Sequência Diária',
     'days': 'dias',
@@ -2915,7 +2915,7 @@ translations = {
     # Rótulos de abas em falta
     'irt': 'IRT',
     'virtual': 'Virtual',
-    'individual_plan': 'Individual',
+    'individual_plan': 'Aprendizado',
     'games': 'Jogos',
     'planner': 'Planejador',
     'archive': 'Arquivo',

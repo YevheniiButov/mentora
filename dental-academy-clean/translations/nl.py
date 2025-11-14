@@ -3110,7 +3110,7 @@ translations = {
     'invitation_invalid': 'Ongeldige uitnodigingslink',
     
     # Learning Map - Individual Plan Tab
-    'individual_plan': 'Individueel Plan',
+    'individual_plan': 'Leren',
     'daily_study_plan': 'Je dagelijkse studieplan',
     'daily_streak': 'Dagelijkse Streak',
     'days': 'dagen',
@@ -3266,7 +3266,7 @@ translations = {
     # Ontbrekende tab labels
     'irt': 'IRT',
     'virtual': 'Virtueel',
-    'individual_plan': 'Individueel',
+    'individual_plan': 'Leren',
     'games': 'Spellen',
     'planner': 'Planner',
     'archive': 'Archief',

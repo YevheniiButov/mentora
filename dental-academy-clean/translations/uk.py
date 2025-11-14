@@ -3091,7 +3091,7 @@ translations = {
     'invitation_invalid': 'Недійсне посилання запрошення',
     
     # Learning Map translations
-    'individual_plan': 'Індивідуальний План',
+    'individual_plan': 'Навчання',
     'daily_study_plan': 'Ваш щоденний план навчання',
     'daily_streak': 'Щоденна Серія',
     'days': 'днів',
@@ -3241,7 +3241,7 @@ translations = {
     # Відсутні мітки вкладок
     'irt': 'IRT',
     'virtual': 'Віртуальний',
-    'individual_plan': 'Індивідуальний',
+    'individual_plan': 'Навчання',
     'games': 'Ігри',
     'planner': 'Планувальник',
     'archive': 'Архів',

@@ -2726,7 +2726,7 @@ translations = {
     'invitation_invalid': 'Geçersiz davet bağlantısı',
     
     # Learning Map translations
-    'individual_plan': 'Bireysel Plan',
+    'individual_plan': 'Öğrenme',
     'daily_study_plan': 'Günlük Çalışma Planınız',
     'daily_streak': 'Günlük Seri',
     'days': 'gün',
@@ -2876,7 +2876,7 @@ translations = {
     # Eksik sekme etiketleri
     'irt': 'IRT',
     'virtual': 'Sanal',
-    'individual_plan': 'Bireysel',
+    'individual_plan': 'Öğrenme',
     'games': 'Oyunlar',
     'planner': 'Planlayıcı',
     'archive': 'Arşiv',
