@@ -75,9 +75,10 @@
             --gradient-end: #334155;
         }
         
-        /* Auto theme based on system preference */
+        /* Auto theme based on system preference - только если нет явного data-theme */
         @media (prefers-color-scheme: dark) {
-            :root:not([data-theme]) {
+            :root:not([data-theme]),
+            :root[data-theme=""] {
                 --bg-primary: #1a1a2e;
                 --bg-secondary: #16213e;
                 --bg-tertiary: #0f172a;
@@ -91,6 +92,22 @@
                 --gradient-middle: #1e293b;
                 --gradient-end: #334155;
             }
+        }
+        
+        /* Явная светлая тема - переопределяет медиа-запрос */
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #e0e7ff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border-color: #e5e7eb;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --card-bg: #ffffff;
+            --gradient-start: #f8fafc;
+            --gradient-middle: #e0e7ff;
+            --gradient-end: #dbeafe;
         }
 
         * {
@@ -520,6 +537,18 @@
             justify-content: space-between !important;
             flex-wrap: nowrap !important;
             flex-direction: row !important;
+        }
+
+        .logo-dark {
+            display: none;
+        }
+
+        [data-theme="dark"] .logo-light {
+            display: none !important;
+        }
+
+        [data-theme="dark"] .logo-dark {
+            display: inline-block !important;
         }
 
         header.modern-header .navbar-brand {
@@ -5084,7 +5113,8 @@
                 <!-- Logo -->
                 <a class="navbar-brand" href="/en/">
                     <div class="logo-container">
-                        <img class="logo logo-light" src="/static/images/logo.png" alt="Mentora" height="40" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                        <img class="logo logo-light" src="/static/images/logo.png" alt="Mentora" height="40">
+                        <img class="logo logo-dark" src="/static/images/logo_black.png" alt="Mentora" height="40">
                         <div class="logo-text" style="display:none; font-size: 1.5rem; font-weight: 800; color: #1e293b;">MENTORA</div>
                     </div>
                 </a>
@@ -5213,7 +5243,8 @@
         
         <div class="tour-intro-overlay" x-show="showTourOverlay" x-transition.opacity x-cloak>
             <div class="tour-intro-card">
-                <img src="/static/images/logo.png" alt="Mentora" class="tour-intro-logo" loading="lazy">
+                <img src="/static/images/logo.png" alt="Mentora" class="tour-intro-logo logo-light" loading="lazy">
+                <img src="/static/images/logo_black.png" alt="Mentora" class="tour-intro-logo logo-dark" loading="lazy">
                 <h2>{{ t('tour_intro_title', lang)|default('Welcome to your Learning Map') }}</h2>
                 <p>{{ t('tour_intro_body', lang)|default('Let us guide you through the main sections so you always know where to start.') }}</p>
                 <div class="tour-dont-show-checkbox">
@@ -9004,11 +9035,15 @@
                 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 applyTheme(prefersDark ? 'dark' : 'light', true);
             } else if (savedTheme) {
+                // Применяем сохраненную тему явно
                 applyTheme(savedTheme, false);
             } else {
                 // Default to system preference if no saved preference
                 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                applyTheme(prefersDark ? 'dark' : 'light', true);
+                const defaultTheme = prefersDark ? 'dark' : 'light';
+                // Сохраняем автоматическую тему для последующих переключений
+                localStorage.setItem(THEME_STORAGE_KEY, defaultTheme);
+                applyTheme(defaultTheme, true);
             }
         }
         
@@ -9023,7 +9058,8 @@
                     themeIcon.className = 'bi bi-sun';
                 }
             } else {
-                root.removeAttribute('data-theme');
+                // Явно устанавливаем light тему, чтобы переопределить медиа-запрос
+                root.setAttribute('data-theme', 'light');
                 if (themeIcon) {
                     themeIcon.className = 'bi bi-moon-stars';
                 }
@@ -9041,8 +9077,12 @@
         
         // Toggle theme
         function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            const root = document.documentElement;
+            const currentTheme = root.getAttribute('data-theme');
+            // Проверяем текущую тему: если dark или если нет атрибута, но система темная
+            const isCurrentlyDark = currentTheme === 'dark' || 
+                (!currentTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            const newTheme = isCurrentlyDark ? 'light' : 'dark';
             
             // Disable auto theme when manually toggling
             localStorage.setItem(THEME_AUTO_KEY, 'false');
@@ -9054,6 +9094,9 @@
             if ('vibrate' in navigator) {
                 navigator.vibrate(50);
             }
+            
+            // Принудительно обновляем, чтобы переопределить медиа-запрос
+            root.style.colorScheme = newTheme;
         }
         
         // Listen for system theme changes (if auto theme is enabled)
