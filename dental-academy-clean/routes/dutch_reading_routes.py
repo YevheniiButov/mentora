@@ -36,55 +36,63 @@ def practice(passage_id=None):
     # Проверяем премиум-доступ (если premium=true в URL, пропускаем проверку диагностики)
     is_premium_access = request.args.get('premium') == 'true'
     
-    # КРИТИЧНО: Проверяем, прошёл ли пользователь диагностику (если не премиум)
-    if not is_premium_access:
-        from utils.diagnostic_check import check_diagnostic_completed, get_diagnostic_redirect_url
-        if not check_diagnostic_completed(current_user.id):
-            lang = getattr(g, 'lang', None) or session.get('lang', DEFAULT_LANGUAGE)
-            if lang not in SUPPORTED_LANGUAGES:
-                lang = DEFAULT_LANGUAGE
-            from flask import flash, current_app
-            flash('Voor het lezen van Nederlandse teksten moet je eerst de diagnostische test doen.', 'info')
-            current_app.logger.info(f"User {current_user.id} redirected to diagnostic from dutch practice")
-            return redirect(get_diagnostic_redirect_url(lang))
-    
     # Получаем язык из сессии или g
     lang = getattr(g, 'lang', None) or session.get('lang', DEFAULT_LANGUAGE)
     if lang not in SUPPORTED_LANGUAGES:
         lang = DEFAULT_LANGUAGE
     
+    # КРИТИЧНО: Проверяем, прошёл ли пользователь диагностику (если не премиум)
+    if not is_premium_access:
+        from utils.diagnostic_check import check_diagnostic_completed, get_diagnostic_redirect_url
+        if not check_diagnostic_completed(current_user.id):
+            from flask import flash, current_app
+            flash('Voor het lezen van Nederlandse teksten moet je eerst de diagnostische test doen.', 'info')
+            current_app.logger.info(f"User {current_user.id} redirected to diagnostic from dutch practice (not premium)")
+            return redirect(get_diagnostic_redirect_url(lang))
+    
     # If no passage_id provided, get today's assignment or random passage
     if passage_id is None:
-        # Try to get today's fixed assignment for Dutch
-        from utils.individual_plan_helpers import select_dutch_passage_for_today
-        passage = select_dutch_passage_for_today(current_user)
-        if not passage:
-            # No assignment - get a random passage user hasn't completed recently
-            # Get passages user hasn't done in last 7 days
-            week_ago = datetime.now(timezone.utc) - timedelta(days=7)
-            completed_passage_ids = [p.passage_id for p in UserDutchProgress.query.filter(
-                UserDutchProgress.user_id == current_user.id,
-                UserDutchProgress.completed_at >= week_ago
-            ).all()]
-            
-            # Get a passage that's not in completed list
-            available_passages = DutchPassage.query.filter(
-                ~DutchPassage.id.in_(completed_passage_ids) if completed_passage_ids else True
-            ).all()
-            
+        # For premium access, skip assignment logic and get random passage
+        if is_premium_access:
+            # Get any available passage for premium users
+            available_passages = DutchPassage.query.all()
             if not available_passages:
-                # All passages done recently - pick any
-                available_passages = DutchPassage.query.all()
-            
-            if not available_passages:
-                # No passages in DB yet
                 from flask import flash
                 flash('Er zijn nog geen Nederlandse teksten beschikbaar.', 'warning')
                 return redirect(f'/{lang}/learning-map')
-            
-            # Pick random passage
             import random
             passage = random.choice(available_passages)
+        else:
+            # Try to get today's fixed assignment for Dutch
+            from utils.individual_plan_helpers import select_dutch_passage_for_today
+            passage = select_dutch_passage_for_today(current_user)
+            if not passage:
+                # No assignment - get a random passage user hasn't completed recently
+                # Get passages user hasn't done in last 7 days
+                week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+                completed_passage_ids = [p.passage_id for p in UserDutchProgress.query.filter(
+                    UserDutchProgress.user_id == current_user.id,
+                    UserDutchProgress.completed_at >= week_ago
+                ).all()]
+                
+                # Get a passage that's not in completed list
+                available_passages = DutchPassage.query.filter(
+                    ~DutchPassage.id.in_(completed_passage_ids) if completed_passage_ids else True
+                ).all()
+                
+                if not available_passages:
+                    # All passages done recently - pick any
+                    available_passages = DutchPassage.query.all()
+                
+                if not available_passages:
+                    # No passages in DB yet
+                    from flask import flash
+                    flash('Er zijn nog geen Nederlandse teksten beschikbaar.', 'warning')
+                    return redirect(f'/{lang}/learning-map')
+                
+                # Pick random passage
+                import random
+                passage = random.choice(available_passages)
         
         passage_id = passage.id
     else:
