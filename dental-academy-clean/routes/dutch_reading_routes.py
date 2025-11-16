@@ -41,11 +41,14 @@ def practice(passage_id=None):
     if lang not in SUPPORTED_LANGUAGES:
         lang = DEFAULT_LANGUAGE
     
+    from flask import current_app
+    current_app.logger.info(f"Dutch Reading practice: user={current_user.id}, premium={is_premium_access}, passage_id={passage_id}")
+    
     # КРИТИЧНО: Проверяем, прошёл ли пользователь диагностику (если не премиум)
     if not is_premium_access:
         from utils.diagnostic_check import check_diagnostic_completed, get_diagnostic_redirect_url
         if not check_diagnostic_completed(current_user.id):
-            from flask import flash, current_app
+            from flask import flash
             flash('Voor het lezen van Nederlandse teksten moet je eerst de diagnostische test doen.', 'info')
             current_app.logger.info(f"User {current_user.id} redirected to diagnostic from dutch practice (not premium)")
             return redirect(get_diagnostic_redirect_url(lang))
@@ -56,12 +59,15 @@ def practice(passage_id=None):
         if is_premium_access:
             # Get any available passage for premium users
             available_passages = DutchPassage.query.all()
+            current_app.logger.info(f"Premium access: found {len(available_passages)} available passages")
             if not available_passages:
                 from flask import flash
                 flash('Er zijn nog geen Nederlandse teksten beschikbaar.', 'warning')
+                current_app.logger.warning(f"No Dutch passages available in DB for premium user {current_user.id}")
                 return redirect(f'/{lang}/learning-map')
             import random
             passage = random.choice(available_passages)
+            current_app.logger.info(f"Selected passage {passage.id} for premium user {current_user.id}")
         else:
             # Try to get today's fixed assignment for Dutch
             from utils.individual_plan_helpers import select_dutch_passage_for_today
