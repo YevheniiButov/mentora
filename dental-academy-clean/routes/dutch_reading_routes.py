@@ -33,8 +33,8 @@ def before_request_dutch_reading():
 @login_required
 def practice(passage_id=None):
     """Dutch Reading practice page"""
-    # Проверяем премиум-доступ
-    is_premium_access = request.args.get('premium') == 'true' and getattr(current_user, 'is_premium_active', False)
+    # Проверяем премиум-доступ (если premium=true в URL, пропускаем проверку диагностики)
+    is_premium_access = request.args.get('premium') == 'true'
     
     # КРИТИЧНО: Проверяем, прошёл ли пользователь диагностику (если не премиум)
     if not is_premium_access:
