@@ -142,13 +142,13 @@ PASSAGES_DATA = [
             "content": "# Waarom Plastic in Onze Oceanen Sneller Afbreekt dan Gedacht\n\nTijdens decennia hebben wetenschappers aangenomen dat plastic in oceanen honderden of zelfs duizenden jaren zou blijven bestaan. Dit pessimistische beeld vormde de basis van veel klimaat- en milieubeleid. Echter, recent onderzoek suggereert een meer genuanceerd verhaal: onder bepaalde omstandigheden breekt plastic veel sneller af dan eerder werd gedacht.\n\nEen internationaal onderzoeksteam ontdekte dat bepaalde bacteriën en schimmels in de oceaan plastic kunnen 'eten'—het afbreken in kleinere moleculen. Deze microörganismen zijn niet nieuw; zij hebben zich waarschijnlijk miljoen jaren lang in oceanen bevonden. Wat wel nieuw is, is dat plasticvervuiling in de afgelopen decennia in volume is geëxplodeerd, wat bacteriën en schimmels de kans gaf om zich aan dit nieuwe 'voedsel' aan te passen.\n\n## Het Onderzoek\n\nWetenschappers uit meerdere landen verzamelden monsters van zeewatermicrobes in verschillende delen van de Atlantische Oceaan. Zij isoleerden organismen die in laboratorium-experimenten plastic afbraken. Het onderzoek toonde aan dat deze organismen specifieke enzymen produceren—biologische catalysators—die polymeren (de lange ketens waaruit plastic bestaat) kunnen breken.\n\nEen bijzonder interessant organisme was een bacteriënstam die gedeeltelijk plastic kon opeten. Dit bacterie had blijkbaar genetische mutaties ontwikkeld die haar in staat stelden een enzym te produceren dat polyethyleentereftalaat (PET)—een veel gebruikt plasticstype—kon afbreken.\n\nHet onderzoek toonde ook aan dat deze afbraaksnelheid afhankelijk is van verschillende factoren. Temperatuur speelt een rol: warmere oceanen zien snellere afbraak. Ook de chemische samenstelling van het plastic is belangrijk. Sommige plastictypen breken sneller af dan andere.\n\n## Implicaties en Voorzichtigheid\n\nAls eerste reactie klinkt dit goed nieuws: als plastic sneller afbreekt, is het milieuprobleem minder ernstig dan we dachten. Echter, wetenschappers waarschuwen dat dit nog niet het volledige verhaal is.\n\nTen eerste: zelfs als plastic sneller afbreekt, kan dit proces nog steeds tientallen of honderdden jaren duren in koude oceaangebieden. In warme tropen kan het sneller gaan, maar in arctische wateren verloopt het proces traag.\n\nTen tweede: wanneer plastic afbreekt, wordt het niet gewoon verdwenen. Het wordt opgebroken in microplastics—kleine stukjes plastic die nog steeds in het ecosysteem blijven. Deze microplastics worden ingenomen door vissen, krill en andere zeelevensvorm, wat negatieve gevolgen voor het zeeleven kan hebben.\n\nTen derde: de afbraakproducten van plastic zijn zelf niet altijd onschuldig. Sommige chemische stoffen die vrijkomen wanneer plastic afbreekt, kunnen toxisch zijn voor mariene organismen.\n\n## De Bredere Context\n\nHet feit dat bacteriën en schimmels plastic kunnen afbreken, is voorzichtig positief voor het toekomstig beheer van oceaanplasticide. Dit suggereert dat, in theoretische zin, de natuur zelf methoden heeft om bepaalde soorten vervuiling af te breken.\n\nHowel dit onderzoek fascinerend is, zeggen wetenschappers dat het niet betekent dat we onze plastic consumptie kunnen voortzetten zonder gevolgen. Het meest effectieve antwoord op oceaanplasticvervuiling blijft het voorkomen van plastic afval bij de bron: minder plastic produceren en beter recyclen.\n\nEr zijn ook pogingen om deze natuurlijke afbraakprocessen kunstmatig te versnellen. Wetenschappers werken aan genetically modified bacteriën die plastic sneller kunnen afbreken. Dit zou een potentiële hulpmiddel kunnen zijn in de toekomst, hoewel dit ook risico's met zich meebrengt.\n\nEindelijk onderstrepen deze bevindingen een belangrijk principe: ecosystemen zijn complex en adaptief. Wanneer miljoenenbiljoen tonnen nieuw materiaal in de oceaan terechtkomen, passen organismen zich aan. Dit is eerder een teken van nood dan van hoop—het suggereert dat de oceaan nu in een crisissituatie verkeert en zich moet aanpassen aan van mensen gemaakte vervuiling.",
             "vocabulary": [
                 {"word": "afbreken", "definition": "In kleinere stukken/moleculen ontbinden; desintegreren; degraderen"},
-                {"word": "microbe", "definition": "Zeer klein organisme zichtbaar alleen onder microscoop (bacteriën, schimmels, etc.)"},
-                {"word": "enzym", "definition": "Biologisch eiwit dat chemische reacties in levende wezens katalyseert (versnelt)"},
-                {"word": "polymeer", "definition": "Lange keten van moleculen verbonden met elkaar; plastic bestaat uit polymeren"},
-                {"word": "genomen", "definition": "De volledige verzameling van genen in een organisme; erfelijk materiaal"},
-                {"word": "mutatie", "definition": "Verandering in het genetische materiaal van een organisme"},
-                {"word": "verzamelen", "definition": "Bijeenbrengen; collecteren; in elkaar brengen"},
-                {"word": "implicatie", "definition": "Gevolg of betekenis; iets wat logisch volgt uit iets anders"}
+                {"word": "aangenomen", "definition": "Verondersteld; gedacht dat iets waar is; aannemen"},
+                {"word": "genuanceerd", "definition": "Met subtiele verschillen; niet zwart-wit; met nuances"},
+                {"word": "geëxplodeerd", "definition": "Plotseling zeer sterk toegenomen; explosief gegroeid"},
+                {"word": "aanpassen", "definition": "Zich aanpassen; veranderen om beter te passen bij nieuwe omstandigheden"},
+                {"word": "verzamelden", "definition": "Bijeenbrachten; verzamelen (verleden tijd)"},
+                {"word": "isoleerden", "definition": "Afzonderden; apart namen; isoleren (verleden tijd)"},
+                {"word": "waarschuwen", "definition": "Voor gevaar of probleem waarschuwen; alert maken"}
             ]
         },
         "questions": [
@@ -255,12 +255,12 @@ PASSAGES_DATA = [
             "vocabulary": [
                 {"word": "ontdekken", "definition": "Voor het eerst vinden; bloot leggen; aan het licht brengen"},
                 {"word": "verborgen", "definition": "Uit het zicht; verscholen; niet zichtbaar"},
-                {"word": "laser", "definition": "Apparaat dat gebundeld licht uitzendt; gebruikt in vele toepassingen"},
-                {"word": "kaatsen", "definition": "Terugkaatsen; weerkaatsen; afketsen"},
-                {"word": "bladerdak", "definition": "De bovenste laag van bomen in een woud; het geheel van bladeren en takken"},
-                {"word": "geometrisch", "definition": "Gerelateerd aan vormen en ruimtelijke patronen (vierkanten, cirkels, etc.)"},
-                {"word": "waterleiding", "definition": "Systeem van kanalen of buizen voor het vervoer van water"},
-                {"word": "sedentair", "definition": "Niet-nomadisch; blijvend op één plaats; niet rondtrekkend"}
+                {"word": "gefantaseerd", "definition": "Gedroomd; zich iets voorgesteld; gefantaseerd"},
+                {"word": "voorgoed", "definition": "Voor altijd; definitief; permanent"},
+                {"word": "terugkaatst", "definition": "Terugkaatst; weerkaatst; terugspringt"},
+                {"word": "dringen", "definition": "Doordringen; binnenkomen; door iets heen gaan"},
+                {"word": "verbijsterend", "definition": "Zeer verrassend; verbazingwekkend; schokkend"},
+                {"word": "ondermijnt", "definition": "Verzwakt; ondergraaft; doet afbreuk aan"}
             ]
         },
         "questions": [
