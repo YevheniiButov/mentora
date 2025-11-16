@@ -95,6 +95,50 @@
     .btn-outline-primary:hover {
         background: var(--bg-secondary);
     }
+    
+    /* Bootstrap overrides for dark theme */
+    [data-theme="dark"] .container,
+    [data-theme="dark"] .container-fluid {
+        background: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] .card-body {
+        background: var(--card-bg) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] .btn-primary {
+        background-color: var(--reading-accent, #3ECDC1) !important;
+        border-color: var(--reading-accent, #3ECDC1) !important;
+    }
+    
+    [data-theme="dark"] .btn-outline-primary {
+        color: var(--text-primary) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    [data-theme="dark"] .btn-outline-primary:hover {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] .progress-bar {
+        background-color: var(--reading-accent, #3ECDC1) !important;
+    }
+    
+    [data-theme="dark"] .progress {
+        background-color: var(--bg-secondary) !important;
+    }
+    
+    [data-theme="dark"] i.bi-inbox {
+        color: var(--text-secondary) !important;
+    }
+    
+    [data-theme="dark"] a.text-dark {
+        color: var(--text-primary) !important;
+    }
 </style>
 {% endblock %}
 
@@ -179,7 +223,7 @@
   </div>
   {% else %}
   <div class="text-center py-5">
-    <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+    <i class="bi bi-inbox" style="font-size: 4rem; color: var(--text-secondary);"></i>
     <p class="mt-3 text-muted">{{ t('no_terms_found', lang)|default('No terms found') }}</p>
     <a href="{{ url_for('medical_terms.index', lang=lang) }}" class="btn btn-primary">
       {{ t('back_to_home', lang)|default('Back to Home') }}

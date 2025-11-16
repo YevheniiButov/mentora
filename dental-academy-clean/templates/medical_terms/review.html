@@ -92,6 +92,87 @@
     .btn-outline-primary:hover, .btn-outline-success:hover, .btn-outline-secondary:hover {
         background: var(--bg-secondary);
     }
+    
+    /* Bootstrap overrides for dark theme */
+    [data-theme="dark"] .container,
+    [data-theme="dark"] .container-fluid {
+        background: var(--bg-primary) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] .card-body {
+        background: var(--card-bg) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] .table td,
+    [data-theme="dark"] .table th {
+        color: var(--text-primary) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    [data-theme="dark"] .table thead th {
+        background-color: var(--bg-secondary) !important;
+        color: var(--text-primary) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    [data-theme="dark"] .badge {
+        background-color: var(--bg-secondary) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] .badge.bg-info {
+        background-color: #0ea5e9 !important;
+        color: white !important;
+    }
+    
+    [data-theme="dark"] .badge.bg-warning {
+        background-color: #f59e0b !important;
+        color: white !important;
+    }
+    
+    [data-theme="dark"] .badge.bg-danger {
+        background-color: #ef4444 !important;
+        color: white !important;
+    }
+    
+    [data-theme="dark"] .badge[style*="background-color: #ff8c00"] {
+        background-color: #ff8c00 !important;
+        color: white !important;
+    }
+    
+    [data-theme="dark"] .form-select,
+    [data-theme="dark"] .form-control {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] .form-select option,
+    [data-theme="dark"] .form-control option {
+        background-color: var(--card-bg) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] .btn-outline-primary,
+    [data-theme="dark"] .btn-outline-success,
+    [data-theme="dark"] .btn-outline-secondary {
+        color: var(--text-primary) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    [data-theme="dark"] .btn-outline-primary:hover,
+    [data-theme="dark"] .btn-outline-success:hover,
+    [data-theme="dark"] .btn-outline-secondary:hover {
+        background-color: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    [data-theme="dark"] a.text-dark {
+        color: var(--text-primary) !important;
+    }
 </style>
 {% endblock %}
 
@@ -218,7 +299,7 @@
               {% elif term.difficulty == 3 %}
                 <span class="badge bg-warning">3</span>
               {% elif term.difficulty == 4 %}
-                <span class="badge bg-orange text-white" style="background-color: #ff8c00;">4</span>
+                <span class="badge" style="background-color: #ff8c00; color: white;">4</span>
               {% elif term.difficulty == 5 %}
                 <span class="badge bg-danger">5</span>
               {% endif %}
