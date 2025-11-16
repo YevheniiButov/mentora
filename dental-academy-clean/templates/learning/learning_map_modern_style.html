@@ -7542,56 +7542,31 @@
                 },
                 
                 startPremiumTerms() {
-                    // КРИТИЧНО: Проверяем диагностику перед запуском терминов
-                    if (!this.diagnosticCompleted) {
-                        alert('Для изучения терминов необходимо сначала пройти диагностический тест.');
-                        this.startDiagnostic('quick_30');
-                        return;
-                    }
+                    // Premium mode - no restrictions, all content available
                     // Redirect to flashcards daily session with premium access
                     window.location.href = `/flashcards/daily-session?premium=true`;
                 },
                 
                 startPremiumEnglish() {
-                    // КРИТИЧНО: Проверяем диагностику перед запуском английского
-                    if (!this.diagnosticCompleted) {
-                        alert('Для чтения английских текстов необходимо сначала пройти диагностический тест.');
-                        this.startDiagnostic('quick_30');
-                        return;
-                    }
+                    // Premium mode - no restrictions, all content available
                     // Redirect to English reading with premium access
                     window.location.href = `/english/practice?premium=true`;
                 },
                 
                 startDutchReading() {
-                    // КРИТИЧНО: Проверяем диагностику перед запуском нидерландского чтения
-                    if (!this.diagnosticCompleted) {
-                        alert('{{ t("diagnostic_required", lang)|default("Voor het lezen van Nederlandse teksten moet je eerst de diagnostische test doen.") }}');
-                        this.startDiagnostic('quick_30');
-                        return;
-                    }
-                    // Redirect to Dutch reading
-                    window.location.href = `/dutch/practice`;
+                    // Premium mode - no restrictions, all content available
+                    // Redirect to Dutch reading with premium access
+                    window.location.href = `/dutch/practice?premium=true`;
                 },
                 
                 startPremiumMedicalTests() {
-                    // КРИТИЧНО: Проверяем диагностику перед запуском медицинских тестов
-                    if (!this.diagnosticCompleted) {
-                        alert('{{ t("diagnostic_required", lang)|default("Для медицинских тестов необходимо сначала пройти диагностический тест.") }}');
-                        this.startDiagnostic('quick_30');
-                        return;
-                    }
+                    // Premium mode - no restrictions, all content available
                     // Redirect to automated practice with premium access
                     window.location.href = `/learning/automated/practice?premium=true`;
                 },
                 
                 startPremiumVP() {
-                    // КРИТИЧНО: Проверяем диагностику перед запуском виртуальных пациентов
-                    if (!this.diagnosticCompleted) {
-                        alert('Для работы с виртуальными пациентами необходимо сначала пройти диагностический тест.');
-                        this.startDiagnostic('quick_30');
-                        return;
-                    }
+                    // Premium mode - no restrictions, all content available
                     // Redirect to virtual patients with premium access
                     window.location.href = `/virtual-patients?premium=true`;
                 },
