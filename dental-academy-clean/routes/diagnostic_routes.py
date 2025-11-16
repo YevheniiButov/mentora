@@ -2435,14 +2435,20 @@ def show_question(lang, session_id):
         
         # Check if session is too old (24 hours)
         from datetime import timedelta
-        if diagnostic_session.started_at and (datetime.now(timezone.utc) - diagnostic_session.started_at) > timedelta(hours=24):
-            logger.warning(f"Session {session_id} is too old, abandoning it")
-            diagnostic_session.status = 'abandoned'
-            diagnostic_session.termination_reason = 'timeout'
-            diagnostic_session.completed_at = datetime.now(timezone.utc)
-            db.session.commit()
-            flash('Диагностическая сессия истекла (более 24 часов). Пожалуйста, начните новую.', 'warning')
-            return redirect(url_for('diagnostic.start_quick_test', lang=lang))
+        if diagnostic_session.started_at:
+            started_at = diagnostic_session.started_at
+            # Ensure started_at is timezone-aware
+            if started_at.tzinfo is None:
+                started_at = started_at.replace(tzinfo=timezone.utc)
+            
+            if (datetime.now(timezone.utc) - started_at) > timedelta(hours=24):
+                logger.warning(f"Session {session_id} is too old, abandoning it")
+                diagnostic_session.status = 'abandoned'
+                diagnostic_session.termination_reason = 'timeout'
+                diagnostic_session.completed_at = datetime.now(timezone.utc)
+                db.session.commit()
+                flash('Диагностическая сессия истекла (более 24 часов). Пожалуйста, начните новую.', 'warning')
+                return redirect(url_for('diagnostic.start_quick_test', lang=lang))
         
         # Получить текущий вопрос для пользователя
         # NOTE: current_question_id должен быть уже установлен через get_next_question API
