@@ -3082,6 +3082,11 @@
             border-left: 4px solid #17a2b8;
         }
 
+        .metric-card.warning {
+            background: linear-gradient(135deg, rgba(245,158,11,0.1), white);
+            border-left: 4px solid #f59e0b;
+        }
+
         .metric-icon i {
             font-size: 40px;
         }
@@ -3089,6 +3094,7 @@
         .metric-card.primary .metric-icon i { color: #0066cc; }
         .metric-card.success .metric-icon i { color: #28a745; }
         .metric-card.info .metric-icon i { color: #17a2b8; }
+        .metric-card.warning .metric-icon i { color: #f59e0b; }
 
         .metric-info {
             display: flex;
@@ -5915,6 +5921,17 @@
                             </div>
                         </div>
                         
+                        <!-- Medical Tests Block -->
+                        <div class="metric-card warning" @click="startPremiumMedicalTests()" style="cursor: pointer;">
+                            <div class="metric-icon">
+                                <i class="bi bi-clipboard-check"></i>
+                            </div>
+                            <div class="metric-info">
+                                <div class="metric-value">{{ t('medical_tests', lang)|default('Medical Tests') }}</div>
+                                <div class="metric-label">{{ t('automated_practice', lang)|default('Automated practice sessions') }}</div>
+                            </div>
+                        </div>
+                        
                         <!-- Virtual Patients Block -->
                         <div class="metric-card accent" @click="startPremiumVP()" style="cursor: pointer;">
                             <div class="metric-icon">
@@ -7554,7 +7571,20 @@
                         return;
                     }
                     // Redirect to Dutch reading
-                    window.location.href = `/dutch/practice`;
+                    const lang = this.lang || 'nl';
+                    window.location.href = `/${lang}/dutch/practice`;
+                },
+                
+                startPremiumMedicalTests() {
+                    // КРИТИЧНО: Проверяем диагностику перед запуском медицинских тестов
+                    if (!this.diagnosticCompleted) {
+                        alert('{{ t("diagnostic_required", lang)|default("Для медицинских тестов необходимо сначала пройти диагностический тест.") }}');
+                        this.startDiagnostic('quick_30');
+                        return;
+                    }
+                    // Redirect to automated practice with premium access
+                    const lang = this.lang || 'en';
+                    window.location.href = `/${lang}/learning/automated/practice?premium=true`;
                 },
                 
                 startPremiumVP() {
