@@ -17,6 +17,66 @@
     <script src="https://unpkg.com/@lottiefiles/lottie-player@2.0.2/dist/lottie-player.js"></script>
     
     <style>
+        :root {
+            --practice-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --practice-card-bg: #ffffff;
+            --practice-text: #1a1a1a;
+            --practice-text-secondary: #333;
+            --practice-text-muted: #666;
+            --practice-border: #e5e5e5;
+            --practice-accent: #0066cc;
+            --practice-accent-light: #4ca0ff;
+            --practice-surface: #f8f9fa;
+            --practice-shadow: rgba(0,0,0,0.1);
+            --practice-shadow-lg: rgba(0,0,0,0.15);
+            --practice-success: #28a745;
+            --practice-success-light: #20c997;
+            --practice-error: #dc3545;
+            --practice-error-dark: #c82333;
+            --practice-warning: #ffc107;
+        }
+
+        [data-theme="dark"] {
+            --practice-bg: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --practice-card-bg: #1e293b;
+            --practice-text: #f1f5f9;
+            --practice-text-secondary: #cbd5e1;
+            --practice-text-muted: #94a3b8;
+            --practice-border: #334155;
+            --practice-accent: #3ECDC1;
+            --practice-accent-light: #5eead4;
+            --practice-surface: #16213e;
+            --practice-shadow: rgba(0,0,0,0.3);
+            --practice-shadow-lg: rgba(0,0,0,0.5);
+            --practice-success: #10b981;
+            --practice-success-light: #34d399;
+            --practice-error: #ef4444;
+            --practice-error-dark: #dc2626;
+            --practice-warning: #f59e0b;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme]),
+            :root[data-theme=""] {
+                --practice-bg: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+                --practice-card-bg: #1e293b;
+                --practice-text: #f1f5f9;
+                --practice-text-secondary: #cbd5e1;
+                --practice-text-muted: #94a3b8;
+                --practice-border: #334155;
+                --practice-accent: #3ECDC1;
+                --practice-accent-light: #5eead4;
+                --practice-surface: #16213e;
+                --practice-shadow: rgba(0,0,0,0.3);
+                --practice-shadow-lg: rgba(0,0,0,0.5);
+                --practice-success: #10b981;
+                --practice-success-light: #34d399;
+                --practice-error: #ef4444;
+                --practice-error-dark: #dc2626;
+                --practice-warning: #f59e0b;
+            }
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -25,15 +85,17 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: var(--practice-bg);
             overflow-x: hidden;
+            color: var(--practice-text);
+            transition: background 0.3s, color 0.3s;
         }
 
         /* FULLSCREEN PRACTICE MODE */
         .practice-fullscreen {
             position: fixed;
             inset: 0;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: var(--practice-bg);
             z-index: 9999;
             overflow-y: auto;
             display: flex;
@@ -47,14 +109,14 @@
             left: 0;
             right: 0;
             height: 60px;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            background: var(--practice-card-bg);
+            box-shadow: 0 2px 8px var(--practice-shadow);
             z-index: 10000;
         }
 
         .progress-fill {
             height: 4px;
-            background: linear-gradient(90deg, #0066cc, #4ca0ff);
+            background: linear-gradient(90deg, var(--practice-accent), var(--practice-accent-light));
             transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -68,7 +130,7 @@
 
         .progress-text {
             font-weight: 600;
-            color: #333;
+            color: var(--practice-text-secondary);
             font-size: 16px;
         }
 
@@ -76,7 +138,7 @@
             background: none;
             border: none;
             font-size: 28px;
-            color: #6c757d;
+            color: var(--practice-text-muted);
             cursor: pointer;
             width: 40px;
             height: 40px;
@@ -88,8 +150,8 @@
         }
 
         .btn-exit:hover {
-            background: #f8f9fa;
-            color: #dc3545;
+            background: var(--practice-surface);
+            color: var(--practice-error);
         }
 
         /* PRACTICE CONTAINER */
@@ -104,12 +166,13 @@
 
         /* QUESTION CARD */
         .question-card {
-            background: white;
+            background: var(--practice-card-bg);
             border-radius: 20px;
             padding: 40px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 24px var(--practice-shadow);
             margin-bottom: 30px;
             animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--practice-text);
         }
 
         @keyframes slideIn {
@@ -126,7 +189,7 @@
         .question-text {
             font-size: 22px;
             font-weight: 600;
-            color: #1a1a1a;
+            color: var(--practice-text);
             line-height: 1.6;
             margin-bottom: 30px;
         }
@@ -137,8 +200,8 @@
             font-size: 18px;
             min-height: 70px;
             border-radius: 16px;
-            border: 3px solid #e5e5e5;
-            background: white;
+            border: 3px solid var(--practice-border);
+            background: var(--practice-card-bg);
             cursor: pointer;
             transition: all 0.2s ease;
             margin-bottom: 16px;
@@ -147,13 +210,13 @@
             position: relative;
             overflow: hidden;
             font-weight: 500;
-            color: #333;
+            color: var(--practice-text);
         }
 
         .answer-option:hover:not(.disabled) {
-            border-color: #0066cc;
+            border-color: var(--practice-accent);
             transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0, 102, 204, 0.15);
+            box-shadow: 0 6px 16px var(--practice-shadow);
         }
 
         .answer-option:active:not(.disabled) {
@@ -161,28 +224,36 @@
         }
 
         .answer-option.selected {
-            border-color: #0066cc;
-            background: rgba(0, 102, 204, 0.05);
+            border-color: var(--practice-accent);
+            background: rgba(62, 205, 193, 0.1);
+        }
+
+        [data-theme="dark"] .answer-option.selected {
+            background: rgba(62, 205, 193, 0.15);
         }
 
         .answer-option.correct {
-            background: linear-gradient(135deg, #28a745, #20c997);
+            background: linear-gradient(135deg, var(--practice-success), var(--practice-success-light));
             color: white;
-            border-color: #28a745;
+            border-color: var(--practice-success);
             animation: correctPulse 0.5s ease;
         }
 
         .answer-option.incorrect {
-            background: linear-gradient(135deg, #dc3545, #c82333);
+            background: linear-gradient(135deg, var(--practice-error), var(--practice-error-dark));
             color: white;
-            border-color: #dc3545;
+            border-color: var(--practice-error);
             animation: shake 0.5s ease;
         }
 
         .answer-option.correct-answer {
-            border: 3px solid #28a745;
-            background: rgba(40, 167, 69, 0.1);
+            border: 3px solid var(--practice-success);
+            background: rgba(16, 185, 129, 0.1);
             animation: correctPulse 0.5s ease;
+        }
+
+        [data-theme="dark"] .answer-option.correct-answer {
+            background: rgba(16, 185, 129, 0.15);
         }
 
         .answer-option.disabled {
@@ -208,11 +279,12 @@
             left: 0;
             right: 0;
             padding: 24px;
-            background: white;
-            box-shadow: 0 -4px 16px rgba(0,0,0,0.1);
+            background: var(--practice-card-bg);
+            box-shadow: 0 -4px 16px var(--practice-shadow);
             transform: translateY(100%);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 10001;
+            color: var(--practice-text);
         }
 
         .feedback-banner.show {
@@ -220,12 +292,12 @@
         }
 
         .feedback-banner.correct {
-            background: linear-gradient(135deg, #28a745, #20c997);
+            background: linear-gradient(135deg, var(--practice-success), var(--practice-success-light));
             color: white;
         }
 
         .feedback-banner.incorrect {
-            background: linear-gradient(135deg, #dc3545, #c82333);
+            background: linear-gradient(135deg, var(--practice-error), var(--practice-error-dark));
             color: white;
         }
 
@@ -262,7 +334,7 @@
 
         .btn-continue:hover {
             background: white;
-            color: #0066cc;
+            color: var(--practice-accent);
         }
 
         /* RESULTS SCREEN */
@@ -303,47 +375,63 @@
         }
 
         .score-circle.excellent {
-            border-color: #28a745;
-            background: rgba(40, 167, 69, 0.1);
+            border-color: var(--practice-success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        [data-theme="dark"] .score-circle.excellent {
+            background: rgba(16, 185, 129, 0.15);
         }
 
         .score-circle.good {
-            border-color: #20c997;
-            background: rgba(32, 201, 151, 0.1);
+            border-color: var(--practice-success-light);
+            background: rgba(52, 211, 153, 0.1);
+        }
+
+        [data-theme="dark"] .score-circle.good {
+            background: rgba(52, 211, 153, 0.15);
         }
 
         .score-circle.average {
-            border-color: #ffc107;
-            background: rgba(255, 193, 7, 0.1);
+            border-color: var(--practice-warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        [data-theme="dark"] .score-circle.average {
+            background: rgba(245, 158, 11, 0.15);
         }
 
         .score-circle.poor {
-            border-color: #dc3545;
-            background: rgba(220, 53, 69, 0.1);
+            border-color: var(--practice-error);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        [data-theme="dark"] .score-circle.poor {
+            background: rgba(239, 68, 68, 0.15);
         }
 
         .score-number {
             font-size: 32px;
             font-weight: 700;
-            color: #1a1a1a;
+            color: var(--practice-text);
         }
 
         .score-label {
             font-size: 12px;
-            color: #666;
+            color: var(--practice-text-muted);
             margin-top: 4px;
         }
 
         .results-title {
             font-size: 24px;
             font-weight: 700;
-            color: #1a1a1a;
+            color: var(--practice-text);
             margin-bottom: 8px;
         }
 
         .results-message {
             font-size: 14px;
-            color: #666;
+            color: var(--practice-text-muted);
             margin-bottom: 20px;
         }
 
@@ -355,10 +443,10 @@
         }
 
         .stat {
-            background: white;
+            background: var(--practice-card-bg);
             padding: 12px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 8px var(--practice-shadow);
         }
 
         .stat i {
@@ -368,28 +456,28 @@
         }
 
         .stat i.bi-check-circle {
-            color: #28a745;
+            color: var(--practice-success);
         }
 
         .stat i.bi-x-circle {
-            color: #dc3545;
+            color: var(--practice-error);
         }
 
         .stat i.bi-clock {
-            color: #0066cc;
+            color: var(--practice-accent);
         }
 
         .stat strong {
             display: block;
             font-size: 20px;
             font-weight: 700;
-            color: #1a1a1a;
+            color: var(--practice-text);
             margin-bottom: 4px;
         }
 
         .stat span {
             font-size: 11px;
-            color: #666;
+            color: var(--practice-text-muted);
         }
 
         .results-actions {
@@ -418,25 +506,25 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #0066cc, #4ca0ff);
+            background: linear-gradient(135deg, var(--practice-accent), var(--practice-accent-light));
             color: white;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 102, 204, 0.3);
+            box-shadow: 0 8px 20px var(--practice-shadow);
             color: white;
         }
 
         .btn-secondary {
-            background: white;
-            color: #333;
-            border: 2px solid #e5e5e5;
+            background: var(--practice-card-bg);
+            color: var(--practice-text);
+            border: 2px solid var(--practice-border);
         }
 
         .btn-secondary:hover {
-            border-color: #0066cc;
-            color: #0066cc;
+            border-color: var(--practice-accent);
+            color: var(--practice-accent);
             transform: translateY(-2px);
         }
 
@@ -542,7 +630,7 @@
         .loading {
             text-align: center;
             padding: 60px 20px;
-            color: #666;
+            color: var(--practice-text-muted);
         }
 
         .loading i {
@@ -555,6 +643,31 @@
             to { transform: rotate(360deg); }
         }
     </style>
+    
+    <!-- Theme initialization (sync with Learning Map) -->
+    <script>
+    (function() {
+        const THEME_STORAGE_KEY = 'mentora_theme';
+        const THEME_AUTO_KEY = 'mentora_theme_auto';
+        
+        const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+        const autoTheme = localStorage.getItem(THEME_AUTO_KEY);
+        
+        let theme = 'light';
+        
+        if (autoTheme === 'true') {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            theme = prefersDark ? 'dark' : 'light';
+        } else if (savedTheme) {
+            theme = savedTheme;
+        } else {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            theme = prefersDark ? 'dark' : 'light';
+        }
+        
+        document.documentElement.setAttribute('data-theme', theme);
+    })();
+    </script>
 </head>
 <body>
     <div class="practice-fullscreen">
