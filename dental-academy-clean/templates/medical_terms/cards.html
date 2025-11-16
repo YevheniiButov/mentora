@@ -2,6 +2,102 @@
 
 {% block title %}{{ t('flashcards', lang)|default('Flashcards') }} | Mentora{% endblock %}
 
+{% block extra_css %}
+<style>
+    :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8fafc;
+        --text-primary: #1f2937;
+        --text-secondary: #6b7280;
+        --border-color: #e5e7eb;
+        --card-bg: #ffffff;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    [data-theme="dark"] {
+        --bg-primary: #1a1a2e;
+        --bg-secondary: #16213e;
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --border-color: #334155;
+        --card-bg: #1e293b;
+        --shadow-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme]),
+        :root[data-theme=""] {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border-color: #334155;
+            --card-bg: #1e293b;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+        }
+    }
+    
+    body {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        transition: background 0.3s, color 0.3s;
+    }
+    
+    h2, h3, h4, h5, h6 {
+        color: var(--text-primary);
+    }
+    
+    .text-muted {
+        color: var(--text-secondary) !important;
+    }
+    
+    .text-dark {
+        color: var(--text-primary) !important;
+    }
+    
+    .flashcard-container {
+        perspective: 1000px;
+    }
+    
+    .flashcard {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 10px 30px var(--shadow-color);
+    }
+    
+    .flashcard-front, .flashcard-back {
+        background: var(--card-bg);
+        color: var(--text-primary);
+    }
+    
+    .card-term, .card-definition {
+        color: var(--text-primary);
+    }
+    
+    .translation-item {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+    }
+    
+    .translation-lang {
+        color: var(--text-secondary);
+    }
+    
+    .translation-text {
+        color: var(--text-primary);
+    }
+    
+    .btn-outline-primary {
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    .btn-outline-primary:hover {
+        background: var(--bg-secondary);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4" style="margin-top: 80px;">
   <!-- Header -->
@@ -254,13 +350,13 @@ if (terms.length > 0) {
   height: 100%;
   backface-visibility: hidden;
   border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px var(--shadow-color);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 40px;
-  background: white;
+  background: var(--card-bg);
 }
 
 .flashcard-back {
@@ -285,8 +381,8 @@ if (terms.length > 0) {
   left: 20px;
   padding: 8px 16px;
   border-radius: 20px;
-  background: #f8f9fa;
-  color: #333;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   font-weight: 600;
   font-size: 14px;
 }
@@ -294,14 +390,14 @@ if (terms.length > 0) {
 .card-term {
   font-size: 3rem;
   font-weight: 700;
-  color: #333;
+  color: var(--text-primary);
   text-align: center;
   margin-bottom: 20px;
 }
 
 .card-definition {
   font-size: 1.2rem;
-  color: #666;
+  color: var(--text-secondary);
   text-align: center;
   max-width: 80%;
 }
@@ -309,7 +405,7 @@ if (terms.length > 0) {
 .flip-hint {
   position: absolute;
   bottom: 20px;
-  color: #999;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -323,7 +419,7 @@ if (terms.length > 0) {
 
 .translation-item {
   padding: 15px;
-  background: #f8f9fa;
+  background: var(--bg-secondary);
   border-radius: 10px;
   border-left: 4px solid #3ECDC1;
 }
@@ -331,13 +427,13 @@ if (terms.length > 0) {
 .translation-lang {
   font-weight: 600;
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 5px;
 }
 
 .translation-text {
   font-size: 18px;
-  color: #333;
+  color: var(--text-primary);
   font-weight: 500;
 }
 
@@ -359,5 +455,13 @@ if (terms.length > 0) {
   }
 }
 </style>
+
+<script>
+// Theme initialization
+(function() {
+    const theme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
 {% endblock %}
 

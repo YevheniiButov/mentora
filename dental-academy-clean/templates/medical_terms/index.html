@@ -2,6 +2,94 @@
 
 {% block title %}{{ t('medical_terms_review', lang)|default('Medical Terms Review') }} | Mentora{% endblock %}
 
+{% block extra_css %}
+<style>
+    :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8fafc;
+        --text-primary: #1f2937;
+        --text-secondary: #6b7280;
+        --border-color: #e5e7eb;
+        --card-bg: #ffffff;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    [data-theme="dark"] {
+        --bg-primary: #1a1a2e;
+        --bg-secondary: #16213e;
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --border-color: #334155;
+        --card-bg: #1e293b;
+        --shadow-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme]),
+        :root[data-theme=""] {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border-color: #334155;
+            --card-bg: #1e293b;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+        }
+    }
+    
+    body {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        transition: background 0.3s, color 0.3s;
+    }
+    
+    .container {
+        background: var(--bg-primary);
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--text-primary);
+    }
+    
+    .text-muted {
+        color: var(--text-secondary) !important;
+    }
+    
+    .card {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    .card-title {
+        color: var(--text-primary);
+    }
+    
+    .badge {
+        border-color: var(--border-color);
+    }
+    
+    .btn-outline-primary, .btn-outline-success, .btn-outline-secondary {
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    .btn-outline-primary:hover, .btn-outline-success:hover, .btn-outline-secondary:hover {
+        background: var(--bg-secondary);
+        border-color: var(--border-color);
+    }
+    
+    .bg-light {
+        background: var(--card-bg) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .text-dark {
+        color: var(--text-primary) !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5" style="margin-top: 80px;">
   <!-- Header -->
@@ -163,8 +251,16 @@
 
 .hover-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+  box-shadow: 0 8px 20px var(--shadow-color) !important;
 }
 </style>
+
+<script>
+// Theme initialization
+(function() {
+    const theme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
 {% endblock %}
 

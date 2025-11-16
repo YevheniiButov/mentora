@@ -2,6 +2,99 @@
 
 {% block title %}{{ t('review_terms', lang)|default('Review Terms') }} | Mentora{% endblock %}
 
+{% block extra_css %}
+<style>
+    :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #f8fafc;
+        --text-primary: #1f2937;
+        --text-secondary: #6b7280;
+        --border-color: #e5e7eb;
+        --card-bg: #ffffff;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+    }
+    
+    [data-theme="dark"] {
+        --bg-primary: #1a1a2e;
+        --bg-secondary: #16213e;
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --border-color: #334155;
+        --card-bg: #1e293b;
+        --shadow-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme]),
+        :root[data-theme=""] {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border-color: #334155;
+            --card-bg: #1e293b;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+        }
+    }
+    
+    body {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        transition: background 0.3s, color 0.3s;
+    }
+    
+    h2, h3, h4, h5, h6 {
+        color: var(--text-primary);
+    }
+    
+    .text-muted {
+        color: var(--text-secondary) !important;
+    }
+    
+    .text-dark {
+        color: var(--text-primary) !important;
+    }
+    
+    .card {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    .table {
+        color: var(--text-primary);
+    }
+    
+    .table-striped > tbody > tr:nth-of-type(odd) {
+        background: var(--bg-secondary);
+    }
+    
+    .table-light {
+        background: var(--card-bg) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .table-hover > tbody > tr:hover {
+        background: var(--bg-secondary);
+    }
+    
+    .form-select, .form-control {
+        background: var(--card-bg);
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    .btn-outline-primary, .btn-outline-success, .btn-outline-secondary {
+        border-color: var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    .btn-outline-primary:hover, .btn-outline-success:hover, .btn-outline-secondary:hover {
+        background: var(--bg-secondary);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container-fluid py-4" style="margin-top: 80px;">
   <!-- Header with filters -->
@@ -163,5 +256,13 @@
   }
 }
 </style>
+
+<script>
+// Theme initialization
+(function() {
+    const theme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', theme);
+})();
+</script>
 {% endblock %}
 

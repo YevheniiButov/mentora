@@ -64,6 +64,14 @@
     <!-- Essential JavaScript -->
     {% block extra_js %}{% endblock %}
     
+    <!-- Theme initialization -->
+    <script>
+    (function() {
+        const theme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+    })();
+    </script>
+    
     <!-- Minimal global functions -->
     <script>
         function showLoading(message = 'Загрузка...') {

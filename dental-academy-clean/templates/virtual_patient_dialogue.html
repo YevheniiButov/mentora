@@ -12,6 +12,105 @@
     
     <link rel="stylesheet" href="{{ url_for('static', filename='css/vp-medical-pro.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/vp-enhanced.css') }}">
+    
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --card-bg: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border-color: #334155;
+            --card-bg: #1e293b;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme]),
+            :root[data-theme=""] {
+                --bg-primary: #1a1a2e;
+                --bg-secondary: #16213e;
+                --text-primary: #f1f5f9;
+                --text-secondary: #cbd5e1;
+                --border-color: #334155;
+                --card-bg: #1e293b;
+                --shadow-color: rgba(0, 0, 0, 0.5);
+            }
+        }
+        
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
+        }
+        
+        .vp-container {
+            background: var(--bg-primary);
+        }
+        
+        .text-muted {
+            color: var(--text-secondary) !important;
+        }
+        
+        /* VP Dark Mode Overrides */
+        [data-theme="dark"] .vp-container,
+        [data-theme="dark"] .vp-interface,
+        [data-theme="dark"] .vp-dialogue-area,
+        [data-theme="dark"] .dialogue-thread {
+            background: var(--bg-primary) !important;
+        }
+        
+        [data-theme="dark"] .vp-progress-header,
+        [data-theme="dark"] .patient-card,
+        [data-theme="dark"] .interaction-area {
+            background: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+        }
+        
+        [data-theme="dark"] .dialogue-message.from-patient .message-content {
+            background: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        [data-theme="dark"] .patient-name,
+        [data-theme="dark"] .patient-meta,
+        [data-theme="dark"] .toggle-label,
+        [data-theme="dark"] .detail-content,
+        [data-theme="dark"] .progress-text,
+        [data-theme="dark"] .progress-time {
+            color: var(--text-primary) !important;
+        }
+        
+        [data-theme="dark"] .detail-section,
+        [data-theme="dark"] .allergy-tag,
+        [data-theme="dark"] .vital-item {
+            background: var(--bg-secondary) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        [data-theme="dark"] .option-button,
+        [data-theme="dark"] .btn-primary,
+        [data-theme="dark"] .btn-secondary {
+            background: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        [data-theme="dark"] .option-button:hover,
+        [data-theme="dark"] .btn-primary:hover {
+            background: var(--bg-secondary) !important;
+        }
+    </style>
 </head>
 <body>
     <div class="vp-container" id="vpContainer">
@@ -328,6 +427,12 @@
     <script src="{{ url_for('static', filename='js/vp-enhanced.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vp-dialogue.js') }}"></script>
     <script>
+        // Theme initialization
+        (function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+        
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             const scenarioId = {{ scenario_id }};
