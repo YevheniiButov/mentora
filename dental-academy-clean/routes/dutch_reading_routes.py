@@ -59,15 +59,52 @@ def practice(passage_id=None):
         if is_premium_access:
             # Get any available passage for premium users
             available_passages = DutchPassage.query.all()
-            current_app.logger.info(f"Premium access: found {len(available_passages)} available passages")
+            current_app.logger.info(f"Premium access: found {len(available_passages)} available passages in DB")
+            
+            # If no passages in DB, try to use JS file-based passages
             if not available_passages:
-                from flask import flash
-                flash('Er zijn nog geen Nederlandse teksten beschikbaar.', 'warning')
-                current_app.logger.warning(f"No Dutch passages available in DB for premium user {current_user.id}")
-                return redirect(f'/{lang}/learning-map')
-            import random
-            passage = random.choice(available_passages)
-            current_app.logger.info(f"Selected passage {passage.id} for premium user {current_user.id}")
+                import os
+                lessons_dir = os.path.join(current_app.static_folder, 'js', 'lessons_dutch')
+                if not os.path.exists(lessons_dir):
+                    lessons_dir = os.path.join(current_app.root_path, '..', 'static', 'js', 'lessons_dutch')
+                    lessons_dir = os.path.abspath(lessons_dir)
+                
+                if os.path.exists(lessons_dir):
+                    js_files = [f for f in os.listdir(lessons_dir) if f.startswith('lesson_') and f.endswith('.js')]
+                    if js_files:
+                        # Extract lesson numbers and use as passage IDs
+                        import random
+                        import re
+                        lesson_numbers = []
+                        for f in js_files:
+                            match = re.search(r'lesson_(\d+)', f)
+                            if match:
+                                lesson_numbers.append(int(match.group(1)))
+                        
+                        if lesson_numbers:
+                            # Use lesson number as passage_id (will be loaded from JS file)
+                            passage_id = random.choice(lesson_numbers)
+                            current_app.logger.info(f"Premium access: using JS file-based passage {passage_id} (lesson_{passage_id:03d}.js)")
+                        else:
+                            from flask import flash
+                            flash('Er zijn nog geen Nederlandse teksten beschikbaar.', 'warning')
+                            current_app.logger.warning(f"No valid Dutch lesson files found for premium user {current_user.id}")
+                            return redirect(f'/{lang}/learning-map')
+                    else:
+                        from flask import flash
+                        flash('Er zijn nog geen Nederlandse teksten beschikbaar.', 'warning')
+                        current_app.logger.warning(f"No Dutch lesson JS files found for premium user {current_user.id}")
+                        return redirect(f'/{lang}/learning-map')
+                else:
+                    from flask import flash
+                    flash('Er zijn nog geen Nederlandse teksten beschikbaar.', 'warning')
+                    current_app.logger.warning(f"Dutch lessons directory not found for premium user {current_user.id}")
+                    return redirect(f'/{lang}/learning-map')
+            else:
+                import random
+                passage = random.choice(available_passages)
+                passage_id = passage.id
+                current_app.logger.info(f"Selected passage {passage_id} for premium user {current_user.id}")
         else:
             # Try to get today's fixed assignment for Dutch
             from utils.individual_plan_helpers import select_dutch_passage_for_today
@@ -99,10 +136,31 @@ def practice(passage_id=None):
                 # Pick random passage
                 import random
                 passage = random.choice(available_passages)
+                passage_id = passage.id
         
-        passage_id = passage.id
+        # If passage_id is set but not from DB, it's a JS file-based passage
+        if passage_id and not isinstance(passage_id, int):
+            # This shouldn't happen, but handle it
+            passage_id = int(passage_id) if str(passage_id).isdigit() else None
+    
+    # Check if passage_id is from JS file (small numbers like 1, 2, 3) or from DB
+    # JS file passages typically have IDs 1-100, DB passages have auto-increment IDs
+    # For now, if passage_id <= 100, assume it's a JS file passage
+    is_js_file_passage = passage_id and passage_id <= 100
+    
+    if is_js_file_passage:
+        # JS file-based passage - no DB object needed
+        passage = None
+        current_app.logger.info(f"Using JS file-based passage {passage_id}")
     else:
-        passage = DutchPassage.query.get_or_404(passage_id)
+        # Try to load from DB
+        try:
+            passage = DutchPassage.query.get_or_404(passage_id)
+        except:
+            # If not found in DB, try as JS file
+            is_js_file_passage = True
+            passage = None
+            current_app.logger.info(f"Passage {passage_id} not found in DB, using as JS file-based passage")
     
     # Check if user has already completed this passage today
     today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
@@ -121,6 +179,8 @@ def practice(passage_id=None):
     return render_template(
         'dutch_reading.html',
         passage=passage,
+        passage_id=passage_id,
+        is_js_file_passage=is_js_file_passage,
         lang=lang,
         completed_today=completed_today
     )
