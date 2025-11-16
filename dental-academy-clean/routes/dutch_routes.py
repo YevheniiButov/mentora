@@ -14,8 +14,8 @@ from utils.mastery_helpers import update_item_mastery
 dutch_bp = Blueprint('dutch', __name__, url_prefix='/api/dutch')
 
 # Mapping passage IDs to lesson numbers (for JS file-based lessons)
-# For now, if we use DB, this is not needed
-# But keep structure for future expansion
+# If passage_id <= 100, it's a JS file-based passage (lesson_001.js = passage_id 1)
+# For DB passages, use passage_id directly
 PASSAGE_ID_TO_LESSON_MAP = {}
 
 def parse_lesson_js(js_content):
@@ -209,9 +209,13 @@ def get_passage(passage_id):
     try:
         current_app.logger.info(f"Getting Dutch passage {passage_id}")
         
-        # Try to load from JS file first
+        # Try to load from JS file first (if passage_id <= 100, it's a JS file-based passage)
         lesson_num = PASSAGE_ID_TO_LESSON_MAP.get(passage_id, passage_id)
-        lesson_data = get_lesson_from_file(lesson_num)
+        # If passage_id is small (<= 100), assume it's a JS file lesson number
+        if passage_id <= 100:
+            lesson_data = get_lesson_from_file(lesson_num)
+        else:
+            lesson_data = None
         
         if lesson_data:
             # Return full lesson data
@@ -332,9 +336,12 @@ def submit_answers():
             else:
                 return jsonify({'error': f'Answers must be an object'}), 400
         
-        # Try to load from JS file
+        # Try to load from JS file (if passage_id <= 100, it's a JS file-based passage)
         lesson_num = PASSAGE_ID_TO_LESSON_MAP.get(passage_id, passage_id)
-        lesson_data = get_lesson_from_file(lesson_num)
+        if passage_id <= 100:
+            lesson_data = get_lesson_from_file(lesson_num)
+        else:
+            lesson_data = None
         
         if lesson_data:
             # Check answers against lesson
