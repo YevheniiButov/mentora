@@ -506,6 +506,10 @@ try:
     from routes.english_routes import english_bp
     from routes.english_reading_routes import english_reading_bp
     
+    # Импорт Dutch Reading роутов
+    from routes.dutch_routes import dutch_bp
+    from routes.dutch_reading_routes import dutch_reading_bp
+    
     # Импорт Reading Comprehension роутов
     from routes.reading_comprehension import reading_comprehension_bp
     
@@ -596,6 +600,12 @@ try:
     # These have specific prefixes (/api/english and /english) so they won't conflict
     app.register_blueprint(english_bp)  # /api/english
     app.register_blueprint(english_reading_bp)  # /english
+    
+    # Регистрация Dutch Reading blueprints
+    # These have specific prefixes (/api/dutch and /dutch) so they won't conflict
+    app.register_blueprint(dutch_bp)  # /api/dutch
+    app.register_blueprint(dutch_reading_bp)  # /dutch
+    logger.info("✅ Dutch Reading blueprints registered successfully")
     
     # Регистрация Reading Comprehension blueprint
     app.register_blueprint(reading_comprehension_bp)  # /api/reading-comprehension

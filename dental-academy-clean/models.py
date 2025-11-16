@@ -6526,6 +6526,78 @@ class UserEnglishProgress(db.Model):
 
 
 # ========================================
+# DUTCH READING COMPREHENSION
+# ========================================
+
+class DutchPassage(db.Model):
+    """Dutch reading passages for language comprehension"""
+    __tablename__ = 'dutch_passages'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    text = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(100))  # 'medisch', 'algemeen', 'wetenschap', etc.
+    difficulty = db.Column(db.Integer, default=3)  # 1-5 difficulty level
+    word_count = db.Column(db.Integer)
+    image_url = db.Column(db.String(500), nullable=True)  # URL or path to thematic image
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    questions = db.relationship('DutchQuestion', backref='passage', lazy='dynamic', cascade='all, delete-orphan')
+    
+    def __repr__(self):
+        return f'<DutchPassage {self.id}: {self.title}>'
+
+
+class DutchQuestion(db.Model):
+    """Questions for Dutch passages"""
+    __tablename__ = 'dutch_questions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    passage_id = db.Column(db.Integer, db.ForeignKey('dutch_passages.id'), nullable=False)
+    question_number = db.Column(db.Integer)
+    question_type = db.Column(db.String(50))  # 'multiple_choice', 'true_false', 'fill_blank', 'open'
+    question_text = db.Column(db.Text, nullable=False)
+    correct_answer = db.Column(db.String(500))
+    options = db.Column(db.Text)  # JSON stored as Text: {"A": "...", "B": "...", "C": "...", "D": "..."}
+    explanation = db.Column(db.Text)  # Why this answer is correct
+    
+    def get_options(self):
+        """Get options as dict"""
+        if self.options:
+            try:
+                return json.loads(self.options)
+            except:
+                pass
+        return {}
+    
+    def set_options(self, options_dict):
+        """Set options from dict"""
+        self.options = safe_json_dumps(options_dict) if options_dict else None
+    
+    def __repr__(self):
+        return f'<DutchQuestion {self.id}: Q{self.question_number} ({self.question_type})>'
+
+
+class UserDutchProgress(db.Model):
+    """Track user progress in Dutch reading"""
+    __tablename__ = 'user_dutch_progress'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    passage_id = db.Column(db.Integer, db.ForeignKey('dutch_passages.id'), nullable=False)
+    completed_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    score = db.Column(db.Integer)  # Correct answers out of total
+    total_questions = db.Column(db.Integer)
+    time_spent = db.Column(db.Integer)  # seconds
+    
+    # Relationships
+    passage = db.relationship('DutchPassage', backref='user_progresses', lazy=True)
+    
+    def __repr__(self):
+        return f'<UserDutchProgress User:{self.user_id} Passage:{self.passage_id} Score:{self.score}/{self.total_questions}>'
+
+
+# ========================================
 # DAILY ASSIGNMENTS
 # ========================================
 

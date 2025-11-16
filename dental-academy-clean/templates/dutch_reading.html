@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'nl' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nederlands Leesbegrip - Leesoefening</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
+    <!-- Custom Styles (reuse English reading styles) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/english-reading.css') }}">
+    
+    <style>
+        /* Dutch-specific styles if needed */
+        .passage-section {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .dutch-difficulty-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .difficulty-1 { background: #d4edda; color: #155724; }
+        .difficulty-2 { background: #d1ecf1; color: #0c5460; }
+        .difficulty-3 { background: #fff3cd; color: #856404; }
+        .difficulty-4 { background: #f8d7da; color: #721c24; }
+        .difficulty-5 { background: #e2d1f9; color: #4a148c; }
+    </style>
+    
+</head>
+<body>
+<!-- Exit Button -->
+<div class="exit-button-container">
+    <button class="btn-exit" id="exitButton" onclick="goToLearningMap()" aria-label="Sluiten">
+        <i class="bi bi-x-lg"></i>
+        <span id="exitButtonText">Terug naar Leerkaart</span>
+    </button>
+</div>
+
+<div class="english-reading-container"> <!-- Reuse same container class -->
+    <!-- Header -->
+    <div class="reading-header">
+        <div class="header-content">
+            <h1 id="lessonTitle">Laden...</h1>
+            <div class="header-meta">
+                <span class="timer" id="timer">00:00</span>
+                <span class="estimated-time" id="estimatedTime"></span>
+            </div>
+        </div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <span class="progress-text" id="progressText">0 / 0 vragen</span>
+        </div>
+    </div>
+    
+    <!-- Main Content: Two Column Layout (no vocabulary for Dutch) -->
+    <div class="reading-content-wrapper" style="grid-template-columns: 1.2fr 1fr;">
+        <!-- Left: Passage Text -->
+        <div class="passage-section" id="passageSection">
+            <div class="passage-header">
+                <h2 id="passageTitle" {% if passage %}data-passage-id="{{ passage.id }}"{% endif %}>Laden...</h2>
+                <img id="passageImage" class="passage-image" style="display: none;" alt="Afbeelding bij tekst">
+            </div>
+            <div class="passage-text" id="passageText">
+                <div class="paragraphs-container" id="paragraphsContainer">
+                    <!-- Paragraphs will be inserted here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right: Questions -->
+        <div class="questions-section" id="questionsSection">
+            <div class="questions-header">
+                <h3>Vragen</h3>
+            </div>
+            <div id="questionsContainer" class="questions-container">
+                <!-- Questions will be inserted here -->
+            </div>
+            <button class="btn-submit" id="submitBtn" style="display: none;">Antwoorden Indienen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Results Modal -->
+<div class="modal fade" id="resultsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📊 Resultaten</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Sluiten"></button>
+            </div>
+            <div class="modal-body">
+                <div class="results-summary">
+                    <div class="score-circle">
+                        <span class="score-percentage" id="scorePercentage">0%</span>
+                        <span class="score-label">Score</span>
+                    </div>
+                    <div class="score-details">
+                        <p><strong>Correct:</strong> <span id="scoreCorrect">0</span> / <span id="scoreTotal">0</span></p>
+                        <p><strong>Tijd besteed:</strong> <span id="timeSpent">00:00</span></p>
+                        <p><strong>XP verdiend:</strong> <span id="xpEarned">0</span> 🏆</p>
+                    </div>
+                </div>
+                
+                <div class="results-details" id="resultsDetails">
+                    <!-- Detailed results will be inserted here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="goToLearningMap()">Terug naar Leerkaart</button>
+                <button type="button" class="btn btn-primary" onclick="location.reload()">Probeer Opnieuw</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Laden...</span>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// Configuration
+const PASSAGE_ID = {{ passage.id if passage else 'null' }};
+const API_BASE_URL = '/api/dutch';
+const LANG = '{{ lang or "nl" }}';
+
+// State
+let lessonData = null;
+let userAnswers = {};
+let startTime = Date.now();
+let timerInterval = null;
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Dutch Reading Practice initialized');
+    console.log('Passage ID:', PASSAGE_ID);
+    
+    if (!PASSAGE_ID) {
+        alert('Geen tekst geselecteerd.');
+        goToLearningMap();
+        return;
+    }
+    
+    loadPassage();
+    startTimer();
+});
+
+function startTimer() {
+    timerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        document.getElementById('timer').textContent = 
+            `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }, 1000);
+}
+
+function stopTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+
+async function loadPassage() {
+    showLoading(true);
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/passage/${PASSAGE_ID}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Loaded passage data:', data);
+        
+        if (data.passage) {
+            lessonData = data;
+            renderPassage(data.passage);
+            renderQuestions(data.questions || []);
+        } else {
+            throw new Error('Invalid passage data');
+        }
+        
+    } catch (error) {
+        console.error('Error loading passage:', error);
+        alert('Fout bij het laden van de tekst: ' + error.message);
+        goToLearningMap();
+    } finally {
+        showLoading(false);
+    }
+}
+
+function renderPassage(passage) {
+    document.getElementById('lessonTitle').textContent = passage.title;
+    document.getElementById('passageTitle').textContent = passage.title;
+    
+    // Show difficulty badge
+    if (passage.difficulty) {
+        const badge = document.createElement('span');
+        badge.className = `dutch-difficulty-badge difficulty-${passage.difficulty}`;
+        badge.textContent = `Niveau ${passage.difficulty}`;
+        document.getElementById('passageTitle').appendChild(badge);
+    }
+    
+    // Show image if available
+    if (passage.image_url) {
+        const img = document.getElementById('passageImage');
+        img.src = passage.image_url;
+        img.style.display = 'block';
+    }
+    
+    // Show estimated time if available
+    if (passage.word_count) {
+        const readingTime = Math.ceil(passage.word_count / 200); // ~200 words per minute
+        document.getElementById('estimatedTime').textContent = `⏱️ ~${readingTime} min`;
+    }
+    
+    // Render text with paragraphs
+    const container = document.getElementById('paragraphsContainer');
+    const paragraphs = passage.text.split('\n\n');
+    
+    paragraphs.forEach((para, index) => {
+        if (para.trim()) {
+            const p = document.createElement('p');
+            p.className = 'passage-paragraph';
+            p.textContent = para.trim();
+            p.dataset.paragraphIndex = index + 1;
+            container.appendChild(p);
+        }
+    });
+}
+
+function renderQuestions(questions) {
+    const container = document.getElementById('questionsContainer');
+    container.innerHTML = '';
+    
+    questions.forEach((question, index) => {
+        const questionEl = document.createElement('div');
+        questionEl.className = 'question-card';
+        questionEl.dataset.questionId = question.id;
+        
+        // Question header
+        const questionHeader = document.createElement('div');
+        questionHeader.className = 'question-header';
+        questionHeader.innerHTML = `
+            <span class="question-number">${index + 1}</span>
+            <span class="question-text">${question.question_text}</span>
+        `;
+        questionEl.appendChild(questionHeader);
+        
+        // Options
+        if (question.options && typeof question.options === 'object') {
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'options-container';
+            
+            Object.entries(question.options).forEach(([key, value]) => {
+                const option = document.createElement('label');
+                option.className = 'option-label';
+                option.innerHTML = `
+                    <input type="radio" name="question_${question.id}" value="${key}" onchange="handleAnswerChange(${question.id}, '${key}')">
+                    <span class="option-text"><strong>${key}.</strong> ${value}</span>
+                `;
+                optionsContainer.appendChild(option);
+            });
+            
+            questionEl.appendChild(optionsContainer);
+        }
+        
+        container.appendChild(questionEl);
+    });
+    
+    // Update progress
+    document.getElementById('progressText').textContent = `0 / ${questions.length} vragen`;
+    document.getElementById('submitBtn').style.display = 'block';
+}
+
+function handleAnswerChange(questionId, answer) {
+    userAnswers[questionId] = answer;
+    updateProgress();
+}
+
+function updateProgress() {
+    const totalQuestions = lessonData?.questions?.length || 0;
+    const answered = Object.keys(userAnswers).length;
+    const percentage = totalQuestions > 0 ? (answered / totalQuestions) * 100 : 0;
+    
+    document.getElementById('progressFill').style.width = `${percentage}%`;
+    document.getElementById('progressText').textContent = `${answered} / ${totalQuestions} vragen`;
+}
+
+document.getElementById('submitBtn')?.addEventListener('click', submitAnswers);
+
+async function submitAnswers() {
+    const totalQuestions = lessonData?.questions?.length || 0;
+    const answered = Object.keys(userAnswers).length;
+    
+    if (answered < totalQuestions) {
+        if (!confirm(`Je hebt ${answered} van de ${totalQuestions} vragen beantwoord. Wil je toch indienen?`)) {
+            return;
+        }
+    }
+    
+    stopTimer();
+    showLoading(true);
+    
+    const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/submit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
+            },
+            body: JSON.stringify({
+                passage_id: PASSAGE_ID,
+                answers: userAnswers,
+                time_spent: timeSpent
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Submit response:', data);
+        
+        showResults(data, timeSpent);
+        
+    } catch (error) {
+        console.error('Error submitting answers:', error);
+        alert('Fout bij het indienen: ' + error.message);
+    } finally {
+        showLoading(false);
+    }
+}
+
+function showResults(data, timeSpent) {
+    const percentage = data.percentage || 0;
+    const correct = data.score || 0;
+    const total = data.total || 0;
+    const xp = data.xp_earned || 0;
+    
+    const minutes = Math.floor(timeSpent / 60);
+    const seconds = timeSpent % 60;
+    const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    
+    document.getElementById('scorePercentage').textContent = `${percentage}%`;
+    document.getElementById('scoreCorrect').textContent = correct;
+    document.getElementById('scoreTotal').textContent = total;
+    document.getElementById('timeSpent').textContent = timeStr;
+    document.getElementById('xpEarned').textContent = xp;
+    
+    // Show detailed results
+    const resultsDetails = document.getElementById('resultsDetails');
+    resultsDetails.innerHTML = '<h6>Gedetailleerde resultaten:</h6>';
+    
+    data.results?.forEach((result) => {
+        const resultCard = document.createElement('div');
+        resultCard.className = `result-card ${result.correct ? 'correct' : 'incorrect'}`;
+        resultCard.innerHTML = `
+            <div class="result-header">
+                <span>Vraag ${result.question_number}</span>
+                <span class="result-icon">${result.correct ? '✅' : '❌'}</span>
+            </div>
+            <div class="result-details">
+                <p><strong>Jouw antwoord:</strong> ${result.user_answer || 'Geen antwoord'}</p>
+                <p><strong>Correct antwoord:</strong> ${result.correct_answer}</p>
+                ${result.explanation ? `<p class="explanation"><strong>Uitleg:</strong> ${result.explanation}</p>` : ''}
+            </div>
+        `;
+        resultsDetails.appendChild(resultCard);
+    });
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('resultsModal'));
+    modal.show();
+}
+
+function goToLearningMap() {
+    window.location.href = `/${LANG}/learning-map`;
+}
+
+function showLoading(show) {
+    document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+}
+</script>
+
+<style>
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    
+    .results-summary {
+        display: flex;
+        gap: 30px;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 30px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 12px;
+    }
+    
+    .score-circle {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .score-percentage {
+        font-size: 32px;
+        font-weight: bold;
+    }
+    
+    .score-label {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+    
+    .score-details {
+        text-align: left;
+    }
+    
+    .score-details p {
+        margin: 8px 0;
+        font-size: 16px;
+    }
+    
+    .result-card {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .result-card.correct {
+        background: #d4edda;
+        border-color: #c3e6cb;
+    }
+    
+    .result-card.incorrect {
+        background: #f8d7da;
+        border-color: #f5c6cb;
+    }
+    
+    .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        font-weight: bold;
+    }
+    
+    .result-icon {
+        font-size: 20px;
+    }
+    
+    .result-details p {
+        margin: 5px 0;
+    }
+    
+    .explanation {
+        font-style: italic;
+        color: #6c757d;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #dee2e6;
+    }
+</style>
+
+</body>
+</html>
+

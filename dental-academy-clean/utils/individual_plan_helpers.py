@@ -13,7 +13,8 @@ from models import (
     PersonalLearningPlan, SpacedRepetitionItem, Question, BIGDomain, DomainCategory,
     DiagnosticSession, TestAttempt, UserTermProgress, DailyFlashcardProgress,
     UserEnglishProgress, VirtualPatientAttempt, EnglishPassage, MedicalTerm,
-    VirtualPatientScenario, DailyAssignment
+    VirtualPatientScenario, DailyAssignment,
+    DutchPassage, UserDutchProgress
 )
 from utils.helpers import get_user_profession_code
 from utils.domain_helpers import get_categories_for_profession, calculate_category_progress
@@ -1120,6 +1121,47 @@ def select_english_passage_for_today(user, use_fixed_assignments=True):
     # Get random passage
     random_passage = EnglishPassage.query.order_by(func.random()).first()
     return random_passage
+
+
+def select_dutch_passage_for_today(user):
+    """
+    Select Dutch reading passage for today.
+    
+    Args:
+        user: User object
+        
+    Returns:
+        DutchPassage object or None
+    """
+    def generate_passage_id(target_count=1):
+        """Генерирует ID текста для нового задания"""
+        # Get passages completed today
+        today_start = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+        completed_today = UserDutchProgress.query.filter(
+            UserDutchProgress.user_id == user.id,
+            UserDutchProgress.completed_at >= today_start
+        ).all()
+        
+        completed_passage_ids = set([p.passage_id for p in completed_today if p.passage_id])
+        
+        # Get random passage that user hasn't completed today
+        random_passage = DutchPassage.query.filter(
+            ~DutchPassage.id.in_(completed_passage_ids) if completed_passage_ids else True
+        ).order_by(func.random()).first()
+        
+        return [random_passage.id] if random_passage else []
+    
+    # Получаем или создаем задание
+    assignment, passage_ids = get_or_create_daily_assignment(
+        user,
+        'dutch',
+        generate_passage_id,
+        default_count=1
+    )
+    
+    if passage_ids:
+        return DutchPassage.query.get(passage_ids[0])
+    return None
 
 
 def add_to_spaced_repetition(user_id, question_id, was_correct):

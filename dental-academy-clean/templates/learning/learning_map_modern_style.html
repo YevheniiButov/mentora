@@ -5904,6 +5904,17 @@
                             </div>
                         </div>
                         
+                        <!-- Dutch Reading Block -->
+                        <div class="metric-card success" @click="startDutchReading()" style="cursor: pointer;">
+                            <div class="metric-icon">
+                                <i class="bi bi-flag-fill"></i>
+                            </div>
+                            <div class="metric-info">
+                                <div class="metric-value">{{ t('dutch_reading', lang)|default('Nederlands Lezen') }}</div>
+                                <div class="metric-label">{{ t('dutch_reading_label', lang)|default('Oefenteksten in het Nederlands') }}</div>
+                            </div>
+                        </div>
+                        
                         <!-- Virtual Patients Block -->
                         <div class="metric-card accent" @click="startPremiumVP()" style="cursor: pointer;">
                             <div class="metric-icon">
@@ -7533,6 +7544,17 @@
                     }
                     // Redirect to English reading with premium access
                     window.location.href = `/english/practice?premium=true`;
+                },
+                
+                startDutchReading() {
+                    // КРИТИЧНО: Проверяем диагностику перед запуском нидерландского чтения
+                    if (!this.diagnosticCompleted) {
+                        alert('{{ t("diagnostic_required", lang)|default("Voor het lezen van Nederlandse teksten moet je eerst de diagnostische test doen.") }}');
+                        this.startDiagnostic('quick_30');
+                        return;
+                    }
+                    // Redirect to Dutch reading
+                    window.location.href = `/dutch/practice`;
                 },
                 
                 startPremiumVP() {
