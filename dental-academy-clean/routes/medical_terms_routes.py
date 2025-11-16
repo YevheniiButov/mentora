@@ -113,8 +113,29 @@ def cards(lang):
     # Order by term
     terms = query.order_by(MedicalTerm.term_nl).all()
     
+    # Convert to dicts for JSON serialization
+    terms_dicts = [
+        {
+            'id': term.id,
+            'term_nl': term.term_nl,
+            'definition_nl': term.definition_nl,
+            'term_en': term.term_en,
+            'term_ru': term.term_ru,
+            'term_uk': term.term_uk,
+            'term_es': term.term_es,
+            'term_pt': term.term_pt,
+            'term_tr': term.term_tr,
+            'term_fa': term.term_fa,
+            'term_ar': term.term_ar,
+            'category': term.category,
+            'difficulty': term.difficulty,
+            'frequency': term.frequency
+        }
+        for term in terms
+    ]
+    
     return render_template('medical_terms/cards.html',
-                         terms=terms,
+                         terms=terms_dicts,
                          selected_difficulty=difficulty,
                          selected_category=category,
                          lang=lang)
