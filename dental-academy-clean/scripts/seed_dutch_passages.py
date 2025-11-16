@@ -22,111 +22,108 @@ PASSAGES_DATA = [
     {
         "passage": {
             "id": "nl_reading_001",
-            "title": "De Revolutie van Kunstmatig Ontworpen Antilichamen",
+            "title": "De Revolutie van Kunstmatig Ontworpen Antilichamen: Wanneer AI de Biologie Ontmoet",
             "category": "biologie",
             "difficulty": "C1-C2",
             "language": "nl",
             "source": "Nature 2025 - Adapted",
             "word_count": 1150,
-            "content": "# De Revolutie van Kunstmatig Ontworpen Antilichamen\n\nDe afgelopen decennia hebben antilichamen zich gevestigd als een van de krachtigste wapens in de moderne geneeskunde. Met meer dan 160 antilichaamtherapieën op de markt en een verwachte waarde van ongeveer 445 miljard dollar in vijf jaar, blijven antilichamen onmisbaar voor de behandeling van infectieziekten, kanker en auto-immuunziekten.\n\nOndanks hun cruciale rol in de therapie, bevat het proces voor het ontdekken van nieuwe antilichamen aanzienlijke beperking: het vertrouwen op dierimmunisatie, willekeurige bibliotheekscreening, of directe isolatie van antilichamen uit patiënten.\n\nNu heeft een baanbrekend onderzoek van wetenschappers onder leiding van Nobelprijswinnaar David Baker van de Universiteit van Washington aangetoond dat kunstmatige intelligentie antilichamen geheel 'vanuit het niets' kan ontwerpen—met atoomnauwkeurigheid. Dit vertegenwoordigt een fundamentele verschuiving in hoe we biologische moleculen kunnen ontwerpen en optimaliseren.\n\n## Het Centrale Probleem\n\nAntilichamen functioneren door zich aan zeer specifieke plekken op virussen of giftige eiwitten vast te hechten—net als een sleutel die in één specifiek slot past. Deze precisie is kritisch: wanneer een geneesmiddel aan de verkeerde plek vast hecht, kan het onwerkzaam zijn of bijwerkingen veroorzaken.\n\nDe meest lastige onderdelen van antilichamen zijn de gebieden die als 'vingers' functioneren—zij grijpen het doelmolecule. Historisch gezien waren deze vingers uitstekend moeilijk te ontwerpen omdat zij zeer buigzaam zijn. Computers konden de precieze vorm ervan niet voorspellen. Tot nu toe had de wetenschap daarom geen manier om antilichamen volledig via computer te ontwerpen en toch zeker te weten dat zij hun doelen zouden treffen.\n\n## De Oplossing: AI-Systemen voor Ontwerp\n\nDe onderzoekers gebruikten geavanceerde computer-modellen die traind waren op miljoenen bekende antilichaamstructuren. Dit proces werkt in meerdere stappen:\n\nEerst voorspelt de computer hoe het antilichaam zou moeten buigen en vouwen om precies op de juiste plaats te hechten. Daarna bepaalt een tweede computerprogramma welke chemische bouwblokken in deze vorm passen—net als puzzelstukken die in elkaar grijpen. Vervolgens controleert een derde systeem of deze combinatie werkelijk in het lichaam zou kunnen functioneren. Tot slot werden de beloftenrijkste kandidaten in het laboratorium gemaakt en getest met snelle screeningmethoden.\n\n## De Resultaten: Ongelooflijke Nauwkeurigheid\n\nDe onderzoekers concentreerden zich eerst op kleine antilichamen, afkomstig van dieren zoals lama's. Deze zijn waardevol omdat zij stabiel zijn en makkelijk in het lichaam kunnen werken.\n\nVier belangrijke doelen werden gekozen: griepvirus, een bacteriële vergif, een respiratoir virus, en een kanker-gerelateerd eiwit. Het meest verbazingwekkende: experimenten toonden aan dat de kunstmatig ontworpen antilichamen met opmerkelijke precisie werkten—tot op het niveau van atomen nauwkeurig.\n\nIn één succesvol geval blokkeerde het kunstmatig ontworpen antilichaam niet alleen een bacteriële vergif, maar beschermde het ook cellen tegen schade in laboratoriumproeven. Dit toonde aan dat de ontworpen antilichamen niet alleen theoretisch juist waren, maar ook werkelijk biologisch actief.\n\n## Van Ontwerp naar Therapie: Sterker Maken\n\nHoewel de kunstmatig ontworpen antilichamen succesvol waren, hechthen zij niet sterk genoeg aan hun doelen. De onderzoekers gebruikten een genetisch systeem dat aan miljarden mutaties kon experimenteren in levend gist—als kunstmatige evolutie, maar miljoen keer sneller. Dit produceerde antilichamen die duizend keer sterker aan hun doelen hechthen.\n\nHet cruciale: ook na dit 'versterken' bleven de antilichamen specifiek voor hun doelen. Zij hechthen nog steeds alleen aan waar zij hoorden te hechten.\n\n## Toekomstperspectieven\n\nDeze doorbraak opent vele mogelijkheden. In plaats van jaren onderzoek kun je nu een computer gebruiken om een nieuw antilichaam in weken te ontwerpen. Veel medische doelen zijn 'moeilijk aan te vallen' omdat zij zeer kleine veranderingen nodig hebben. Nu kan computer-ontwerp helpen. Onderzoek naar zeldzame ziekten was altijd duur. Met computerontwerp wordt het veel goedkoper. Vroeger moest je dieren ziek maken om antilichamen te maken. Nu doet de computer het werk.\n\nVoor miljarden mensen die wachten op behandelingen voor infecties, kanker, en auto-immuunziekten, zou dit kunnen betekenen dat geneesmiddelen sneller, goedkoper, en effectiever kunnen worden ontdekt dan ooit tevoren.",
+            "content": "# De Revolutie van Kunstmatig Ontworpen Antilichamen: Wanneer AI de Biologie Ontmoet\n\n## Inleiding: Een Doorbraak in Geneesmiddelenonderzoek\n\nDe afgelopen decennia hebben antilichamen zich gevestigd als een van de krachtigste wapens in de moderne geneeskunde. Met meer dan 160 antilichaamtherapieën op de markt en een verwachte waarde van ongeveer 445 miljard dollar in vijf jaar, blijven antilichamen onmisbaar voor de behandeling van infectieziekten, kanker en auto-immuunziekten. Ondanks hun cruciale rol in de therapie, bevat het proces voor het ontdekken van nieuwe antilichamen aanzienlijke beperking: het vertrouwen op dierimmunisatie, willekeurige bibliotheekscreening, of directe isolatie van antilichamen uit patiënten.\n\nNu heeft een baanbrekend onderzoek van wetenschappers onder leiding van Nobelprijswinnaar David Baker van de Universiteit van Washington aangetoond dat kunstmatige intelligentie antilichamen geheel \"vanuit het niets\" kan ontwerpen—met atoomnauwkeurigheid. Dit vertegenwoordigt een fundamentele verschuiving in hoe we biologische moleculen kunnen ontwerpen en optimaliseren.\n\n## Het Centrale Probleem: Waarom Antilichaamontwerp Zo Moeilijk Was\n\nAntilichamen functioneren door zich aan zeer specifieke plekken op virussen of giftige eiwitten vast te hechten—net als een sleutel die in één specifiek slot past. Deze precisie is kritisch: wanneer een geneesmiddel aan de verkeerde plek vast hecht, kan het onwerkzaam zijn of bijwerkingen veroorzaken.\n\nDe meest lastige onderdelen van antilichamen zijn de gebieden die als \"vingers\" functioneren—zij grijpen het doelmolecule. Historisch gezien waren deze vingers uitstekend moeilijk te ontwerpen omdat zij zeer buigzaam zijn. Computers konden de precieze vorm ervan niet voorspellen. Tot nu toe had de wetenschap daarom geen manier om antilichamen volledig via computer te ontwerpen en toch zeker te weten dat zij hun doelen zouden treffen.\n\n## De Oplossing: AI-Systemen voor Ontwerp\n\nDe onderzoekers gebruikten geavanceerde computer-modellen die traind waren op miljoenen bekende antilichaamstructuren. Dit proces werkt in meerdere stappen:\n\n1. **Vorm ontwerpen**: De computer voorspelt hoe het antilichaam zou moeten buigen en vouwen om precies op de juiste plaats te hechten.\n\n2. **Bouwstof bepalen**: Een tweede computerprogramma bepaalt welke chemische bouwblokken in deze vorm passen—net als puzzelstukken die in elkaar grijpen.\n\n3. **Haalbaarheid controleren**: Een derde systeem controleert of deze combinatie werkelijk in het lichaam zou kunnen functioneren en niet uiteen zou vallen.\n\n4. **Laboratoriumtesten**: De beloftenrijkste kandidaten werden vervolgens in het laboratorium gemaakt en getest met snelle screeningmethoden die miljarden kandidaten kunnen evalueren.\n\n## De Resultaten: Ongelooflijke Nauwkeurigheid\n\nDe onderzoekers concentreerden zich eerst op kleine antilichamen, afkomstig van dieren zoals lama's. Deze zijn waardevol omdat zij stabiel zijn en makkelijk in het lichaam kunnen werken.\n\nVier belangrijke doelen werden gekozen:\n\n- **Griepvirus**: Een belangrijk eiwit op influenza\n\n- **Een bacteriële vergif**: Afkomstig van gevaarlijke bacteriën\n\n- **Respiratoir virus**: Een virus dat de luchtwegen aantast\n\n- **Kanker-gerelateerd eiwit**: Een doel voor kankerbehandeling\n\nHet meest verbazingwekkende: experimenten toonden aan dat de kunstmatig ontworpen antilichamen met opmerkelijke precisie werkten—tot op het niveau van atomen nauwkeurig. Dit was niet vorheen mogelijk geweest. De onderzoekers gebruikten geavanceerde microscopie (duizenden keer sterker dan normale microscopen) om dit te bewijzen.\n\nIn één bijzonder succesvol geval blokkeerde het kunstmatig ontworpen antilichaam niet alleen een bacteriële vergif, maar beschermde het ook cellen tegen schade in laboratoriumproeven. Dit toonde aan dat de ontworpen antilichamen niet alleen theoretisch juist waren, maar ook werkelijk biologisch actief.\n\n## Van Ontwerp naar Therapie: Sterker Maken\n\nHoewel de kunstmatig ontworpen antilichamen succesvol waren, hechthen zij niet sterk genoeg aan hun doelen. Het was als een sleutel die in het juiste slot past maar niet sterk genoeg draait.\n\nDe onderzoekers gebruikten een genetisch systeem dat aan miljarden mutaties kon experimenteren in levend gist—als kunstmatige evolutie, maar miljoen keer sneller. Dit produceerde antilichamen die duizend keer sterker aan hun doelen hechthen.\n\nHet cruciale: ook na dit \"versterken\" bleven de antilichamen specifiek voor hun doelen. Zij hechthen nog steeds alleen aan waar zij hoorden te hechten.\n\n## Wat Dit Betekent voor Geneesmiddelen\n\nDeze doorbraak opent vele mogelijkheden:\n\n**Sneller onderzoek**: In plaats van jaren onderzoek kun je nu een computer gebruiken om een nieuw antilichaam in weken te ontwerpen.\n\n**Betere therapieën**: Veel doelen zijn \"moeilijk aan te vallen\" omdat zij zeer kleine veranderingen nodig hebben. Nu kan computer-ontwerp helpen.\n\n**Medicijnen voor zeldzame ziekten**: Onderzoek naar zeldzame ziekten was altijd duur. Met computerontwerp wordt het veel goedkoper.\n\n**Minder dierproeven**: Vroeger moest je dieren ziek maken om antilichamen te maken. Nu doet de computer het werk.\n\n## Toekomstige Uitdagingen\n\nDe onderzoekers waarschuwen dat er nog veel te doen is. Suikerketens op virusoppervlakken beïnvloeden hoe goed antilichamen werken, maar deze suikers zijn moeilijk voor computers te voorspellen. Volgende generatie AI-modellen moeten nog beter worden.\n\nDe computersoftware is gratis beschikbaar, dus onderzoekers wereldwijd kunnen dit gebruiken.\n\n## Conclusie: Een Nieuw Tijdperk voor Therapeutische Ontdekking\n\nDeze studie markeert een keerpunt in biologie: kunstmatige intelligentie kan nu niet alleen bestaande biologische systemen analyseren, maar kan ook nieuwe biologische moleculen ontwerpen met voorheen ongeëvenaarde precisie. De toekomst van geneesmiddelenontdekking ziet er niet meer uit als een race naar willekeurige kandidaten, maar als een methodische, door-computer-geleide expedition naar optimale therapeutische oplossingen.\n\nVoor miljarden mensen die wachten op behandelingen voor infecties, kanker, en auto-immuunziekten, zou dit kunnen betekenen dat geneesmiddelen sneller, goedkoper, en effectiever kunnen worden ontdekt dan ooit tevoren.",
             "vocabulary": [
                 {"word": "hechten", "definition": "Vastklemmen, zich vasthouden aan iets; in dit geval: zich aan moleculen vast grepen"},
-                {"word": "bereiken", "definition": "Aankomen bij; tot iets komen; verwezenlijken"},
                 {"word": "benadering", "definition": "Manier waarop iets benaderd wordt; strategie of methode"},
+                {"word": "willekeurig", "definition": "Zonder patroon; lukraak; toevallig"},
                 {"word": "voorkomen", "definition": "Tegengaan; verhinderen dat iets gebeurt; ook: zich voordoen"},
                 {"word": "vervangen", "definition": "Iets anders in plaats van stellen; uitwisselen"},
                 {"word": "verfijnd", "definition": "Geavanceerd, subtiel; zeer verfijnde of uitgekiend"},
-                {"word": "buigzaam", "definition": "Flexibel, wendbaar; gemakkelijk te buigen"},
-                {"word": "voortdurend", "definition": "Continu; zonder onderbreking; aanhoudend"}
+                {"word": "bereiken", "definition": "Aankomen bij; tot iets komen; verwezenlijken"},
+                {"word": "voortdurend", "definition": "Continu; zonder onderbreking; aanhoudend"},
+                {"word": "keerpunt", "definition": "Cruciale moment waar alles verandert"},
+                {"word": "ongeëvenaard", "definition": "Zonder gelijke; ongekend; nog nooit eerder gezien"}
             ]
         },
         "questions": [
             {
                 "id": "q1",
-                "type": "multiple_choice",
-                "question": "Wat was het grootste probleem met traditionele antilichaamontdekking?",
-                "options": [
-                    "A) Antilichamen waren te duur om te produceren",
-                    "B) De computer kon niet voorspellen hoe de 'vingers' van antilichamen zouden buigen",
-                    "C) Er waren niet genoeg dieren beschikbaar voor immunisatie",
-                    "D) Antilichamen werkten niet goed tegen virussen"
+                "type": "open",
+                "question": "Wat was het centrale technische probleem dat artisanale antilichaamontdekking van volledig computationeel ontwerp belemmerde, en waarom waren de CDR-lussen zo kritiek in dit probleem?",
+                "expected_points": [
+                    "CDR-lussen zijn de meest variabele delen van antilichamen—de 'vingers' die epitopen grijpen",
+                    "Hun extreme flexibiliteit maakte computerontwerp historisch onhaalbaar omdat hun structuur niet rigide genoeg was om nauwkeurig te voorspellen",
+                    "Computers konden niet precies bepalen hoe deze lussen zich zouden vouwen of positioneren om hun doelen te bereiken",
+                    "Dit was de kernreden waarom antilichaamontdekking afhankelijk was van fysieke methoden (immunisatie, screening)"
                 ],
-                "correct_answer": "B",
-                "explanation": "De tekst beschrijft dat computers de precieze vorm van de buigzame 'vingers' van antilichamen niet konden voorspellen, wat het ontwerp volledig via computer onmogelijk maakte."
+                "model_answer": "Het centrale probleem was dat de CDR-lussen (de 'vingers' van antilichamen die epitopen grijpen) zeer buigzaam zijn. Hun extreme flexibiliteit maakte het historisch onmogelijk voor computers om nauwkeurig te voorspellen hoe deze lussen zich zouden vouwen of positioneren om hun doelen te bereiken. Dit was de kernreden waarom antilichaamontdekking afhankelijk was van fysieke methoden zoals immunisatie en screening, in plaats van volledig computationeel ontwerp."
             },
             {
                 "id": "q2",
-                "type": "multiple_choice",
-                "question": "Welke dieren worden gebruikt voor het maken van kleine antilichamen (VHH)?",
-                "options": [
-                    "A) Konijnen en muizen",
-                    "B) Lama's en alpaca's",
-                    "C) Paarden en runderen",
-                    "D) Geiten en schapen"
+                "type": "open",
+                "question": "Beschrijf het drietrapsproces van RFdiffusion, ProteinMPNN en RoseTTAFold2. Welke specifieke functie vervult elk van deze AI-systemen, en waarom konden zij niet door één enkel AI-model worden vervangen?",
+                "expected_points": [
+                    "RFdiffusion: Genereert de 3D-structuur—het 'bouwplan'—van hoe het antilichaam zou moeten vouwen",
+                    "ProteinMPNN: Bepaalt welke aminozuursequenties in die structuur passen—voegt de specifieke 'letters' toe",
+                    "RoseTTAFold2: Valideert of die sequenties werkelijk zullen vouwen en binden zoals beoogd",
+                    "Ze kunnen niet vervangen worden omdat elk een ander probleem oplost: geometrisch ontwerp, moleculaire samenstelling, en biologische haalbaarheid"
                 ],
-                "correct_answer": "B",
-                "explanation": "De tekst noemt lama's als voorbeelden van dieren waarvan de kleine antilichamen worden gebruikt omdat zij stabiel zijn en makkelijk te manipuleren."
+                "model_answer": "Het drietrapsproces bestaat uit: (1) RFdiffusion genereert de 3D-structuur—het 'bouwplan'—van hoe het antilichaam zou moeten vouwen. (2) ProteinMPNN bepaalt welke aminozuursequenties in die structuur passen—voegt de specifieke 'letters' toe. (3) RoseTTAFold2 valideert of die sequenties werkelijk zullen vouwen en binden zoals beoogd. Ze kunnen niet door één model worden vervangen omdat elk een ander probleem oplost: geometrisch ontwerp, moleculaire samenstelling, en biologische haalbaarheid."
             },
             {
                 "id": "q3",
                 "type": "open",
-                "question": "Beschrijf het drietrapsproces van AI-ontwerp van antilichamen. Wat doet elk van de drie computersystemen?",
+                "question": "Hoe bevestigde het gebruik van elektronenmicroscopie (cryo-EM) dat de computationeel ontworpen antilichamen niet slechts theoretische modellen waren, en wat specifieke waardes toonden deze experimenten aan over de precisie van het ontwerp?",
                 "expected_points": [
-                    "Eerste stap: computer voorspelt vorm/structuur hoe antilichaam moet buigen",
-                    "Tweede stap: bepaalt welke chemische bouwblokken passen (als puzzel)",
-                    "Derde stap: controleert of combinatie werkelijk in lichaam zou functioneren"
+                    "Cryo-EM produceerde echte, fysieke afbeeldingen van de antilichamen gebonden aan hun doelen",
+                    "Dit kon vergeleken worden met computationele voorspellingen",
+                    "Voor influenza waren de afwijkingen slechts 1,45 Ångströms (backbone) en 0,8 Ångströms (CDR3-lus)—atoomschaal precisie",
+                    "Dit bewees dat kunstmatige ontwerp geen 'close enough' benadering was, maar werkelijk nauwkeurig was"
                 ],
-                "model_answer": "Het eerste systeem voorspelt de driedimensionale structuur—hoe het antilichaam zou moeten buigen en vouwen om precies op de juiste plaats vast te hechten. Het tweede computerprogramma bepaalt welke chemische bouwblokken in deze vorm passen, vergelijkbaar met puzzelstukken. Het derde systeem controleert of deze combinatie werkelijk in het lichaam zou kunnen functioneren en niet uiteen zou vallen."
+                "model_answer": "Cryo-EM produceerde echte, fysieke afbeeldingen van de antilichamen gebonden aan hun doelen, die vergeleken konden worden met computationele voorspellingen. Voor influenza waren de afwijkingen slechts 1,45 Ångströms (backbone) en 0,8 Ångströms (CDR3-lus)—atoomschaal precisie. Dit bewees dat kunstmatige ontwerp geen 'close enough' benadering was, maar werkelijk nauwkeurig was tot op het niveau van atomen."
             },
             {
                 "id": "q4",
                 "type": "open",
-                "question": "Waarom was 'affinity maturation' (versterking) nodig, ondanks dat de computationele ontwerpen al succesvol waren? Hoe werd dit opgelost?",
+                "question": "Waarom was 'affinity maturation' via OrthoRep nodig, ondanks dat de computationele ontwerpen bereits de juiste epitopen bereikten? Wat was het verschil tussen structurele nauwkeurigheid en therapeutische bruikbaarheid?",
                 "expected_points": [
-                    "Initiële ontwerpen waren niet sterk genoeg—hechthen niet goed genoeg",
-                    "Genetisch systeem gebruiken dat miljarden mutaties kon experimenteren",
-                    "Kunstmatige evolutie—miljoen keer sneller dan natuurlijke evolutie",
-                    "Resultaat: duizend keer sterker binding"
+                    "Structurele nauwkeurigheid ≠ sterke binding: het antilichaam kon de juiste plaats bereiken, maar hield niet stevig vast (bescheiden affinity)",
+                    "OrthoRep maakte miljard mutaties mogelijk—evolutie in het laboratorium",
+                    "Dit produceerde antilichamen met nanomolaire affiniteit (duizendvoudige verbetering)",
+                    "Het belangrijkste: na maturation behielden zij specificiteit—zij bonden nog steeds correct"
                 ],
-                "model_answer": "De kunstmatig ontworpen antilichamen hechthen niet sterk genoeg aan hun doelen—als een sleutel die wel in het juiste slot past maar niet sterk genoeg draait. De onderzoekers gebruikten een genetisch systeem dat aan miljarden mutaties kon experimenteren in levend gist, wat kunstmatige evolutie is maar miljoen keer sneller. Dit produceerde antilichamen die duizend keer sterker aan hun doelen hechthen."
+                "model_answer": "Structurele nauwkeurigheid betekent niet automatisch sterke binding: het antilichaam kon de juiste plaats bereiken, maar hield niet stevig vast (bescheiden affinity). OrthoRep maakte miljard mutaties mogelijk—evolutie in het laboratorium. Dit produceerde antilichamen met nanomolaire affiniteit (duizendvoudige verbetering). Het belangrijkste: na maturation behielden zij specificiteit—zij bonden nog steeds alleen aan waar zij hoorden te hechten."
             },
             {
                 "id": "q5",
                 "type": "open",
-                "question": "Wat was het belangrijkste wat in één succesvol geval met de bacteriële toxine werd aangetoond? Waarom was dit belangrijk?",
+                "question": "Vergelijk de traditionele antilichaamontdekkingsmethoden (immunisatie, bibliotheekscreening) met het RFdiffusion-systeem. Welke voordelen en potentiële nadelen ziet u in de AI-gebaseerde benadering?",
                 "expected_points": [
-                    "Antilichaam blokkeerde niet alleen de toxine",
-                    "Het beschermde ook cellen tegen schade",
-                    "Toonde aan dat ontwerpen niet alleen theoretisch juist waren",
-                    "Maar ook werkelijk biologisch actief en functioneel"
+                    "Voordelen: Snelheid (weken in plaats van jaren), Reproducibility, Ethisch (geen dieren nodig), Kosten-effectief",
+                    "Potentiële nadelen: Initiële training vereist grote datasets, Nog steeds laboratoriumwerk nodig voor validatie, Humoraal antwoord van patiënten (immunogeniteit) nog niet volledig begrepen, Glycosyleringspatronen beïnvloeden binding (nog niet volledig voorspeld)"
                 ],
-                "model_answer": "Het kunstmatig ontworpen antilichaam blokkeerde niet alleen een bacteriële vergif, maar beschermde ook cellen tegen schade in laboratoriumproeven. Dit was belangrijk omdat het aantoonde dat de ontworpen antilichamen niet alleen theoretisch juist waren, maar ook werkelijk biologisch actief en functioneel."
+                "model_answer": "Voordelen van RFdiffusion: snelheid (weken in plaats van jaren), reproducibility (computer kan altijd hetzelfde proces uitvoeren), ethisch (geen dieren nodig), kosten-effectief na initiële investering. Potentiële nadelen: initiële training vereist grote datasets, nog steeds laboratoriumwerk nodig voor validatie, humoraal antwoord van patiënten (immunogeniteit) nog niet volledig begrepen, glycosyleringspatronen beïnvloeden binding (nog niet volledig voorspeld)."
             },
             {
                 "id": "q6",
-                "type": "multiple_choice",
-                "question": "Wat is een voordeel van computerontwerp van antilichamen voor onderzoek naar zeldzame ziekten?",
-                "options": [
-                    "A) Het is goedkoper omdat de computer veel van het werk doet",
-                    "B) Zeldzame ziekten zijn gemakkelijker te genezen",
-                    "C) Het vereist minder tijd van artsen",
-                    "D) Patiënten hoeven niet meer naar het ziekenhuis"
+                "type": "open",
+                "question": "Welke drie medische gebieden zouden volgens het artikel het meest kunnen profiteren van de vermogen om antilichamen computationeel te ontwerpen, en waarom specifiek deze?",
+                "expected_points": [
+                    "'Moeilijk aan te vallen' targets (GPCRs): Deze vertegenwoordigen ~33% van farmaceutische doelen maar zijn notoir moeilijk omdat exacte structurele positionering nodig is",
+                    "Zeldzame ziekten: Antilichaamontdekking was economisch onhaalbaar; nu kunnen computers het doen zonder kostbare immunisaties",
+                    "Infectieziekten: Snelle aanpassung aan nieuwe varianten (aangegeven door influenza en TcdB examples)"
                 ],
-                "correct_answer": "A",
-                "explanation": "De tekst stelt dat onderzoek naar zeldzame ziekten traditioneel duur was, maar met computerontwerp wordt het veel goedkoper omdat computers het ontwerp van antilichamen kunnen doen."
+                "model_answer": "Drie medische gebieden: (1) 'Moeilijk aan te vallen' targets (GPCRs) vertegenwoordigen ~33% van farmaceutische doelen maar zijn notoir moeilijk omdat exacte structurele positionering nodig is. (2) Zeldzame ziekten: antilichaamontdekking was economisch onhaalbaar; nu kunnen computers het doen zonder kostbare immunisaties. (3) Infectieziekten: snelle aanpassung aan nieuwe varianten (aangegeven door influenza en TcdB examples)."
             },
             {
                 "id": "q7",
-                "type": "multiple_choice",
-                "question": "Welke ethische verbetering biedt computerontwerp van antilichamen?",
-                "options": [
-                    "A) Antilichamen werken beter dan traditionele medicijnen",
-                    "B) Het vermindert de behoefte om dieren ziek te maken voor immunisatie",
-                    "C) Het maakt geneesmiddelen goedkoper voor alle patiënten",
-                    "D) Het elimineert alle bijwerkingen van medicijnen"
+                "type": "open",
+                "question": "Het artikel noemt dat glycanen (suikers op virusoppervlakken) momenteel niet volledig door RFdiffusion kunnen worden inbegrepen in het ontwerp. Wat betekent dit praktisch voor de volgende generatie antilichaamontwerp, en hoe zou dit kunnen worden opgelost?",
+                "expected_points": [
+                    "Praktisch: de modellen ontwerpen antilichamen die 'kijken naar waar glycanen zijn,' maar kunnen niet volledig rekening houden met hun aanwezigheid",
+                    "Dit kan binding verminderen of onverwachte interacties veroorzaken",
+                    "Oplossing 1: AI-modellen uitbreiden om niet-eiwitatomen (glycanen, lipiden) te modelleren",
+                    "Oplossing 2: Hybrid-benadering waarbij experimentele validatie vroeger in het proces plaatsvindt",
+                    "Implicatie: volgende stap zou 'omnichemische' AI-modellen zijn—modellen die alle atomaire typen begrijpen"
                 ],
-                "correct_answer": "B",
-                "explanation": "De tekst noemt dat vroeger dieren ziek gemaakt moesten worden om antilichamen te maken, maar nu doet de computer dit werk, wat een ethische verbetering is."
+                "model_answer": "Praktisch betekent dit dat de modellen antilichamen ontwerpen die 'kijken naar waar glycanen zijn,' maar niet volledig rekening kunnen houden met hun aanwezigheid. Dit kan binding verminderen of onverwachte interacties veroorzaken. Oplossingen: (1) AI-modellen uitbreiden om niet-eiwitatomen (glycanen, lipiden) te modelleren. (2) Hybrid-benadering waarbij experimentele validatie vroeger in het proces plaatsvindt. De volgende stap zou 'omnichemische' AI-modellen zijn—modellen die alle atomaire typen begrijpen."
             }
         ]
     },
