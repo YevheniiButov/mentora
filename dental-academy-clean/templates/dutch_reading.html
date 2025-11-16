@@ -162,7 +162,7 @@
         <!-- Left: Passage Text -->
         <div class="passage-section" id="passageSection">
             <div class="passage-header">
-                <h2 id="passageTitle" {% if passage %}data-passage-id="{{ passage.id }}"{% endif %}>Laden...</h2>
+                <h2 id="passageTitle" {% if passage_id %}data-passage-id="{{ passage_id }}"{% endif %}>Laden...</h2>
                 <img id="passageImage" class="passage-image" style="display: none;" alt="Afbeelding bij tekst">
             </div>
             <div class="passage-text" id="passageText">
@@ -230,7 +230,8 @@
 
 <script>
 // Configuration
-const PASSAGE_ID = {{ passage.id if passage else 'null' }};
+const PASSAGE_ID = {{ passage_id if passage_id else 'null' }};
+const IS_JS_FILE_PASSAGE = {{ 'true' if is_js_file_passage else 'false' }};
 const API_BASE_URL = '/api/dutch';
 const LANG = '{{ lang or "nl" }}';
 
