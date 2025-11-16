@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('review_terms', lang)|default('Review Terms') }} | Mentora{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" style="margin-top: 80px;">
+  <!-- Header with filters -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>
+        <a href="{{ url_for('medical_terms.index', lang=lang) }}" class="text-decoration-none text-dark">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+        {{ t('medical_terms', lang)|default('Medical Terms') }}
+        {% if selected_difficulty %}
+          - {{ t('level', lang)|default('Level') }} {{ selected_difficulty }}
+        {% endif %}
+        {% if selected_category %}
+          - {{ selected_category }}
+        {% endif %}
+      </h2>
+      <p class="text-muted mb-0">
+        {{ terms|length }} {{ t('terms_found', lang)|default('terms found') }}
+      </p>
+    </div>
+    
+    <div class="btn-group">
+      <a href="{{ url_for('medical_terms.cards', lang=lang, difficulty=selected_difficulty, category=selected_category) }}" 
+         class="btn btn-outline-primary">
+        <i class="bi bi-card-heading"></i> {{ t('card_view', lang)|default('Card View') }}
+      </a>
+      <a href="{{ url_for('medical_terms.export', lang=lang, difficulty=selected_difficulty, category=selected_category) }}" 
+         class="btn btn-outline-success" download>
+        <i class="bi bi-download"></i> {{ t('export', lang)|default('Export') }}
+      </a>
+      <button onclick="window.print()" class="btn btn-outline-secondary">
+        <i class="bi bi-printer"></i> {{ t('print', lang)|default('Print') }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-4 no-print">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">{{ t('difficulty', lang)|default('Difficulty') }}</label>
+          <select name="difficulty" class="form-select" onchange="this.form.submit()">
+            <option value="">{{ t('all_levels', lang)|default('All Levels') }}</option>
+            <option value="1" {% if selected_difficulty == 1 %}selected{% endif %}>1 - {{ t('beginner', lang)|default('Beginner') }}</option>
+            <option value="2" {% if selected_difficulty == 2 %}selected{% endif %}>2 - {{ t('elementary', lang)|default('Elementary') }}</option>
+            <option value="3" {% if selected_difficulty == 3 %}selected{% endif %}>3 - {{ t('intermediate', lang)|default('Intermediate') }}</option>
+            <option value="4" {% if selected_difficulty == 4 %}selected{% endif %}>4 - {{ t('advanced', lang)|default('Advanced') }}</option>
+            <option value="5" {% if selected_difficulty == 5 %}selected{% endif %}>5 - {{ t('expert', lang)|default('Expert') }}</option>
+          </select>
+        </div>
+        
+        <div class="col-md-4">
+          <label class="form-label">{{ t('category', lang)|default('Category') }}</label>
+          <select name="category" class="form-select" onchange="this.form.submit()">
+            <option value="">{{ t('all_categories', lang)|default('All Categories') }}</option>
+            {% for cat in categories %}
+            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <div class="col-md-4 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary me-2">
+            <i class="bi bi-funnel"></i> {{ t('apply_filters', lang)|default('Apply') }}
+          </button>
+          <a href="{{ url_for('medical_terms.review', lang=lang) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle"></i> {{ t('clear', lang)|default('Clear') }}
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Terms Table -->
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-hover table-striped mb-0">
+        <thead class="table-light">
+          <tr>
+            <th style="width: 5%">#</th>
+            <th style="width: 15%">{{ t('term_nl', lang)|default('Term (NL)') }}</th>
+            <th style="width: 20%">{{ t('definition', lang)|default('Definition') }}</th>
+            <th style="width: 40%">{{ t('translations', lang)|default('Translations') }}</th>
+            <th style="width: 10%">{{ t('category', lang)|default('Category') }}</th>
+            <th style="width: 5%" class="text-center">{{ t('difficulty', lang)|default('Difficulty') }}</th>
+            <th style="width: 5%" class="text-center">{{ t('frequency', lang)|default('Frequency') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for term in terms %}
+          <tr>
+            <td class="text-muted">{{ loop.index }}</td>
+            <td><strong>{{ term.term_nl }}</strong></td>
+            <td class="text-muted small">{{ term.definition_nl or '-' }}</td>
+            <td class="small">
+              <div class="row g-2">
+                <div class="col-6">
+                  <strong>EN:</strong> {{ term.term_en or '-' }}<br>
+                  <strong>RU:</strong> {{ term.term_ru or '-' }}<br>
+                  <strong>UK:</strong> {{ term.term_uk or '-' }}<br>
+                  <strong>ES:</strong> {{ term.term_es or '-' }}
+                </div>
+                <div class="col-6">
+                  <strong>PT:</strong> {{ term.term_pt or '-' }}<br>
+                  <strong>TR:</strong> {{ term.term_tr or '-' }}<br>
+                  <strong>FA:</strong> {{ term.term_fa or '-' }}<br>
+                  <strong>AR:</strong> {{ term.term_ar or '-' }}
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="badge bg-light text-dark">{{ term.category }}</span>
+            </td>
+            <td class="text-center">
+              {% if term.difficulty == 1 %}
+                <span class="badge bg-success">1</span>
+              {% elif term.difficulty == 2 %}
+                <span class="badge bg-info">2</span>
+              {% elif term.difficulty == 3 %}
+                <span class="badge bg-warning">3</span>
+              {% elif term.difficulty == 4 %}
+                <span class="badge bg-orange text-white" style="background-color: #ff8c00;">4</span>
+              {% elif term.difficulty == 5 %}
+                <span class="badge bg-danger">5</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              <span class="badge bg-secondary">{{ term.frequency }}</span>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="7" class="text-center text-muted py-5">
+              <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+              <p class="mt-3">{{ t('no_terms_found', lang)|default('No terms found') }}</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<style>
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .table {
+    font-size: 10pt;
+  }
+  
+  .table td, .table th {
+    padding: 4px !important;
+  }
+}
+</style>
+{% endblock %}
+

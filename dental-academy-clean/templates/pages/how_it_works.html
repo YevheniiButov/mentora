@@ -1,0 +1,958 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('how_it_works_title', lang) }} | BIG Exam {{ t('learning', lang) }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-how">
+  <div class="container">
+    <h1>{{ t('how_it_works_title', lang) }}</h1>
+    <p class="subtitle">{{ t('how_it_works_subtitle', lang) }}</p>
+  </div>
+</section>
+
+<!-- 3 Steps Section -->
+<section class="steps-section">
+  <div class="container">
+    
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <h2>{{ t('step1_title', lang) }}</h2>
+        <p>{{ t('step1_desc', lang) }}</p>
+        <div class="step-details">
+          <div class="detail">
+            <span class="icon">⏱️</span>
+            <span>{{ t('step1_time', lang) }}</span>
+          </div>
+          <div class="detail">
+            <span class="icon">📊</span>
+            <span>{{ t('step1_domains', lang) }}</span>
+          </div>
+          <div class="detail">
+            <span class="icon">🎯</span>
+            <span>{{ t('step1_result', lang) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="step-visual">
+        <div class="screenshot-placeholder">
+          <img src="{{ url_for('static', filename='images/hoe_werkt/diagnostic-test.png') }}" alt="Diagnostic Test Interface" loading="lazy" data-no-optimize>
+        </div>
+      </div>
+    </div>
+    
+    <div class="step step-reverse">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <h2>{{ t('step2_title', lang) }}</h2>
+        <p>{{ t('step2_desc', lang) }}</p>
+        <div class="step-details">
+          <div class="detail">
+            <span class="icon">🎓</span>
+            <span>{{ t('step2_adapted', lang) }}</span>
+          </div>
+          <div class="detail">
+            <span class="icon">📅</span>
+            <span>{{ t('step2_daily', lang) }}</span>
+          </div>
+          <div class="detail">
+            <span class="icon">📈</span>
+            <span>{{ t('step2_focus', lang) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="step-visual">
+        <div class="screenshot-placeholder">
+          <img src="{{ url_for('static', filename='images/hoe_werkt/learning-plan.png') }}" alt="Persoonlijk Leerplan" loading="lazy" data-no-optimize>
+        </div>
+      </div>
+    </div>
+    
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <h2>{{ t('step3_title', lang) }}</h2>
+        <p>{{ t('step3_desc', lang) }}</p>
+        <div class="step-details">
+          <div class="detail">
+            <span class="icon">⏰</span>
+            <span>{{ t('step3_time', lang) }}</span>
+          </div>
+          <div class="detail">
+            <span class="icon">📱</span>
+            <span>{{ t('step3_anywhere', lang) }}</span>
+          </div>
+          <div class="detail">
+            <span class="icon">🔄</span>
+            <span>{{ t('step3_repetition', lang) }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="step-visual">
+        <div class="screenshot-placeholder">
+          <img src="{{ url_for('static', filename='images/hoe_werkt/daily-tasks.png') }}" alt="Dagelijkse Taken" loading="lazy" data-no-optimize>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Grid -->
+<section class="features-grid">
+  <div class="container">
+    <h2 class="section-title">{{ t('what_you_get', lang) }}</h2>
+    
+    <div class="features">
+      
+      <div class="feature-card">
+        <h3>{{ t('feature1_title', lang) }}</h3>
+        <p>{{ t('feature1_desc', lang) }}</p>
+        <ul class="feature-list">
+          <li>{{ t('feature1_item1', lang) }}</li>
+          <li>{{ t('feature1_item2', lang) }}</li>
+          <li>{{ t('feature1_item3', lang) }}</li>
+          <li>{{ t('feature1_item4', lang) }}</li>
+        </ul>
+      </div>
+      
+      <div class="feature-card">
+        <h3>{{ t('feature2_title', lang) }}</h3>
+        <p>{{ t('feature2_desc', lang) }}</p>
+        <ul class="feature-list">
+          <li>{{ t('feature2_item1', lang) }}</li>
+          <li>{{ t('feature2_item2', lang) }}</li>
+          <li>{{ t('feature2_item3', lang) }}</li>
+          <li>{{ t('feature2_item4', lang) }}</li>
+        </ul>
+      </div>
+      
+      <div class="feature-card">
+        <h3>{{ t('feature3_title', lang) }}</h3>
+        <p>{{ t('feature3_desc', lang) }}</p>
+        <ul class="feature-list">
+          <li>{{ t('feature3_item1', lang) }}</li>
+          <li>{{ t('feature3_item2', lang) }}</li>
+          <li>{{ t('feature3_item3', lang) }}</li>
+          <li>{{ t('feature3_item4', lang) }}</li>
+        </ul>
+      </div>
+      
+      <div class="feature-card">
+        <h3>{{ t('feature4_title', lang) }}</h3>
+        <p>{{ t('feature4_desc', lang) }}</p>
+        <ul class="feature-list">
+          <li>{{ t('feature4_item1', lang) }}</li>
+          <li>{{ t('feature4_item2', lang) }}</li>
+          <li>{{ t('feature4_item3', lang) }}</li>
+          <li>{{ t('feature4_item4', lang) }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Devices Section -->
+<section class="devices-section">
+  <div class="container">
+    <h2 class="section-title">{{ t('learn_anywhere_title', lang) }}</h2>
+    <p class="section-subtitle">{{ t('learn_anywhere_subtitle', lang) }}</p>
+    
+    <div class="devices-showcase">
+      
+      <div class="device-demo">
+        <div class="device-label">{{ t('mobile_label', lang) }}</div>
+        <div class="device-screenshot mobile">
+          <img src="{{ url_for('static', filename='images/hoe_werkt/mobile-view.png') }}" alt="Mobiele Weergave" loading="lazy" data-no-optimize>
+        </div>
+        <p class="device-description">
+          {{ t('mobile_desc', lang) }}
+        </p>
+      </div>
+      
+      <div class="device-demo">
+        <div class="device-label">{{ t('desktop_label', lang) }}</div>
+        <div class="device-screenshot desktop">
+          <img src="{{ url_for('static', filename='images/hoe_werkt/desktop-view.png') }}" alt="Desktop Weergave" loading="lazy" data-no-optimize>
+        </div>
+        <p class="device-description">
+          {{ t('desktop_desc', lang) }}
+        </p>
+      </div>
+    </div>
+    
+    <div class="sync-info">
+      <span class="sync-icon">🔄</span>
+      <p>{{ t('sync_info', lang) }}</p>
+    </div>
+  </div>
+</section>
+
+<!-- How Difficulty Adapts -->
+<section class="adaptive-section">
+  <div class="container">
+    <h2 class="section-title">{{ t('difficulty_title', lang) }}</h2>
+    
+    <div class="adaptive-timeline">
+      
+      <div class="timeline-item">
+        <div class="timeline-week">{{ t('week1', lang) }}</div>
+        <div class="timeline-content">
+          <h4>{{ t('week1_title', lang) }}</h4>
+          <p>{{ t('week1_desc', lang) }}</p>
+          <div class="difficulty-bar">
+            <div class="difficulty-fill" style="width: 30%; background: #10b981;"></div>
+          </div>
+          <span class="difficulty-label">{{ t('difficulty_easy', lang) }}</span>
+        </div>
+      </div>
+      
+      <div class="timeline-item">
+        <div class="timeline-week">{{ t('week2_3', lang) }}</div>
+        <div class="timeline-content">
+          <h4>{{ t('week2_3_title', lang) }}</h4>
+          <p>{{ t('week2_3_desc', lang) }}</p>
+          <div class="difficulty-bar">
+            <div class="difficulty-fill" style="width: 60%; background: #f59e0b;"></div>
+          </div>
+          <span class="difficulty-label">{{ t('difficulty_medium', lang) }}</span>
+        </div>
+      </div>
+      
+      <div class="timeline-item">
+        <div class="timeline-week">{{ t('week4_plus', lang) }}</div>
+        <div class="timeline-content">
+          <h4>{{ t('week4_plus_title', lang) }}</h4>
+          <p>{{ t('week4_plus_desc', lang) }}</p>
+          <div class="difficulty-bar">
+            <div class="difficulty-fill" style="width: 90%; background: #ef4444;"></div>
+          </div>
+          <span class="difficulty-label">{{ t('difficulty_hard', lang) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-grid">
+      
+      <div class="stat">
+        <div class="stat-number">1000+</div>
+        <div class="stat-label">{{ t('stat_questions', lang) }}</div>
+      </div>
+      
+      <div class="stat">
+        <div class="stat-number">800+</div>
+        <div class="stat-label">{{ t('stat_terms', lang) }}</div>
+      </div>
+      
+      <div class="stat">
+        <div class="stat-number">30</div>
+        <div class="stat-label">{{ t('stat_domains', lang) }}</div>
+      </div>
+      
+      <div class="stat">
+        <div class="stat-number">9</div>
+        <div class="stat-label">{{ t('stat_languages', lang) }}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Final CTA -->
+<section class="final-cta">
+  <div class="container">
+    <h2>{{ t('ready_to_start', lang) }}</h2>
+    <p>{{ t('start_today', lang) }}</p>
+    
+    <div class="cta-buttons">
+      <a href="/{{ lang }}/auth/register" class="btn-primary-large">
+        {{ t('register_free', lang) }}
+      </a>
+      <a href="/{{ lang }}" class="btn-secondary-large">
+        {{ t('try_demo', lang) }}
+      </a>
+    </div>
+    <p class="cta-note">{{ t('no_card_needed', lang) }}</p>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Hero */
+.hero-how {
+  background: linear-gradient(135deg, #3ECDC1 0%, #2BA89D 100%);
+  color: white;
+  padding: 100px 20px 30px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-how::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.4;
+}
+
+.hero-how .container {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-how h1 {
+  font-size: 32px;
+  margin-bottom: 6px;
+  font-weight: 700;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.hero-how .subtitle {
+  font-size: 15px;
+  opacity: 0.95;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* Steps Section */
+.steps-section {
+  padding: 40px 20px;
+  background: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
+}
+
+.step {
+  display: grid;
+  grid-template-columns: 50px 1fr 1fr;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 24px;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s;
+}
+
+.step:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.step-reverse {
+  grid-template-columns: 60px 1fr 1fr;
+}
+
+.step-reverse .step-content {
+  order: 2;
+}
+
+.step-reverse .step-visual {
+  order: 1;
+}
+
+.step-number {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  flex-shrink: 0;
+}
+
+.step-content h2 {
+  font-size: 22px;
+  margin-bottom: 8px;
+  color: #111827;
+  font-weight: 700;
+}
+
+.step-content p {
+  font-size: 15px;
+  color: #6b7280;
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.step-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.detail .icon {
+  font-size: 20px;
+}
+
+.step-visual {
+  position: relative;
+}
+
+.screenshot-placeholder {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  border: 2px solid #e2e8f0;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.screenshot-placeholder:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  border-color: #cbd5e1;
+}
+
+.screenshot-placeholder img {
+  width: 100%;
+  height: auto;
+  max-height: 280px;
+  border-radius: 8px;
+  display: block;
+  object-fit: contain;
+}
+
+.screenshot-caption {
+  text-align: center;
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 12px;
+}
+
+/* Features Grid */
+.features-grid {
+  padding: 35px 20px;
+  background: white;
+}
+
+.section-title {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: 24px;
+  color: #111827;
+  font-weight: 700;
+}
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 14px;
+  padding: 20px;
+  transition: all 0.3s;
+  border: 1px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  border-color: #cbd5e1;
+}
+
+.feature-card h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: #111827;
+  font-weight: 700;
+}
+
+.feature-card p {
+  color: #6b7280;
+  margin-bottom: 10px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+}
+
+.feature-list li {
+  padding: 5px 0;
+  color: #374151;
+  position: relative;
+  padding-left: 20px;
+  font-size: 14px;
+}
+
+.feature-list li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #10b981;
+  font-weight: 700;
+}
+
+/* Devices Section */
+.devices-section {
+  padding: 40px 20px;
+  background: linear-gradient(180deg, #f9fafb 0%, #f0f9ff 100%);
+}
+
+.section-subtitle {
+  text-align: center;
+  font-size: 15px;
+  color: #6b7280;
+  margin-bottom: 28px;
+  margin-top: -8px;
+}
+
+.devices-showcase {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
+  max-width: 900px;
+  margin: 0 auto 28px;
+}
+
+.device-demo {
+  text-align: center;
+}
+
+.device-label {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  color: #111827;
+}
+
+.device-screenshot {
+  background: white;
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.device-screenshot.mobile {
+  max-width: 280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.device-screenshot.desktop {
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.device-screenshot img {
+  width: 100%;
+  height: auto;
+  max-height: 350px;
+  border-radius: 8px;
+  display: block;
+  object-fit: contain;
+}
+
+.device-description {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.sync-info {
+  text-align: center;
+  padding: 18px;
+  background: white;
+  border-radius: 10px;
+  max-width: 550px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.sync-icon {
+  font-size: 20px;
+}
+
+/* Adaptive Section */
+.adaptive-section {
+  padding: 40px 20px;
+  background: white;
+}
+
+.adaptive-timeline {
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+.timeline-item {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+  align-items: start;
+  background: #f8fafc;
+  padding: 18px;
+  border-radius: 12px;
+  border-left: 3px solid #3b82f6;
+  transition: all 0.3s;
+}
+
+.timeline-item:hover {
+  background: #f1f5f9;
+  transform: translateX(4px);
+}
+
+.timeline-week {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-align: center;
+  font-size: 13px;
+  box-shadow: 0 3px 10px rgba(59, 130, 246, 0.2);
+}
+
+.timeline-content h4 {
+  font-size: 17px;
+  margin-bottom: 4px;
+  color: #111827;
+  font-weight: 700;
+}
+
+.timeline-content p {
+  color: #6b7280;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.difficulty-bar {
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.difficulty-fill {
+  height: 100%;
+  transition: width 0.3s;
+}
+
+.difficulty-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Stats Section */
+.stats-section {
+  padding: 35px 20px;
+  background: linear-gradient(135deg, #3ECDC1 0%, #2BA89D 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.stat {
+  text-align: center;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s;
+}
+
+.stat:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-4px);
+}
+
+.stat-number {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.stat-label {
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+/* Final CTA */
+.final-cta {
+  padding: 45px 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fafb 100%);
+  text-align: center;
+}
+
+.final-cta h2 {
+  font-size: 30px;
+  margin-bottom: 10px;
+  color: #111827;
+  font-weight: 700;
+}
+
+.final-cta > p {
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.btn-primary-large,
+.btn-secondary-large {
+  padding: 12px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 10px;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary-large {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.btn-primary-large:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+}
+
+.btn-secondary-large {
+  background: white;
+  color: #3b82f6;
+  border: 2px solid #3b82f6;
+}
+
+.btn-secondary-large:hover {
+  background: #f0f9ff;
+  border-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+.cta-note {
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .hero-how {
+    padding: 80px 15px 25px;
+  }
+  
+  .hero-how h1 {
+    font-size: 26px;
+  }
+  
+  .hero-how .subtitle {
+    font-size: 14px;
+  }
+  
+  .steps-section {
+    padding: 30px 15px;
+  }
+  
+  .step {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px 18px;
+    margin-bottom: 18px;
+  }
+  
+  .step-reverse {
+    grid-template-columns: 1fr;
+  }
+  
+  .step-reverse .step-content,
+  .step-reverse .step-visual {
+    order: initial;
+  }
+  
+  .step-number {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    margin: 0 auto 12px;
+  }
+  
+  .screenshot-placeholder img {
+    max-height: none;
+  }
+  
+  .device-screenshot img {
+    max-height: none;
+  }
+  
+  .step-content h2 {
+    font-size: 20px;
+    text-align: center;
+  }
+  
+  .step-content p {
+    font-size: 14px;
+    text-align: center;
+  }
+  
+  .features-grid {
+    padding: 25px 15px;
+  }
+  
+  .section-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .feature-card {
+    padding: 18px;
+  }
+  
+  .devices-section {
+    padding: 30px 15px;
+  }
+  
+  .adaptive-section {
+    padding: 30px 15px;
+  }
+  
+  .timeline-item {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  
+  .timeline-week {
+    max-width: 100px;
+    font-size: 12px;
+  }
+  
+  .devices-showcase {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .stats-section {
+    padding: 30px 15px;
+  }
+  
+  .stat {
+    padding: 14px;
+  }
+  
+  .stat-number {
+    font-size: 30px;
+  }
+  
+  .final-cta {
+    padding: 35px 15px;
+  }
+  
+  .final-cta h2 {
+    font-size: 24px;
+  }
+  
+  .final-cta > p {
+    font-size: 15px;
+  }
+  
+  .cta-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  
+  .btn-primary-large,
+  .btn-secondary-large {
+    width: 100%;
+    padding: 12px 24px;
+    font-size: 15px;
+  }
+}
+</style>
+{% endblock %}
+

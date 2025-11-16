@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('medical_terms_review', lang)|default('Medical Terms Review') }} | Mentora{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="margin-top: 80px;">
+  <!-- Header -->
+  <div class="text-center mb-5">
+    <h1 class="mb-3">
+      <i class="bi bi-book"></i>
+      {{ t('medical_terms_review', lang)|default('Medical Terms Review') }}
+    </h1>
+    <p class="lead text-muted">
+      {{ t('medical_terms_subtitle', lang)|default('Review medical terminology by difficulty level') }}
+    </p>
+  </div>
+
+  <!-- Difficulty Selection -->
+  <div class="row g-4 mb-5">
+    {% for level in range(1, 6) %}
+    <div class="col-md-4 col-lg-2">
+      <div class="card h-100 shadow-sm hover-card" style="cursor: pointer;" onclick="window.location.href='{{ url_for('medical_terms.review', lang=lang, difficulty=level) }}'">
+        <div class="card-body text-center">
+          <div class="mb-3" style="font-size: 2.5rem;">
+            {% if level == 1 %}
+              🟢
+            {% elif level == 2 %}
+              🔵
+            {% elif level == 3 %}
+              🟡
+            {% elif level == 4 %}
+              🟠
+            {% elif level == 5 %}
+              🔴
+            {% endif %}
+          </div>
+          <h5 class="card-title">
+            {{ t('difficulty_level', lang)|default('Level') }} {{ level }}
+          </h5>
+          <p class="text-muted small mb-2">
+            {% if level == 1 %}
+              {{ t('beginner', lang)|default('Beginner') }}
+            {% elif level == 2 %}
+              {{ t('elementary', lang)|default('Elementary') }}
+            {% elif level == 3 %}
+              {{ t('intermediate', lang)|default('Intermediate') }}
+            {% elif level == 4 %}
+              {{ t('advanced', lang)|default('Advanced') }}
+            {% elif level == 5 %}
+              {{ t('expert', lang)|default('Expert') }}
+            {% endif %}
+          </p>
+          <div class="badge bg-primary">
+            {{ difficulty_stats.get(level, 0) }} {{ t('terms', lang)|default('terms') }}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    
+    <!-- All Terms -->
+    <div class="col-md-4 col-lg-2">
+      <div class="card h-100 shadow-sm hover-card" style="cursor: pointer;" onclick="window.location.href='{{ url_for('medical_terms.review', lang=lang) }}'">
+        <div class="card-body text-center">
+          <div class="mb-3" style="font-size: 2.5rem;">
+            📚
+          </div>
+          <h5 class="card-title">
+            {{ t('all_terms', lang)|default('All Terms') }}
+          </h5>
+          <p class="text-muted small mb-2">
+            {{ t('view_all', lang)|default('View All') }}
+          </p>
+          <div class="badge bg-secondary">
+            {{ difficulty_stats.values()|sum }} {{ t('terms', lang)|default('terms') }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Modes -->
+  <div class="row g-4 mb-5">
+    <div class="col-12">
+      <h3 class="mb-4">{{ t('view_modes', lang)|default('View Modes') }}</h3>
+    </div>
+    
+    <!-- Table View -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow">
+        <div class="card-body">
+          <div class="text-center mb-3" style="font-size: 3rem;">
+            📊
+          </div>
+          <h5 class="card-title">{{ t('table_view', lang)|default('Table View') }}</h5>
+          <p class="card-text text-muted">
+            {{ t('table_view_desc', lang)|default('Review all terms in a structured table format. Best for quick overview and comparison.') }}
+          </p>
+          <a href="{{ url_for('medical_terms.review', lang=lang) }}" class="btn btn-outline-primary w-100">
+            <i class="bi bi-table"></i> {{ t('open_table', lang)|default('Open Table') }}
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Card View -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow">
+        <div class="card-body">
+          <div class="text-center mb-3" style="font-size: 3rem;">
+            🎴
+          </div>
+          <h5 class="card-title">{{ t('card_view', lang)|default('Card View') }}</h5>
+          <p class="card-text text-muted">
+            {{ t('card_view_desc', lang)|default('Review terms one by one with interactive flashcards. Ideal for detailed examination.') }}
+          </p>
+          <a href="{{ url_for('medical_terms.cards', lang=lang) }}" class="btn btn-outline-primary w-100">
+            <i class="bi bi-card-heading"></i> {{ t('open_cards', lang)|default('Open Cards') }}
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Export -->
+    <div class="col-md-4">
+      <div class="card h-100 shadow">
+        <div class="card-body">
+          <div class="text-center mb-3" style="font-size: 3rem;">
+            📥
+          </div>
+          <h5 class="card-title">{{ t('export_csv', lang)|default('Export to CSV') }}</h5>
+          <p class="card-text text-muted">
+            {{ t('export_desc', lang)|default('Download all terms with translations in CSV format. Perfect for offline review.') }}
+          </p>
+          <a href="{{ url_for('medical_terms.export', lang=lang) }}" class="btn btn-outline-success w-100" download>
+            <i class="bi bi-download"></i> {{ t('download', lang)|default('Download') }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Categories -->
+  <div class="row">
+    <div class="col-12">
+      <h3 class="mb-4">{{ t('categories', lang)|default('Categories') }}</h3>
+      <div class="d-flex flex-wrap gap-2">
+        {% for category in categories %}
+        <a href="{{ url_for('medical_terms.review', lang=lang, category=category) }}" 
+           class="badge bg-light text-dark border px-3 py-2 text-decoration-none">
+          {{ category }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.hover-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.hover-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15) !important;
+}
+</style>
+{% endblock %}
+

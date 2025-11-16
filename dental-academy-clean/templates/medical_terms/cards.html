@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('flashcards', lang)|default('Flashcards') }} | Mentora{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="margin-top: 80px;">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>
+        <a href="{{ url_for('medical_terms.index', lang=lang) }}" class="text-decoration-none text-dark">
+          <i class="bi bi-arrow-left"></i>
+        </a>
+        {{ t('flashcards', lang)|default('Flashcards') }}
+        {% if selected_difficulty %}
+          - {{ t('level', lang)|default('Level') }} {{ selected_difficulty }}
+        {% endif %}
+      </h2>
+      <p class="text-muted mb-0">
+        <span id="current-card">1</span> / <span id="total-cards">{{ terms|length }}</span>
+      </p>
+    </div>
+    
+    <div class="btn-group">
+      <a href="{{ url_for('medical_terms.review', lang=lang, difficulty=selected_difficulty, category=selected_category) }}" 
+         class="btn btn-outline-primary">
+        <i class="bi bi-table"></i> {{ t('table_view', lang)|default('Table View') }}
+      </a>
+    </div>
+  </div>
+
+  {% if terms %}
+  <!-- Flashcard Container -->
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- Card -->
+      <div class="flashcard-container" id="flashcard-container">
+        <div class="flashcard" id="flashcard" onclick="flipCard()">
+          <div class="flashcard-inner" id="flashcard-inner">
+            <!-- Front (Dutch) -->
+            <div class="flashcard-front">
+              <div class="card-difficulty" id="card-difficulty"></div>
+              <div class="card-category" id="card-category"></div>
+              <div class="card-term" id="card-term"></div>
+              <div class="card-definition" id="card-definition"></div>
+              <div class="flip-hint">
+                <i class="bi bi-arrow-repeat"></i> {{ t('click_to_flip', lang)|default('Click to flip') }}
+              </div>
+            </div>
+            
+            <!-- Back (Translations) -->
+            <div class="flashcard-back">
+              <div class="translations-grid" id="translations-grid"></div>
+              <div class="flip-hint">
+                <i class="bi bi-arrow-repeat"></i> {{ t('click_to_flip_back', lang)|default('Click to flip back') }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="d-flex justify-content-center gap-3 mt-4">
+        <button class="btn btn-lg btn-outline-primary" id="prev-btn" onclick="prevCard()">
+          <i class="bi bi-chevron-left"></i> {{ t('previous', lang)|default('Previous') }}
+        </button>
+        <button class="btn btn-lg btn-outline-primary" id="next-btn" onclick="nextCard()">
+          {{ t('next', lang)|default('Next') }} <i class="bi bi-chevron-right"></i>
+        </button>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="progress mt-4" style="height: 8px;">
+        <div class="progress-bar bg-primary" id="progress-bar" role="progressbar" style="width: 0%"></div>
+      </div>
+
+      <!-- Keyboard shortcuts hint -->
+      <div class="text-center mt-3 text-muted small">
+        <i class="bi bi-keyboard"></i>
+        {{ t('keyboard_hint', lang)|default('Use ← → arrows or Space to navigate') }}
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="text-center py-5">
+    <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+    <p class="mt-3 text-muted">{{ t('no_terms_found', lang)|default('No terms found') }}</p>
+    <a href="{{ url_for('medical_terms.index', lang=lang) }}" class="btn btn-primary">
+      {{ t('back_to_home', lang)|default('Back to Home') }}
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+// Terms data
+const terms = {{ terms|tojson|safe }};
+let currentIndex = 0;
+let isFlipped = false;
+
+// Difficulty labels
+const difficultyLabels = {
+  1: '{{ t("beginner", lang)|default("Beginner") }}',
+  2: '{{ t("elementary", lang)|default("Elementary") }}',
+  3: '{{ t("intermediate", lang)|default("Intermediate") }}',
+  4: '{{ t("advanced", lang)|default("Advanced") }}',
+  5: '{{ t("expert", lang)|default("Expert") }}'
+};
+
+// Difficulty colors
+const difficultyColors = {
+  1: '#28a745',
+  2: '#17a2b8',
+  3: '#ffc107',
+  4: '#ff8c00',
+  5: '#dc3545'
+};
+
+// Load card
+function loadCard(index) {
+  if (index < 0 || index >= terms.length) return;
+  
+  const term = terms[index];
+  currentIndex = index;
+  isFlipped = false;
+  
+  // Reset flip
+  document.getElementById('flashcard-inner').classList.remove('flipped');
+  
+  // Update front
+  document.getElementById('card-term').textContent = term.term_nl;
+  document.getElementById('card-definition').textContent = term.definition_nl || '';
+  document.getElementById('card-category').textContent = term.category;
+  
+  const diffBadge = document.getElementById('card-difficulty');
+  diffBadge.textContent = `${term.difficulty} - ${difficultyLabels[term.difficulty]}`;
+  diffBadge.style.backgroundColor = difficultyColors[term.difficulty];
+  
+  // Update back (translations)
+  const translationsHtml = `
+    <div class="translation-item">
+      <div class="translation-lang">🇬🇧 English</div>
+      <div class="translation-text">${term.term_en || '-'}</div>
+    </div>
+    <div class="translation-item">
+      <div class="translation-lang">🇷🇺 Russian</div>
+      <div class="translation-text">${term.term_ru || '-'}</div>
+    </div>
+    <div class="translation-item">
+      <div class="translation-lang">🇺🇦 Ukrainian</div>
+      <div class="translation-text">${term.term_uk || '-'}</div>
+    </div>
+    <div class="translation-item">
+      <div class="translation-lang">🇪🇸 Spanish</div>
+      <div class="translation-text">${term.term_es || '-'}</div>
+    </div>
+    <div class="translation-item">
+      <div class="translation-lang">🇵🇹 Portuguese</div>
+      <div class="translation-text">${term.term_pt || '-'}</div>
+    </div>
+    <div class="translation-item">
+      <div class="translation-lang">🇹🇷 Turkish</div>
+      <div class="translation-text">${term.term_tr || '-'}</div>
+    </div>
+    <div class="translation-item">
+      <div class="translation-lang">🇮🇷 Persian</div>
+      <div class="translation-text">${term.term_fa || '-'}</div>
+    </div>
+    <div class="translation-item">
+      <div class="translation-lang">🇸🇦 Arabic</div>
+      <div class="translation-text">${term.term_ar || '-'}</div>
+    </div>
+  `;
+  document.getElementById('translations-grid').innerHTML = translationsHtml;
+  
+  // Update counter
+  document.getElementById('current-card').textContent = index + 1;
+  document.getElementById('total-cards').textContent = terms.length;
+  
+  // Update progress
+  const progress = ((index + 1) / terms.length) * 100;
+  document.getElementById('progress-bar').style.width = progress + '%';
+  
+  // Update buttons
+  document.getElementById('prev-btn').disabled = index === 0;
+  document.getElementById('next-btn').disabled = index === terms.length - 1;
+}
+
+// Flip card
+function flipCard() {
+  document.getElementById('flashcard-inner').classList.toggle('flipped');
+  isFlipped = !isFlipped;
+}
+
+// Navigation
+function nextCard() {
+  if (currentIndex < terms.length - 1) {
+    loadCard(currentIndex + 1);
+  }
+}
+
+function prevCard() {
+  if (currentIndex > 0) {
+    loadCard(currentIndex - 1);
+  }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight') {
+    nextCard();
+  } else if (e.key === 'ArrowLeft') {
+    prevCard();
+  } else if (e.key === ' ') {
+    e.preventDefault();
+    flipCard();
+  }
+});
+
+// Initialize
+if (terms.length > 0) {
+  loadCard(0);
+}
+</script>
+
+<style>
+.flashcard-container {
+  perspective: 1000px;
+  min-height: 500px;
+}
+
+.flashcard {
+  width: 100%;
+  height: 500px;
+  cursor: pointer;
+  position: relative;
+}
+
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.flashcard-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.flashcard-front, .flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  background: white;
+}
+
+.flashcard-back {
+  transform: rotateY(180deg);
+  overflow-y: auto;
+}
+
+.card-difficulty {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.card-category {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: #f8f9fa;
+  color: #333;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.card-term {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.card-definition {
+  font-size: 1.2rem;
+  color: #666;
+  text-align: center;
+  max-width: 80%;
+}
+
+.flip-hint {
+  position: absolute;
+  bottom: 20px;
+  color: #999;
+  font-size: 14px;
+}
+
+.translations-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  padding: 20px;
+}
+
+.translation-item {
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 4px solid #3ECDC1;
+}
+
+.translation-lang {
+  font-weight: 600;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.translation-text {
+  font-size: 18px;
+  color: #333;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .flashcard {
+    height: 400px;
+  }
+  
+  .card-term {
+    font-size: 2rem;
+  }
+  
+  .card-definition {
+    font-size: 1rem;
+  }
+  
+  .translations-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+{% endblock %}
+

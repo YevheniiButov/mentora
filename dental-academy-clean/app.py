@@ -520,6 +520,9 @@ try:
     
     # Импорт Games роутов
     from routes.games_routes import games_bp
+    
+    # Импорт Medical Terms Review роутов
+    from routes.medical_terms_routes import medical_terms_bp
 
     
     # Register blueprints
@@ -613,6 +616,10 @@ try:
     # Регистрация Games blueprint
     app.register_blueprint(games_bp)
     logger.info("✅ Games blueprint registered successfully")
+    
+    # Регистрация Medical Terms Review blueprint
+    app.register_blueprint(medical_terms_bp)
+    logger.info("✅ Medical Terms Review blueprint registered successfully")
     
     # Регистрация Analytics blueprint
     try:

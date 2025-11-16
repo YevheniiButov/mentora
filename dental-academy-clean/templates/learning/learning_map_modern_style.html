@@ -1872,6 +1872,35 @@
             color: #0284c7;
         }
 
+        /* How it works link button */
+        .how-it-works-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: #f0f9ff;
+            color: #0369a1;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border: 1px solid #bae6fd;
+            white-space: nowrap;
+        }
+
+        .how-it-works-link:hover {
+            background: #e0f2fe;
+            color: #075985;
+            border-color: #7dd3fc;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.15);
+        }
+
+        .how-it-works-link i {
+            font-size: 14px;
+        }
+
         @keyframes tick {
             0%, 100% { transform: rotate(-5deg); }
             50% { transform: rotate(5deg); }
@@ -2256,6 +2285,11 @@
 
             .countdown-timer i {
                 font-size: 16px;
+            }
+
+            .how-it-works-link {
+                font-size: 12px;
+                padding: 5px 10px;
             }
 
             .countdown-timer .countdown-time {
@@ -5677,7 +5711,16 @@
                     <div class="daily-plan-card" :class="{'tour-highlight': tourActive && tourStep === 2}">
                     <div class="plan-header">
                             <div class="plan-header-left">
-                                <h2>Vandaag te doen</h2>
+                                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                    <h2 style="margin: 0;">Vandaag te doen</h2>
+                                    <a href="/{{ lang }}/how-it-works" 
+                                       class="how-it-works-link" 
+                                       title="Hoe werkt Mentora?"
+                                       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: #f0f9ff; color: #0369a1; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 500; transition: all 0.2s; border: 1px solid #bae6fd;">
+                                        <i class="bi bi-question-circle" style="font-size: 14px;"></i>
+                                        <span>Hoe werkt het?</span>
+                                    </a>
+                                </div>
                                 <!-- Countdown Timer -->
                                 <div class="countdown-timer" 
                                      :class="{ 'countdown-warning': timeUntilMidnight.hours < 2, 'countdown-urgent': timeUntilMidnight.hours < 1 }">

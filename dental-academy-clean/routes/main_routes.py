@@ -118,6 +118,11 @@ def features(lang):
     """Features overview page"""
     return render_template('features.html', lang=lang)
 
+@main_bp.route('/how-it-works')
+def how_it_works(lang):
+    """How it works page"""
+    return render_template('pages/how_it_works.html', lang=lang)
+
 @main_bp.route('/privacy')
 def privacy(lang):
     """Privacy policy page"""
