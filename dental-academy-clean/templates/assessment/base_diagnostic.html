@@ -64,10 +64,27 @@
     <!-- Essential JavaScript -->
     {% block extra_js %}{% endblock %}
     
-    <!-- Theme initialization -->
+    <!-- Theme initialization (sync with Learning Map) -->
     <script>
     (function() {
-        const theme = localStorage.getItem('theme') || 'light';
+        const THEME_STORAGE_KEY = 'mentora_theme';
+        const THEME_AUTO_KEY = 'mentora_theme_auto';
+        
+        const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+        const autoTheme = localStorage.getItem(THEME_AUTO_KEY);
+        
+        let theme = 'light';
+        
+        if (autoTheme === 'true') {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            theme = prefersDark ? 'dark' : 'light';
+        } else if (savedTheme) {
+            theme = savedTheme;
+        } else {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            theme = prefersDark ? 'dark' : 'light';
+        }
+        
         document.documentElement.setAttribute('data-theme', theme);
     })();
     </script>
