@@ -25,6 +25,7 @@ from utils.irt_engine import validate_irt_parameters_for_calculation
 from utils.helpers import get_user_profession_code
 from diagnostic_config.diagnostic_domains import get_quick_test_config
 from utils.mastery_helpers import update_item_mastery
+from utils.system_monitor import log_error
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -2539,7 +2540,27 @@ def show_question(lang, session_id):
                              lang=lang)
                              
     except Exception as e:
+        import traceback
+        error_traceback = traceback.format_exc()
         logger.error(f"Error showing question: {str(e)}", exc_info=True)
+        
+        # Отправляем уведомление в Telegram для критических ошибок
+        try:
+            log_error(
+                title=f"Diagnostic Error: show_question failed",
+                message=f"Error showing question for session {session_id}: {str(e)}",
+                exception=e,
+                user_id=current_user.id if current_user.is_authenticated else None,
+                metadata={
+                    'session_id': session_id,
+                    'route': 'show_question',
+                    'user_email': current_user.email if current_user.is_authenticated else None
+                },
+                send_email=True  # Отправляем email и Telegram уведомление
+            )
+        except Exception as notify_error:
+            logger.error(f"Failed to send error notification: {notify_error}")
+        
         flash('Ошибка при загрузке вопроса', 'error')
         # Проверяем, есть ли активная сессия, и завершаем её, чтобы избежать циклов
         try:
