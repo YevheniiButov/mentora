@@ -179,6 +179,9 @@ class DevelopmentConfig(Config):
     BASE_URL = os.environ.get('BASE_URL', 'http://127.0.0.1:5002')
     SERVER_NAME = os.environ.get('SERVER_NAME', '127.0.0.1:5002')
     
+    # Session settings
+    PERMANENT_SESSION_LIFETIME = timedelta(days=30)  # 30 days for "remember me" sessions
+    
     # DigiD для разработки (mock mode)
     DIGID_MOCK_MODE = True
     DIGID_ENABLED = True
@@ -222,6 +225,12 @@ class StagingConfig(Config):
     
     # База данных для staging
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    
+    # Session settings
+    SESSION_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    PERMANENT_SESSION_LIFETIME = timedelta(days=30)  # 30 days for "remember me" sessions
     
     # DigiD для staging (pre-production environment)
     DIGID_MOCK_MODE = False
@@ -273,7 +282,7 @@ class ProductionConfig(Config):
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
-    PERMANENT_SESSION_LIFETIME = timedelta(hours=4)
+    PERMANENT_SESSION_LIFETIME = timedelta(days=30)  # 30 days for "remember me" sessions (remember=True)
     
     # WTF CSRF enabled for production
     WTF_CSRF_ENABLED = True
