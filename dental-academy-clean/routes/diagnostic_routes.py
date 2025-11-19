@@ -2436,12 +2436,15 @@ def show_question(lang, session_id):
         # Check if session is too old (24 hours)
         from datetime import timedelta
         if diagnostic_session.started_at:
+            # Ensure started_at is timezone-aware before comparison
             started_at = diagnostic_session.started_at
-            # Ensure started_at is timezone-aware
             if started_at.tzinfo is None:
+                # If naive, make it timezone-aware (assume UTC)
                 started_at = started_at.replace(tzinfo=timezone.utc)
             
-            if (datetime.now(timezone.utc) - started_at) > timedelta(hours=24):
+            # Use the local variable (which is guaranteed to be timezone-aware)
+            current_time = datetime.now(timezone.utc)
+            if (current_time - started_at) > timedelta(hours=24):
                 logger.warning(f"Session {session_id} is too old, abandoning it")
                 diagnostic_session.status = 'abandoned'
                 diagnostic_session.termination_reason = 'timeout'
