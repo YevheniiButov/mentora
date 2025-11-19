@@ -8253,10 +8253,11 @@
                 },
 
                 async repeatTerms() {
-                    // Reset terms and start again
+                    // Reset terms and start again with the same terms
                     this.termsCompleted = false;
                     this.termsInProgress = true;
-                    await this.startOrContinueTerms();
+                    // Add repeat=true parameter to use saved terms
+                    window.location.href = '/flashcards/daily-session?repeat=true';
                 },
 
                 async repeatVirtualPatient() {

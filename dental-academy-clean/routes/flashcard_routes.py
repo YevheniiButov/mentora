@@ -38,6 +38,9 @@ def daily_session():
     """
     Daily study session - shows all terms from all categories
     Used by learning map
+    
+    Supports repeating the same terms by checking for saved term IDs in session.
+    If repeat=true or saved terms exist, uses the same terms instead of selecting new ones.
     """
     # КРИТИЧНО: Проверяем, прошёл ли пользователь диагностику
     from utils.diagnostic_check import check_diagnostic_completed, get_diagnostic_redirect_url
@@ -49,51 +52,76 @@ def daily_session():
         return redirect(get_diagnostic_redirect_url(lang))
     
     try:
-        current_app.logger.info(f"Daily session started for user: {current_user.id}")
+        is_repeat = request.args.get('repeat', 'false').lower() == 'true'
+        current_app.logger.info(f"Daily session started for user: {current_user.id}, repeat={is_repeat}")
         
-        allowed_categories = get_allowed_categories(current_user)
-        if not allowed_categories:
-            return render_template('flashcards/study_simple.html',
-                                 category='all',
-                                 terms=[],
-                                 total_terms=0,
-                                 message='No terms available for your profession yet.')
+        # Check if we should use saved terms (for repeat)
+        saved_term_ids = session.get('daily_session_term_ids', [])
+        use_saved_terms = is_repeat and saved_term_ids
+        all_terms = []
         
-        categories = allowed_categories
+        if use_saved_terms:
+            # Use saved terms from previous session
+            current_app.logger.info(f"Using saved terms for repeat: {len(saved_term_ids)} term IDs")
+            found_terms = MedicalTerm.query.filter(MedicalTerm.id.in_(saved_term_ids)).all()
+            # Preserve order from saved_term_ids
+            term_dict = {term.id: term for term in found_terms}
+            all_terms = [term_dict[term_id] for term_id in saved_term_ids if term_id in term_dict]
+            
+            # If not all saved terms were found (e.g., deleted from DB), fall back to selecting new terms
+            if len(all_terms) < len(saved_term_ids):
+                current_app.logger.warning(f"Only {len(all_terms)} of {len(saved_term_ids)} saved terms found, falling back to new selection")
+                all_terms = []  # Clear to trigger new selection below
         
-        if not categories:
-            return render_template('flashcards/study_simple.html',
-                                 category='all',
-                                 terms=[],
-                                 total_terms=0,
-                                 message='No terms available in the database')
-        
-        # Collect terms from all categories (mix of new and review)
-        from utils.flashcard_helpers import get_session_terms
-        all_selected_terms = []
-        
-        # Get terms from each category and combine
-        terms_per_category = max(3, 10 // max(len(categories), 1))  # Distribute 10 terms across categories
-        for category in categories[:3]:  # Limit to first 3 categories to avoid too many
-            category_terms = get_session_terms(current_user, category, count=terms_per_category)
-            all_selected_terms.extend(category_terms)
-        
-        # If still not enough, get any terms
-        if len(all_selected_terms) < 10:
-            remaining = 10 - len(all_selected_terms)
-            if all_selected_terms:
-                any_terms = MedicalTerm.query.filter(
-                    MedicalTerm.category.in_(allowed_categories),
-                    ~MedicalTerm.id.in_([t.id for t in all_selected_terms])
-                ).limit(remaining).all()
-            else:
-                any_terms = MedicalTerm.query.filter(
-                    MedicalTerm.category.in_(allowed_categories)
-                ).limit(remaining).all()
-            all_selected_terms.extend(any_terms)
-        
-        # Limit to 10 total
-        all_terms = all_selected_terms[:10]
+        if not all_terms:
+            # Select new terms
+            allowed_categories = get_allowed_categories(current_user)
+            if not allowed_categories:
+                return render_template('flashcards/study_simple.html',
+                                     category='all',
+                                     terms=[],
+                                     total_terms=0,
+                                     message='No terms available for your profession yet.')
+            
+            categories = allowed_categories
+            
+            if not categories:
+                return render_template('flashcards/study_simple.html',
+                                     category='all',
+                                     terms=[],
+                                     total_terms=0,
+                                     message='No terms available in the database')
+            
+            # Collect terms from all categories (mix of new and review)
+            from utils.flashcard_helpers import get_session_terms
+            all_selected_terms = []
+            
+            # Get terms from each category and combine
+            terms_per_category = max(3, 10 // max(len(categories), 1))  # Distribute 10 terms across categories
+            for category in categories[:3]:  # Limit to first 3 categories to avoid too many
+                category_terms = get_session_terms(current_user, category, count=terms_per_category)
+                all_selected_terms.extend(category_terms)
+            
+            # If still not enough, get any terms
+            if len(all_selected_terms) < 10:
+                remaining = 10 - len(all_selected_terms)
+                if all_selected_terms:
+                    any_terms = MedicalTerm.query.filter(
+                        MedicalTerm.category.in_(allowed_categories),
+                        ~MedicalTerm.id.in_([t.id for t in all_selected_terms])
+                    ).limit(remaining).all()
+                else:
+                    any_terms = MedicalTerm.query.filter(
+                        MedicalTerm.category.in_(allowed_categories)
+                    ).limit(remaining).all()
+                all_selected_terms.extend(any_terms)
+            
+            # Limit to 10 total
+            all_terms = all_selected_terms[:10]
+            
+            # Save term IDs to session for future repeats (always save when selecting new terms)
+            session['daily_session_term_ids'] = [term.id for term in all_terms]
+            current_app.logger.info(f"Saved {len(all_terms)} term IDs to session for future repeats")
         
         if not all_terms:
             return render_template('flashcards/study_simple.html',

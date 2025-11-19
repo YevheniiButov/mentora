@@ -2275,12 +2275,30 @@ def get_user_domain_statistics(user_id: int, domain_code: str) -> dict:
                 'has_data': False
             }
         
+        # Handle last_session_date with timezone-aware datetime
+        last_session_date = None
+        if domain_sessions:
+            try:
+                # Ensure all started_at are timezone-aware before comparison
+                session_dates = []
+                for s in domain_sessions:
+                    if s.started_at:
+                        started = s.started_at
+                        if started.tzinfo is None:
+                            started = started.replace(tzinfo=timezone.utc)
+                        session_dates.append(started)
+                if session_dates:
+                    last_session_date = max(session_dates).isoformat()
+            except Exception as e:
+                logger.warning(f"Error getting last_session_date: {e}")
+                last_session_date = None
+        
         return {
             'sessions_completed': completed_sessions,
             'average_score': round(total_score / max(completed_sessions, 1), 1),
             'current_ability': round(sum(abilities) / max(len(abilities), 1), 2) if abilities else None,
             'questions_answered': total_questions,
-            'last_session_date': max([s.started_at for s in domain_sessions]).isoformat() if domain_sessions else None,
+            'last_session_date': last_session_date,
             'has_data': True
         }
         
