@@ -56,7 +56,9 @@ def init_extensions(app):
             lang = 'nl'
         
         # Store the original URL for redirect after login
-        session['next'] = request.url
+        # BUT: Don't store API endpoints (they should return JSON, not HTML)
+        if not request.url.startswith('/api/'):
+            session['next'] = request.url
         
         # Redirect to login with language preserved
         # Use direct URL instead of url_for to avoid BuildError
