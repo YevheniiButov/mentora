@@ -318,6 +318,14 @@
         }
     }
     
+    .victory-content .d-flex.gap-2 {
+        gap: 0.75rem !important;
+    }
+    
+    .victory-content .btn-game {
+        margin-top: 0;
+    }
+    
     .victory-title {
         font-size: 3rem;
         margin-bottom: 1rem;
@@ -560,9 +568,16 @@
                 </div>
             </div>
         </div>
-        <button class="btn btn-game w-100" onclick="resetGame()">
-            <i class="bi bi-arrow-clockwise"></i> Play Again
-        </button>
+        <div class="d-flex gap-2" style="flex-direction: column;">
+            <button class="btn btn-game w-100" onclick="resetGame()">
+                <i class="bi bi-arrow-clockwise"></i> Play Again
+            </button>
+            {% if auto_start %}
+            <button class="btn btn-game w-100" onclick="exitToDailyLearning()" style="background: var(--game-secondary);">
+                <i class="bi bi-box-arrow-right"></i> Exit to Daily Learning
+            </button>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -1064,6 +1079,13 @@ function resetGame() {
     
     const victoryModal = document.getElementById('victoryModal');
     if (victoryModal) victoryModal.classList.remove('show');
+}
+
+function exitToDailyLearning() {
+    // Get language from URL or default to 'nl'
+    const lang = '{{ lang|default("nl") }}';
+    // Redirect to learning map (daily learning)
+    window.location.href = `/${lang}/`;
 }
 
 // Auto-pause functionality
