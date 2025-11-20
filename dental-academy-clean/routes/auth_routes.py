@@ -610,6 +610,10 @@ def login(lang=None):
             from flask import session
             next_url = session.pop('next', None)
             
+            # Filter out API endpoints from next_url (they should return JSON, not HTML)
+            if next_url and next_url.startswith('/api/'):
+                next_url = None
+            
             if next_url:
                 # If there's a stored URL, redirect there
                 redirect_url = next_url
