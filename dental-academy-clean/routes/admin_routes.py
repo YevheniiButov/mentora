@@ -3325,17 +3325,125 @@ def toggle_user_status(user_id):
     
     return redirect(url_for('admin.user_detail', user_id=user_id))
 
+def _hard_delete_user_data(user_id):
+    """Вспомогательная функция для полного удаления всех данных пользователя"""
+    from models import (
+        DailyAssignment, UserProgress, UserExamDate, UserSession, 
+        UserAchievement, UserActivity, UserStreak, UserReminder,
+        UserEnglishProgress, UserDutchProgress, UserTermProgress,
+        DiagnosticSession, StudySession, VirtualPatientAttempt,
+        UserLearningProgress, Contact, ProfileAuditLog, DigiDSession,
+        EmailAttachment, IncomingEmail, ForumTopic, ForumPost
+    )
+    
+    deleted_counts = {}
+    
+    # Удаляем все связанные данные
+    models_to_delete = [
+        (DailyAssignment, 'daily_assignments'),
+        (UserProgress, 'user_progress'),
+        (UserExamDate, 'exam_dates'),
+        (UserSession, 'sessions'),
+        (UserAchievement, 'achievements'),
+        (UserActivity, 'activities'),
+        (UserStreak, 'streaks'),
+        (UserReminder, 'reminders'),
+        (UserEnglishProgress, 'english_progress'),
+        (UserDutchProgress, 'dutch_progress'),
+        (UserTermProgress, 'term_progress'),
+        (DiagnosticSession, 'diagnostic_sessions'),
+        (StudySession, 'study_sessions'),
+        (VirtualPatientAttempt, 'vp_attempts'),
+        (UserLearningProgress, 'learning_progress'),
+        (DigiDSession, 'digid_sessions'),
+        (ProfileAuditLog, 'audit_logs'),
+    ]
+    
+    for model_class, name in models_to_delete:
+        try:
+            items = model_class.query.filter_by(user_id=user_id).all()
+            count = len(items)
+            if count > 0:
+                for item in items:
+                    db.session.delete(item)
+                deleted_counts[name] = count
+                current_app.logger.info(f"Deleted {count} {name} for user {user_id}")
+        except Exception as e:
+            current_app.logger.warning(f"Error deleting {name} for user {user_id}: {e}")
+    
+    # Удаляем Contact записи (может быть user_id или assigned_to)
+    try:
+        contacts = Contact.query.filter(
+            db.or_(Contact.user_id == user_id, Contact.assigned_to == user_id)
+        ).all()
+        count = len(contacts)
+        if count > 0:
+            for contact in contacts:
+                if contact.user_id == user_id:
+                    db.session.delete(contact)
+                else:
+                    contact.assigned_to = None
+            deleted_counts['contacts'] = count
+            current_app.logger.info(f"Deleted/updated {count} contacts for user {user_id}")
+    except Exception as e:
+        current_app.logger.warning(f"Error deleting contacts for user {user_id}: {e}")
+    
+    # Удаляем EmailAttachment (связанные через user_id)
+    try:
+        attachments = EmailAttachment.query.filter_by(user_id=user_id).all()
+        count = len(attachments)
+        if count > 0:
+            for attachment in attachments:
+                db.session.delete(attachment)
+            deleted_counts['email_attachments'] = count
+            current_app.logger.info(f"Deleted {count} email attachments for user {user_id}")
+    except Exception as e:
+        current_app.logger.warning(f"Error deleting email attachments for user {user_id}: {e}")
+    
+    # Удаляем ForumTopic и ForumPost (авторские)
+    try:
+        topics = ForumTopic.query.filter_by(author_id=user_id).all()
+        topic_count = len(topics)
+        if topic_count > 0:
+            for topic in topics:
+                # Удаляем все посты в теме
+                posts = ForumPost.query.filter_by(topic_id=topic.id).all()
+                for post in posts:
+                    db.session.delete(post)
+                db.session.delete(topic)
+            deleted_counts['forum_topics'] = topic_count
+            current_app.logger.info(f"Deleted {topic_count} forum topics for user {user_id}")
+    except Exception as e:
+        current_app.logger.warning(f"Error deleting forum topics for user {user_id}: {e}")
+    
+    try:
+        posts = ForumPost.query.filter_by(author_id=user_id).all()
+        post_count = len(posts)
+        if post_count > 0:
+            for post in posts:
+                db.session.delete(post)
+            deleted_counts['forum_posts'] = post_count
+            current_app.logger.info(f"Deleted {post_count} forum posts for user {user_id}")
+    except Exception as e:
+        current_app.logger.warning(f"Error deleting forum posts for user {user_id}: {e}")
+    
+    current_app.logger.info(f"Hard delete summary for user {user_id}: {deleted_counts}")
+    return deleted_counts
+
 @admin_bp.route('/users/<int:user_id>/delete', methods=['POST'])
 @login_required
 @admin_required
 def delete_user(user_id):
-    """Delete user (admin only)"""
+    """Delete user (admin only) - supports both soft and hard delete"""
     user = User.query.get_or_404(user_id)
     
     # Prevent deleting yourself
     if user.id == current_user.id:
         flash('Нельзя удалить собственный аккаунт', 'danger')
         return redirect(url_for('admin.user_detail', user_id=user_id))
+    
+    # Get delete type from form
+    delete_type = request.form.get('delete_type', 'soft')  # 'soft' or 'hard'
     
     # Prevent deleting other admins without confirmation
     if user.is_admin:
@@ -3345,28 +3453,28 @@ def delete_user(user_id):
             return redirect(url_for('admin.user_detail', user_id=user_id))
     
     try:
-        from models import DailyAssignment
-        
         user_email = user.email
+        user_name = user.get_display_name()
         
-        # Явно удаляем daily_assignments перед удалением пользователя
-        # (хотя есть CASCADE, но лучше быть явным для избежания ошибок)
-        daily_assignments = DailyAssignment.query.filter_by(user_id=user_id).all()
-        if daily_assignments:
-            for assignment in daily_assignments:
-                db.session.delete(assignment)
-            current_app.logger.info(f"Deleted {len(daily_assignments)} daily assignments for user {user_id}")
+        if delete_type == 'hard':
+            # Hard delete - полное удаление всех данных
+            _hard_delete_user_data(user_id)
+            db.session.delete(user)
+            db.session.commit()
+            
+            flash(f'Пользователь {user_name} ({user_email}) полностью удален из системы. Все данные удалены безвозвратно.', 'warning')
+            current_app.logger.warning(f"Admin {current_user.email} hard deleted user {user_id} ({user_email})")
+        else:
+            # Soft delete - мягкое удаление
+            user.soft_delete(current_user.id)
+            flash(f'Пользователь {user_name} ({user_email}) мягко удален. Данные сохранены и могут быть восстановлены.', 'success')
+            current_app.logger.info(f"Admin {current_user.email} soft deleted user {user_id} ({user_email})")
         
-        # Теперь удаляем пользователя
-        db.session.delete(user)
-        db.session.commit()
-        
-        flash(f'Пользователь {user_email} удален', 'success')
         return redirect(url_for('admin.users_list'))
         
     except Exception as e:
         db.session.rollback()
-        current_app.logger.error(f"Error deleting user {user_id}: {str(e)}")
+        current_app.logger.error(f"Error deleting user {user_id}: {str(e)}", exc_info=True)
         flash(f'Ошибка при удалении пользователя: {str(e)}', 'danger')
         return redirect(url_for('admin.user_detail', user_id=user_id))
 
@@ -5824,19 +5932,14 @@ def hard_delete_user(user_id):
         # Получаем имя пользователя для сообщения
         user_name = user.get_display_name()
         
-        # Явно удаляем daily_assignments перед удалением пользователя
-        from models import DailyAssignment
-        daily_assignments = DailyAssignment.query.filter_by(user_id=user_id).all()
-        if daily_assignments:
-            for assignment in daily_assignments:
-                db.session.delete(assignment)
-            current_app.logger.info(f"Deleted {len(daily_assignments)} daily assignments for user {user_id}")
+        # Полное удаление всех данных
+        deleted_counts = _hard_delete_user_data(user_id)
         
         # Выполняем жесткое удаление
         db.session.delete(user)
         db.session.commit()
         
-        flash(f'Пользователь {user_name} был полностью удален из системы.', 'warning')
+        flash(f'Пользователь {user_name} был полностью удален из системы. Удалено записей: {sum(deleted_counts.values())}.', 'warning')
         
     except Exception as e:
         current_app.logger.error(f"Error hard deleting user {user_id}: {str(e)}")

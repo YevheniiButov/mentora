@@ -68,14 +68,29 @@
             </button>
             <ul class="dropdown-menu">
                 <li>
-                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}">
+                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" style="display: inline;">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="delete_type" value="soft">
+                        {% if user.is_admin %}
+                        <input type="hidden" name="confirm_admin_delete" value="1">
+                        {% endif %}
+                        <button type="submit" class="dropdown-item text-warning"
+                                onclick="return confirm('{% if user.is_admin %}ВНИМАНИЕ! Вы удаляете администратора. {% endif %}Выполнить мягкое удаление пользователя {{ user.email }}? Данные будут сохранены и могут быть восстановлены.')">
+                            <i class="bi bi-archive"></i> Мягкое удаление (можно восстановить)
+                        </button>
+                    </form>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" style="display: inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="delete_type" value="hard">
                         {% if user.is_admin %}
                         <input type="hidden" name="confirm_admin_delete" value="1">
                         {% endif %}
                         <button type="submit" class="dropdown-item text-danger"
-                                onclick="return confirm('{% if user.is_admin %}ВНИМАНИЕ! Вы удаляете администратора. {% endif %}Удалить пользователя {{ user.email }}? Это действие необратимо!')">
-                            {% if user.is_admin %}Удалить администратора{% else %}Удалить пользователя{% endif %}
+                                onclick="return confirm('⚠️ ВНИМАНИЕ! ⚠️\n\n{% if user.is_admin %}Вы удаляете администратора. {% endif %}Выполнить ПОЛНОЕ удаление пользователя {{ user.email }}?\n\nЭто действие НЕОБРАТИМО! Все данные пользователя будут удалены навсегда:\n- Профиль\n- Прогресс обучения\n- Диагностики\n- Тесты\n- Все связанные данные\n\nВы уверены?')">
+                            <i class="bi bi-trash-fill"></i> Полное удаление (необратимо!)
                         </button>
                     </form>
                 </li>

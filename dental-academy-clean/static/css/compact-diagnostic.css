@@ -333,6 +333,29 @@
   box-shadow: var(--shadow-sm);
 }
 
+/* Active button state - more noticeable when answer is selected */
+.btn-next.btn-active:not(:disabled),
+#finish-btn.btn-active:not(:disabled) {
+  background: linear-gradient(135deg, #22c55e, #16a34a); /* Green gradient for active state */
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3), var(--shadow-lg); /* Green glow */
+  animation: pulse-glow 2s ease-in-out infinite;
+  transform: scale(1.02);
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3), var(--shadow-lg);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.4), var(--shadow-lg);
+  }
+}
+
+.btn-next.btn-active:not(:disabled):hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.4), var(--shadow-lg);
+}
+
 /* ===== CONFIDENCE CONTROL ===== */
 .confidence-control {
   display: flex;

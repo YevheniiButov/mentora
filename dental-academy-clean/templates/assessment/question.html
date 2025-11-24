@@ -120,6 +120,18 @@ function initializeQuestionPage() {
         currentQuestionId: {{ diagnostic_session.current_question_id }}
     });
     
+    // Reset button states
+    const nextBtn = document.getElementById('next-btn');
+    const finishBtn = document.getElementById('finish-btn');
+    if (nextBtn) {
+        nextBtn.classList.remove('btn-active');
+        console.log('🔄 Next button reset to disabled state');
+    }
+    if (finishBtn) {
+        finishBtn.classList.remove('btn-active');
+        console.log('🔄 Finish button reset to disabled state');
+    }
+    
     // Timer initialization
     initTimer();
     
@@ -173,6 +185,8 @@ function bindEventHandlers() {
 }
 
 function selectOption(element, index) {
+    console.log('🎯 selectOption called:', { index, questionId: {{ question.id }}, sessionId: {{ session_id }}});
+    
     // Remove selection from all options
     document.querySelectorAll('.option-compact').forEach(opt => {
         opt.classList.remove('selected');
@@ -182,12 +196,22 @@ function selectOption(element, index) {
     element.classList.add('selected');
     selectedOption = index;
     
+    console.log('✅ Option selected:', { optionIndex: index, optionLetter: ['A','B','C','D','E'][index]});
+    
     // Activate "Next" or "Finish" button
-        const nextBtn = document.getElementById('next-btn');
+    const nextBtn = document.getElementById('next-btn');
     const finishBtn = document.getElementById('finish-btn');
     
-    if (nextBtn) nextBtn.disabled = false;
-    if (finishBtn) finishBtn.disabled = false;
+    if (nextBtn) {
+        nextBtn.disabled = false;
+        nextBtn.classList.add('btn-active'); // Add active class for visual indication
+        console.log('🔘 Next button activated');
+    }
+    if (finishBtn) {
+        finishBtn.disabled = false;
+        finishBtn.classList.add('btn-active'); // Add active class for visual indication
+        console.log('🔘 Finish button activated');
+    }
     
     // Add haptic feedback
     addHapticFeedback();
@@ -195,8 +219,19 @@ function selectOption(element, index) {
     // Update confidence indicator
     updateConfidenceIndicator();
     
-    // Auto-scroll to next unselected option
-    setTimeout(() => scrollToNextOption(), 100);
+    // Auto-scroll to button after selection (with delay to ensure button is visible)
+    setTimeout(() => {
+        const activeButton = nextBtn || finishBtn;
+        if (activeButton) {
+            console.log('📜 Scrolling to active button');
+            activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // Also ensure footer is visible
+            const footer = document.querySelector('.nav-footer');
+            if (footer) {
+                footer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+    }, 300);
 }
 
 function updateConfidenceIndicator() {
@@ -340,9 +375,18 @@ function previousQuestion() {
 }
 
 async function nextQuestion() {
-    if (selectedOption === null) return;
+    if (selectedOption === null) {
+        console.warn('⚠️ nextQuestion called but no option selected');
+        return;
+    }
     
-    console.log('🚀 nextQuestion called for question {{ question.id }}');
+    console.log('🚀 nextQuestion called:', {
+        questionId: {{ question.id }},
+        questionNum: {{ question_num }},
+        sessionId: {{ session_id }},
+        selectedOption: selectedOption,
+        optionLetter: ['A','B','C','D','E'][selectedOption]
+    });
     
     try {
         const submitResult = await submitAnswer();
@@ -453,11 +497,23 @@ async function completeDiagnostic() {
 }
 
 async function submitAnswer() {
-    if (selectedOption === null) return;
+    if (selectedOption === null) {
+        console.warn('⚠️ submitAnswer called but no option selected');
+        return;
+    }
+    
+    console.log('📤 submitAnswer called:', { 
+        optionIndex: selectedOption, 
+        optionLetter: ['A','B','C','D','E'][selectedOption],
+        confidence: confidenceLevel,
+        questionId: {{ question.id }},
+        sessionId: {{ session_id }}
+    });
     
     // Защита от двойной отправки
     const submitBtn = document.getElementById('submit-answer-btn');
     if (submitBtn && submitBtn.disabled) {
+        console.warn('⚠️ Submit button already disabled, ignoring duplicate call');
         return;
     }
     
@@ -474,10 +530,13 @@ async function submitAnswer() {
         formData.append('confidence', confidenceLevel);
         formData.append('csrf_token', '{{ csrf_token() }}');
         
+        console.log('📡 Sending POST request to submit_answer');
         const response = await fetch('{{ url_for("diagnostic.submit_answer", lang=lang, session_id=session_id) }}', {
             method: 'POST',
             body: formData
         });
+        
+        console.log('📥 Response received:', { status: response.status, ok: response.ok, redirected: response.redirected });
         
         hideLoading();
         
@@ -499,14 +558,16 @@ async function submitAnswer() {
         // If this is a regular successful response, DON'T redirect automatically
         // User will press "Next" or "Finish" themselves
         if (response.ok) {
+            console.log('✅ Answer submitted successfully');
             return { success: true };
         } else {
+            console.error('❌ HTTP error:', response.status);
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
     } catch (error) {
         hideLoading();
-        console.error('Error submitting answer:', error);
+        console.error('❌ Error submitting answer:', error);
         showModal('{{ t("error", lang) | default("Error") }}', '{{ t("answer_submission_error", lang) | default("An error occurred while sending the answer") }}', [
             { text: 'OK', class: 'btn-primary', onclick: hideModal }
         ]);

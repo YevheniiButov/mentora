@@ -361,11 +361,35 @@
                                                     <i class="bi bi-{% if user.is_active %}pause{% else %}play{% endif %}"></i>
                                                 </button>
                                             </form>
-                                            <a href="{{ url_for('admin.soft_delete_user', user_id=user.id) }}" 
-                                               class="btn btn-outline-warning" title="Мягко удалить (сохранить данные)"
-                                               onclick="return confirm('Мягко удалить пользователя {{ user.get_display_name() }}? Данные будут сохранены.')">
-                                                <i class="bi bi-archive"></i>
-                                            </a>
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-outline-danger btn-sm dropdown-toggle" 
+                                                        data-bs-toggle="dropdown" title="Удалить пользователя">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" style="display: inline;">
+                                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                            <input type="hidden" name="delete_type" value="soft">
+                                                            <button type="submit" class="dropdown-item text-warning"
+                                                                    onclick="return confirm('Мягко удалить пользователя {{ user.get_display_name() }}? Данные будут сохранены и могут быть восстановлены.')">
+                                                                <i class="bi bi-archive"></i> Мягкое удаление
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li>
+                                                        <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" style="display: inline;">
+                                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                            <input type="hidden" name="delete_type" value="hard">
+                                                            <button type="submit" class="dropdown-item text-danger"
+                                                                    onclick="return confirm('⚠️ ВНИМАНИЕ! ⚠️\n\nПолностью удалить пользователя {{ user.get_display_name() }}?\n\nЭто действие НЕОБРАТИМО! Все данные будут удалены навсегда!')">
+                                                                <i class="bi bi-trash-fill"></i> Полное удаление
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         {% endif %}
                                     {% endif %}
                                 </div>
