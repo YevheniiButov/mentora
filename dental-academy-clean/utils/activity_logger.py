@@ -86,7 +86,7 @@ def log_user_activity(action_type='page_view', action_description=None, metadata
             os=parsed_ua.get('os'),
             device_type=parsed_ua.get('device_type'),
             timestamp=datetime.now(timezone.utc),
-            metadata=metadata
+            action_metadata=metadata  # Use action_metadata (metadata is reserved in SQLAlchemy)
         )
         
         db.session.add(activity_log)

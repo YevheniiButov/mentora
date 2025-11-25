@@ -2537,7 +2537,7 @@ class UserActivityLog(db.Model):
     time_on_page = db.Column(db.Integer, nullable=True)  # seconds spent on page
     
     # Additional metadata
-    metadata = db.Column(db.JSON, nullable=True)  # Additional data about the action
+    action_metadata = db.Column(db.JSON, nullable=True)  # Additional data about the action (renamed from metadata - reserved in SQLAlchemy)
     
     # Relationship
     user = db.relationship('User', backref='activity_logs')
@@ -2564,7 +2564,7 @@ class UserActivityLog(db.Model):
             'city': self.city,
             'timestamp': self.timestamp.isoformat() if self.timestamp else None,
             'time_on_page': self.time_on_page,
-            'metadata': self.metadata
+            'metadata': self.action_metadata  # Keep 'metadata' key in dict for backward compatibility
         }
 
 class UserStreak(db.Model):
