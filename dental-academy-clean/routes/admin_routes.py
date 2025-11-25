@@ -3335,7 +3335,7 @@ def _hard_delete_user_data(user_id):
         DiagnosticSession, StudySession, VirtualPatientAttempt,
         UserLearningProgress, Contact, ProfileAuditLog, DigiDSession,
         EmailAttachment, IncomingEmail, ForumTopic, ForumPost,
-        DailyFlashcardProgress, PersonalLearningPlan
+        DailyFlashcardProgress, PersonalLearningPlan, UserItemMastery
     )
     
     deleted_counts = {}
@@ -3361,6 +3361,7 @@ def _hard_delete_user_data(user_id):
         (ProfileAuditLog, 'audit_logs'),
         (DailyFlashcardProgress, 'daily_flashcard_progress'),
         (PersonalLearningPlan, 'personal_learning_plans'),
+        (UserItemMastery, 'user_item_mastery'),
     ]
     
     for model_class, name in models_to_delete:
@@ -3470,9 +3471,10 @@ def delete_user(user_id):
             current_app.logger.warning(f"Admin {current_user.email} hard deleted user {user_id} ({user_email})")
         else:
             # Soft delete - мягкое удаление
-            # Важно: отключаем автоматическое обновление связанных записей через expire_all,
-            # чтобы SQLAlchemy не пытался обновлять записи с NOT NULL constraint на user_id
-            # (например, DailyFlashcardProgress, PersonalLearningPlan)
+            # Важно: исключаем объект user из сессии перед обновлением,
+            # чтобы SQLAlchemy не пытался обновлять связанные записи с NOT NULL constraint на user_id
+            # (например, DailyFlashcardProgress, PersonalLearningPlan, UserItemMastery)
+            db.session.expunge(user)
             db.session.expire_all()
             # Устанавливаем флаги напрямую через update, чтобы избежать загрузки связанных объектов
             db.session.query(User).filter_by(id=user_id).update({
