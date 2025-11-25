@@ -1,6 +1,7 @@
 # extensions.py - Flask Extensions (Clean Version)
 # Only essential extensions for core functionality
 
+import os
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
@@ -83,7 +84,20 @@ def init_extensions(app):
     mail.init_app(app)
     
     # Rate Limiting
-    limiter.init_app(app)
+    # Configure storage backend for production (Redis) or use memory for development
+    redis_url = app.config.get('REDIS_URL') or os.environ.get('REDIS_URL')
+    if redis_url:
+        # Use Redis storage backend for production (works with multiple workers)
+        limiter.init_app(app, storage_uri=redis_url)
+        print(f"✅ Flask-Limiter configured with Redis storage: {redis_url.split('@')[-1] if '@' in redis_url else 'redis'}")
+    else:
+        # Use memory storage for development (not recommended for production)
+        limiter.init_app(app)
+        if app.config.get('FLASK_ENV') == 'production':
+            print("⚠️  WARNING: Flask-Limiter using in-memory storage in production. Set REDIS_URL for proper rate limiting.")
+        else:
+            print("ℹ️  Flask-Limiter using in-memory storage (development mode)")
+    
     # Set default rate limits
     limiter.enabled = True
     

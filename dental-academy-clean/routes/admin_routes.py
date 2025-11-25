@@ -3334,7 +3334,8 @@ def _hard_delete_user_data(user_id):
         UserEnglishProgress, UserDutchProgress, UserTermProgress,
         DiagnosticSession, StudySession, VirtualPatientAttempt,
         UserLearningProgress, Contact, ProfileAuditLog, DigiDSession,
-        EmailAttachment, IncomingEmail, ForumTopic, ForumPost
+        EmailAttachment, IncomingEmail, ForumTopic, ForumPost,
+        DailyFlashcardProgress
     )
     
     deleted_counts = {}
@@ -3358,6 +3359,7 @@ def _hard_delete_user_data(user_id):
         (UserLearningProgress, 'learning_progress'),
         (DigiDSession, 'digid_sessions'),
         (ProfileAuditLog, 'audit_logs'),
+        (DailyFlashcardProgress, 'daily_flashcard_progress'),
     ]
     
     for model_class, name in models_to_delete:
@@ -3467,7 +3469,15 @@ def delete_user(user_id):
             current_app.logger.warning(f"Admin {current_user.email} hard deleted user {user_id} ({user_email})")
         else:
             # Soft delete - мягкое удаление
-            user.soft_delete(current_user.id)
+            # Важно: устанавливаем флаги напрямую, чтобы избежать проблем с автоматическим
+            # обновлением связанных записей, которые имеют NOT NULL constraint на user_id
+            # (например, DailyFlashcardProgress)
+            user.is_deleted = True
+            user.deleted_at = datetime.now(timezone.utc)
+            user.deleted_by = current_user.id
+            user.is_active = False
+            db.session.commit()
+            
             flash(f'Пользователь {user_name} ({user_email}) мягко удален. Данные сохранены и могут быть восстановлены.', 'success')
             current_app.logger.info(f"Admin {current_user.email} soft deleted user {user_id} ({user_email})")
         
