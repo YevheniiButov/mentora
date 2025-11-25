@@ -314,6 +314,7 @@ def inject_template_vars():
         'csrf_token': csrf_token,  # Добавляем функцию CSRF token
         'language_url': language_url,  # Добавляем функцию генерации URL с языком
         'main_index_url': main_index_url,  # Добавляем функцию генерации URL главной страницы
+        'config': app.config,  # Добавляем config для доступа к настройкам (например, RECAPTCHA_PUBLIC_KEY)
         # DigiD variables
         'digid_enabled': app.config.get('DIGID_ENABLED', False),
         'digid_mock_mode': app.config.get('DIGID_MOCK_MODE', False),
@@ -2381,6 +2382,29 @@ def track_page_exit():
         return safe_jsonify({'success': True})
     except Exception as e:
         logger.error(f"Error tracking page exit: {str(e)}")
+        return safe_jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/track-form-abandonment', methods=['POST'])
+@csrf.exempt
+def track_form_abandonment():
+    """Track form abandonment events"""
+    try:
+        data = request.get_json()
+        page_type = data.get('page_type', 'unknown')
+        
+        # Use VisitorTracker to actually track the form abandonment
+        from utils.visitor_tracker import VisitorTracker
+        success = VisitorTracker.track_form_abandonment(page_type)
+        
+        if success:
+            logger.info(f"Form abandonment tracked: {page_type}")
+            return safe_jsonify({'success': True, 'message': 'Form abandonment tracked'})
+        else:
+            logger.info(f"Form abandonment skipped (no active visitor session): {page_type}")
+            return safe_jsonify({'success': False, 'message': 'No active visitor session'})
+            
+    except Exception as e:
+        logger.error(f"Error tracking form abandonment: {str(e)}")
         return safe_jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route("/track-email-entry", methods=["POST"])

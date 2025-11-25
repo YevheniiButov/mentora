@@ -1102,12 +1102,15 @@ def quick_register(lang=None):
         
         # Проверка reCAPTCHA
         try:
-            recaptcha_enabled = current_app.config.get('RECAPTCHA_ENABLED', True)
+            recaptcha_enabled = current_app.config.get('RECAPTCHA_ENABLED', False)
+            recaptcha_public_key = current_app.config.get('RECAPTCHA_PUBLIC_KEY')
+            # reCAPTCHA должна быть включена И должен быть установлен публичный ключ
+            recaptcha_required = recaptcha_enabled and recaptcha_public_key
         except Exception as e:
             print(f"Error getting RECAPTCHA config: {e}")
-            recaptcha_enabled = True
+            recaptcha_required = False
         
-        if recaptcha_enabled:
+        if recaptcha_required:
             recaptcha_response = data.get('g-recaptcha-response')
             if not recaptcha_response:
                 safe_log('log_validation_error', 'quick_registration', 'g-recaptcha-response', 'No reCAPTCHA response provided', data)

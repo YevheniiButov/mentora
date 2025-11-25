@@ -379,6 +379,8 @@ Please check the logs for more details.
                 registration_email = user_context.get('user_email')
             
             # Create log entry
+            # Note: field, error_code, error_message, form_data are stored in context but not in model
+            # They are logged to file/console but not saved to database
             log_entry = RegistrationLog(
                 event_type=event_type,
                 registration_type=registration_type,
@@ -390,11 +392,7 @@ Please check the logs for more details.
                 method=request_context.get('method'),
                 user_id=user_context.get('user_id'),
                 user_email=registration_email,  # Use extracted email
-                user_type=user_context.get('user_type'),
-                field=context.get('field'),
-                error_code=context.get('code'),
-                error_message=context.get('error_message'),
-                form_data=json.dumps(form_data) if form_data else None
+                user_type=user_context.get('user_type')
             )
             
             db.session.add(log_entry)
