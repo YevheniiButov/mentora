@@ -3335,7 +3335,7 @@ def _hard_delete_user_data(user_id):
         DiagnosticSession, StudySession, VirtualPatientAttempt,
         UserLearningProgress, Contact, ProfileAuditLog, DigiDSession,
         EmailAttachment, IncomingEmail, ForumTopic, ForumPost,
-        DailyFlashcardProgress
+        DailyFlashcardProgress, PersonalLearningPlan
     )
     
     deleted_counts = {}
@@ -3360,6 +3360,7 @@ def _hard_delete_user_data(user_id):
         (DigiDSession, 'digid_sessions'),
         (ProfileAuditLog, 'audit_logs'),
         (DailyFlashcardProgress, 'daily_flashcard_progress'),
+        (PersonalLearningPlan, 'personal_learning_plans'),
     ]
     
     for model_class, name in models_to_delete:
@@ -3469,13 +3470,17 @@ def delete_user(user_id):
             current_app.logger.warning(f"Admin {current_user.email} hard deleted user {user_id} ({user_email})")
         else:
             # Soft delete - мягкое удаление
-            # Важно: устанавливаем флаги напрямую, чтобы избежать проблем с автоматическим
-            # обновлением связанных записей, которые имеют NOT NULL constraint на user_id
-            # (например, DailyFlashcardProgress)
-            user.is_deleted = True
-            user.deleted_at = datetime.now(timezone.utc)
-            user.deleted_by = current_user.id
-            user.is_active = False
+            # Важно: отключаем автоматическое обновление связанных записей через expire_all,
+            # чтобы SQLAlchemy не пытался обновлять записи с NOT NULL constraint на user_id
+            # (например, DailyFlashcardProgress, PersonalLearningPlan)
+            db.session.expire_all()
+            # Устанавливаем флаги напрямую через update, чтобы избежать загрузки связанных объектов
+            db.session.query(User).filter_by(id=user_id).update({
+                'is_deleted': True,
+                'deleted_at': datetime.now(timezone.utc),
+                'deleted_by': current_user.id,
+                'is_active': False
+            })
             db.session.commit()
             
             flash(f'Пользователь {user_name} ({user_email}) мягко удален. Данные сохранены и могут быть восстановлены.', 'success')
