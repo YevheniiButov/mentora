@@ -137,6 +137,16 @@ def get_file_size(file):
 @login_required
 def logout(lang=None):
     """Logout user"""
+    # Логируем выход перед logout_user (чтобы current_user был доступен)
+    try:
+        from utils.activity_logger import log_user_activity
+        log_user_activity(
+            action_type='logout',
+            action_description='User logged out'
+        )
+    except Exception as e:
+        current_app.logger.error(f"Failed to log user logout: {e}")
+    
     logout_user()
     if not lang:
         lang = g.get('lang', 'en')
@@ -591,6 +601,14 @@ def login(lang=None):
             try:
                 from utils.system_monitor import log_user_login
                 log_user_login(user.id, user.email, success=True)
+                
+                # Логируем активность пользователя
+                from utils.activity_logger import log_user_activity
+                log_user_activity(
+                    action_type='login',
+                    action_description='User logged in',
+                    metadata={'remember': True}
+                )
             except Exception as e:
                 current_app.logger.error(f"Failed to log user login: {e}")
             

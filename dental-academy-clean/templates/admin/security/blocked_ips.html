@@ -1,0 +1,88 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Заблокированные IP адреса{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="bi bi-shield-lock"></i> Заблокированные IP адреса
+        </h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                Список заблокированных IP адресов
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if blocked_ips %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="blockedIpsTable">
+                    <thead>
+                        <tr>
+                            <th>IP адрес</th>
+                            <th>Количество запросов</th>
+                            <th>Заблокирован до</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ip_info in blocked_ips %}
+                        <tr>
+                            <td>
+                                <code>{{ ip_info.ip }}</code>
+                            </td>
+                            <td>
+                                <span class="badge bg-danger">{{ ip_info.requests_count }}</span>
+                            </td>
+                            <td>
+                                {{ ip_info.blocked_until }}
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ url_for('admin.blocked_ips') }}" style="display: inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="action" value="unblock">
+                                    <input type="hidden" name="ip" value="{{ ip_info.ip }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-success"
+                                            onclick="return confirm('Разблокировать IP {{ ip_info.ip }}?')">
+                                        <i class="bi bi-unlock"></i> Разблокировать
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Нет заблокированных IP адресов
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="bi bi-info-circle"></i> Информация
+            </h6>
+        </div>
+        <div class="card-body">
+            <p><strong>Как работает блокировка:</strong></p>
+            <ul>
+                <li>IP адреса автоматически блокируются после 10 подозрительных запросов</li>
+                <li>Блокировка действует в течение 1 часа</li>
+                <li>Подозрительные запросы включают: сканирование PHP файлов, поиск уязвимостей WordPress, SQL injection попытки и т.д.</li>
+                <li>Вы можете вручную разблокировать IP адрес в любое время</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

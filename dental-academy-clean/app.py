@@ -31,7 +31,7 @@ except ImportError:
         return 'en'
 
 # Import extensions and models
-from extensions import init_extensions, db, login_manager, babel, csrf
+from extensions import init_extensions, db, login_manager, babel, csrf, limiter
 from flask_wtf.csrf import CSRFProtect
 from utils.analytics_middleware import init_analytics_middleware
 from models import User, LearningPath, Subject, Module, Lesson, create_sample_data, DigiDSession, UserProgress, Test, Question, QuestionCategory, WebsiteVisit, PageView, UserSession
@@ -61,6 +61,9 @@ else:
 
 # Initialize extensions
 init_extensions(app)
+
+# Configure global rate limiting (applied via before_request)
+# Limits: 200 requests per minute, 1000 per hour per IP
 
 # Initialize analytics middleware
 init_analytics_middleware(app)
@@ -147,6 +150,12 @@ except AttributeError:
 @app.before_request
 def before_request():
     """Set up global variables before each request"""
+    # Security check - block suspicious requests (must be first)
+    from utils.security import security_middleware
+    security_result = security_middleware()
+    if security_result is not None:
+        return security_result
+    
     # Логируем ВСЕ запросы для диагностики
     path = request.path
     if path in ['/en/', '/uk/', '/ru/', '/nl/', '/en', '/uk', '/ru', '/nl']:
@@ -170,11 +179,15 @@ def before_request():
     g.supported_languages = SUPPORTED_LANGUAGES
     g.current_language = g.locale
     
-    # Update user's last activity
+    # Update user's last activity and log activity
     if current_user.is_authenticated:
         current_user.last_login = datetime.now(timezone.utc)
         try:
             db.session.commit()
+            
+            # Log user activity
+            from utils.activity_logger import log_user_activity
+            log_user_activity(action_type='page_view', action_description=f"Visited {path}")
         except Exception as e:
             db.session.rollback()
             logger.error(f"Error updating user activity: {e}")
@@ -212,6 +225,12 @@ def before_request():
 @app.after_request
 def after_request(response):
     """Handle post-request processing"""
+    # Add security headers
+    from utils.security import get_security_headers
+    security_headers = get_security_headers()
+    for header, value in security_headers.items():
+        response.headers[header] = value
+    
     # Add cache control headers to prevent browser caching during development
     # This ensures CSS/JS changes are immediately visible without manual cache clear
     response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, public, max-age=0'

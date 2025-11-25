@@ -9,6 +9,8 @@ from flask_caching import Cache
 from flask_wtf.csrf import CSRFProtect
 from flask_migrate import Migrate
 from flask_mail import Mail
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -19,6 +21,7 @@ cache = Cache()
 csrf = CSRFProtect()
 migrate = Migrate()
 mail = Mail()
+limiter = Limiter(key_func=get_remote_address)
 
 def init_extensions(app):
     """Initialize all Flask extensions with the app"""
@@ -79,6 +82,11 @@ def init_extensions(app):
     # Email
     mail.init_app(app)
     
+    # Rate Limiting
+    limiter.init_app(app)
+    # Set default rate limits
+    limiter.enabled = True
+    
     print("✅ All Flask extensions initialized successfully")
     
-    return db, login_manager, bcrypt, babel, cache, csrf, mail 
+    return db, login_manager, bcrypt, babel, cache, csrf, mail, limiter 

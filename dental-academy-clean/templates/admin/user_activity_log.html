@@ -1,0 +1,214 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Журнал активности - {{ user.get_display_name() }}{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('admin.users_list') }}">Пользователи</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('admin.user_detail', user_id=user.id) }}">{{ user.get_display_name() }}</a></li>
+<li class="breadcrumb-item active">Журнал активности</li>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <div>
+        <h1 class="h2">
+            <i class="bi bi-clock-history"></i> Журнал активности
+        </h1>
+        <p class="text-muted mb-0">{{ user.get_display_name() }} ({{ user.email }})</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад к профилю
+        </a>
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-primary">{{ summary.total_actions }}</h5>
+                <p class="card-text text-muted mb-0">Всего действий</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-success">{{ summary.unique_pages }}</h5>
+                <p class="card-text text-muted mb-0">Уникальных страниц</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-info">{{ summary.online_time_hours }} ч</h5>
+                <p class="card-text text-muted mb-0">Время онлайн</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-warning">
+                    {% if summary.last_activity %}
+                        {{ summary.last_activity.strftime('%d.%m %H:%M') }}
+                    {% else %}
+                        Нет данных
+                    {% endif %}
+                </h5>
+                <p class="card-text text-muted mb-0">Последняя активность</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="days" class="form-label">Период (дней)</label>
+                <select class="form-select" id="days" name="days">
+                    <option value="1" {% if days == 1 %}selected{% endif %}>1 день</option>
+                    <option value="7" {% if days == 7 %}selected{% endif %}>7 дней</option>
+                    <option value="30" {% if days == 30 %}selected{% endif %}>30 дней</option>
+                    <option value="90" {% if days == 90 %}selected{% endif %}>90 дней</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="action_type" class="form-label">Тип действия</label>
+                <select class="form-select" id="action_type" name="action_type">
+                    <option value="all" {% if action_type == 'all' %}selected{% endif %}>Все</option>
+                    {% for at in action_types %}
+                    <option value="{{ at }}" {% if action_type == at %}selected{% endif %}>{{ at }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel"></i> Применить фильтры
+                </button>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <a href="{{ url_for('admin.user_activity_log', user_id=user.id) }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-clockwise"></i> Сбросить
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Activity Log Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Детальный журнал активности</h5>
+    </div>
+    <div class="card-body">
+        {% if logs.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Время</th>
+                        <th>Действие</th>
+                        <th>Страница</th>
+                        <th>IP адрес</th>
+                        <th>Устройство</th>
+                        <th>Браузер</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs.items %}
+                    <tr>
+                        <td>
+                            <small>{{ log.timestamp.strftime('%d.%m.%Y %H:%M:%S') }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if log.action_type == 'page_view' %}primary{% elif log.action_type == 'login' %}success{% elif log.action_type == 'logout' %}warning{% else %}secondary{% endif %}">
+                                {{ log.action_type }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ log.page_url }}" target="_blank" class="text-decoration-none">
+                                {{ log.page_title or log.page_url[:50] }}
+                            </a>
+                        </td>
+                        <td>
+                            <code>{{ log.ip_address }}</code>
+                        </td>
+                        <td>
+                            {% if log.device_type %}
+                                <i class="bi bi-{% if log.device_type == 'mobile' %}phone{% elif log.device_type == 'tablet' %}tablet{% else %}pc{% endif %}"></i>
+                                {{ log.device_type }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if log.browser %}
+                                {{ log.browser }} {% if log.os %}({{ log.os }}){% endif %}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if logs.pages > 1 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if logs.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.user_activity_log', user_id=user.id, page=logs.prev_num, days=days, action_type=action_type) }}">
+                        Предыдущая
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for page_num in logs.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == logs.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.user_activity_log', user_id=user.id, page=page_num, days=days, action_type=action_type) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if logs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.user_activity_log', user_id=user.id, page=logs.next_num, days=days, action_type=action_type) }}">
+                        Следующая
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Нет записей активности за выбранный период
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

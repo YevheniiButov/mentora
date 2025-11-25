@@ -2506,6 +2506,67 @@ class UserActivity(db.Model):
     def __repr__(self):
         return f'<UserActivity {self.user_id}:{self.activity_date}>'
 
+class UserActivityLog(db.Model):
+    """Detailed log of user activity - pages visited, actions taken, time online"""
+    __tablename__ = 'user_activity_log'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False, index=True)
+    
+    # Activity details
+    action_type = db.Column(db.String(50), nullable=False, index=True)  # page_view, login, logout, action, etc.
+    page_url = db.Column(db.String(500), nullable=True)
+    page_title = db.Column(db.String(200), nullable=True)
+    action_description = db.Column(db.String(500), nullable=True)  # Description of the action
+    
+    # Request details
+    ip_address = db.Column(db.String(45), nullable=True)
+    user_agent = db.Column(db.Text, nullable=True)
+    referrer = db.Column(db.String(500), nullable=True)
+    session_id = db.Column(db.String(100), nullable=True, index=True)
+    
+    # Device and location
+    browser = db.Column(db.String(50), nullable=True)
+    os = db.Column(db.String(50), nullable=True)
+    device_type = db.Column(db.String(20), nullable=True)  # desktop, mobile, tablet
+    country = db.Column(db.String(100), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    
+    # Timing
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
+    time_on_page = db.Column(db.Integer, nullable=True)  # seconds spent on page
+    
+    # Additional metadata
+    metadata = db.Column(db.JSON, nullable=True)  # Additional data about the action
+    
+    # Relationship
+    user = db.relationship('User', backref='activity_logs')
+    
+    def __repr__(self):
+        return f'<UserActivityLog {self.user_id}:{self.action_type} at {self.timestamp}>'
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'action_type': self.action_type,
+            'page_url': self.page_url,
+            'page_title': self.page_title,
+            'action_description': self.action_description,
+            'ip_address': self.ip_address,
+            'user_agent': self.user_agent,
+            'referrer': self.referrer,
+            'session_id': self.session_id,
+            'browser': self.browser,
+            'os': self.os,
+            'device_type': self.device_type,
+            'country': self.country,
+            'city': self.city,
+            'timestamp': self.timestamp.isoformat() if self.timestamp else None,
+            'time_on_page': self.time_on_page,
+            'metadata': self.metadata
+        }
+
 class UserStreak(db.Model):
     """Model for tracking user learning streaks"""
     __tablename__ = 'user_streak'

@@ -48,6 +48,7 @@ from models import (
     UserItemMastery,
     EnglishPassage,
     TestAttempt,
+    UserActivityLog,
 )
 from datetime import datetime, timedelta, date
 import json
@@ -6025,4 +6026,90 @@ def deleted_users():
         return render_template('admin/deleted_users.html', 
                              users=None, 
                              error_message=str(e),
-                             per_page=20) 
+                             per_page=20)
+
+@admin_bp.route('/security/blocked-ips')
+@login_required
+@admin_required
+def blocked_ips():
+    """Список заблокированных IP адресов"""
+    try:
+        from utils.security import get_blocked_ips, unblock_ip
+        
+        blocked = get_blocked_ips()
+        
+        # Handle unblock action
+        if request.method == 'POST' and request.form.get('action') == 'unblock':
+            ip_to_unblock = request.form.get('ip')
+            if ip_to_unblock:
+                unblock_ip(ip_to_unblock)
+                flash(f'IP {ip_to_unblock} разблокирован', 'success')
+                return redirect(url_for('admin.blocked_ips'))
+        
+        return render_template('admin/security/blocked_ips.html', 
+                             blocked_ips=blocked)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error loading blocked IPs: {str(e)}")
+        flash(f'Ошибка при загрузке заблокированных IP: {str(e)}', 'error')
+        return render_template('admin/security/blocked_ips.html', 
+                             blocked_ips=[])
+
+@admin_bp.route('/users/<int:user_id>/activity-log')
+@login_required
+@admin_required
+def user_activity_log(user_id):
+    """Журнал активности пользователя"""
+    try:
+        user = User.query.get_or_404(user_id)
+        
+        # Get filter parameters
+        days = request.args.get('days', 7, type=int)
+        action_type = request.args.get('action_type', 'all')
+        page = request.args.get('page', 1, type=int)
+        per_page = 50
+        
+        from utils.activity_logger import get_user_activity_summary
+        from models import UserActivityLog
+        from datetime import timedelta
+        
+        # Get activity summary
+        summary = get_user_activity_summary(user_id, days=days)
+        
+        # Get detailed logs with filters
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
+        query = UserActivityLog.query.filter(
+            UserActivityLog.user_id == user_id,
+            UserActivityLog.timestamp >= cutoff_date
+        )
+        
+        # Filter by action type
+        if action_type != 'all':
+            query = query.filter(UserActivityLog.action_type == action_type)
+        
+        # Order and paginate
+        logs = query.order_by(UserActivityLog.timestamp.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        # Get unique action types for filter
+        action_types = db.session.query(
+            UserActivityLog.action_type
+        ).filter(
+            UserActivityLog.user_id == user_id,
+            UserActivityLog.timestamp >= cutoff_date
+        ).distinct().all()
+        action_types = [at[0] for at in action_types]
+        
+        return render_template('admin/user_activity_log.html',
+                             user=user,
+                             logs=logs,
+                             summary=summary,
+                             days=days,
+                             action_type=action_type,
+                             action_types=action_types)
+        
+    except Exception as e:
+        current_app.logger.error(f"Error loading user activity log: {str(e)}")
+        flash(f'Ошибка при загрузке журнала активности: {str(e)}', 'error')
+        return redirect(url_for('admin.user_detail', user_id=user_id)) 
