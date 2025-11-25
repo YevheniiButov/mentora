@@ -1576,7 +1576,10 @@ translations = {
     
     # Flash Messages
     'personal_info_updated_successfully': 'اطلاعات شخصی با موفقیت به‌روزرسانی شد!',
+    'profile_complete_success': 'عالی! پروفایل شما اکنون کامل است. اکنون می‌توانید به نقشه یادگیری دسترسی داشته باشید!',
     'error_updating_info': 'خطا در به‌روزرسانی اطلاعات: {error}',
+    'error_loading_profile': 'خطایی در بارگذاری پروفایل رخ داد',
+    'error_saving_settings': 'ذخیره تنظیمات ناموفق بود. لطفاً دوباره تلاش کنید.',
     'diploma_uploaded_successfully': 'دیپلم با موفقیت آپلود شد!',
     'language_certificate_uploaded_successfully': 'گواهی زبان با موفقیت آپلود شد!',
     'settings_saved_successfully': 'تنظیمات با موفقیت ذخیره شد!',

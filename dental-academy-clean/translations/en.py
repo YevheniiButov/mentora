@@ -2027,7 +2027,10 @@ translations = {
     
     # Flash Messages
     'personal_info_updated_successfully': 'Personal information updated successfully!',
+    'profile_complete_success': 'Great! Your profile is now complete. You can now access the learning map!',
     'error_updating_info': 'Error updating information: {error}',
+    'error_loading_profile': 'An error occurred while loading the profile',
+    'error_saving_settings': 'Failed to save settings. Please try again.',
     'diploma_uploaded_successfully': 'Diploma uploaded successfully!',
     'language_certificate_uploaded_successfully': 'Language certificate uploaded successfully!',
     'settings_saved_successfully': 'Settings saved successfully!',

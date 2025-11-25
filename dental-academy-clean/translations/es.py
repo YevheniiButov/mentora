@@ -1537,7 +1537,10 @@ translations = {
     
     # Flash Messages
     'personal_info_updated_successfully': '¡Información personal actualizada exitosamente!',
+    'profile_complete_success': '¡Excelente! Tu perfil ahora está completo. ¡Ahora puedes acceder al mapa de aprendizaje!',
     'error_updating_info': 'Error al actualizar información: {error}',
+    'error_loading_profile': 'Ocurrió un error al cargar el perfil',
+    'error_saving_settings': 'Error al guardar la configuración. Por favor, inténtalo de nuevo.',
     'diploma_uploaded_successfully': '¡Diploma subido exitosamente!',
     'language_certificate_uploaded_successfully': '¡Certificado de idioma subido exitosamente!',
     'settings_saved_successfully': '¡Configuración guardada exitosamente!',

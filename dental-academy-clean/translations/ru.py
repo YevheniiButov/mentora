@@ -1895,7 +1895,10 @@ translations = {
     
     # Flash Messages
     'personal_info_updated_successfully': 'Личная информация успешно обновлена!',
+    'profile_complete_success': 'Отлично! Ваш профиль теперь завершен. Теперь вы можете получить доступ к карте обучения!',
     'error_updating_info': 'Ошибка при обновлении информации: {error}',
+    'error_loading_profile': 'Произошла ошибка при загрузке профиля',
+    'error_saving_settings': 'Не удалось сохранить настройки. Пожалуйста, попробуйте снова.',
     'diploma_uploaded_successfully': 'Диплом успешно загружен!',
     'language_certificate_uploaded_successfully': 'Языковой сертификат успешно загружен!',
     'settings_saved_successfully': 'Настройки успешно сохранены!',

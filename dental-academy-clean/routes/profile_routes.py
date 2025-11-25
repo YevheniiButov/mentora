@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, request, jsonify, redirect, url_fo
 from flask_login import login_required, current_user
 from models import User
 from extensions import db
+from translations import get_translation
 
 # Create blueprint with language support
 profile_bp = Blueprint('profile', __name__, url_prefix='/<string:lang>/profile')
@@ -46,7 +47,7 @@ def profile(lang):
                              profile_incomplete=profile_incomplete)
     except Exception as e:
         current_app.logger.error(f"Error in profile route: {e}", exc_info=True)
-        flash('Произошла ошибка при загрузке профиля', 'error')
+        flash(get_translation('error_loading_profile', lang, default='An error occurred while loading the profile'), 'error')
         return redirect(url_for('main.index', lang=lang))
 
 @profile_bp.route('/personal_info')
@@ -200,9 +201,9 @@ def update_personal_info(lang):
         
         # Show success message
         if profile_check['is_complete'] and not profile_was_complete:
-            flash('Great! Your profile is now complete. You can now access the learning map!', 'success')
+            flash(get_translation('profile_complete_success', lang, default='Great! Your profile is now complete. You can now access the learning map!'), 'success')
         else:
-            flash('Personal information updated successfully!', 'success')
+            flash(get_translation('personal_info_updated_successfully', lang, default='Personal information updated successfully!'), 'success')
         
         # Determine redirect target
         redirect_target = url_for('profile.personal_info', lang=lang)
@@ -216,7 +217,7 @@ def update_personal_info(lang):
     except Exception as e:
         current_app.logger.error(f"Error updating personal info: {e}", exc_info=True)
         db.session.rollback()
-        flash('Error updating personal information', 'error')
+        flash(get_translation('error_updating_info', lang, error=str(e), default='Error updating personal information'), 'error')
     
     return redirect(url_for('profile.personal_info', lang=lang))
 
@@ -249,11 +250,11 @@ def update_settings(lang):
             session['theme'] = new_theme
         
         db.session.commit()
-        flash('Settings saved successfully!', 'success')
+        flash(get_translation('settings_saved_successfully', lang, default='Settings saved successfully!'), 'success')
     except Exception as exc:
         current_app.logger.error(f"Failed to update settings for user {current_user.id}: {exc}", exc_info=True)
         db.session.rollback()
-        flash('Failed to save settings. Please try again.', 'error')
+        flash(get_translation('error_saving_settings', lang, default='Failed to save settings. Please try again.'), 'error')
     
     return redirect(url_for('profile.settings', lang=updated_lang))
 

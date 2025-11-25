@@ -177,11 +177,11 @@ def get_security_headers():
         # Content Security Policy
         'Content-Security-Policy': (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.google.com https://www.gstatic.com; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.google.com https://www.gstatic.com https://unpkg.com; "
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; "
             "img-src 'self' data: https:; "
             "font-src 'self' data: https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.gstatic.com; "
-            "connect-src 'self' https://api.telegram.org https://www.google.com; "
+            "connect-src 'self' https://api.telegram.org https://www.google.com https://cdn.jsdelivr.net; "
             "frame-src 'self' https://www.google.com; "
             "frame-ancestors 'none';"
         ),

@@ -1399,7 +1399,10 @@ translations = {
     
     # Flash Messages / رسائل الإشعارات (Flash Messages)
     'personal_info_updated_successfully': 'تم تحديث المعلومات الشخصية بنجاح!',
+    'profile_complete_success': 'رائع! ملفك الشخصي مكتمل الآن. يمكنك الآن الوصول إلى خريطة التعلم!',
     'error_updating_info': 'خطأ أثناء تحديث المعلومات: {error}',
+    'error_loading_profile': 'حدث خطأ أثناء تحميل الملف الشخصي',
+    'error_saving_settings': 'فشل حفظ الإعدادات. يرجى المحاولة مرة أخرى.',
     'diploma_uploaded_successfully': 'تم تحميل الشهادة بنجاح!',
     'language_certificate_uploaded_successfully': 'تم تحميل شهادة اللغة بنجاح!',
     'settings_saved_successfully': 'تم حفظ الإعدادات بنجاح!',

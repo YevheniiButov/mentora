@@ -1446,7 +1446,10 @@ translations = {
     
     # Flash Messages
     'personal_info_updated_successfully': 'Особиста інформація успішно оновлена!',
+    'profile_complete_success': 'Чудово! Ваш профіль тепер завершено. Тепер ви можете отримати доступ до карти навчання!',
     'error_updating_info': 'Помилка при оновленні інформації: {error}',
+    'error_loading_profile': 'Сталася помилка при завантаженні профілю',
+    'error_saving_settings': 'Не вдалося зберегти налаштування. Будь ласка, спробуйте ще раз.',
     'diploma_uploaded_successfully': 'Диплом успішно завантажено!',
     'language_certificate_uploaded_successfully': 'Мовний сертифікат успішно завантажено!',
     'settings_saved_successfully': 'Налаштування успішно збережено!',

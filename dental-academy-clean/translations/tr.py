@@ -1453,7 +1453,10 @@ translations = {
     
     # Flash Messages
     'personal_info_updated_successfully': 'Kişisel bilgiler başarıyla güncellendi!',
+    'profile_complete_success': 'Harika! Profiliniz artık tamamlandı. Artık öğrenme haritasına erişebilirsiniz!',
     'error_updating_info': 'Bilgileri güncellerken hata: {error}',
+    'error_loading_profile': 'Profil yüklenirken bir hata oluştu',
+    'error_saving_settings': 'Ayarlar kaydedilemedi. Lütfen tekrar deneyin.',
     'diploma_uploaded_successfully': 'Diploma başarıyla yüklendi!',
     'language_certificate_uploaded_successfully': 'Dil sertifikası başarıyla yüklendi!',
     'settings_saved_successfully': 'Ayarlar başarıyla kaydedildi!',

@@ -1486,7 +1486,10 @@ translations = {
     
     # Flash Messages
     'personal_info_updated_successfully': 'Informações pessoais atualizadas com sucesso!',
+    'profile_complete_success': 'Ótimo! Seu perfil agora está completo. Agora você pode acessar o mapa de aprendizado!',
     'error_updating_info': 'Erro ao atualizar informações: {error}',
+    'error_loading_profile': 'Ocorreu um erro ao carregar o perfil',
+    'error_saving_settings': 'Falha ao salvar configurações. Por favor, tente novamente.',
     'diploma_uploaded_successfully': 'Diploma enviado com sucesso!',
     'language_certificate_uploaded_successfully': 'Certificado de idioma enviado com sucesso!',
     'settings_saved_successfully': 'Configurações salvas com sucesso!',

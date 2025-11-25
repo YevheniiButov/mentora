@@ -1828,7 +1828,10 @@ translations = {
     
     # Flash Messages
     'personal_info_updated_successfully': 'Persoonlijke informatie succesvol bijgewerkt!',
+    'profile_complete_success': 'Geweldig! Je profiel is nu compleet. Je hebt nu toegang tot de leerkaart!',
     'error_updating_info': 'Fout bij het bijwerken van informatie: {error}',
+    'error_loading_profile': 'Er is een fout opgetreden bij het laden van het profiel',
+    'error_saving_settings': 'Instellingen opslaan mislukt. Probeer het opnieuw.',
     'diploma_uploaded_successfully': 'Diploma succesvol geüpload!',
     'language_certificate_uploaded_successfully': 'Taalcertificaat succesvol geüpload!',
     'settings_saved_successfully': 'Instellingen succesvol opgeslagen!',
