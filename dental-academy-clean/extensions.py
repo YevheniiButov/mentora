@@ -22,7 +22,8 @@ cache = Cache()
 csrf = CSRFProtect()
 migrate = Migrate()
 mail = Mail()
-limiter = Limiter(key_func=get_remote_address)
+# Limiter will be initialized in init_extensions with proper storage backend
+limiter = None
 
 def init_extensions(app):
     """Initialize all Flask extensions with the app"""
@@ -85,14 +86,20 @@ def init_extensions(app):
     
     # Rate Limiting
     # Configure storage backend for production (Redis) or use memory for development
+    global limiter
     redis_url = app.config.get('REDIS_URL') or os.environ.get('REDIS_URL')
     if redis_url:
         # Use Redis storage backend for production (works with multiple workers)
-        limiter.init_app(app, storage_uri=redis_url)
+        # storage_uri must be passed when creating Limiter, not in init_app()
+        limiter = Limiter(
+            key_func=get_remote_address,
+            storage_uri=redis_url,
+            app=app
+        )
         print(f"✅ Flask-Limiter configured with Redis storage: {redis_url.split('@')[-1] if '@' in redis_url else 'redis'}")
     else:
         # Use memory storage for development (not recommended for production)
-        limiter.init_app(app)
+        limiter = Limiter(key_func=get_remote_address, app=app)
         if app.config.get('FLASK_ENV') == 'production':
             print("⚠️  WARNING: Flask-Limiter using in-memory storage in production. Set REDIS_URL for proper rate limiting.")
         else:
