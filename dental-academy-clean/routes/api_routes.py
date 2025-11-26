@@ -245,4 +245,13 @@ def get_dashboard_stats():
             'achievements_count': stats.get('achievements_count', 0)
         })
     except Exception as e:
-        return jsonify({'error': str(e)}), 500 
+        return jsonify({'error': str(e)}), 500
+
+# Catch-all route for undefined API endpoints - return 404 to hide API structure
+# This should be LAST in the file to not interfere with other routes
+@api_bp.route('/', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])
+@api_bp.route('', methods=['GET', 'POST', 'PUT', 'DELETE', 'PATCH'])
+def api_not_found():
+    """Handle requests to undefined API endpoints - return 404 to hide structure"""
+    from flask import abort
+    abort(404)
