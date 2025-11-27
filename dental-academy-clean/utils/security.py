@@ -132,7 +132,8 @@ LEGITIMATE_BOTS = [
     'yandexbot', 'facebookexternalhit', 'meta-externalagent',
     'meta-webindexer', 'telegrambot', 'twitterbot', 'linkedinbot',
     'whatsapp', 'applebot', 'chatgpt-user', 'anthropic-ai',
-    'claude-web', 'perplexity', 'petalbot', 'sogou', 'exabot'
+    'claude-web', 'perplexity', 'petalbot', 'sogou', 'exabot',
+    'go-http-client',  # Render health checks
 ]
 
 # Whitelist for SEO and public paths that should always be accessible
@@ -493,6 +494,15 @@ def security_middleware():
     
     # Always allow static files - these are safe and shouldn't be blocked
     if path.startswith('/static/'):
+        return None
+    
+    # Always allow admin routes - protected by authentication
+    if path.startswith('/admin/'):
+        return None
+    
+    # Always allow language root paths (e.g., /nl, /en) - these are valid routes
+    # Check if path is a 2-letter language code at root level
+    if len(path) == 3 and path[0] == '/' and path[1:].isalpha():
         return None
     
     # Always allow SEO/public paths - never block these
