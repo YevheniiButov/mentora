@@ -17,6 +17,8 @@ SKIP_PATTERNS = [
     '/favicon.ico',
     '/robots.txt',
     '/sitemap.xml',
+    '/analytics/track-event',  # Analytics endpoint - not a real page view
+    '/api/',  # All API endpoints - skip logging
 ]
 
 def should_log_activity(path):

@@ -193,13 +193,21 @@ def track_event():
             return jsonify({'error': 'No data received'}), 400
         
         event_name = data.get('event_name')
-        event_data = data.get('event_data')
+        event_data = data.get('event_data') or {}
         
         if not event_name:
             current_app.logger.debug(f"Event name missing in data: {data}")
             return jsonify({'error': 'Event name is required'}), 400
         
-        track_custom_event(event_name, event_data)
+        # Include page_url from data if available
+        if isinstance(event_data, dict):
+            if 'page_url' not in event_data and 'page_url' in data:
+                event_data['page_url'] = data.get('page_url')
+            if 'referrer' not in event_data and 'referrer' in data:
+                event_data['referrer'] = data.get('referrer')
+        
+        # Pass request object to track_custom_event
+        track_custom_event(event_name, event_data, request_obj=request)
         
         return jsonify({'success': True})
         
