@@ -103,17 +103,42 @@ def track_custom_event(event_name, event_data=None, request_obj=None):
         
         parsed_ua = parse_user_agent(user_agent)
         
-        # Save to AnalyticsEvent table
+        # Save to AnalyticsEvent table (optional, don't fail if it errors)
+        # Try to validate data before adding to session to avoid rollback issues
+        analytics_event = None
         try:
+            # Create short label from event_data (max 200 chars)
+            event_label = None
+            if isinstance(event_data, dict):
+                # Extract meaningful info for label (not full dict)
+                title = event_data.get('title', '')[:50] if event_data.get('title') else None
+                if title:
+                    event_label = title[:200]
+                else:
+                    # Try to get URL from event_data
+                    url = event_data.get('url') or event_data.get('page_url')
+                    if url:
+                        event_label = str(url)[:200]
+                    else:
+                        event_label = event_name[:200]
+            elif event_data:
+                event_label = str(event_data)[:200]
+            else:
+                event_label = event_name[:200]
+            
+            # Validate label length before creating object
+            if event_label and len(event_label) > 200:
+                event_label = event_label[:200]
+            
             analytics_event = AnalyticsEvent(
                 user_id=user_id,
-                event_name=event_name,
+                event_name=event_name[:100] if event_name else 'unknown',  # Truncate to max length
                 event_category='user',  # Default category
                 event_action='custom',
-                event_label=str(event_data) if event_data else None,
+                event_label=event_label,
                 event_data=json.dumps(event_data) if isinstance(event_data, dict) else str(event_data) if event_data else None,
-                page_url=page_url,
-                referrer_url=referrer_url,
+                page_url=page_url[:500] if page_url else None,  # Truncate to max length
+                referrer_url=referrer_url[:500] if referrer_url else None,
                 user_agent=user_agent,
                 ip_address=ip_address,
                 device_type=parsed_ua.get('device_type'),
@@ -125,16 +150,28 @@ def track_custom_event(event_name, event_data=None, request_obj=None):
             db.session.flush()
         except Exception as e:
             current_app.logger.error(f"Error saving AnalyticsEvent: {str(e)}")
+            # Remove failed object from session without rolling back
+            if analytics_event:
+                try:
+                    db.session.expunge(analytics_event)
+                except:
+                    pass
+            analytics_event = None
         
         # Also log to UserActivityLog for activity tracking (with correct page info)
+        # This is more important, so we try even if AnalyticsEvent failed
+        activity_log_saved = False
         if user_id:
             try:
                 from flask import session
                 session_id = session.get('analytics_session_id') or session.get('session_id')
                 
-                # Extract page title from URL
+                # Extract page title from URL or event_data
                 page_title = None
-                if page_url:
+                if isinstance(event_data, dict) and 'title' in event_data:
+                    # Use title from event_data if available
+                    page_title = str(event_data['title'])[:200]
+                elif page_url:
                     try:
                         from urllib.parse import urlparse
                         parsed = urlparse(page_url)
@@ -147,12 +184,12 @@ def track_custom_event(event_name, event_data=None, request_obj=None):
                 activity_log = UserActivityLog(
                     user_id=user_id,
                     action_type='event',  # Use 'event' instead of 'page_view'
-                    page_url=page_url,  # Real page URL from event data
-                    page_title=page_title or event_name,  # Page title or event name
-                    action_description=f"Event: {event_name}",  # Description
+                    page_url=page_url[:500] if page_url else None,  # Truncate to max length
+                    page_title=(page_title or event_name)[:200] if (page_title or event_name) else None,  # Truncate
+                    action_description=f"Event: {event_name}"[:500],  # Truncate description
                     ip_address=ip_address,
                     user_agent=user_agent,
-                    referrer=referrer_url,
+                    referrer=referrer_url[:500] if referrer_url else None,
                     session_id=session_id,
                     browser=parsed_ua.get('browser'),
                     os=parsed_ua.get('os'),
@@ -161,11 +198,21 @@ def track_custom_event(event_name, event_data=None, request_obj=None):
                     action_metadata=event_data if isinstance(event_data, dict) else {'event_data': str(event_data)} if event_data else None
                 )
                 db.session.add(activity_log)
+                activity_log_saved = True
             except Exception as e:
                 current_app.logger.error(f"Error saving UserActivityLog: {str(e)}")
         
-        db.session.commit()
-        current_app.logger.info(f"Custom event tracked: {event_name}, page: {page_url}, user: {user_id}")
+        # Commit only if we have something to save
+        if analytics_event or activity_log_saved:
+            try:
+                db.session.commit()
+                current_app.logger.info(f"Custom event tracked: {event_name}, page: {page_url}, user: {user_id}")
+            except Exception as e:
+                current_app.logger.error(f"Error committing event: {str(e)}")
+                try:
+                    db.session.rollback()
+                except:
+                    pass
         
     except Exception as e:
         current_app.logger.error(f"Error tracking custom event: {str(e)}")

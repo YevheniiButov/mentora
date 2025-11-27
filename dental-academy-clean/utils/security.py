@@ -390,6 +390,7 @@ def check_api_rate_limit(ip):
     """
     Check API rate limit for IP address
     Blocks if more than API_RATE_LIMIT requests per minute to /api endpoints
+    Allows authenticated users higher limits
     
     Args:
         ip: Client IP address
@@ -397,6 +398,17 @@ def check_api_rate_limit(ip):
     Returns:
         bool: True if rate limit exceeded, False otherwise
     """
+    try:
+        from flask_login import current_user
+        
+        # Authenticated users get higher limit (30 req/min instead of 10)
+        if current_user and current_user.is_authenticated:
+            user_limit = 30
+        else:
+            user_limit = API_RATE_LIMIT
+    except:
+        user_limit = API_RATE_LIMIT
+    
     current_time = time.time()
     
     # Clean old requests
@@ -406,10 +418,10 @@ def check_api_rate_limit(ip):
     ]
     
     # Check rate limit
-    if len(api_rate_limits[ip]) >= API_RATE_LIMIT:
+    if len(api_rate_limits[ip]) >= user_limit:
         security_logger.warning(
             f"🚫 API rate limit exceeded for IP {ip}: "
-            f"{len(api_rate_limits[ip])} requests in {API_RATE_WINDOW} seconds"
+            f"{len(api_rate_limits[ip])} requests in {API_RATE_WINDOW} seconds (limit: {user_limit})"
         )
         return True
     
