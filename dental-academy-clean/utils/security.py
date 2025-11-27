@@ -124,6 +124,70 @@ API_RATE_WINDOW = 60  # 1 minute window
 blocked_ips_history = {}
 EMAIL_ALERT_THRESHOLD = 5  # Send email if 5+ IPs blocked in 1 hour
 last_email_alert_time = None
+EMAIL_ALERT_MIN_INTERVAL = 3600  # Minimum 1 hour between email alerts
+
+# Whitelist for legitimate bots and crawlers
+LEGITIMATE_BOTS = [
+    'googlebot', 'bingbot', 'slurp', 'duckduckbot', 'baiduspider',
+    'yandexbot', 'facebookexternalhit', 'meta-externalagent',
+    'meta-webindexer', 'telegrambot', 'twitterbot', 'linkedinbot',
+    'whatsapp', 'applebot', 'chatgpt-user', 'anthropic-ai',
+    'claude-web', 'perplexity', 'petalbot', 'sogou', 'exabot'
+]
+
+# Whitelist for SEO and public paths that should always be accessible
+SEO_WHITELIST_PATHS = [
+    '/robots.txt',
+    '/sitemap.xml',
+    '/sitemap_index.xml',
+    '/sitemap-index.xml',
+    '/sitemap.txt',
+    '/sitemap.html',
+    '/news-sitemap.xml',
+    '/news_sitemap.xml',
+    '/schema.json',
+    '/favicon.ico'
+]
+
+def is_legitimate_bot(user_agent=None):
+    """
+    Check if user agent is a legitimate bot/crawler
+    
+    Args:
+        user_agent: User agent string
+        
+    Returns:
+        bool: True if legitimate bot, False otherwise
+    """
+    if not user_agent:
+        return False
+    
+    ua_lower = user_agent.lower()
+    for bot in LEGITIMATE_BOTS:
+        if bot in ua_lower:
+            return True
+    
+    return False
+
+def is_seo_path(path):
+    """
+    Check if path is an SEO/public path that should always be accessible
+    
+    Args:
+        path: Request path
+        
+    Returns:
+        bool: True if SEO path, False otherwise
+    """
+    if not path:
+        return False
+    
+    path_lower = path.lower().strip('/')
+    for seo_path in SEO_WHITELIST_PATHS:
+        if path_lower == seo_path.strip('/') or path_lower.startswith(seo_path.strip('/')):
+            return True
+    
+    return False
 
 def is_known_scanner(user_agent=None):
     """
@@ -136,6 +200,10 @@ def is_known_scanner(user_agent=None):
         bool: True if known scanner, False otherwise
     """
     if not user_agent:
+        return False
+    
+    # Don't flag legitimate bots as scanners
+    if is_legitimate_bot(user_agent):
         return False
     
     known_scanners = [
@@ -164,6 +232,10 @@ def is_suspicious_request(path, user_agent=None):
     if not path:
         return False
     
+    # Never block SEO/public paths
+    if is_seo_path(path):
+        return False
+    
     path_lower = path.lower()
     
     # Check against suspicious patterns
@@ -171,9 +243,19 @@ def is_suspicious_request(path, user_agent=None):
         if re.search(pattern, path_lower, re.IGNORECASE):
             return True
     
-    # Check for empty User-Agent - very suspicious
+    # If legitimate bot, only block if path is clearly malicious
+    if is_legitimate_bot(user_agent):
+        # Legitimate bots can access normal paths, only block obvious exploits
+        return False
+    
+    # Check for empty User-Agent - suspicious, but allow for SEO paths
     if not user_agent or user_agent.strip() == '':
-        return True
+        # Empty UA on suspicious paths is bad, but on normal paths might be OK
+        # Only flag if path itself is suspicious
+        for pattern in SUSPICIOUS_PATTERNS:
+            if re.search(pattern, path_lower, re.IGNORECASE):
+                return True
+        return False
     
     # Check for suspicious user agents (including scanners)
     if user_agent:
@@ -350,11 +432,17 @@ def check_and_send_email_alert():
             if block_time > cutoff
         }
         
-        # Check if threshold reached and we haven't sent alert recently (max 1 per hour)
+        # Check if threshold reached and we haven't sent alert recently
         if len(recent_blocked) >= EMAIL_ALERT_THRESHOLD:
-            if last_email_alert_time is None or (datetime.now() - last_email_alert_time).total_seconds() > 3600:
+            current_time = datetime.now()
+            if last_email_alert_time is None:
+                time_since_last = EMAIL_ALERT_MIN_INTERVAL + 1  # Force first alert
+            else:
+                time_since_last = (current_time - last_email_alert_time).total_seconds()
+            
+            if time_since_last >= EMAIL_ALERT_MIN_INTERVAL:
                 send_security_alert_email(recent_blocked)
-                last_email_alert_time = datetime.now()
+                last_email_alert_time = current_time
     except Exception as e:
         logger.error(f"Error in check_and_send_email_alert: {e}")
 
@@ -445,6 +533,25 @@ def security_middleware():
     path = request.path
     ip = request.remote_addr
     user_agent = request.headers.get('User-Agent', '')
+    
+    # Always allow SEO/public paths - never block these
+    if is_seo_path(path):
+        return None
+    
+    # Always allow legitimate bots on normal paths
+    if is_legitimate_bot(user_agent):
+        # Only check for obvious exploits, not general suspicious patterns
+        path_lower = path.lower()
+        critical_exploits = [
+            r'/\.env', r'/\.git', r'\.php$', r'/\.aws', r'/\.ssh',
+            r'/\.htaccess', r'/shell\.php', r'/c99\.php', r'/r57\.php'
+        ]
+        for pattern in critical_exploits:
+            if re.search(pattern, path_lower, re.IGNORECASE):
+                # Even legitimate bots shouldn't access exploits
+                security_logger.warning(f"🚨 Legitimate bot {user_agent} attempted exploit: {path}")
+                abort(404)
+        return None
     
     # Check if IP is blocked
     if is_ip_blocked(ip):
