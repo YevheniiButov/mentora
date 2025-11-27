@@ -120,13 +120,11 @@ api_rate_limits = defaultdict(list)
 API_RATE_LIMIT = 10  # Max 10 requests per minute to /api
 API_RATE_WINDOW = 60  # 1 minute window
 
-# Track blocked IPs for email alerts
+# Track blocked IPs for security alerts (Telegram notifications only)
 blocked_ips_history = {}
-EMAIL_ALERT_THRESHOLD = 10  # Send email if 10+ IPs blocked in 1 hour (increased to reduce email spam)
-last_email_alert_time = None
-EMAIL_ALERT_MIN_INTERVAL = 7200  # Minimum 2 hours between email alerts (increased from 1 hour)
-last_email_send_time = None  # Track last email send time for rate limiting
-EMAIL_SEND_RATE_LIMIT = 300  # Maximum 1 email per 5 minutes (300 seconds)
+SECURITY_ALERT_THRESHOLD = 10  # Log alert if 10+ IPs blocked in 1 hour (Telegram bot will notify)
+last_security_alert_time = None
+SECURITY_ALERT_MIN_INTERVAL = 7200  # Minimum 2 hours between security alerts
 
 # Whitelist for legitimate bots and crawlers
 LEGITIMATE_BOTS = [
@@ -325,9 +323,9 @@ def log_suspicious_request(path, ip, user_agent, reason='suspicious_pattern'):
         logger.error(block_msg)
         security_logger.error(block_msg)
         
-        # Track blocked IP for email alerts
+        # Track blocked IP for monitoring (Telegram bot will handle notifications)
         blocked_ips_history[ip] = datetime.now()
-        check_and_send_email_alert()
+        # Email alerts disabled - Telegram bot handles notifications automatically
         
         return True
     
@@ -435,12 +433,13 @@ def check_api_rate_limit(ip):
     api_rate_limits[ip].append(current_time)
     return False
 
-def check_and_send_email_alert():
+def check_and_log_security_alert():
     """
-    Check if email alert should be sent (10+ IPs blocked in 1 hour)
-    and send email if threshold reached with strict rate limiting
+    Check if security alert should be logged (10+ IPs blocked in 1 hour)
+    Telegram bot will handle notifications automatically
+    Email alerts disabled - using Telegram only
     """
-    global last_email_alert_time, last_email_send_time
+    global last_security_alert_time
     
     try:
         # Clean old blocked IPs (older than 1 hour)
@@ -451,107 +450,37 @@ def check_and_send_email_alert():
         }
         
         # Check if threshold reached
-        if len(recent_blocked) >= EMAIL_ALERT_THRESHOLD:
+        if len(recent_blocked) >= SECURITY_ALERT_THRESHOLD:
             current_time = datetime.now()
             
             # Check minimum interval between alerts (2 hours)
-            if last_email_alert_time is None:
-                time_since_last_alert = EMAIL_ALERT_MIN_INTERVAL + 1  # Force first alert
+            if last_security_alert_time is None:
+                time_since_last_alert = SECURITY_ALERT_MIN_INTERVAL + 1  # Force first alert
             else:
-                time_since_last_alert = (current_time - last_email_alert_time).total_seconds()
+                time_since_last_alert = (current_time - last_security_alert_time).total_seconds()
             
-            # Check rate limit for sending emails (5 minutes between any emails)
-            if last_email_send_time is None:
-                time_since_last_send = EMAIL_SEND_RATE_LIMIT + 1  # Allow first email
-            else:
-                time_since_last_send = (current_time - last_email_send_time).total_seconds()
-            
-            # Only send if both conditions are met
-            if time_since_last_alert >= EMAIL_ALERT_MIN_INTERVAL and time_since_last_send >= EMAIL_SEND_RATE_LIMIT:
-                send_security_alert_email(recent_blocked)
-                last_email_alert_time = current_time
-                last_email_send_time = current_time
-    except Exception as e:
-        logger.error(f"Error in check_and_send_email_alert: {e}")
-
-def send_security_alert_email(blocked_ips_dict):
-    """
-    Send email alert to admin about multiple IP blockings
-    
-    Args:
-        blocked_ips_dict: Dictionary of blocked IPs and their blocking times
-    """
-    try:
-        from utils.system_monitor import get_admin_email
-        from utils.resend_email_service import send_email_via_resend
-        
-        admin_email = get_admin_email()
-        if not admin_email:
-            logger.warning("Admin email not configured, skipping security alert")
-            return
-        
-        blocked_count = len(blocked_ips_dict)
-        ips_list = list(blocked_ips_dict.keys())[:20]  # Show max 20 IPs
-        
-        subject = f"🚨 Security Alert: {blocked_count} IPs Blocked"
-        
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                .container {{ max-width: 800px; margin: 0 auto; padding: 20px; }}
-                .header {{ background: #dc3545; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
-                .content {{ background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }}
-                .alert {{ background: #fff3cd; color: #856404; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #ffeaa7; }}
-                .ip-list {{ background: white; padding: 15px; border-radius: 5px; font-family: monospace; }}
-                .ip-item {{ padding: 5px; border-bottom: 1px solid #eee; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>🚨 Security Alert</h1>
-                    <p>Multiple IP Addresses Blocked</p>
-                </div>
+            # Log to security logger (Telegram bot will pick this up automatically)
+            # Email alerts disabled - using Telegram only
+            if time_since_last_alert >= SECURITY_ALERT_MIN_INTERVAL:
+                blocked_count = len(recent_blocked)
+                ips_list = list(recent_blocked.keys())[:20]
+                ips_str = ', '.join(ips_list[:10])  # Show first 10 IPs
+                if blocked_count > 10:
+                    ips_str += f' ... and {blocked_count - 10} more'
                 
-                <div class="content">
-                    <div class="alert">
-                        <strong>⚠️ Attention Required:</strong> {blocked_count} IP addresses have been blocked in the last hour due to suspicious activity.
-                    </div>
-                    
-                    <h2>Blocked IP Addresses:</h2>
-                    <div class="ip-list">
-                        {'<br>'.join([f'<div class="ip-item">{ip}</div>' for ip in ips_list])}
-                        {f'<div class="ip-item">... and {blocked_count - 20} more</div>' if blocked_count > 20 else ''}
-                    </div>
-                    
-                    <p style="margin-top: 20px;">
-                        <strong>Action Required:</strong> Review the security logs to ensure these are legitimate threats and not false positives.
-                    </p>
-                    
-                    <p>
-                        Check the security logs at: <code>logs/security.log</code>
-                    </p>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-        
-        send_email_via_resend(
-            to_email=admin_email,
-            subject=subject,
-            html_content=html_content,
-            from_name="Mentora Security System"
-        )
-        
-        security_logger.info(f"📧 Security alert email sent to {admin_email} about {blocked_count} blocked IPs")
-        
+                alert_msg = (
+                    f"🚨 Security Alert: {blocked_count} IPs blocked in last hour\n"
+                    f"Blocked IPs: {ips_str}\n"
+                    f"Check logs: logs/security.log"
+                )
+                security_logger.warning(alert_msg)
+                logger.warning(alert_msg)
+                last_security_alert_time = current_time
     except Exception as e:
-        logger.error(f"Failed to send security alert email: {e}")
+        logger.error(f"Error in check_and_log_security_alert: {e}")
+
+# Email alerts disabled - using Telegram bot for notifications only
+# The send_security_alert_email function has been removed
 
 def security_middleware():
     """
