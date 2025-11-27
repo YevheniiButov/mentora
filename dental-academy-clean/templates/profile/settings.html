@@ -333,6 +333,29 @@
         border-color: rgba(255, 255, 255, 0.2) !important;
         color: #f8fafc !important;
     }
+    
+    /* Dark theme for theme previews */
+    [data-theme="dark"] .theme-preview {
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+    
+    [data-theme="dark"] .theme-preview:hover {
+        border-color: #3ECDC1 !important;
+        transform: scale(1.1) !important;
+    }
+    
+    [data-theme="dark"] .theme-preview.active {
+        border-color: #3ECDC1 !important;
+        box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.3) !important;
+    }
+    
+    [data-theme="dark"] label {
+        color: #f8fafc !important;
+    }
+    
+    [data-theme="dark"] .form-text {
+        color: #cbd5e1 !important;
+    }
     </style>
 {% endblock %}
 
@@ -394,32 +417,30 @@
                             <i class="fas fa-palette"></i>
                         </div>
                         {{ t('theme_settings', lang) | default('Настройки темы') }}
-                        <span class="coming-soon-badge" style="background: #fbbf24; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-left: 0.5rem;">
-                            {{ t('coming_soon', lang) | default('Скоро') }}
-                        </span>
                     </h2>
                     
                     <div class="form-group">
                         <label class="form-label">
                             {{ t('color_theme', lang) | default('Цветовая тема') }}
                         </label>
-                        <div style="display: flex; gap: 1rem; align-items: center;">
-                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                <input type="radio" name="theme" value="light" {% if not user.theme or user.theme == 'light' %}checked{% endif %} style="display: none;">
-                                <div class="theme-preview theme-light {% if not user.theme or user.theme == 'light' %}active{% endif %}"></div>
+                        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;" onclick="setTheme('light')">
+                                <input type="radio" name="theme" value="light" id="theme-light" style="display: none;">
+                                <div class="theme-preview theme-light" id="preview-light"></div>
                                 <span>{{ t('light_theme', lang) | default('Светлая') }}</span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                <input type="radio" name="theme" value="dark" {% if user.theme == 'dark' %}checked{% endif %} style="display: none;">
-                                <div class="theme-preview theme-dark {% if user.theme == 'dark' %}active{% endif %}"></div>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;" onclick="setTheme('dark')">
+                                <input type="radio" name="theme" value="dark" id="theme-dark" style="display: none;">
+                                <div class="theme-preview theme-dark" id="preview-dark"></div>
                                 <span>{{ t('dark_theme', lang) | default('Темная') }}</span>
                             </label>
-                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                <input type="radio" name="theme" value="auto" {% if user.theme == 'auto' %}checked{% endif %} style="display: none;">
-                                <div class="theme-preview theme-auto {% if user.theme == 'auto' %}active{% endif %}"></div>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;" onclick="setTheme('auto')">
+                                <input type="radio" name="theme" value="auto" id="theme-auto" style="display: none;">
+                                <div class="theme-preview theme-auto" id="preview-auto"></div>
                                 <span>{{ t('auto_theme', lang) | default('Авто') }}</span>
                             </label>
                         </div>
+                        <small class="form-text">{{ t('theme_info', lang) | default('Выберите тему оформления для всего сайта') }}</small>
                     </div>
                 </div>
                 
@@ -477,26 +498,129 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Обработка выбора темы
-    const themeInputs = document.querySelectorAll('input[name="theme"]');
-    const themePreviews = document.querySelectorAll('.theme-preview');
+// Theme management functions
+function setTheme(theme) {
+    const root = document.documentElement;
     
-    themeInputs.forEach((input, index) => {
-        input.addEventListener('change', function() {
-            // Убираем активный класс со всех превью
-            themePreviews.forEach(preview => preview.classList.remove('active'));
-            // Добавляем активный класс к выбранному
-            themePreviews[index].classList.add('active');
-        });
+    if (theme === 'auto') {
+        // Auto theme - use system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const systemTheme = prefersDark ? 'dark' : 'light';
+        root.setAttribute('data-theme', systemTheme);
+        localStorage.setItem('theme', 'system');
+        localStorage.setItem('themeAuto', 'true');
+        
+        // Update theme-controller if exists
+        if (window.themeController) {
+            window.themeController.theme = 'system';
+            window.themeController.systemTheme = prefersDark ? 'dark' : 'light';
+            window.themeController.isDark = window.themeController.calculateIsDark();
+            window.themeController.applyTheme();
+        }
+    } else {
+        // Manual theme selection
+        root.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        localStorage.setItem('themeAuto', 'false');
+        localStorage.setItem('isDark', theme === 'dark');
+        
+        // Update theme-controller if exists
+        if (window.themeController) {
+            window.themeController.theme = theme;
+            window.themeController.isDark = (theme === 'dark');
+            window.themeController.applyTheme();
+        }
+    }
+    
+    // Update radio buttons
+    document.getElementById('theme-light').checked = (theme === 'light');
+    document.getElementById('theme-dark').checked = (theme === 'dark');
+    document.getElementById('theme-auto').checked = (theme === 'auto');
+    
+    // Update preview active state
+    document.querySelectorAll('.theme-preview').forEach(preview => {
+        preview.classList.remove('active');
+    });
+    document.getElementById('preview-' + theme).classList.add('active');
+    
+    // Haptic feedback on mobile
+    if ('vibrate' in navigator) {
+        navigator.vibrate(50);
+    }
+}
+
+function initThemeSettings() {
+    // Get current theme from localStorage, theme-controller, or system
+    let currentThemeMode = 'light';
+    const savedTheme = localStorage.getItem('theme');
+    const themeAuto = localStorage.getItem('themeAuto') === 'true';
+    const root = document.documentElement;
+    
+    // Check if theme-controller has the theme
+    if (window.themeController) {
+        if (window.themeController.theme === 'system' || (!window.themeController.theme && themeAuto)) {
+            currentThemeMode = 'auto';
+        } else {
+            currentThemeMode = window.themeController.theme || 'light';
+        }
+    } else if (savedTheme === 'system' || themeAuto) {
+        currentThemeMode = 'auto';
+    } else if (savedTheme) {
+        currentThemeMode = savedTheme;
+    }
+    
+    // Set radio buttons and previews
+    document.getElementById('theme-light').checked = (currentThemeMode === 'light');
+    document.getElementById('theme-dark').checked = (currentThemeMode === 'dark');
+    document.getElementById('theme-auto').checked = (currentThemeMode === 'auto' || currentThemeMode === 'system');
+    
+    // Update preview active state
+    document.querySelectorAll('.theme-preview').forEach(preview => {
+        preview.classList.remove('active');
     });
     
-    // Обработка клика по превью темы
-    themePreviews.forEach((preview, index) => {
-        preview.addEventListener('click', function() {
-            themeInputs[index].checked = true;
-            themeInputs[index].dispatchEvent(new Event('change'));
-        });
+    if (currentThemeMode === 'auto' || currentThemeMode === 'system') {
+        document.getElementById('preview-auto').classList.add('active');
+    } else {
+        document.getElementById('preview-' + currentThemeMode).classList.add('active');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize theme settings after a short delay to ensure theme-controller is loaded
+    setTimeout(function() {
+        initThemeSettings();
+    }, 100);
+    
+    // Listen for theme changes from other parts of the app
+    window.addEventListener('themechange', function(e) {
+        const appliedTheme = e.detail.appliedTheme;
+        const themeMode = e.detail.theme;
+        
+        // Update radio buttons based on current theme
+        if (themeMode === 'system' || themeMode === 'auto') {
+            document.getElementById('theme-auto').checked = true;
+            document.querySelectorAll('.theme-preview').forEach(p => p.classList.remove('active'));
+            document.getElementById('preview-auto').classList.add('active');
+        } else {
+            document.getElementById('theme-' + appliedTheme).checked = true;
+            document.querySelectorAll('.theme-preview').forEach(p => p.classList.remove('active'));
+            document.getElementById('preview-' + appliedTheme).classList.add('active');
+        }
+    });
+    
+    // Listen for system theme changes when auto mode is active
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        if (localStorage.getItem('themeAuto') === 'true' || localStorage.getItem('theme') === 'system') {
+            const newTheme = e.matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            
+            if (window.themeController) {
+                window.themeController.systemTheme = newTheme;
+                window.themeController.isDark = window.themeController.calculateIsDark();
+                window.themeController.applyTheme();
+            }
+        }
     });
     
     // Обработка выбора уведомлений
