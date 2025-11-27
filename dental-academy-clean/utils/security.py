@@ -122,9 +122,11 @@ API_RATE_WINDOW = 60  # 1 minute window
 
 # Track blocked IPs for email alerts
 blocked_ips_history = {}
-EMAIL_ALERT_THRESHOLD = 5  # Send email if 5+ IPs blocked in 1 hour
+EMAIL_ALERT_THRESHOLD = 10  # Send email if 10+ IPs blocked in 1 hour (increased to reduce email spam)
 last_email_alert_time = None
-EMAIL_ALERT_MIN_INTERVAL = 3600  # Minimum 1 hour between email alerts
+EMAIL_ALERT_MIN_INTERVAL = 7200  # Minimum 2 hours between email alerts (increased from 1 hour)
+last_email_send_time = None  # Track last email send time for rate limiting
+EMAIL_SEND_RATE_LIMIT = 300  # Maximum 1 email per 5 minutes (300 seconds)
 
 # Whitelist for legitimate bots and crawlers
 LEGITIMATE_BOTS = [
@@ -230,6 +232,10 @@ def is_suspicious_request(path, user_agent=None):
         bool: True if suspicious, False otherwise
     """
     if not path:
+        return False
+    
+    # Never flag static files as suspicious
+    if path.startswith('/static/'):
         return False
     
     # Never block SEO/public paths
@@ -431,10 +437,10 @@ def check_api_rate_limit(ip):
 
 def check_and_send_email_alert():
     """
-    Check if email alert should be sent (5+ IPs blocked in 1 hour)
-    and send email if threshold reached
+    Check if email alert should be sent (10+ IPs blocked in 1 hour)
+    and send email if threshold reached with strict rate limiting
     """
-    global last_email_alert_time
+    global last_email_alert_time, last_email_send_time
     
     try:
         # Clean old blocked IPs (older than 1 hour)
@@ -444,17 +450,27 @@ def check_and_send_email_alert():
             if block_time > cutoff
         }
         
-        # Check if threshold reached and we haven't sent alert recently
+        # Check if threshold reached
         if len(recent_blocked) >= EMAIL_ALERT_THRESHOLD:
             current_time = datetime.now()
-            if last_email_alert_time is None:
-                time_since_last = EMAIL_ALERT_MIN_INTERVAL + 1  # Force first alert
-            else:
-                time_since_last = (current_time - last_email_alert_time).total_seconds()
             
-            if time_since_last >= EMAIL_ALERT_MIN_INTERVAL:
+            # Check minimum interval between alerts (2 hours)
+            if last_email_alert_time is None:
+                time_since_last_alert = EMAIL_ALERT_MIN_INTERVAL + 1  # Force first alert
+            else:
+                time_since_last_alert = (current_time - last_email_alert_time).total_seconds()
+            
+            # Check rate limit for sending emails (5 minutes between any emails)
+            if last_email_send_time is None:
+                time_since_last_send = EMAIL_SEND_RATE_LIMIT + 1  # Allow first email
+            else:
+                time_since_last_send = (current_time - last_email_send_time).total_seconds()
+            
+            # Only send if both conditions are met
+            if time_since_last_alert >= EMAIL_ALERT_MIN_INTERVAL and time_since_last_send >= EMAIL_SEND_RATE_LIMIT:
                 send_security_alert_email(recent_blocked)
                 last_email_alert_time = current_time
+                last_email_send_time = current_time
     except Exception as e:
         logger.error(f"Error in check_and_send_email_alert: {e}")
 
@@ -545,6 +561,10 @@ def security_middleware():
     path = request.path
     ip = request.remote_addr
     user_agent = request.headers.get('User-Agent', '')
+    
+    # Always allow static files - these are safe and shouldn't be blocked
+    if path.startswith('/static/'):
+        return None
     
     # Always allow SEO/public paths - never block these
     if is_seo_path(path):
