@@ -6,8 +6,8 @@
       <!-- Logo -->
       <a class="navbar-brand" href="/{{ lang }}/">
         <div class="logo-container">
-          <img class="logo logo-light" src="{{ url_for('static', filename='images/logo_black.png') }}" alt="Mentora Light" height="40">
-          <img class="logo logo-dark" src="{{ url_for('static', filename='images/logo.png') }}" alt="Mentora Dark" height="40">
+          <img class="logo logo-light" src="{{ url_for('static', filename='images/logo.png') }}" alt="Mentora Light" height="40">
+          <img class="logo logo-dark" src="{{ url_for('static', filename='images/logo_black.png') }}" alt="Mentora Dark" height="40">
         </div>
       </a>
       
@@ -371,24 +371,6 @@ header.modern-header .navbar-brand img {
   background: transparent !important;
 }
 
-/* Убеждаемся что логотипы внутри navbar-brand правильно отображаются */
-header.modern-header .navbar-brand .logo-container .logo-light {
-  display: inline-block !important;
-}
-
-header.modern-header .navbar-brand .logo-container .logo-dark {
-  display: none !important;
-}
-
-html[data-theme="dark"] header.modern-header .navbar-brand .logo-container .logo-light,
-[data-theme="dark"] header.modern-header .navbar-brand .logo-container .logo-light {
-  display: none !important;
-}
-
-html[data-theme="dark"] header.modern-header .navbar-brand .logo-container .logo-dark,
-[data-theme="dark"] header.modern-header .navbar-brand .logo-container .logo-dark {
-  display: inline-block !important;
-}
 
 header.modern-header .navbar-collapse {
   /* display управляется через Alpine.js x-show и :style */
@@ -2932,7 +2914,7 @@ document.addEventListener('DOMContentLoaded', function() {
   border-radius: 50% !important;
 }
 
-/* ===== СТИЛИ ЛОГОТИПА ДЛЯ ПЕРЕКЛЮЧЕНИЯ ТЕМЫ (как в карте обучения) ===== */
+/* ===== СТИЛИ ЛОГОТИПА ДЛЯ ПЕРЕКЛЮЧЕНИЯ ТЕМЫ (ТОЧНО КАК В КАРТЕ ОБУЧЕНИЯ) ===== */
 .logo-container {
   background: transparent !important;
   display: flex !important;
@@ -2944,23 +2926,16 @@ document.addEventListener('DOMContentLoaded', function() {
   background: transparent !important;
 }
 
-/* По умолчанию показываем светлый логотип, скрываем темный */
-.logo-container .logo-light {
-  display: inline-block !important;
+/* ТОЧНО КАК В КАРТЕ ОБУЧЕНИЯ - прямые селекторы без .logo-container */
+.logo-dark {
+  display: none;
 }
 
-.logo-container .logo-dark {
+[data-theme="dark"] .logo-light {
   display: none !important;
 }
 
-/* В темной теме скрываем светлый, показываем темный */
-html[data-theme="dark"] .logo-container .logo-light,
-[data-theme="dark"] .logo-container .logo-light {
-  display: none !important;
-}
-
-html[data-theme="dark"] .logo-container .logo-dark,
-[data-theme="dark"] .logo-container .logo-dark {
+[data-theme="dark"] .logo-dark {
   display: inline-block !important;
 }
 </style>
