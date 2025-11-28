@@ -2964,3 +2964,41 @@ html[data-theme="dark"] .logo-container .logo-dark,
   display: inline-block !important;
 }
 </style>
+
+<script>
+// Диагностика переключения логотипов
+document.addEventListener('DOMContentLoaded', function() {
+  const checkLogos = () => {
+    const theme = document.documentElement.getAttribute('data-theme');
+    const logoLight = document.querySelector('.logo-container .logo-light');
+    const logoDark = document.querySelector('.logo-container .logo-dark');
+    
+    if (logoLight && logoDark) {
+      const lightDisplay = window.getComputedStyle(logoLight).display;
+      const darkDisplay = window.getComputedStyle(logoDark).display;
+      
+      console.log('🎨 Theme:', theme);
+      console.log('🟦 Logo Light display:', lightDisplay);
+      console.log('⚫ Logo Dark display:', darkDisplay);
+      
+      if (theme === 'dark' && darkDisplay === 'none') {
+        console.warn('⚠️ Проблема: темная тема активна, но темный логотип скрыт!');
+      }
+      if (theme === 'light' && lightDisplay === 'none') {
+        console.warn('⚠️ Проблема: светлая тема активна, но светлый логотип скрыт!');
+      }
+    }
+  };
+  
+  checkLogos();
+  
+  // Проверяем при изменении темы
+  const observer = new MutationObserver(checkLogos);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme']
+  });
+  
+  window.addEventListener('themechange', checkLogos);
+});
+</script>
