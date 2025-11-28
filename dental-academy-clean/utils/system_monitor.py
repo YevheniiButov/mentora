@@ -145,7 +145,7 @@ def log_error(
         exception: Объект исключения (для получения traceback)
         user_id: ID пользователя (если применимо)
         metadata: Дополнительные данные
-        send_email: Отправить email уведомление
+        send_email: Отправить email уведомление (ОТКЛЮЧЕНО - используем только Telegram)
     """
     error_traceback = None
     if exception:
