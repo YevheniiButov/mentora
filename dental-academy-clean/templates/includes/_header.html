@@ -371,6 +371,25 @@ header.modern-header .navbar-brand img {
   background: transparent !important;
 }
 
+/* Убеждаемся что логотипы внутри navbar-brand правильно отображаются */
+header.modern-header .navbar-brand .logo-container .logo-light {
+  display: inline-block !important;
+}
+
+header.modern-header .navbar-brand .logo-container .logo-dark {
+  display: none !important;
+}
+
+html[data-theme="dark"] header.modern-header .navbar-brand .logo-container .logo-light,
+[data-theme="dark"] header.modern-header .navbar-brand .logo-container .logo-light {
+  display: none !important;
+}
+
+html[data-theme="dark"] header.modern-header .navbar-brand .logo-container .logo-dark,
+[data-theme="dark"] header.modern-header .navbar-brand .logo-container .logo-dark {
+  display: inline-block !important;
+}
+
 header.modern-header .navbar-collapse {
   /* display управляется через Alpine.js x-show и :style */
   /* display: flex !important; */
