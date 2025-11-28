@@ -2904,56 +2904,16 @@ document.addEventListener('DOMContentLoaded', function() {
   border-radius: 50% !important;
 }
 
-/* ===== СТИЛИ ЛОГОТИПА ДЛЯ ПЕРЕКЛЮЧЕНИЯ ТЕМЫ ===== */
-.logo-container {
-  position: relative;
-  display: inline-block;
+/* ===== СТИЛИ ЛОГОТИПА ДЛЯ ПЕРЕКЛЮЧЕНИЯ ТЕМЫ (как в карте обучения) ===== */
+.logo-dark {
+  display: none;
 }
 
-.logo-container .logo {
-  position: absolute;
-  top: 0;
-  left: 0;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  visibility: hidden;
+[data-theme="dark"] .logo-light {
+  display: none !important;
 }
 
-/* По умолчанию (светлая тема) показываем темный логотип на светлом фоне */
-.logo-container .logo-dark {
-  opacity: 1;
-  position: relative;
-  visibility: visible;
-}
-
-.logo-container .logo-light {
-  opacity: 0;
-  visibility: hidden;
-}
-
-/* В темной теме показываем светлый логотип (logo-light) на темном фоне */
-[data-theme="dark"] .logo-container .logo-light {
-  opacity: 1 !important;
-  position: relative !important;
-  visibility: visible !important;
-}
-
-[data-theme="dark"] .logo-container .logo-dark {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  position: absolute !important;
-}
-
-/* В светлой теме явно показываем темный логотип (logo-dark) на светлом фоне */
-[data-theme="light"] .logo-container .logo-dark {
-  opacity: 1 !important;
-  position: relative !important;
-  visibility: visible !important;
-}
-
-[data-theme="light"] .logo-container .logo-light {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  position: absolute !important;
+[data-theme="dark"] .logo-dark {
+  display: inline-block !important;
 }
 </style>
