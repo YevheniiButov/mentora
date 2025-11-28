@@ -146,6 +146,12 @@ class ThemeController {
 }
 
 // Инициализация контроллера при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
+// Запускаем сразу, если DOM уже загружен, или ждем DOMContentLoaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        window.themeController = new ThemeController();
+    });
+} else {
+    // DOM уже загружен, запускаем сразу
     window.themeController = new ThemeController();
-}); 
+} 

@@ -9040,6 +9040,15 @@
                 document.head.appendChild(metaThemeColor);
             }
             metaThemeColor.content = theme === 'dark' ? '#1a1a2e' : '#3ECDC1';
+            
+            // Отправляем событие для синхронизации с другими страницами
+            window.dispatchEvent(new CustomEvent('themechange', {
+                detail: {
+                    theme: theme,
+                    isDark: theme === 'dark',
+                    appliedTheme: theme
+                }
+            }));
         }
         
         // Toggle theme

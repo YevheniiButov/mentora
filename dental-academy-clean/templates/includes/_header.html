@@ -789,18 +789,44 @@ header.modern-header .navbar-toggler {
 }
 
 /* Улучшенная читаемость в темной теме */
+[data-theme="dark"] header.modern-header .nav-link,
 [data-theme="dark"] .nav-link {
   color: rgba(248, 250, 252, 0.9) !important;
 }
 
+[data-theme="dark"] header.modern-header .nav-link:hover,
 [data-theme="dark"] .nav-link:hover {
   color: #3ECDC1 !important;
   background: rgba(255, 255, 255, 0.05) !important;
 }
 
+[data-theme="dark"] header.modern-header .nav-link.active,
 [data-theme="dark"] .nav-link.active {
   color: #3ECDC1 !important;
   background: rgba(62, 205, 193, 0.1) !important;
+}
+
+/* Темная тема для кнопок и элементов управления в шапке */
+[data-theme="dark"] header.modern-header .btn,
+[data-theme="dark"] header.modern-header .dropdown-toggle,
+[data-theme="dark"] header.modern-header .language-btn-modern {
+  color: rgba(248, 250, 252, 0.9) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+[data-theme="dark"] header.modern-header .dropdown-menu {
+  background: rgba(30, 41, 59, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(248, 250, 252, 0.9) !important;
+}
+
+[data-theme="dark"] header.modern-header .dropdown-item {
+  color: rgba(248, 250, 252, 0.9) !important;
+}
+
+[data-theme="dark"] header.modern-header .dropdown-item:hover {
+  background: rgba(62, 205, 193, 0.1) !important;
+  color: #3ECDC1 !important;
 }
 
 .nav-link::before {
@@ -2876,5 +2902,58 @@ document.addEventListener('DOMContentLoaded', function() {
   align-items: center !important;
   justify-content: center !important;
   border-radius: 50% !important;
+}
+
+/* ===== СТИЛИ ЛОГОТИПА ДЛЯ ПЕРЕКЛЮЧЕНИЯ ТЕМЫ ===== */
+.logo-container {
+  position: relative;
+  display: inline-block;
+}
+
+.logo-container .logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  visibility: hidden;
+}
+
+/* По умолчанию показываем светлый логотип */
+.logo-container .logo-light {
+  opacity: 1;
+  position: relative;
+  visibility: visible;
+}
+
+.logo-container .logo-dark {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* В темной теме показываем темный логотип */
+[data-theme="dark"] .logo-container .logo-dark {
+  opacity: 1 !important;
+  position: relative !important;
+  visibility: visible !important;
+}
+
+[data-theme="dark"] .logo-container .logo-light {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  position: absolute !important;
+}
+
+/* В светлой теме явно показываем светлый */
+[data-theme="light"] .logo-container .logo-light {
+  opacity: 1 !important;
+  position: relative !important;
+  visibility: visible !important;
+}
+
+[data-theme="light"] .logo-container .logo-dark {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  position: absolute !important;
 }
 </style>
