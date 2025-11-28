@@ -2919,39 +2919,39 @@ document.addEventListener('DOMContentLoaded', function() {
   visibility: hidden;
 }
 
-/* По умолчанию показываем светлый логотип */
-.logo-container .logo-light {
+/* По умолчанию (светлая тема) показываем темный логотип на светлом фоне */
+.logo-container .logo-dark {
   opacity: 1;
   position: relative;
   visibility: visible;
 }
 
-.logo-container .logo-dark {
+.logo-container .logo-light {
   opacity: 0;
   visibility: hidden;
 }
 
-/* В темной теме показываем темный логотип */
-[data-theme="dark"] .logo-container .logo-dark {
+/* В темной теме показываем светлый логотип (logo-light) на темном фоне */
+[data-theme="dark"] .logo-container .logo-light {
   opacity: 1 !important;
   position: relative !important;
   visibility: visible !important;
 }
 
-[data-theme="dark"] .logo-container .logo-light {
+[data-theme="dark"] .logo-container .logo-dark {
   opacity: 0 !important;
   visibility: hidden !important;
   position: absolute !important;
 }
 
-/* В светлой теме явно показываем светлый */
-[data-theme="light"] .logo-container .logo-light {
+/* В светлой теме явно показываем темный логотип (logo-dark) на светлом фоне */
+[data-theme="light"] .logo-container .logo-dark {
   opacity: 1 !important;
   position: relative !important;
   visibility: visible !important;
 }
 
-[data-theme="light"] .logo-container .logo-dark {
+[data-theme="light"] .logo-container .logo-light {
   opacity: 0 !important;
   visibility: hidden !important;
   position: absolute !important;
