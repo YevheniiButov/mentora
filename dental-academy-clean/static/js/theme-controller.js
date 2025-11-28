@@ -1,21 +1,46 @@
 class ThemeController {
     constructor() {
+        // Синхронизация с картой обучения - используем те же ключи
+        const THEME_STORAGE_KEY = 'mentora_theme';
+        const THEME_AUTO_KEY = 'mentora_theme_auto';
+        
         // Инициализация состояния
         this.systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        this.theme = localStorage.getItem('theme') || 'light';
-        this.isDark = this.calculateIsDark();
+        
+        // Проверяем сохраненную тему из карты обучения или старую систему
+        const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || localStorage.getItem('theme');
+        const autoTheme = localStorage.getItem(THEME_AUTO_KEY) === 'true';
+        
+        if (autoTheme || savedTheme === 'system') {
+            this.theme = 'system';
+            this.isDark = this.systemTheme === 'dark';
+        } else {
+            this.theme = savedTheme || 'light';
+            this.isDark = this.calculateIsDark();
+        }
+        
+        // Синхронизируем со старой системой
+        if (savedTheme) {
+            localStorage.setItem('theme', savedTheme);
+            localStorage.setItem('isDark', this.isDark);
+        }
         
         // Инициализация
         this.init();
-        
-        // Отладочная информация
     }
 
     calculateIsDark() {
+        const THEME_STORAGE_KEY = 'mentora_theme';
+        const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) || localStorage.getItem('theme');
+        
         if (this.theme === 'system') {
             return this.systemTheme === 'dark';
         } else if (this.theme === 'toggle') {
             return localStorage.getItem('isDark') === 'true';
+        }
+        // Проверяем сохраненную тему
+        if (savedTheme === 'dark' || savedTheme === 'light') {
+            return savedTheme === 'dark';
         }
         return this.theme === 'dark';
     }
@@ -32,29 +57,77 @@ class ThemeController {
                 this.applyTheme();
             }
         });
+        
+        // Слушаем изменения темы из других страниц (например, карты обучения)
+        window.addEventListener('themechange', (e) => {
+            const THEME_STORAGE_KEY = 'mentora_theme';
+            const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+            
+            // Обновляем тему если она изменилась из другого источника
+            if (e.detail && e.detail.appliedTheme) {
+                const newTheme = e.detail.appliedTheme;
+                if (newTheme !== (this.isDark ? 'dark' : 'light')) {
+                    this.isDark = newTheme === 'dark';
+                    this.theme = newTheme;
+                    this.applyTheme();
+                }
+            }
+        });
+        
+        // Слушаем изменения localStorage (синхронизация между вкладками)
+        window.addEventListener('storage', (e) => {
+            const THEME_STORAGE_KEY = 'mentora_theme';
+            if (e.key === THEME_STORAGE_KEY || e.key === 'theme') {
+                const newTheme = e.newValue;
+                if (newTheme && (newTheme === 'dark' || newTheme === 'light')) {
+                    this.theme = newTheme;
+                    this.isDark = newTheme === 'dark';
+                    this.applyTheme();
+                }
+            }
+        });
     }
 
     applyTheme() {
         // Применяем тему к документу
-        document.documentElement.setAttribute('data-theme', this.isDark ? 'dark' : 'light');
+        const appliedTheme = this.isDark ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', appliedTheme);
+        
+        // Обновляем meta theme-color для мобильных браузеров
+        let metaThemeColor = document.querySelector('meta[name="theme-color"]');
+        if (!metaThemeColor) {
+            metaThemeColor = document.createElement('meta');
+            metaThemeColor.name = 'theme-color';
+            document.head.appendChild(metaThemeColor);
+        }
+        metaThemeColor.content = appliedTheme === 'dark' ? '#1a1a2e' : '#3ECDC1';
+        
+        // Принудительно обновляем color-scheme
+        document.documentElement.style.colorScheme = appliedTheme;
         
         // Отправляем событие
         this.notifyThemeChange();
     }
 
     toggleTheme() {
-        if (this.theme !== 'toggle') {
-            // Если не в режиме toggle, переключаемся на него
-            this.theme = 'toggle';
-            this.isDark = true; // Начинаем с темной темы
-        } else {
-            // В режиме toggle просто инвертируем текущее состояние
-            this.isDark = !this.isDark;
-        }
+        const THEME_STORAGE_KEY = 'mentora_theme';
+        const THEME_AUTO_KEY = 'mentora_theme_auto';
         
-        // Сохраняем состояние
-        localStorage.setItem('theme', this.theme);
+        // Определяем текущую тему
+        const currentIsDark = this.isDark || document.documentElement.getAttribute('data-theme') === 'dark';
+        
+        // Переключаем на противоположную тему
+        this.isDark = !currentIsDark;
+        const newTheme = this.isDark ? 'dark' : 'light';
+        
+        // Сохраняем в обе системы для совместимости
+        localStorage.setItem(THEME_STORAGE_KEY, newTheme);
+        localStorage.setItem(THEME_AUTO_KEY, 'false');
+        localStorage.setItem('theme', newTheme);
         localStorage.setItem('isDark', this.isDark);
+        
+        // Устанавливаем тему
+        this.theme = newTheme;
         
         // Применяем изменения
         this.applyTheme();

@@ -9055,7 +9055,28 @@
             localStorage.setItem(THEME_AUTO_KEY, 'false');
             localStorage.setItem(THEME_STORAGE_KEY, newTheme);
             
-            applyTheme(newTheme, false);
+            // Синхронизация со старой системой и theme-controller
+            localStorage.setItem('theme', newTheme);
+            localStorage.setItem('isDark', newTheme === 'dark');
+            
+            // Если theme-controller существует на странице, обновляем его
+            if (window.themeController) {
+                window.themeController.theme = newTheme;
+                window.themeController.isDark = (newTheme === 'dark');
+                window.themeController.applyTheme();
+            } else {
+                // Иначе применяем тему напрямую
+                applyTheme(newTheme, false);
+            }
+            
+            // Отправляем событие для синхронизации между страницами
+            window.dispatchEvent(new CustomEvent('themechange', {
+                detail: {
+                    theme: newTheme,
+                    isDark: newTheme === 'dark',
+                    appliedTheme: newTheme
+                }
+            }));
             
             // Haptic feedback on mobile
             if ('vibrate' in navigator) {
