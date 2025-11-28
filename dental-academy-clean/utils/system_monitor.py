@@ -11,7 +11,8 @@ from datetime import datetime, timezone
 from flask import request, current_app, g
 from flask_login import current_user
 from models import SystemEvent, db
-from utils.resend_email_service import send_email_via_resend
+# Email уведомления отключены - используем только Telegram бот
+# from utils.resend_email_service import send_email_via_resend
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +72,7 @@ def log_event(
         user_email: Email пользователя (если user_id неизвестен)
         error_traceback: Полный traceback для ошибок
         metadata: Дополнительные данные в виде словаря
-        send_email: Отправить email уведомление (автоматически для critical/error)
+        send_email: Отправить email уведомление (ОТКЛЮЧЕНО - используем только Telegram)
     """
     try:
         # Получаем информацию о запросе
@@ -103,17 +104,7 @@ def log_event(
         db.session.add(event)
         db.session.commit()
         
-        # Отправляем email для критических ошибок или если явно запрошено
-        should_send_email = send_email or severity in ('critical', 'error')
-        if should_send_email:
-            try:
-                send_event_notification_email(event)
-                event.email_sent = True
-                event.email_sent_at = datetime.now(timezone.utc)
-                db.session.commit()
-            except Exception as e:
-                logger.error(f"Failed to send notification email for event {event.id}: {e}")
-        
+        # Email уведомления отключены - используем только Telegram бот
         # Отправляем Telegram уведомление для критических событий
         if severity in ('critical', 'error'):
             try:
@@ -252,66 +243,11 @@ def log_user_registration(user_id: int, user_email: str, registration_method: st
         logger.error(f"Failed to send Telegram notification for registration: {e}")
 
 
-def send_event_notification_email(event: SystemEvent):
-    """
-    Отправляет email уведомление о событии администратору.
-    
-    Args:
-        event: Объект SystemEvent
-    """
-    try:
-        # Формируем тему письма
-        subject = f"[{event.severity.upper()}] {event.title}"
-        
-        # Формируем тело письма
-        body_html = f"""
-        <html>
-        <head>
-            <style>
-                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-                .header {{ background-color: {'#dc3545' if event.severity == 'critical' else '#ffc107' if event.severity == 'error' else '#17a2b8'}; color: white; padding: 15px; }}
-                .content {{ padding: 20px; }}
-                .info-row {{ margin: 10px 0; }}
-                .label {{ font-weight: bold; }}
-                .traceback {{ background-color: #f8f9fa; padding: 15px; border-radius: 5px; font-family: monospace; white-space: pre-wrap; font-size: 12px; }}
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h2>{event.title}</h2>
-            </div>
-            <div class="content">
-                <div class="info-row">
-                    <span class="label">Event Type:</span> {event.event_type}
-                </div>
-                <div class="info-row">
-                    <span class="label">Severity:</span> {event.severity}
-                </div>
-                <div class="info-row">
-                    <span class="label">Time:</span> {event.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') if event.created_at else 'N/A'}
-                </div>
-                {f'<div class="info-row"><span class="label">User:</span> {event.user_email or f"ID: {event.user_id}"}</div>' if event.user_id or event.user_email else ''}
-                {f'<div class="info-row"><span class="label">IP Address:</span> {event.ip_address}</div>' if event.ip_address else ''}
-                {f'<div class="info-row"><span class="label">Request URL:</span> {event.request_url}</div>' if event.request_url else ''}
-                {f'<div class="info-row"><span class="label">Message:</span> {event.message}</div>' if event.message else ''}
-                {f'<div class="info-row"><span class="label">Traceback:</span><div class="traceback">{event.error_traceback}</div></div>' if event.error_traceback else ''}
-                <div class="info-row">
-                    <a href="https://bigmentor.nl/admin/monitoring/events/{event.id}" style="color: #007bff;">View in Admin Panel</a>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
-        
-        # Отправляем email через Resend (используется та же система, что и для всех email в проекте)
-        admin_email = get_admin_email()
-        send_email_via_resend(
-            to_email=admin_email,
-            subject=subject,
-            html_content=body_html
-        )
-        
-    except Exception as e:
-        logger.error(f"Failed to send event notification email: {e}", exc_info=True)
-        raise
+# Email уведомления отключены - используем только Telegram бот
+# def send_event_notification_email(event: SystemEvent):
+#     """
+#     Отправляет email уведомление о событии администратору.
+#     ОТКЛЮЧЕНО - используем только Telegram бот
+#     """
+#     pass
 
