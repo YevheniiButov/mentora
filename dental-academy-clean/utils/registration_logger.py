@@ -278,9 +278,9 @@ class RegistrationLogger:
             # Save notification to database for admin panel
             self._save_notification_to_db(notification_data)
             
-            # Send email notification for critical errors
-            if notification_type == 'critical_error':
-                self._send_critical_error_email(admin_email, context)
+            # Email уведомления отключены - используем только Telegram бот
+            # if notification_type == 'critical_error':
+            #     self._send_critical_error_email(admin_email, context)
                 
         except Exception as e:
             # Don't let notification errors break the main flow
@@ -324,34 +324,10 @@ class RegistrationLogger:
         except Exception as e:
             print(f"Warning: Could not save notification to DB: {e}")
     
-    def _send_critical_error_email(self, admin_email, context):
-        """Send email notification for critical errors"""
-        try:
-            from utils.email_service import send_admin_alert_email
-            
-            # Prepare email content
-            subject = f"🚨 Critical Registration Error - {context.get('registration_type', 'unknown')}"
-            
-            message = f"""
-Critical error occurred during registration:
-
-Type: {context.get('error_type', 'Unknown')}
-Message: {context.get('error_message', 'No message')}
-Registration Type: {context.get('registration_type', 'Unknown')}
-IP Address: {context.get('request_context', {}).get('ip_address', 'Unknown')}
-User Agent: {context.get('request_context', {}).get('user_agent', 'Unknown')}
-Timestamp: {context.get('request_context', {}).get('timestamp', 'Unknown')}
-
-Full context:
-{json.dumps(context, indent=2)}
-
-Please check the logs for more details.
-            """
-            
-            send_admin_alert_email(admin_email, subject, message)
-            
-        except Exception as e:
-            print(f"Warning: Could not send critical error email: {e}")
+    # Email уведомления отключены - используем только Telegram бот
+    # def _send_critical_error_email(self, admin_email, context):
+    #     """Send email notification for critical errors"""
+    #     pass
 
     def _save_to_database(self, event_type, registration_type, level, context):
         """Save log entry to database"""
