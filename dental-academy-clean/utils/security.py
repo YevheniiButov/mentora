@@ -509,10 +509,11 @@ def security_middleware():
     if is_seo_path(path):
         return None
     
-    # Always allow legitimate bots on normal paths
+    # Check legitimate bots - but be more strict if they access suspicious paths
     if is_legitimate_bot(user_agent):
-        # Only check for obvious exploits, not general suspicious patterns
         path_lower = path.lower()
+        
+        # Check for obvious exploits first
         critical_exploits = [
             r'/\.env', r'/\.git', r'\.php$', r'/\.aws', r'/\.ssh',
             r'/\.htaccess', r'/shell\.php', r'/c99\.php', r'/r57\.php'
@@ -520,8 +521,20 @@ def security_middleware():
         for pattern in critical_exploits:
             if re.search(pattern, path_lower, re.IGNORECASE):
                 # Even legitimate bots shouldn't access exploits
+                # If bot tries exploits, it's likely a fake bot
                 security_logger.warning(f"🚨 Legitimate bot {user_agent} attempted exploit: {path}")
+                # Treat as suspicious request instead of just returning 404
+                log_suspicious_request(path, ip, user_agent, reason='fake_bot_exploit')
                 abort(404)
+        
+        # If bot accesses other suspicious patterns, treat as suspicious
+        # Real bots don't scan for swagger, api-docs, etc.
+        if is_suspicious_request(path, user_agent):
+            # This might be a fake bot - log but don't block immediately
+            security_logger.warning(f"🚨 Legitimate bot {user_agent} accessed suspicious path: {path}")
+            # Return 404 to hide existence, but don't block the bot yet
+            abort(404)
+        
         return None
     
     # Check if IP is blocked

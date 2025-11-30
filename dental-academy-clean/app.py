@@ -984,6 +984,13 @@ def not_found_error(error):
         logger.error(f"   Available lang routes: {lang_routes}")
     return render_template('errors/404.html'), 404
 
+@app.errorhandler(403)
+def forbidden_error(error):
+    """Handle 403 Forbidden errors - quiet logging for security blocks"""
+    # Не логируем полный traceback для 403 - это нормальные блокировки сканеров
+    # security_middleware уже залогировал блокировку, не нужно дублировать
+    return render_template('errors/403.html'), 403
+
 @app.errorhandler(500)
 def internal_error(error):
     """Handle 500 errors"""
@@ -1019,7 +1026,14 @@ def handle_exception(e):
             return jsonify({'error': 'CSRF token expired. Please refresh the page.'}), 400
         return render_template('errors/500.html'), 400
     
-    # Логируем ошибку в систему мониторинга (только для не-CSRF ошибок)
+    # Тихая обработка Forbidden (403) - security_middleware уже залогировал
+    from werkzeug.exceptions import Forbidden
+    if isinstance(e, Forbidden):
+        # Не логируем traceback для 403 - это нормальные блокировки сканеров
+        # security_middleware уже залогировал блокировку
+        return render_template('errors/403.html'), 403
+    
+    # Логируем ошибку в систему мониторинга (только для не-CSRF и не-Forbidden ошибок)
     try:
         from utils.system_monitor import log_error
         log_error(
