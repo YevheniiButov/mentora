@@ -26,6 +26,7 @@ translations = {
     'complete': 'تکمیل',
     'login_with_digid': 'ورود با DigiD',
     'continue_learning': 'ادامه یادگیری',
+    'fill_questionnaire': 'تکمیل فرم',
     'start_learning': 'شروع یادگیری',
     
     # برچسب‌ها

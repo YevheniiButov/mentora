@@ -26,6 +26,7 @@ translations = {
     'complete': 'Tamamla',
     'login_with_digid': 'DigiD ile Giriş',
     'continue_learning': 'Öğrenmeye devam et',
+    'fill_questionnaire': 'Formu doldur',
     'start_learning': 'Öğrenmeye başla',
     
     # Etiketler

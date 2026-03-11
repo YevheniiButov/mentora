@@ -26,6 +26,7 @@ translations = {
     'complete': 'Завершити',
     'login_with_digid': 'Увійти через DigiD',
     'continue_learning': 'Продовжити навчання',
+    'fill_questionnaire': 'Заповнити формуляр',
     'start_learning': 'Почати навчання',
     
     # Мітки

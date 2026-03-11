@@ -25,6 +25,7 @@ translations = {
     'complete': 'Complete',
     'login_with_digid': 'Login with DigiD',
     'continue_learning': 'Continue learning',
+    'fill_questionnaire': 'Fill in questionnaire',
     'start_learning': 'Start learning',
     
     # Labels

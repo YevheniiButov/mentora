@@ -25,6 +25,7 @@ translations = {
     'complete': 'Завершить',
     'login_with_digid': 'Войти через DigiD',
     'continue_learning': 'Продолжить обучение',
+    'fill_questionnaire': 'Заполнить формуляр',
     'start_learning': 'Начать обучение',
     
     # Метки

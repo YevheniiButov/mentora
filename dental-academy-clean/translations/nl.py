@@ -27,6 +27,7 @@ translations = {
     'login_with_digid': 'Inloggen met DigiD',
     'continue_learning': 'Doorgaan met leren',
     'start_learning': 'Start met leren',
+    'fill_questionnaire': 'Formulier invullen',
     
     # Labels
     'search': 'Zoeken',

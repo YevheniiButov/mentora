@@ -29,6 +29,7 @@ translations = {
     'complete': 'إكمال',
     'login_with_digid': 'تسجيل الدخول باستخدام DigiD',
     'continue_learning': 'متابعة التعلم',
+    'fill_questionnaire': 'تعبئة النموذج',
     'start_learning': 'ابدأ التعلم',
     
     # Etiketler / التصنيفات

@@ -26,6 +26,7 @@ translations = {
     'complete': 'Completar',
     'login_with_digid': 'Iniciar sesión con DigiD',
     'continue_learning': 'Continuar aprendiendo',
+    'fill_questionnaire': 'Rellenar formulario',
     'start_learning': 'Comenzar a aprender',
     
     # Etiquetas
