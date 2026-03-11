@@ -28,7 +28,7 @@
            :class="{ 'show': (isDesktop || mobileMenuOpen) }"
            x-show="isDesktop || mobileMenuOpen"
            x-cloak
-           x-init="console.log('Navbar collapse initialized, isDesktop:', isDesktop, 'mobileMenuOpen:', mobileMenuOpen); $el.style.display = (isDesktop || mobileMenuOpen) ? 'flex' : 'none';"
+           x-init="$el.style.display = (isDesktop || mobileMenuOpen) ? 'flex' : 'none';"
            :style="(isDesktop || mobileMenuOpen) ? 'display: flex !important; visibility: visible !important; opacity: 1 !important;' : 'display: none !important; visibility: hidden !important; opacity: 0 !important;'"
            x-transition:enter="transition ease-out duration-200"
            x-transition:enter-start="opacity-0 transform -translate-y-2"
@@ -36,7 +36,7 @@
            x-transition:leave="transition ease-in duration-150"
            x-transition:leave-start="opacity-100 transform translate-y-0"
            x-transition:leave-end="opacity-0 transform -translate-y-2"
-           @click.away="if (!isDesktop) { mobileMenuOpen = false; console.log('Menu closed by click away'); }">
+           @click.away="if (!isDesktop) { mobileMenuOpen = false; }">
         <ul class="navbar-nav me-auto">
           <!-- Hoofdpagina - всегда видна -->
           <li class="nav-item">
@@ -90,12 +90,11 @@
           <!-- Language Dropdown -->
           <div class="dropdown me-3 language-dropdown" 
                x-data="{ open: false }"
-               x-init="console.log('Language dropdown initialized, open:', open)"
                @click.away="open = false"
                style="position: relative; z-index: 9999;">
             <button class="btn language-btn-modern" 
                     type="button" 
-                    @click.stop.prevent="open = !open; console.log('Language dropdown clicked, open:', open); setTimeout(() => { const menu = document.querySelector('.language-menu'); console.log('Menu element:', menu); console.log('Menu style:', menu ? menu.style.cssText : 'not found'); console.log('Menu computed display:', menu ? window.getComputedStyle(menu).display : 'not found'); }, 100);"
+                    @click.stop.prevent="open = !open;"
                     :aria-expanded="open"
                     style="pointer-events: auto !important; cursor: pointer !important;"
                     title="{{ t('language', lang)|default('Язык') }}: {{ lang|upper }}">
@@ -114,7 +113,7 @@
                 @click.stop="open = false">
               <li><a class="dropdown-item {% if lang == 'nl' %}active{% endif %}" 
                      href="{{ language_url('nl') }}"
-                     onclick="console.log('🌐 Language click: Nederlands, URL:', this.href);">
+                     onclick="">
                 <span class="fi fi-nl me-2"></span> Nederlands{% if lang == 'nl' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}
               </a></li>
               <li><a class="dropdown-item {% if lang == 'en' %}active{% endif %}" 
@@ -164,12 +163,11 @@
           <!-- User Menu with Everything Inside -->
           <div class="dropdown" 
                x-data="{ open: false }"
-               x-init="console.log('User dropdown initialized, open:', open)"
                @click.away="open = false"
                style="position: relative; z-index: 1002;">
             <button class="btn user-btn-modern" 
                     type="button" 
-                    @click.stop.prevent="open = !open; console.log('User dropdown clicked, open:', open); setTimeout(() => { const menu = document.querySelector('.user-dropdown'); console.log('Menu element:', menu); console.log('Menu style:', menu ? menu.style.cssText : 'not found'); console.log('Menu computed display:', menu ? window.getComputedStyle(menu).display : 'not found'); }, 100);"
+                    @click.stop.prevent="open = !open;"
                     :aria-expanded="open"
                     title="{{ current_user.get_display_name() }}">
               <span class="user-icon"><i class="bi bi-person-circle"></i></span>
@@ -230,12 +228,11 @@
           <!-- Settings Menu for Guests -->
           <div class="dropdown" 
                x-data="{ open: false }"
-               x-init="console.log('Settings dropdown initialized, open:', open)"
                @click.away="open = false"
                style="position: relative; z-index: 1002;">
             <button class="btn user-btn-modern" 
                     type="button" 
-                    @click.stop.prevent="open = !open; console.log('Settings dropdown clicked, open:', open)"
+                    @click.stop.prevent="open = !open;"
                     :aria-expanded="open"
                     title="{{ t('settings', lang)|default('Settings') }}">
               <span class="settings-icon"><i class="bi bi-gear-fill"></i></span>
@@ -2294,12 +2291,6 @@ window.headerNav = function() {
         this.mobileMenuOpen = false;
       }
       
-      console.log('HeaderNav initialized:', {
-        isDesktop: this.isDesktop,
-        mobileMenuOpen: this.mobileMenuOpen,
-        windowWidth: window.innerWidth
-      });
-      
       // Слушаем изменения размера окна
       const handleResize = () => {
         const wasDesktop = this.isDesktop;
@@ -2324,7 +2315,6 @@ window.headerNav = function() {
         return;
       }
       this.mobileMenuOpen = !this.mobileMenuOpen;
-      console.log('Mobile menu toggled:', this.mobileMenuOpen);
     },
     
     closeMobileMenu() {
@@ -2344,36 +2334,7 @@ function headerNav() {
 document.addEventListener('DOMContentLoaded', function() {
   // Ждем загрузки Alpine.js
   setTimeout(function() {
-    if (typeof Alpine !== 'undefined') {
-      console.log('✅ Alpine.js загружен');
-      
-      // Проверяем, что dropdown элементы инициализированы
-      const dropdowns = document.querySelectorAll('.dropdown[x-data]');
-      console.log(`🔍 Найдено ${dropdowns.length} dropdown элементов с x-data`);
-      
-      dropdowns.forEach((dropdown, index) => {
-        const button = dropdown.querySelector('button');
-        const menu = dropdown.querySelector('.dropdown-menu');
-        console.log(`Dropdown ${index + 1}:`, {
-          hasButton: !!button,
-          hasMenu: !!menu,
-          buttonClasses: button ? button.className : 'none',
-          menuClasses: menu ? menu.className : 'none'
-        });
-        
-        // Добавляем тестовый обработчик для проверки
-        if (button) {
-          button.addEventListener('click', function(e) {
-            console.log(`🖱️ Клик по кнопке dropdown ${index + 1}`, e);
-            console.log('Event target:', e.target);
-            console.log('Event currentTarget:', e.currentTarget);
-            console.log('Alpine data:', Alpine.$data ? Alpine.$data(dropdown) : 'Alpine.$data not available');
-            console.log('Dropdown element:', dropdown);
-            console.log('Has x-data:', dropdown.hasAttribute('x-data'));
-          }, true); // Используем capture phase для перехвата до Alpine
-        }
-      });
-    } else {
+    if (typeof Alpine === 'undefined') {
       console.error('❌ Alpine.js не загружен!');
     }
   }, 500);
@@ -2962,10 +2923,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (logoLight && logoDark) {
       const lightDisplay = window.getComputedStyle(logoLight).display;
       const darkDisplay = window.getComputedStyle(logoDark).display;
-      
-      console.log('🎨 Theme:', theme);
-      console.log('🟦 Logo Light display:', lightDisplay);
-      console.log('⚫ Logo Dark display:', darkDisplay);
       
       if (theme === 'dark' && darkDisplay === 'none') {
         console.warn('⚠️ Проблема: темная тема активна, но темный логотип скрыт!');
