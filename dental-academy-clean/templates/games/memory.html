@@ -1025,6 +1025,14 @@ function showVictory() {
     }
     
     document.getElementById('victoryModal').classList.add('show');
+
+    // Mark memory game as completed for today in localStorage
+    try {
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        localStorage.setItem('memory_game_completed_date', today);
+    } catch (e) {
+        console.warn('Failed to persist memory game completion state:', e);
+    }
 }
 
 function resetGame() {
@@ -1085,7 +1093,7 @@ function exitToDailyLearning() {
     // Get language from URL or default to 'nl'
     const lang = '{{ lang|default("nl") }}';
     // Redirect to learning map (daily learning)
-    window.location.href = `/${lang}/`;
+    window.location.href = `/${lang}/learning-map`;
 }
 
 // Auto-pause functionality

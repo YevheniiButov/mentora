@@ -7227,6 +7227,8 @@
                     
                     // Load daily tasks from planner (synchronized)
                     await this.loadDailyTasksFromPlanner();
+                    // Sync memory game completion from localStorage (client-tracked)
+                    this.syncMemoryFromLocalStorage();
                     
                     // Load Individual Plan data if that's the active tab
                     if (this.activeTab === 'individual') {
@@ -8091,6 +8093,22 @@
                     if (total === 0) return 0;
                     const completed = this.dailyTasksData.tasks.filter(task => this.getTaskCompleted(task.type)).length;
                     return Math.round((completed / total) * 100);
+                },
+                
+                syncMemoryFromLocalStorage() {
+                    try {
+                        const storedDate = localStorage.getItem('memory_game_completed_date');
+                        if (!storedDate) {
+                            return;
+                        }
+                        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+                        if (storedDate === today) {
+                            this.memoryCompleted = true;
+                            this.memoryInProgress = false;
+                        }
+                    } catch (e) {
+                        console.error('Error syncing memory game completion from localStorage:', e);
+                    }
                 },
                 
                 getTaskCompleted(taskType) {
