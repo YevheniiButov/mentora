@@ -261,6 +261,201 @@
 .btn-ghost-dark:hover { color: #fff; background: rgba(255,255,255,0.05); }
 .cta-btns { display: flex; flex-direction: column; gap: 10px; }
 
+/* NEW PARTNERS (B2B) SECTION */
+.partners-section {
+  padding: 80px 40px;
+  background-color: var(--mentora-bg-secondary);
+  border-top: 1px solid var(--mentora-border);
+  position: relative;
+  z-index: 2;
+}
+
+.partners-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Hero B2B */
+.b2b-hero {
+  margin-bottom: 60px;
+  max-width: 800px;
+}
+.b2b-title {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 400;
+  color: var(--dark);
+  line-height: 1.2;
+  margin-bottom: 24px;
+}
+.b2b-subtitle {
+  font-size: 16px;
+  color: var(--mentora-text-secondary);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+/* 4 Cards Grid */
+.b2b-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 80px;
+}
+.b2b-card {
+  background: var(--mentora-bg);
+  border: 1px solid var(--mentora-border);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.b2b-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.04);
+  border-color: var(--teal-border);
+}
+.b2b-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--teal-dim);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.b2b-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: var(--teal);
+  fill: none;
+  stroke-width: 1.5;
+}
+.b2b-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 12px;
+}
+.b2b-card-desc {
+  font-size: 14px;
+  color: var(--mentora-text-secondary);
+  line-height: 1.6;
+}
+
+/* Roadmap Stepper */
+.b2b-roadmap-wrapper {
+  margin-bottom: 80px;
+  background: var(--mentora-bg);
+  border: 1px solid var(--mentora-border);
+  border-radius: var(--radius-xl);
+  padding: 48px;
+}
+.b2b-roadmap-title {
+  font-family: var(--font-display);
+  font-size: 28px;
+  margin-bottom: 40px;
+  text-align: center;
+  color: var(--dark);
+}
+.b2b-roadmap {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+}
+.b2b-roadmap::before {
+  content: '';
+  position: absolute;
+  top: 24px;
+  left: 40px;
+  right: 40px;
+  height: 2px;
+  background: var(--mentora-border);
+  z-index: 1;
+}
+.b2b-step {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  flex: 1;
+  padding: 0 16px;
+}
+.b2b-step-num {
+  width: 50px;
+  height: 50px;
+  background: var(--mentora-bg);
+  border: 2px solid var(--teal);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--teal);
+  margin: 0 auto 20px;
+}
+.b2b-step.active .b2b-step-num {
+  background: var(--teal);
+  color: white;
+}
+.b2b-step-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 8px;
+}
+.b2b-step-desc {
+  font-size: 13px;
+  color: var(--mentora-text-secondary);
+  line-height: 1.5;
+}
+
+/* Final CTA */
+.b2b-cta {
+  background: var(--dark);
+  border-radius: var(--radius-xl);
+  padding: 60px 48px;
+  text-align: center;
+  color: white;
+}
+.b2b-cta-title {
+  font-family: var(--font-display);
+  font-size: 32px;
+  margin-bottom: 32px;
+}
+.b2b-cta-btns {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+.b2b-btn-primary {
+  background: var(--teal);
+  color: white;
+  padding: 16px 32px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.b2b-btn-primary:hover {
+  opacity: 0.9;
+  color: white;
+}
+.b2b-btn-outline {
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  padding: 16px 32px;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.b2b-btn-outline:hover {
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 900px) {
   .mentora-landing-wrapper {
@@ -278,11 +473,25 @@
   .pillars { grid-template-columns: 1fr; }
   .pillar:not(:last-child)::after { top: auto; bottom: -16px; left: 50%; width: 1px; height: 16px; }
   .mock-body { grid-template-columns: 1fr; }
+  
+  /* B2B Section Responsive */
+  .b2b-grid { grid-template-columns: 1fr; }
+  .b2b-roadmap { flex-direction: column; gap: 32px; }
+  .b2b-roadmap::before {
+    top: 0; left: 40px; right: auto; width: 2px; height: 100%;
+  }
+  .b2b-step { display: flex; text-align: left; gap: 20px; align-items: flex-start; }
+  .b2b-step-num { margin: 0; flex-shrink: 0; }
+  .b2b-cta-btns { flex-direction: column; }
 }
 
 @media (max-width: 600px) {
   .pathways { grid-template-columns: 1fr; }
   .hero h1 { font-size: 40px; }
+  
+  /* B2B Section Mobile */
+  .b2b-title { font-size: 32px; }
+  .b2b-roadmap::before { left: 34px; }
 }
 </style>
 {% endblock %}
@@ -361,123 +570,104 @@
   </div>
 </div>
 
-<!-- LAYER DIVIDER -->
-<div id="institutions" class="layer-divider fade-up" style="position: relative; z-index: 2;">
-  <div class="layer-divider-left">
-    <strong>Are you a Healthcare Provider or Partner?</strong>
-    <p>Behind this section: the economic case, the system architecture, and what makes Mentora a scalable infrastructure — not just a product.</p>
+<!-- B2B PARTNERS SECTION -->
+<div id="institutions" class="partners-section">
+  <div class="partners-container">
+    
+    <div class="layer-tag" style="margin-bottom: 40px; display: inline-flex; border: 1px solid var(--mentora-border);">
+      <div class="layer-dot" style="background:var(--teal);"></div>
+      Voor Partners & Zorginstellingen
+    </div>
+
+    <div class="b2b-hero fade-up">
+      <h2 class="b2b-title">Een structurele oplossing voor het tekort aan zorgpersoneel in Nederland.</h2>
+      <p class="b2b-subtitle">Mentora is het technologieplatform dat internationaal medisch talent transformeert in BIG-geregistreerde professionals. Wij bouwen de integratie-infrastructuur die uw kliniek ontzorgt.</p>
+    </div>
+
+    <div class="b2b-grid">
+      <!-- Card 1 -->
+      <div class="b2b-card fade-up d1">
+        <div class="b2b-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        </div>
+        <h3 class="b2b-card-title">Strikte Validatie & Audit</h3>
+        <p class="b2b-card-desc">Wij voeren een grondige audit uit op de medische achtergrond van onze kandidaten. U krijgt alleen toegang tot talent waarvan de diploma’s en ervaring voldoen aan de CIBG-normen.</p>
+      </div>
+      
+      <!-- Card 2 -->
+      <div class="b2b-card fade-up d2">
+        <div class="b2b-icon">
+          <svg viewBox="0 0 24 24"><polyline points="13 2 13 9 22 9"/><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9l-7-7z"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>
+        </div>
+        <h3 class="b2b-card-title">Versnelde Integratie (Pipeline)</h3>
+        <p class="b2b-card-desc">Onze methodiek verkort de weg naar BIG-registratie aanzienlijk. Wij stroomlijnen het proces van intensief medisch Nederlands (C1) tot de beroepsinhoudelijke toetsen (BI).</p>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="b2b-card fade-up d3">
+        <div class="b2b-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h3 class="b2b-card-title">Risicobeheersing & Loyaliteit</h3>
+        <p class="b2b-card-desc">Wij implementeren juridische kaders zoals studiekostenbedingen. Dit waarborgt de return on investment (ROI) en de langdurige loyaliteit van de specialist aan uw instelling.</p>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="b2b-card fade-up d4">
+        <div class="b2b-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"/></svg>
+        </div>
+        <h3 class="b2b-card-title">Focus op Tekortgebieden</h3>
+        <p class="b2b-card-desc">Wij richten ons op regio's met de grootste personele tekorten. Mentora brengt talent en integratie-infrastructuur naar de plekken waar de zorgvraag het hoogst is.</p>
+      </div>
+    </div>
+
+    <!-- Integration Pathway -->
+    <div class="b2b-roadmap-wrapper fade-up">
+      <h3 class="b2b-roadmap-title">De Integratie Roadmap</h3>
+      <div class="b2b-roadmap">
+        <div class="b2b-step">
+          <div class="b2b-step-num">1</div>
+          <div>
+            <div class="b2b-step-title">Selectie & Audit</div>
+            <div class="b2b-step-desc">Screening van internationaal medisch talent en verificatie van opleidingsdocumenten.</div>
+          </div>
+        </div>
+        <div class="b2b-step">
+          <div class="b2b-step-num">2</div>
+          <div>
+            <div class="b2b-step-title">Taal & Adaptatie</div>
+            <div class="b2b-step-desc">Intensief Medisch Nederlands (C1) gecombineerd met culturele training.</div>
+          </div>
+        </div>
+        <div class="b2b-step active">
+          <div class="b2b-step-num">3</div>
+          <div>
+            <div class="b2b-step-title">ANIOS Placement</div>
+            <div class="b2b-step-desc">Klinische inzet als basisarts onder nauwe supervisie (werkervaringsplaats).</div>
+          </div>
+        </div>
+        <div class="b2b-step">
+          <div class="b2b-step-num">4</div>
+          <div>
+            <div class="b2b-step-title">Volledige BIG-registratie</div>
+            <div class="b2b-step-desc">Succesvolle registratie en duurzame inzetbaarheid als erkend specialist.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Final CTA -->
+    <div class="b2b-cta fade-up">
+      <h2 class="b2b-cta-title">Investeer vandaag in de personele continuïteit van uw kliniek.</h2>
+      <div class="b2b-cta-btns">
+        <a href="mailto:business@bigmentor.nl?subject=Business%20Case%20Presentation" class="b2b-btn-primary">Vraag de businesscase presentatie aan</a>
+        <a href="#contact" class="b2b-btn-outline">Spreken met ons partnerteam</a>
+      </div>
+    </div>
+
   </div>
-  <button class="layer-divider-btn" id="toggleBtn" onclick="toggleInvestor()">View Institutional Case Study ↓</button>
 </div>
-
-<!-- LAYER 2: INVESTORS -->
-<div class="investor-layer">
-  <!-- Blur spots for Investor layer -->
-  <div class="blur-spot blur-blue investor-blur-1"></div>
-  <div class="blur-spot blur-teal investor-blur-2"></div>
-
-  <div class="investor-panel" id="investorPanel">
-
-    <div class="layer-tag" style="border-top: 0.5px solid rgba(0,0,0,0.08);">
-      <div class="layer-dot" style="background:#ef9f27;"></div>
-      {{ t('landing_investor_tag', lang)|default('For institutions & investors') }}
-    </div>
-
-    <div style="padding: 52px 40px 0;">
-      <div class="human-statement">
-        <p>{{ t('landing_investor_human', lang)|default('For us, these aren\'t just numbers. They are world-class surgeons and dentists whose expertise is currently being wasted in low-skilled jobs.') }} <em>{{ t('landing_investor_human_em', lang)|default('We bridge the financial and bureaucratic gap to give them back their careers') }}</em>{{ t('landing_investor_human_end', lang)|default(' — and give Dutch healthcare the talent it desperately needs.') }}</p>
-      </div>
-    </div>
-
-    <div class="economic-section">
-      <div class="section-label">{{ t('landing_eco_label', lang)|default('Restoring professional dignity & economic value') }}</div>
-      <div class="section-title" style="max-width: 560px;">{{ t('landing_eco_title', lang)|default('The cost of the broken system — and what fixing it looks like') }}</div>
-      <div class="cost-grid">
-        <div class="cost-card traditional">
-          <div class="cost-label">{{ t('landing_eco_trad', lang)|default('Traditional path') }}</div>
-          <div class="cost-num">€500k</div>
-          <div class="cost-sublabel">{{ t('landing_eco_trad_sub', lang)|default('Training cost from scratch') }}</div>
-          <div class="cost-desc">{{ t('landing_eco_trad_desc', lang)|default('Average cost + 7+ years to train a medical specialist from scratch in the Netherlands.') }}</div>
-        </div>
-        <div class="cost-card mentora">
-          <div class="cost-badge">{{ t('landing_eco_mentora', lang)|default('MENTORA PATH') }}</div>
-          <div class="cost-label">{{ t('landing_eco_mentora_l', lang)|default('Cost of integration support') }}</div>
-          <div class="cost-num">€15k</div>
-          <div class="cost-sublabel">{{ t('landing_eco_mentora_sub', lang)|default('Per experienced specialist') }}</div>
-          <div class="cost-desc">{{ t('landing_eco_mentora_desc', lang)|default('Supporting an already qualified international doctor through the full BIG-registration process via our platform.') }}</div>
-        </div>
-      </div>
-      <div class="cost-saving">{{ t('landing_eco_saving_1', lang)|default('That\'s a') }} <strong>{{ t('landing_eco_saving_2', lang)|default('97% reduction in integration cost') }}</strong>{{ t('landing_eco_saving_3', lang)|default(' — for a specialist who already has 10+ years of clinical experience and just needs the system to recognise it.') }}</div>
-    </div>
-
-    <div class="quote-block" style="position: relative; z-index: 2; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
-      <div class="quote-text">{{ t('landing_quote', lang)|default('"Mentora is not a school. It is a scalable HR-Tech infrastructure that solves the healthcare staffing crisis by digitizing the BIG-registration pathway — connecting verified talent directly to institutions that need them."') }}</div>
-      <div class="quote-src">{{ t('landing_quote_src', lang)|default('— bigmentor.nl') }}</div>
-    </div>
-
-    <div class="pillars-section" style="position: relative; z-index: 2;">
-      <div class="section-label">{{ t('landing_arch', lang)|default('The architecture') }}</div>
-      <div class="section-title">{{ t('landing_arch_3', lang)|default('Three things no one else provides') }}</div>
-      <div class="pillars">
-        <div class="pillar"><div class="pillar-num">01</div><h3>{{ t('landing_p1_t', lang)|default('Structured pathway') }}</h3><p>{{ t('landing_p1_d', lang)|default('A single guided process covering every step from credential validation to BIG registration — no specialist gets lost in bureaucracy.') }}</p></div>
-        <div class="pillar"><div class="pillar-num">02</div><h3>{{ t('landing_p2_t', lang)|default('Verified talent pool') }}</h3><p>{{ t('landing_p2_d', lang)|default('Institutions get access to pre-screened, documented professionals — ready to place, not starting from scratch.') }}</p></div>
-        <div class="pillar"><div class="pillar-num">03</div><h3>{{ t('landing_p3_t', lang)|default('Compliance engine') }}</h3><p>{{ t('landing_p3_d', lang)|default('Document vault, progress tracking, automated reporting — every stakeholder always knows exactly where each candidate stands.') }}</p></div>
-      </div>
-    </div>
-
-    <div class="mock-section" style="position: relative; z-index: 2;">
-      <div class="section-label">{{ t('landing_plat', lang)|default('The platform') }}</div>
-      <div class="section-title" style="margin-bottom: 24px;">{{ t('landing_plat_one', lang)|default('One dashboard. Full integration pipeline.') }}</div>
-      <div class="mock-window">
-        <div class="mock-bar">
-          <div class="dot" style="background:#e24b4a"></div>
-          <div class="dot" style="background:#ef9f27"></div>
-          <div class="dot" style="background:#639922"></div>
-          <span class="mock-url">bigmentor.nl/profile</span>
-        </div>
-        <div class="mock-body">
-          <div class="mock-side">
-            <div class="mock-logo-s">MENTORA</div>
-            <div class="mni a">{{ t('profile', lang)|default('My profile') }}</div>
-            <div class="mni">{{ t('landing_mock_step2', lang)|default('Documents') }}</div>
-            <div class="mni">{{ t('landing_mock_p_status', lang)|default('BIG status') }}</div>
-            <div class="mni">{{ t('exam_preparation', lang)|default('Preparation') }}</div>
-            <div class="mni">{{ t('landing_mock_step4', lang)|default('Placements') }}</div>
-            <div class="mni">{{ t('community', lang)|default('Community') }}</div>
-          </div>
-          <div class="mock-main">
-            <div class="profile-header">
-              <div class="avatar">AK</div>
-              <div><div class="profile-name">Anna Kovalenko, MD</div><div class="profile-role">{{ t('landing_mock_p_role', lang)|default('General practitioner · Ukraine') }}</div></div>
-              <div class="status-pill">{{ t('landing_mock_p_status', lang)|default('BIG in progress') }}</div>
-            </div>
-            <div class="pipeline">
-              <div class="pipe-label">{{ t('landing_mock_pipe', lang)|default('Integration pipeline') }}</div>
-              <div class="pipe-steps">
-                <div class="pipe-step"><div class="pipe-dot done">✓</div><div class="pipe-name">{{ t('landing_mock_step1', lang)|default('Profile') }}</div></div>
-                <div class="pipe-step"><div class="pipe-dot done">✓</div><div class="pipe-name">{{ t('landing_mock_step2', lang)|default('Docs') }}</div></div>
-                <div class="pipe-step"><div class="pipe-dot active">3</div><div class="pipe-name">{{ t('landing_mock_step3', lang)|default('BIG exam') }}</div></div>
-                <div class="pipe-step"><div class="pipe-dot todo">4</div><div class="pipe-name">{{ t('landing_mock_step4', lang)|default('Placement') }}</div></div>
-                <div class="pipe-step"><div class="pipe-dot todo">5</div><div class="pipe-name">{{ t('landing_mock_step5', lang)|default('Registered') }}</div></div>
-              </div>
-            </div>
-            <div class="doc-row"><div class="doc-left"><div class="doc-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="doc-name">{{ t('landing_mock_doc1_t', lang)|default('Medical diploma (apostille)') }}</div><div class="doc-sub">{{ t('landing_mock_doc1_d', lang)|default('Uploaded · Verified') }}</div></div></div><div class="badge ok">{{ t('landing_mock_badge_v', lang)|default('Verified') }}</div></div>
-            <div class="doc-row"><div class="doc-left"><div class="doc-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="doc-name">{{ t('landing_mock_doc2_t', lang)|default('Dutch language certificate') }}</div><div class="doc-sub">{{ t('landing_mock_doc2_d', lang)|default('B2 level required') }}</div></div></div><div class="badge pending">{{ t('landing_mock_badge_p', lang)|default('Pending') }}</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="contact" class="cta-block" style="position: relative; z-index: 2;">
-      <div>
-        <h2>{{ t('landing_cta_t', lang)|default('See the platform.<br><em>Not a deck.</em>')|safe }}</h2>
-        <p>{{ t('landing_cta_d', lang)|default('Register and explore what a working integration pipeline looks like.') }}</p>
-      </div>
-      <div class="cta-btns">
-        <a href="{{ url_for('auth.register', lang=g.lang|default('en')) }}" class="btn-white">{{ t('landing_cta_b1', lang)|default('Explore the platform') }}</a>
-        <a href="mailto:info@bigmentor.nl" class="btn-ghost-dark">{{ t('landing_cta_b2', lang)|default('Get in touch →') }}</a>
-      </div>
-    </div>
 
     <!-- Footer -->
     <footer style="text-align: center; padding: 40px 40px 32px; color: var(--mentora-text-tertiary); font-size: 13px; border-top: 0.5px solid var(--mentora-border); max-width: 1200px; margin: 0 auto;">
@@ -494,19 +684,6 @@
 </div>
 
 <script>
-function toggleInvestor() {
-  const panel = document.getElementById('investorPanel');
-  const btn = document.getElementById('toggleBtn');
-  const isOpen = panel.classList.contains('open');
-  if (isOpen) {
-    panel.classList.remove('open');
-    btn.textContent = 'View Institutional Case Study ↓';
-  } else {
-    panel.classList.add('open');
-    btn.textContent = 'Close ↑';
-  }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     const obs = new IntersectionObserver(entries => {
       entries.forEach(e => {
