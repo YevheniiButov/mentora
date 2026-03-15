@@ -191,10 +191,10 @@
           </div>
           {% else %}
           <!-- Visible Login & Register buttons for guests -->
-          <a href="/{{ lang }}/auth/login" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px; font-weight: 500; font-size: 13px; padding: 0.45rem 1rem; white-space: nowrap;">
+          <a href="{{ url_for('auth.login', lang=g.lang|default('en')) }}" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px; font-weight: 500; font-size: 13px; padding: 0.45rem 1rem; white-space: nowrap;">
             {{ t('login', lang)|default('Log in') }}
           </a>
-          <a href="/{{ lang }}/auth/register" class="btn btn-primary btn-sm" style="border-radius: 8px; font-weight: 500; font-size: 13px; padding: 0.45rem 1rem; white-space: nowrap; background: #4a9eb5; border-color: #4a9eb5;">
+          <a href="{{ url_for('auth.register', lang=g.lang|default('en')) }}" class="btn btn-primary btn-sm" style="border-radius: 8px; font-weight: 500; font-size: 13px; padding: 0.45rem 1rem; white-space: nowrap; background: #4a9eb5; border-color: #4a9eb5;">
             {{ t('register', lang)|default('Register') }}
           </a>
           {% endif %}
