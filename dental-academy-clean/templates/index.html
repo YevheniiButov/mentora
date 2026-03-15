@@ -1,1643 +1,505 @@
 {% extends "base.html" %}
 
 {# --- SEO Meta Tags --- #}
-{% block title %}{{ t('hero_title', g.lang) }}{% endblock %}
-{% block meta_description %}{{ t('hero_subtitle', g.lang) }}{% endblock %}
+{% block title %}Mentora — Integration Platform{% endblock %}
+{% block meta_description %}Connecting international medical talent with the Dutch healthcare ecosystem{% endblock %}
 
 {% block head %}
 {{ super() }}
 <!-- CSRF Token for AJAX requests -->
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <meta name="user-authenticated" content="{{ 'true' if current_user.is_authenticated else 'false' }}">
-<meta name="current-language" content="{{ g.lang }}">
+<meta name="current-language" content="{{ g.lang if g.lang else 'en' }}">
 {% endblock %}
 
 {% block styles %}
 {{ super() }}
-<!-- Optimized Modern Theme CSS -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/modern-theme.css') }}">
-
-<!-- Google Fonts for better typography -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-<!-- Header and sections display fixes -->
 <style>
-/* ===== HEADER FIXES ===== */
-.modern-header {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  z-index: 1000 !important;
-  height: 70px !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(10px) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
-}
+/* Reset for Mentora Landing specific elements */
+.mentora-landing-wrapper *, .mentora-landing-wrapper *::before, .mentora-landing-wrapper *::after { box-sizing: border-box; }
 
-.modern-header .navbar {
-  padding: 0.5rem 0 !important;
-  height: 100% !important;
-  display: flex !important;
-  align-items: center !important;
-}
-
-.modern-header .navbar .container {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  width: 100% !important;
-  max-width: 1200px !important;
-  margin: 0 auto !important;
-  padding: 0 1.5rem !important;
-  height: 100% !important;
-}
-
-.modern-header .navbar-brand {
-  display: flex !important;
-  align-items: center !important;
-  height: 100% !important;
-}
-
-.modern-header .navbar-brand img {
-  height: 40px !important;
-  width: auto !important;
-}
-
-.modern-header .navbar-collapse {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  flex: 1 !important;
-  height: 100% !important;
-}
-
-.modern-header .navbar-nav {
-  display: flex !important;
-  align-items: center !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  list-style: none !important;
-  height: 100% !important;
-}
-
-.modern-header .navbar-actions {
-  display: flex !important;
-  align-items: center !important;
-  margin-left: auto !important;
-  height: 100% !important;
-}
-
-.modern-header .nav-link {
-  display: flex !important;
-  align-items: center !important;
-  padding: 0.5rem 1rem !important;
-  color: #333 !important;
-  text-decoration: none !important;
-  border-radius: 8px !important;
-  transition: all 0.3s ease !important;
-}
-
-.modern-header .nav-link:hover {
-  background: rgba(0, 0, 0, 0.05) !important;
-  color: #3ECDC1 !important;
-}
-
-.modern-header .dropdown-toggle,
-.modern-header .btn {
-  display: flex !important;
-  align-items: center !important;
-  padding: 0.5rem 1rem !important;
-  border-radius: 8px !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
-  background: rgba(255, 255, 255, 0.8) !important;
-  color: #333 !important;
-  text-decoration: none !important;
-  transition: all 0.3s ease !important;
-}
-
-.modern-header .dropdown-toggle:hover,
-.modern-header .btn:hover {
-  background: rgba(255, 255, 255, 1) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-  transform: translateY(-1px) !important;
-}
-
-/* Dark theme for header */
-[data-theme="dark"] .modern-header {
-  background: rgba(42, 58, 79, 0.95) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
-}
-
-[data-theme="dark"] .modern-header .nav-link {
-  color: #f8fafc !important;
-}
-
-[data-theme="dark"] .modern-header .nav-link:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-}
-
-[data-theme="dark"] .modern-header .dropdown-toggle,
-[data-theme="dark"] .modern-header .btn {
-  background: rgba(30, 41, 59, 0.8) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: #f8fafc !important;
-}
-
-/* Мобильная адаптация */
-@media (max-width: 992px) {
-  .modern-header {
-    height: 60px !important;
-  }
-  
-  .modern-header .navbar-brand img {
-    height: 32px !important;
-  }
-  
-  .modern-header .navbar-toggler {
-    display: block !important;
-    border: none !important;
-    background: none !important;
-    padding: 0.25rem !important;
-  }
-  
-  .modern-header .navbar-collapse {
-    position: absolute !important;
-    top: 100% !important;
-    left: 0 !important;
-    right: 0 !important;
-    background: rgba(255, 255, 255, 0.98) !important;
-    backdrop-filter: blur(20px) !important;
-    border-radius: 0 0 16px 16px !important;
-    padding: 1rem !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-    height: auto !important;
-  }
-}
-
-/* ===== CONTENT FIXES ===== */
-/* Ensure all sections are visible */
-.main-content {
-  margin-top: 0 !important;
-  padding-top: 0 !important;
-  height: auto !important;
-  min-height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
-  display: block !important;
-}
-
-/* Секции должны быть видимыми */
-section {
-  display: block !important;
-  opacity: 1 !important;
-  height: auto !important;
-  min-height: auto !important;
-  max-height: none !important;
-  overflow: visible !important;
-  margin-top: 0 !important;
-  position: relative;
-  z-index: 1;
-}
-
-/* Hero section получает нормальный padding-top */
-.hero-section {
-  padding-top: 60px !important;
-  margin-top: 0 !important;
-}
-
-/* Дополнительная специфичность для переопределения external CSS */
-body .hero-section {
-  padding-top: 60px !important;
-}
-
-/* Все контейнеры видимы */
-.container, .container-fluid {
-  display: block !important;
-  height: auto !important;
-  opacity: 1 !important;
-  overflow: visible !important;
-}
-
-/* Show specific sections */
-.features-section,
-.platform-features-section, 
-.benefits-section,
-.cta-section {
-  display: block !important;
-  opacity: 1 !important;
-  height: auto !important;
-  visibility: visible !important;
-  overflow: visible !important;
-  margin-top: 0 !important;
-  padding-top: 3rem !important;
-  padding-bottom: 3rem !important;
-}
-
-/* Phone animation styles */
-
-.device-mockup .screen-slides {
-    display: flex !important;
-    width: 400% !important;
-    height: 100% !important;
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.device-mockup .screen-content {
-    width: 25% !important;
-    flex-shrink: 0 !important;
-}
-
-.device-mockup .indicator {
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
-}
-
-.device-mockup .indicator.active {
-    background: white !important;
-    transform: scale(1.3) !important;
-}
-
-/* Hero section без баннера */
-.hero-section {
-  margin-top: 0 !important;
-}
-
-/* ===== IRT ANNOUNCEMENT STICKER ===== */
-.irt-announcement-sticker {
-  position: fixed;
-  top: 120px;
-  right: 20px;
-  z-index: 1001;
-  max-width: 380px;
-  background: linear-gradient(135deg, #8b5cf6, #ec4899);
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(139, 92, 246, 0.4), 0 10px 30px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  display: none;
-  transform: translateX(100%);
-  animation: none;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.irt-sticker-content {
-  padding: 20px;
-  position: relative;
-  color: white;
-}
-
-.irt-sticker-icon {
-  position: absolute;
-  top: -15px;
-  left: 20px;
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.1));
-  border-radius: 15px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  backdrop-filter: blur(15px);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
-  animation: float 3s ease-in-out infinite;
-}
-
-.irt-sticker-text {
-  margin-left: 60px;
-  margin-bottom: 15px;
-  animation: fadeIn 0.8s ease-out 0.2s both;
-}
-
-.irt-sticker-text h4 {
-  margin: 0 0 8px 0;
-  font-size: 1.2rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #ffffff, #f8fafc);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  text-shadow: none;
-}
-
-.irt-sticker-text p {
-  margin: 0 0 10px 0;
-  font-size: 1rem;
-  font-weight: 600;
-  opacity: 0.95;
-  line-height: 1.5;
-  color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.irt-sticker-note {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 600;
-  opacity: 0.9;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  margin-top: 6px;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 4px 8px;
-  border-radius: 8px;
-  backdrop-filter: blur(10px);
-}
-
-.irt-sticker-close {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
-  color: white;
-  width: 35px;
-  height: 35px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-.irt-sticker-close:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(1.1) rotate(90deg);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
-.irt-sticker-ribbon {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #8b5cf6, #ec4899, #f59e0b, #10b981);
-  background-size: 300% 100%;
-  animation: shimmer 2s ease-in-out infinite;
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideOutRight {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-}
-
-@keyframes shimmer {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Мобильная адаптация для наклейки */
-@media (max-width: 768px) {
-  .irt-announcement-sticker {
-    right: 10px;
-    left: 10px;
-    max-width: none;
-    top: 80px;
-    max-width: 320px;
-  }
-  
-  .irt-sticker-text {
-    margin-left: 55px;
-  }
-  
-  .irt-sticker-text h4 {
-    font-size: 1.1rem;
-  }
-  
-  .irt-sticker-text p {
-    font-size: 0.9rem;
-  }
-  
-  .irt-sticker-icon {
-    width: 45px;
-    height: 45px;
-    font-size: 1.3rem;
-  }
-}
-
-/* ===== DARK THEME SUPPORT FOR HOME PAGE ===== */
-/* Dark theme colors for main page sections */
-[data-theme="dark"] {
-  /* Hero section dark theme */
-  --hero-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-  --hero-text: #f8fafc;
-  --hero-text-secondary: #cbd5e1;
-}
-
-[data-theme="dark"] .hero-section {
-  background: var(--hero-bg) !important;
-  color: var(--hero-text) !important;
-}
-
-[data-theme="dark"] .hero-title,
-[data-theme="dark"] .hero-section h1,
-[data-theme="dark"] .hero-section h2,
-[data-theme="dark"] .hero-section h3 {
-  color: var(--hero-text) !important;
-}
-
-[data-theme="dark"] .hero-subtitle,
-[data-theme="dark"] .hero-section p {
-  color: var(--hero-text-secondary) !important;
-}
-
-[data-theme="dark"] .hero-bg {
-  background: var(--hero-bg) !important;
-}
-
-[data-theme="dark"] .stat-card {
-  background: rgba(30, 41, 59, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: var(--hero-text) !important;
-}
-
-[data-theme="dark"] .stat-number {
-  color: #3ECDC1 !important;
-}
-
-[data-theme="dark"] .stat-label {
-  color: var(--hero-text-secondary) !important;
-}
-
-/* Dark theme for features, benefits, CTA sections */
-[data-theme="dark"] .features-section,
-[data-theme="dark"] .platform-features-section,
-[data-theme="dark"] .benefits-section,
-[data-theme="dark"] .cta-section {
-  background: #0f172a !important;
-  color: var(--hero-text) !important;
-}
-
-[data-theme="dark"] .features-section h2,
-[data-theme="dark"] .platform-features-section h2,
-[data-theme="dark"] .benefits-section h2,
-[data-theme="dark"] .cta-section h2 {
-  color: var(--hero-text) !important;
-}
-
-[data-theme="dark"] .features-section p,
-[data-theme="dark"] .platform-features-section p,
-[data-theme="dark"] .benefits-section p,
-[data-theme="dark"] .cta-section p {
-  color: var(--hero-text-secondary) !important;
-}
-
-[data-theme="dark"] .card {
-  background: #1e293b !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: var(--hero-text) !important;
-}
-
-[data-theme="dark"] .card-title,
-[data-theme="dark"] .card h3,
-[data-theme="dark"] .card h4 {
-  color: var(--hero-text) !important;
-}
-
-[data-theme="dark"] .card-text,
-[data-theme="dark"] .card p {
-  color: var(--hero-text-secondary) !important;
-}
-
-/* Dark theme for buttons */
-[data-theme="dark"] .btn-primary {
-  background: linear-gradient(135deg, #3ECDC1 0%, #6c5ce7 100%) !important;
-  border-color: transparent !important;
-  color: #0f172a !important;
-}
-
-[data-theme="dark"] .btn-primary:hover {
-  background: linear-gradient(135deg, #2db5a7 0%, #5a4fcf 100%) !important;
-  transform: translateY(-2px) !important;
-  box-shadow: 0 8px 20px rgba(62, 205, 193, 0.4) !important;
-}
-
-[data-theme="dark"] .btn-secondary {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  color: var(--hero-text) !important;
-}
-
-[data-theme="dark"] .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
-  color: #ffffff !important;
-}
-
-/* Dark theme for mobile navbar collapse */
-[data-theme="dark"] .modern-header .navbar-collapse {
-  background: rgba(15, 23, 42, 0.98) !important;
-}
-
-/* Dark theme for device mockup and screen content */
-[data-theme="dark"] .device-mockup {
-  background: #1e293b !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-[data-theme="dark"] .device-screen,
-[data-theme="dark"] .screen-content {
-  background: #0f172a !important;
-  color: var(--hero-text) !important;
-}
-
-[data-theme="dark"] .app-title,
-[data-theme="dark"] .screen-content h3,
-[data-theme="dark"] .screen-content h4 {
-  color: var(--hero-text) !important;
-}
-
-[data-theme="dark"] .app-subtitle,
-[data-theme="dark"] .screen-content p {
-  color: var(--hero-text-secondary) !important;
-}
-
-[data-theme="dark"] .feature-card {
-  background: rgba(30, 41, 59, 0.6) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-[data-theme="dark"] .question-card,
-[data-theme="dark"] .patient-card {
-  background: #1e293b !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Dark theme for benefit cards and platform features */
-[data-theme="dark"] .benefit-card,
-[data-theme="dark"] .platform-feature {
-  background: rgba(30, 41, 59, 0.6) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: var(--hero-text) !important;
-}
-
-[data-theme="dark"] .benefit-card:hover,
-[data-theme="dark"] .platform-feature:hover {
-  background: rgba(30, 41, 59, 0.8) !important;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5) !important;
-}
-
-[data-theme="dark"] .benefit-title,
-[data-theme="dark"] .platform-title {
-  color: var(--hero-text) !important;
-}
-
-[data-theme="dark"] .benefit-description,
-[data-theme="dark"] .platform-description {
-  color: var(--hero-text-secondary) !important;
-}
-
-[data-theme="dark"] .benefit-icon,
-[data-theme="dark"] .platform-icon {
-  background: linear-gradient(135deg, #3ECDC1 0%, #6c5ce7 100%) !important;
-  box-shadow: 0 8px 20px rgba(62, 205, 193, 0.3) !important;
-}
-
-/* Dark theme for CTA section - keep gradient but adjust text */
-[data-theme="dark"] .cta-section {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%) !important;
-}
-
-[data-theme="dark"] .cta-card {
-  background: rgba(15, 23, 42, 0.7) !important;
-  border-color: rgba(62, 205, 193, 0.3) !important;
-}
-
-[data-theme="dark"] .cta-title,
-[data-theme="dark"] .cta-section h2 {
-  color: #ffffff !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
-}
-
-[data-theme="dark"] .cta-description {
-  color: rgba(255, 255, 255, 0.95) !important;
-}
-
-/* Dark theme for progress bars and dashboard elements */
-[data-theme="dark"] .progress-bar {
-  background: rgba(51, 65, 85, 0.5) !important;
-}
-
-[data-theme="dark"] .progress-fill {
-  background: linear-gradient(135deg, #3ECDC1 0%, #6c5ce7 100%) !important;
-}
-
-[data-theme="dark"] .dashboard-stats .stat-card {
-  background: rgba(30, 41, 59, 0.8) !important;
-  border-color: rgba(62, 205, 193, 0.2) !important;
-}
-
-[data-theme="dark"] .progress-list,
-[data-theme="dark"] .progress-item {
-  background: transparent !important;
-  color: var(--hero-text) !important;
-}
-
-/* Dark theme for answer options */
-[data-theme="dark"] .answer-option {
-  background: rgba(30, 41, 59, 0.8) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: var(--hero-text) !important;
-}
-
-[data-theme="dark"] .answer-option:hover {
-  background: rgba(51, 65, 85, 0.8) !important;
-  border-color: rgba(62, 205, 193, 0.5) !important;
-}
-
-[data-theme="dark"] .answer-option.correct {
-  background: rgba(16, 185, 129, 0.2) !important;
-  border-color: rgba(16, 185, 129, 0.5) !important;
-}
-
-/* Dark theme for floating particles and shapes */
-[data-theme="dark"] .floating-particles::before,
-[data-theme="dark"] .floating-shape {
-  opacity: 0.3 !important;
-}
-
-/* Dark theme for body background */
-[data-theme="dark"] body {
-  background: #0f172a !important;
-  color: var(--hero-text) !important;
-}
-
-/* Dark theme for main content wrapper */
-[data-theme="dark"] .main-content {
-  background: #0f172a !important;
-}
-
-/* ===== HALLOWEEN THEME ===== */
-/* Halloween Colors */
 :root {
-  --halloween-orange: #ff8c00;
-  --halloween-purple: #663399;
-  --halloween-dark: #1a1a2e;
+  --teal: #4a9eb5;
+  --teal-dim: rgba(74,158,181,0.12);
+  --teal-border: rgba(74,158,181,0.35);
+  --dark: #1a1a2e;
+  --mentora-text: #1a202c;
+  --mentora-text-secondary: #64748b;
+  --mentora-text-tertiary: #94a3b8;
+  --mentora-bg: #ffffff;
+  --mentora-bg-secondary: #f8fafc;
+  --mentora-border: rgba(0,0,0,0.08);
+  --mentora-border-mid: rgba(0,0,0,0.12);
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'DM Serif Display', serif;
 }
 
-/* Flying Halloween Elements */
-@keyframes float {
-  0% { transform: translateY(0px) rotate(0deg); opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
+.mentora-landing-wrapper { 
+  font-family: var(--font-body); 
+  color: var(--mentora-text); 
+  background-color: var(--mentora-bg);
+  background-image: 
+      radial-gradient(at 0% 0%, rgba(74, 158, 181, 0.07) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(26, 26, 46, 0.03) 0px, transparent 50%);
+  background-attachment: fixed;
+  overflow-x: hidden; 
+  -webkit-font-smoothing: antialiased; 
 }
+.mentora-landing-wrapper a { text-decoration: none; }
+.mentora-landing-wrapper p { margin-bottom: 0; }
 
-.halloween-element {
-  position: fixed;
-  font-size: 3rem;
-  animation: float linear infinite;
-  pointer-events: none;
-  z-index: 1;
+.fade-up { opacity: 0; transform: translateY(20px); transition: all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+.fade-up.d1 { transition-delay: 0.1s; }
+.fade-up.d2 { transition-delay: 0.2s; }
+.fade-up.d3 { transition-delay: 0.3s; }
+.fade-up.d4 { transition-delay: 0.4s; }
+
+/* LAYER TAG */
+.layer-tag {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 16px 6px 40px;
+  font-size: 11px; letter-spacing: 2px; font-weight: 500;
+  color: var(--mentora-text-tertiary); text-transform: uppercase;
+  border-bottom: 0.5px solid var(--mentora-border);
+  background: var(--mentora-bg-secondary);
 }
+.layer-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
-/* Animated Eyes */
-@keyframes blink {
-  0%, 49%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(0.1); }
+/* HERO */
+.hero { padding: 88px 40px 72px; max-width: 900px; margin: 0 auto; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: 2px; font-weight: 500; color: var(--teal);
+  border: 0.5px solid var(--teal-border); padding: 5px 14px;
+  border-radius: 20px; margin-bottom: 28px; text-transform: uppercase;
 }
-
-.eye {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background: black;
-  border-radius: 50%;
-  animation: blink 3s infinite;
-  margin: 0 3px;
+.tag-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: 52px; font-weight: 400; line-height: 1.1;
+  letter-spacing: -0.5px; margin-bottom: 22px;
 }
+.hero h1 em { color: var(--teal); font-style: italic; }
+.hero p { font-size: 17px; color: var(--mentora-text-secondary); line-height: 1.75; max-width: 560px; margin-bottom: 38px; font-weight: 300; }
+.hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn-primary { background: var(--teal); color: #fff; border: none; padding: 14px 30px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--font-body); text-decoration: none; display: inline-block; }
+.btn-primary:hover { color: #fff; opacity: 0.9; }
+.btn-outline { background: transparent; color: var(--mentora-text-secondary); border: 0.5px solid var(--mentora-border-mid); padding: 14px 30px; border-radius: var(--radius-md); font-size: 14px; cursor: pointer; font-family: var(--font-body); text-decoration: none; display: inline-block; }
+.btn-outline:hover { color: var(--mentora-text); background: rgba(0,0,0,0.02); }
+.hero-sub { font-size: 12px; color: var(--mentora-text-tertiary); margin-top: 16px; }
 
-/* Cobweb Animation */
-@keyframes crawl {
-  0% { transform: translateX(0) translateY(0); }
-  50% { transform: translateX(10px) translateY(10px); }
-  100% { transform: translateX(0) translateY(0); }
+/* BRIDGE */
+.bridge-section { padding: 64px 40px; background: var(--mentora-bg-secondary); border-top: 0.5px solid var(--mentora-border); border-bottom: 0.5px solid var(--mentora-border); }
+.section-label { font-size: 11px; letter-spacing: 2px; color: var(--mentora-text-tertiary); text-transform: uppercase; margin-bottom: 12px; font-weight: 500; }
+.section-title { font-family: var(--font-display); font-size: 30px; font-weight: 400; margin-bottom: 36px; line-height: 1.2; }
+.bridge { display: grid; grid-template-columns: 1fr 72px 1fr; align-items: center; max-width: 720px; margin: 0 auto; }
+.bridge-col-title { font-size: 11px; font-weight: 500; color: var(--mentora-text-tertiary); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px; }
+.bridge-cards { display: flex; flex-direction: column; gap: 8px; }
+.bcard { background: var(--mentora-bg); border: 0.5px solid var(--mentora-border); border-radius: var(--radius-md); padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+.bcard.rs { border-left: 2px solid rgba(74,158,181,0.35); }
+.bcard-icon { width: 28px; height: 28px; border-radius: 6px; background: var(--teal-dim); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.bcard-icon svg { width: 14px; height: 14px; stroke: var(--teal); fill: none; stroke-width: 1.5; }
+.bcard-name { font-size: 12px; font-weight: 500; margin-bottom: 0; }
+.bcard-sub { font-size: 11px; color: var(--mentora-text-tertiary); }
+.bridge-center { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.bridge-line { width: 1px; height: 36px; background: rgba(74,158,181,0.3); }
+.bridge-m { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--teal); display: flex; align-items: center; justify-content: center; font-size: 9px; letter-spacing: 1.5px; font-weight: 500; color: var(--teal); background: var(--mentora-bg); }
+
+/* PATHWAY */
+.pathway-section { padding: 72px 40px; max-width: 1200px; margin: 0 auto; }
+.pathways { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 32px; }
+.pcard { border: 0.5px solid var(--mentora-border); border-radius: var(--radius-xl); padding: 22px; background: var(--mentora-bg); }
+.pcard-step { font-size: 11px; color: var(--teal); font-weight: 500; margin-bottom: 10px; letter-spacing: 1px; }
+.pcard h3 { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+.pcard p { font-size: 12px; color: var(--mentora-text-secondary); line-height: 1.65; }
+.pcard-arrow { font-size: 18px; color: rgba(74,158,181,0.3); margin-top: 12px; }
+
+/* BROKEN SYSTEM */
+.broken-section { padding: 72px 40px; border-top: 0.5px solid var(--mentora-border); max-width: 1200px; margin: 0 auto; position: relative; z-index: 2; }
+.broken-title { font-family: var(--font-display); font-size: 36px; font-weight: 400; margin-bottom: 18px; line-height: 1.2; }
+.broken-title em { color: var(--teal); font-style: italic; }
+.broken-lead { font-size: 16px; color: var(--mentora-text-secondary); line-height: 1.75; max-width: 620px; margin-bottom: 40px; font-weight: 300; }
+.broken-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; }
+.broken-card { border: 0.5px solid var(--mentora-border); border-radius: var(--radius-xl); padding: 24px; background: var(--mentora-bg); position: relative; overflow: hidden; }
+.broken-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: rgba(74,158,181,0.25); }
+.broken-num { font-family: var(--font-display); font-size: 40px; font-weight: 400; color: var(--teal); line-height: 1; margin-bottom: 8px; }
+.broken-desc { font-size: 12px; color: var(--mentora-text-secondary); line-height: 1.65; }
+.broken-conclusion { padding: 20px 24px; background: var(--mentora-bg-secondary); border: 0.5px solid var(--mentora-border); border-radius: var(--radius-md); max-width: 700px; }
+.broken-conclusion p { font-size: 14px; color: var(--mentora-text-secondary); line-height: 1.75; }
+.broken-conclusion strong { color: var(--teal); font-weight: 500; }
+
+/* LAYER DIVIDER */
+.layer-divider {
+  margin: 32px 40px;
+  padding: 28px 32px;
+  background: var(--dark);
+  border-radius: var(--radius-xl);
+  display: flex; align-items: center; justify-content: space-between; gap: 24px; max-width: 1200px; margin-left: auto; margin-right: auto;
 }
+.layer-divider-left strong { color: #fff; font-size: 15px; display: block; margin-bottom: 5px; font-weight: 500; }
+.layer-divider-left p { font-size: 13px; color: #8fa8b4; max-width: 440px; line-height: 1.65; margin-bottom: 0; }
+.layer-divider-btn { font-size: 13px; font-weight: 500; color: var(--teal); background: rgba(74,158,181,0.12); border: 0.5px solid var(--teal-border); padding: 12px 24px; border-radius: var(--radius-md); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background 0.2s; font-family: var(--font-body); }
+.layer-divider-btn:hover { background: rgba(74,158,181,0.2); }
 
-.cobweb {
-  position: fixed;
-  opacity: 0.9;
-  font-size: 2.5rem;
-  animation: crawl 4s infinite;
-  z-index: 1000;
-  pointer-events: none;
-  filter: drop-shadow(0 0 5px rgba(255, 140, 0, 0.5));
-}
-
-.cobweb-top-left {
-  top: 10px;
-  left: 10px;
-}
-
-.cobweb-top-right {
-  top: 10px;
-  right: 10px;
-}
-
-.cobweb-bottom-left {
-  bottom: 10px;
-  left: 10px;
-}
-
-.cobweb-bottom-right {
-  bottom: 10px;
-  right: 10px;
-}
-
-/* Spooky Glow Effect */
-.spooky-glow {
-  text-shadow: 0 0 10px var(--halloween-orange),
-               0 0 20px var(--halloween-purple);
-}
-
-/* Halloween Card Style */
-.halloween-card {
-  border: 3px solid var(--halloween-orange) !important;
-  box-shadow: 0 0 20px rgba(255, 140, 0, 0.3),
-              inset 0 0 20px rgba(102, 51, 153, 0.1) !important;
-  background: linear-gradient(135deg, rgba(255, 140, 0, 0.05), rgba(102, 51, 153, 0.05)) !important;
-}
-
-/* Zombie Helper Button */
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 5px var(--halloween-orange); }
-  50% { box-shadow: 0 0 20px var(--halloween-orange); }
-}
-
-.zombie-helper {
-  display: inline-block;
-  padding: 8px 12px;
-  background: var(--halloween-orange);
-  color: white;
-  border-radius: 20px;
-  font-size: 12px;
-  cursor: pointer;
-  animation: pulse-glow 2s infinite;
-  margin-top: 10px;
-  transition: all 0.3s ease;
-}
-
-.zombie-helper:hover {
-  transform: scale(1.1);
-  filter: brightness(1.2);
-}
-
-/* Zombie Tooltip */
-.zombie-tooltip {
-  position: absolute;
-  background: var(--halloween-purple);
-  color: white;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 12px;
-  display: none;
-  z-index: 1000;
-  white-space: nowrap;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
-
-.zombie-tooltip.show {
-  display: block;
-  animation: slideIn 0.3s ease;
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Halloween Button Effects */
-.btn-modern {
+/* INVESTOR PANEL */
+.investor-layer { 
+  background-color: var(--mentora-bg-secondary);
+  background-image: linear-gradient(rgba(74, 158, 181, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(74, 158, 181, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
   position: relative;
-  overflow: hidden;
 }
+.investor-panel { overflow: hidden; max-height: 0; transition: max-height 0.75s cubic-bezier(0.4,0,0.2,1), opacity 0.5s ease; opacity: 0; position: relative; z-index: 2; }
+.investor-panel.open { max-height: 3500px; opacity: 1; overflow: visible; padding-bottom: 40px; }
 
-.btn-modern::before {
+/* BLUR SPOTS */
+.blur-spot {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.4;
+}
+.blur-teal { background: var(--teal); }
+.blur-blue { background: #2b5c8f; }
+
+.hero-blur-1 { top: -100px; left: -100px; width: 400px; height: 400px; opacity: 0.15; }
+.hero-blur-2 { top: 20%; right: -150px; width: 500px; height: 500px; opacity: 0.1; }
+.investor-blur-1 { top: 10%; right: -10%; width: 600px; height: 600px; opacity: 0.25; }
+.investor-blur-2 { bottom: 10%; left: -5%; width: 500px; height: 500px; opacity: 0.2; }
+
+.human-statement { margin: 0 40px; padding: 28px 32px; border-left: 3px solid var(--teal); background: var(--mentora-bg); border-radius: 0 var(--radius-xl) var(--radius-xl) 0; position: relative; z-index: 2; box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+.human-statement p { font-family: var(--font-display); font-size: 17px; color: var(--mentora-text); line-height: 1.75; font-style: italic; margin-bottom: 0; }
+.human-statement p em { color: var(--teal); font-style: normal; font-weight: 400; }
+
+.economic-section { padding: 56px 40px 40px; max-width: 1200px; margin: 0 auto;}
+.cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 36px; max-width: 680px; }
+.cost-card { padding: 28px; border-radius: var(--radius-xl); }
+.cost-card.traditional { border: 0.5px solid var(--mentora-border); background: var(--mentora-bg); }
+.cost-card.mentora { border: 1.5px solid var(--teal); background: var(--mentora-bg); position: relative; }
+.cost-badge { position: absolute; top: 14px; right: 14px; font-size: 9px; letter-spacing: 1.5px; font-weight: 500; color: var(--teal); background: var(--teal-dim); padding: 3px 8px; border-radius: 20px; }
+.cost-label { font-size: 11px; color: var(--mentora-text-tertiary); margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+.cost-num { font-family: var(--font-display); font-size: 44px; font-weight: 400; line-height: 1; margin-bottom: 8px; }
+.cost-card.traditional .cost-num { color: var(--mentora-text-secondary); }
+.cost-card.mentora .cost-num { color: var(--teal); }
+.cost-sublabel { font-size: 10px; color: var(--mentora-text-tertiary); margin-bottom: 10px; }
+.cost-desc { font-size: 12px; color: var(--mentora-text-secondary); line-height: 1.65; }
+.cost-saving { margin-top: 20px; max-width: 680px; padding: 16px 22px; background: rgba(74,158,181,0.07); border: 0.5px solid var(--teal-border); border-radius: var(--radius-md); font-size: 13px; color: var(--mentora-text-secondary); line-height: 1.65; }
+.cost-saving strong { color: var(--teal); }
+
+.quote-block { margin: 0 40px 48px; padding: 30px 36px; background: var(--mentora-bg); border: 0.5px solid var(--mentora-border); border-radius: var(--radius-xl); border-left: 3px solid var(--teal); max-width: 1200px; margin-left: auto; margin-right: auto;}
+.quote-text { font-family: var(--font-display); font-size: 16px; color: var(--mentora-text); line-height: 1.8; font-style: italic; }
+.quote-src { font-size: 12px; color: var(--mentora-text-tertiary); margin-top: 12px; }
+
+.pillars-section { padding: 0 40px 56px; max-width: 1200px; margin: 0 auto; }
+.pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; }
+.pillar { border: 0.5px solid var(--mentora-border); border-radius: var(--radius-xl); padding: 26px; background: var(--mentora-bg); position: relative; }
+.pillar:not(:last-child)::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 140, 0, 0.3), transparent);
-  transition: left 0.5s;
-}
-
-.btn-modern:hover::before {
-  left: 100%;
-}
-
-/* Halloween Section Titles */
-.section-title {
-  position: relative;
-}
-
-.section-title::after {
-  content: '🎃';
-  position: absolute;
-  right: -30px;
   top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.5rem;
-  animation: float 3s ease-in-out infinite;
+  right: -16px;
+  width: 16px;
+  height: 1px;
+  background: var(--mentora-border);
+}
+.pillar-num { font-size: 11px; color: var(--teal); font-weight: 500; margin-bottom: 12px; letter-spacing: 1px; }
+.pillar h3 { font-size: 15px; font-weight: 500; margin-bottom: 8px; }
+.pillar p { font-size: 12px; color: var(--mentora-text-secondary); line-height: 1.65; }
+
+/* MOCK WINDOW */
+.mock-section { padding: 0 40px 56px; max-width: 1200px; margin: 0 auto; }
+.mock-window { background: var(--mentora-bg-secondary); border: 0.5px solid var(--mentora-border); border-radius: var(--radius-xl); overflow: hidden; }
+.mock-bar { padding: 10px 16px; background: #f1f5f9; border-bottom: 0.5px solid var(--mentora-border); display: flex; align-items: center; gap: 6px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; }
+.mock-url { font-size: 11px; color: var(--mentora-text-tertiary); background: var(--mentora-bg); border: 0.5px solid var(--mentora-border); border-radius: 4px; padding: 3px 12px; margin-left: 8px; font-family: monospace; }
+.mock-body { padding: 20px; display: grid; grid-template-columns: 160px 1fr; gap: 16px; min-height: 270px; }
+.mock-side { background: var(--dark); border-radius: var(--radius-md); padding: 14px 10px; }
+.mock-logo-s { font-size: 10px; letter-spacing: 2px; color: var(--teal); font-weight: 500; margin-bottom: 18px; padding: 0 4px; }
+.mni { font-size: 11px; padding: 6px 8px; border-radius: 4px; color: #8fa8b4; margin-bottom: 3px; }
+.mni.a { background: rgba(74,158,181,0.15); color: var(--teal); }
+.mock-main { display: flex; flex-direction: column; gap: 10px; }
+.profile-header { background: var(--mentora-bg); border: 0.5px solid var(--mentora-border); border-radius: var(--radius-md); padding: 12px 14px; display: flex; align-items: center; gap: 12px; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--teal-dim); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; color: var(--teal); flex-shrink: 0; }
+.profile-name { font-size: 12px; font-weight: 500; margin-bottom: 2px; }
+.profile-role { font-size: 10px; color: var(--mentora-text-tertiary); }
+.status-pill { font-size: 9px; padding: 3px 9px; border-radius: 20px; background: var(--teal-dim); color: var(--teal); font-weight: 500; margin-left: auto; }
+.pipeline { background: var(--mentora-bg); border: 0.5px solid var(--mentora-border); border-radius: var(--radius-md); padding: 12px 14px; }
+.pipe-label { font-size: 9px; color: var(--mentora-text-tertiary); margin-bottom: 10px; }
+.pipe-steps { display: flex; }
+.pipe-step { flex: 1; text-align: center; position: relative; }
+.pipe-step:not(:last-child)::after { content:''; position:absolute; top:10px; right:-50%; width:100%; height:1px; background: var(--mentora-border); }
+.pipe-dot { width: 20px; height: 20px; border-radius: 50%; margin: 0 auto 5px; display: flex; align-items: center; justify-content: center; font-size: 8px; position: relative; z-index: 1; }
+.pipe-dot.done { background: var(--teal); color: #fff; }
+.pipe-dot.active { background: var(--teal-dim); border: 1.5px solid var(--teal); color: var(--teal); }
+.pipe-dot.todo { background: var(--mentora-bg-secondary); border: 0.5px solid var(--mentora-border); color: var(--mentora-text-tertiary); }
+.pipe-name { font-size: 8px; color: var(--mentora-text-tertiary); }
+.doc-row { background: var(--mentora-bg); border: 0.5px solid var(--mentora-border); border-radius: var(--radius-md); padding: 9px 14px; display: flex; align-items: center; justify-content: space-between; }
+.doc-left { display: flex; align-items: center; gap: 8px; }
+.doc-icon { width: 26px; height: 26px; border-radius: 5px; background: var(--teal-dim); display: flex; align-items: center; justify-content: center; }
+.doc-icon svg { width: 13px; height: 13px; stroke: var(--teal); fill: none; stroke-width: 1.5; }
+.doc-name { font-size: 11px; font-weight: 500; margin-bottom:0; }
+.doc-sub { font-size: 9px; color: var(--mentora-text-tertiary); }
+.badge { font-size: 9px; padding: 3px 8px; border-radius: 20px; font-weight: 500; }
+.badge.ok { background: rgba(30,180,100,0.1); color: #1e9e5a; }
+.badge.pending { background: rgba(239,159,39,0.12); color: #ba7517; }
+
+/* CTA */
+.cta-block { margin: 0 40px 72px; background: var(--dark); border-radius: var(--radius-xl); padding: 56px 48px; display: flex; align-items: center; justify-content: space-between; gap: 32px; max-width: 1200px; margin-left: auto; margin-right: auto; }
+.cta-block h2 { font-family: var(--font-display); font-size: 32px; font-weight: 400; color: #fff; line-height: 1.25; max-width: 400px; margin-bottom:0; }
+.cta-block h2 em { color: var(--teal); font-style: italic; }
+.cta-block p { font-size: 13px; color: #8fa8b4; margin-top: 10px; line-height: 1.65; }
+.btn-white { background: #fff; color: var(--dark); border: none; padding: 14px 30px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font-body); text-decoration: none; display: inline-block; }
+.btn-white:hover { background: #f8fafc; color: var(--dark); opacity:0.95; }
+.btn-ghost-dark { background: transparent; color: #8fa8b4; border: 0.5px solid rgba(255,255,255,0.18); padding: 14px 30px; border-radius: var(--radius-md); font-size: 13px; cursor: pointer; font-family: var(--font-body); text-decoration: none; display: inline-block; text-align: center; }
+.btn-ghost-dark:hover { color: #fff; background: rgba(255,255,255,0.05); }
+.cta-btns { display: flex; flex-direction: column; gap: 10px; }
+
+/* Responsive Adjustments */
+@media (max-width: 900px) {
+  .pathways { grid-template-columns: 1fr 1fr; }
+  .broken-grid { grid-template-columns: 1fr; }
+  .layer-divider { flex-direction: column; text-align: center; gap: 16px; padding: 24px; }
+  .cta-block { flex-direction: column; text-align: center; padding: 40px 24px; }
+  .bridge { grid-template-columns: 1fr; gap: 24px; }
+  .bridge-center { display: flex; flex-direction: row; gap: 16px; padding: 16px 0; justify-content: center; }
+  .bridge-line { width: 36px; height: 1px; }
+  .cost-grid { grid-template-columns: 1fr; }
+  .pillars { grid-template-columns: 1fr; }
+  .pillar:not(:last-child)::after { top: auto; bottom: -16px; left: 50%; width: 1px; height: 16px; }
+  .mock-body { grid-template-columns: 1fr; }
 }
 
-/* Progress Bar Styles */
-.anatomy-progress {
-  width: 92%;
+@media (max-width: 600px) {
+  .pathways { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 40px; }
 }
-
-.physiology-progress {
-  width: 78%;
-}
-
-.radiology-progress {
-  width: 65%;
-}
-
-/* Mobile Halloween Adjustments */
-@media (max-width: 768px) {
-  .halloween-element {
-    font-size: 2rem;
-  }
-  
-  .cobweb {
-    font-size: 1.5rem;
-  }
-  
-  .section-title::after {
-    display: none;
-  }
-}
-</style>
-<!-- Overrides: remove remaining Halloween visuals -->
-<style>
-  .halloween-element, .cobweb { display: none !important; }
-  .section-title::after { content: none !important; }
-  .btn-modern::before { background: linear-gradient(90deg, transparent, transparent, transparent) !important; }
-  .halloween-card, .halloween-badge, .halloween-badge-secondary, .spooky-glow { all: unset; }
 </style>
 {% endblock %}
-
-{% block top_banner %}{% endblock %}
 
 {% block content %}
+<div class="mentora-landing-wrapper" style="position: relative;">
 
-<!-- Halloween decorations removed per request -->
+<!-- LAYER 1: SPECIALISTS -->
+<div class="layer-tag" style="position: relative; z-index: 2;">
+  <div class="layer-dot" style="background:#4a9eb5;"></div>
+  {{ t('landing_for_specialists', lang)|default('For medical specialists') }}
+</div>
 
-{# === HERO SECTION === #}
-<section class="hero-section">
-  <!-- Background Effects (Reduced) -->
-  <div class="hero-bg"></div>
-  
-  <!-- Reduced Animated Particles (only for desktop) -->
-  <div class="floating-particles d-none d-lg-block"></div>
-  
-  <!-- Simplified Morphing Shapes (only 3 instead of 6) -->
-  <div class="floating-shape shape-1 d-none d-xl-block"></div>
-  <div class="floating-shape shape-2 d-none d-xl-block"></div>
-  <div class="floating-shape shape-3 d-none d-xl-block"></div>
-  
-  <div class="container">
-    <div class="hero-content">
-      <!-- Left Column: Text Content -->
-      <div class="hero-text" data-animate="fadeInLeft">
-        <h1 class="hero-title">
-          {{ t('hero_title', g.lang) }}
-        </h1>
-        
-        <p class="hero-subtitle">
-          {{ t('hero_subtitle', g.lang) }}
-        </p>
-        
-        <div class="hero-buttons">
-          {% if not current_user.is_authenticated %}
-            <a href="{{ url_for('auth.login', lang=g.lang) }}" class="btn-modern btn-primary">
-              <i class="bi bi-box-arrow-in-right me-2"></i>
-              {{ t('login', g.lang) }}
-            </a>
-            <a href="{{ url_for('auth.quick_register', lang=g.lang) }}" class="btn-modern btn-secondary">
-              <i class="bi bi-person-plus me-2"></i>
-              {{ t('register', g.lang) }}
-            </a>
-            <a href="{{ url_for('main.how_it_works', lang=g.lang) }}" class="btn-modern btn-secondary">
-              <i class="bi bi-lightbulb me-2"></i>
-              {{ t('how_it_works_link', g.lang) }}
-            </a>
-            <a href="https://forms.gle/854qVK1xYYa6npBb6"
-               class="btn-modern btn-secondary"
-               target="_blank"
-               rel="noopener noreferrer">
-              <i class="bi bi-ui-checks me-2"></i>
-              {{ t('fill_questionnaire', g.lang) }}
-            </a>
-          {% else %}
-            <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="btn-modern btn-primary btn-lg">
-              <i class="bi bi-play-circle"></i>
-              {{ t('continue_learning', g.lang) }}
-            </a>
-            <a href="https://forms.gle/854qVK1xYYa6npBb6"
-               class="btn-modern btn-secondary btn-lg"
-               target="_blank"
-               rel="noopener noreferrer">
-              <i class="bi bi-ui-checks me-2"></i>
-              {{ t('fill_questionnaire', g.lang) }}
-            </a>
-          {% endif %}
-        </div>
-        
-        <!-- Realistic Statistics -->
-        <div class="stats-grid">
-          <div class="stat-card" data-animate="fadeInUp">
-            <div class="stat-number">BIG</div>
-            <div class="stat-label">{{ t('exam_preparation', g.lang) }}</div>
-          </div>
-          <div class="stat-card" data-animate="fadeInUp">
-            <div class="stat-number">8</div>
-            <div class="stat-label">{{ t('languages_supported', g.lang) }}</div>
-          </div>
-          <div class="stat-card" data-animate="fadeInUp">
-            <div class="stat-number">24/7</div>
-            <div class="stat-label">{{ t('availability', g.lang) }}</div>
-          </div>
-        </div>
+<div id="specialists" class="hero" style="position: relative; z-index: 2;">
+  <!-- Blur spots for Hero -->
+  <div class="blur-spot blur-teal hero-blur-1"></div>
+  <div class="blur-spot blur-blue hero-blur-2"></div>
+
+  <div class="hero-tag fade-up visible" style="position: relative; z-index: 2;"><span class="tag-dot"></span>{{ t('landing_hero_tag', lang)|default('Integration platform · Netherlands') }}</div>
+  <h1 class="fade-up visible d1">{{ t('landing_bridge_to', lang)|default('The Bridge to Your') }}<br>{{ t('landing_medical_future', lang)|default('Medical Future in') }}<br><em>{{ t('landing_netherlands', lang)|default('the Netherlands.') }}</em></h1>
+  <p class="fade-up visible d2">{{ t('landing_hero_desc', lang)|default('Connecting international medical talent with the Dutch healthcare ecosystem — through technology, language, and clinical practice.') }}</p>
+  <div class="hero-btns fade-up visible d3">
+    <!-- Both buttons go to register -->
+    <a href="{{ url_for('auth.register', lang=g.lang|default('en')) }}" class="btn-primary">{{ t('landing_apply_spec', lang)|default('Apply as a Specialist') }}</a>
+    <a href="#institutions" class="btn-outline" onclick="document.getElementById('institutions').scrollIntoView({behavior:'smooth'}); return false;">{{ t('landing_partner_with_us', lang)|default('Partner with us ↘') }}</a>
+  </div>
+  <div class="hero-sub fade-up visible d4">{{ t('landing_hero_sub', lang)|default('Available in 9 languages · Active candidates onboard') }}</div>
+</div>
+
+<div class="bridge-section" style="position: relative; z-index: 2;">
+  <div class="section-label fade-up">{{ t('landing_what_connect', lang)|default('What we connect') }}</div>
+  <div class="bridge fade-up d1">
+    <div>
+      <div class="bridge-col-title">{{ t('landing_specialists', lang)|default('Specialists') }}</div>
+      <div class="bridge-cards">
+        <div class="bcard"><div class="bcard-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="bcard-name">{{ t('landing_surgeons', lang)|default('Surgeons') }}</div><div class="bcard-sub">{{ t('landing_non_eu', lang)|default('Non-EU diploma') }}</div></div></div>
+        <div class="bcard"><div class="bcard-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="bcard-name">{{ t('landing_dentists', lang)|default('Dentists') }}</div><div class="bcard-sub">{{ t('landing_big_pending', lang)|default('BIG process pending') }}</div></div></div>
+        <div class="bcard"><div class="bcard-icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div><div class="bcard-name">{{ t('landing_gps_nurses', lang)|default('GPs & nurses') }}</div><div class="bcard-sub">{{ t('landing_active_nl', lang)|default('Active in NL') }}</div></div></div>
       </div>
-      
-<!-- Right Column: Animated Phone with Screen Switching -->
-<div class="hero-visual" data-animate="fadeInRight">
-  <!-- Floating Particles Container -->
-  <div class="particles-container" id="particles"></div>
-  
-  <div class="app-showcase">
-    <div class="device-mockup">
-      <div class="device-screen">
-        <div class="screen-slides" id="screenSlides">
-          <!-- Screen 1: Main Features -->
-          <div class="screen-content">
-            <div class="app-header">
-              <h3 class="app-title">Become a Healthcare Professional</h3>
-              <p class="app-subtitle">{{ t('interactive_learning', g.lang)|default('Интерактивное обучение') }}</p>
-            </div>
-            
-            <div class="feature-cards">
-              <div class="feature-card">
-                <div class="feature-icon">
-                  <i class="fas fa-graduation-cap"></i>
-                </div>
-                <h4>{{ t('structured_learning', g.lang)|default('Структурированное обучение') }}</h4>
-                <p>{{ t('structured_learning_desc', g.lang)|default('Пошаговая программа подготовки к экзамену') }}</p>
-              </div>
-              
-              <div class="feature-card">
-                <div class="feature-icon">
-                  <i class="fas fa-user-md"></i>
-                </div>
-                <h4>{{ t('clinical_cases', g.lang)|default('Клинические случаи') }}</h4>
-                <p>{{ t('clinical_cases_desc', g.lang)|default('Практика на реалистичных медицинских сценариях') }}</p>
-              </div>
-              
-              <div class="feature-card">
-                <div class="feature-icon">
-                  <i class="fas fa-chart-line"></i>
-                </div>
-                <h4>{{ t('progress_tracking', g.lang)|default('Отслеживание прогресса') }}</h4>
-                <p>{{ t('progress_tracking_desc', g.lang)|default('Детальная аналитика вашего обучения') }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Screen 2: Learning Dashboard -->
-          <div class="screen-content screen-2">
-            <div class="app-header">
-              <h3 class="app-title">{{ t('learning_dashboard', g.lang)|default('Дашборд обучения') }}</h3>
-              <p class="app-subtitle">{{ t('your_progress', g.lang)|default('Ваш прогресс') }}</p>
-            </div>
-            
-            <div class="dashboard-stats">
-              <div class="stat-card">
-                <div class="stat-number">{{ stats.overall_progress|default(75) }}%</div>
-                <div class="stat-label">{{ t('completed', g.lang)|default('Завершено') }}</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-number">{{ stats.completed_lessons|default(24) }}</div>
-                <div class="stat-label">{{ t('modules', g.lang)|default('Модулей') }}</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-number">{{ stats.total_lessons|default(156) }}</div>
-                <div class="stat-label">{{ t('cards', g.lang)|default('Карточек') }}</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-number">{{ stats.average_score|default(89) }}%</div>
-                <div class="stat-label">{{ t('accuracy', g.lang)|default('Точность') }}</div>
-              </div>
-            </div>
-
-            <div class="progress-list">
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>{{ t('anatomy', g.lang)|default('Анатомия') }}</span>
-                  <span>{{ stats.anatomy_progress|default(92) }}%</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill anatomy-progress"></div>
-                </div>
-              </div>
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>{{ t('physiology', g.lang)|default('Физиология') }}</span>
-                  <span>{{ stats.physiology_progress|default(78) }}%</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill physiology-progress"></div>
-                </div>
-              </div>
-              <div class="progress-item">
-                <div class="progress-header">
-                  <span>{{ t('radiology', g.lang)|default('Радиология') }}</span>
-                  <span>{{ stats.radiology_progress|default(65) }}%</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill radiology-progress"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Screen 3: Test Interface -->
-          <div class="screen-content screen-3">
-            <div class="app-header">
-              <h3 class="app-title">{{ t('testing', g.lang)|default('Тестирование') }}</h3>
-              <p class="app-subtitle">{{ t('question_progress', g.lang)|default('Вопрос 3 из 15') }}</p>
-            </div>
-            
-            <div class="question-card">
-              <div class="question-text">
-                {{ t('sample_question', g.lang)|default('Какая структура отвечает за эмалевое образование в зубе?') }}
-              </div>
-              <div class="answer-options">
-                <div class="answer-option">A. {{ t('odontoblasts', g.lang)|default('Одонтобласты') }}</div>
-                <div class="answer-option correct">B. {{ t('ameloblasts', g.lang)|default('Амелобласты') }}</div>
-                <div class="answer-option">C. {{ t('cementoblasts', g.lang)|default('Цементобласты') }}</div>
-                <div class="answer-option">D. {{ t('osteoblasts', g.lang)|default('Остеобласты') }}</div>
-              </div>
-            </div>
-
-            <div class="feature-cards">
-              <div class="feature-card">
-                <div class="feature-icon">⏱️</div>
-                <h4>{{ t('timer', g.lang)|default('Таймер: 2:45') }}</h4>
-                <p>{{ t('time_remaining', g.lang)|default('Время на ответ') }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Screen 4: Virtual Patient -->
-          <div class="screen-content screen-4">
-            <div class="app-header">
-              <h3 class="app-title">{{ t('virtual_patient', g.lang) }}</h3>
-              <p class="app-subtitle">{{ t('clinical_case', g.lang) }}</p>
-            </div>
-            
-            <div class="patient-card">
-              <div class="patient-avatar">👨‍⚕️</div>
-              <div class="patient-info">
-                <h4>{{ t('patient_name', g.lang) }}</h4>
-                <p>{{ t('patient_complaint', g.lang) }}</p>
-              </div>
-            </div>
-
-            <div class="patient-symptoms">
-              <div class="symptom-item">
-                {{ t('symptom_1', g.lang) }}
-              </div>
-              <div class="symptom-item">
-                🌡️ {{ t('symptom_2', g.lang) }}
-              </div>
-              <div class="symptom-item">
-                📅 {{ t('symptom_3', g.lang) }}
-              </div>
-            </div>
-
-            <div class="feature-cards">
-              <div class="feature-card">
-                <div class="feature-icon">🔍</div>
-                <h4>{{ t('examination', g.lang)|default('Обследование') }}</h4>
-                <p>{{ t('conduct_exam', g.lang)|default('Провести осмотр') }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Screen Indicators -->
-        <div class="screen-indicators">
-          <div class="indicator active" data-screen="0"></div>
-          <div class="indicator" data-screen="1"></div>
-          <div class="indicator" data-screen="2"></div>
-          <div class="indicator" data-screen="3"></div>
-        </div>
+    </div>
+    <div class="bridge-center"><div class="bridge-line"></div><div class="bridge-m">M</div><div class="bridge-line"></div></div>
+    <div>
+      <div class="bridge-col-title">{{ t('landing_system', lang)|default('The system') }}</div>
+      <div class="bridge-cards">
+        <div class="bcard rs"><div class="bcard-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg></div><div><div class="bcard-name">{{ t('landing_institutions', lang)|default('Healthcare institutions') }}</div><div class="bcard-sub">{{ t('landing_staffing', lang)|default('Staffing needs') }}</div></div></div>
+        <div class="bcard rs"><div class="bcard-icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg></div><div><div class="bcard-name">{{ t('landing_big_reg', lang)|default('BIG register') }}</div><div class="bcard-sub">{{ t('landing_cibg_igj', lang)|default('CIBG / IGJ') }}</div></div></div>
+        <div class="bcard rs"><div class="bcard-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="bcard-name">{{ t('landing_compliance', lang)|default('Compliance & docs') }}</div><div class="bcard-sub">{{ t('landing_vault', lang)|default('Credential vault') }}</div></div></div>
       </div>
     </div>
   </div>
 </div>
-</section>
 
-{# === FEATURES SECTION === #}
-<section class="features-section py-5" id="features">
-  <div class="container">
-    <!-- Section Header -->
-    <div class="row justify-content-center mb-5">
-      <div class="col-lg-8 text-center" data-animate="fadeInUp">
-        <h2 class="section-title position-relative mb-4">
-          {{ t('start_path_title', g.lang)|default('Начни свой путь к успеху') | safe }}
-        </h2>
-        <p class="lead text-muted">
-          {{ t('professional_platform', g.lang)|default('Профессиональная платформа для подготовки к экзаменам') }}
-        </p>
-      </div>
-    </div>
-    
-    <!-- Feature Cards -->
-    <div class="row g-4">
-      <!-- Theory Card -->
-      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
-        <div class="feature-card modern-card">
-          <div class="feature-icon knowledge-gradient">
-            <i class="bi bi-lightbulb-fill"></i>
-          </div>
-          <h3 class="feature-title">{{ t('theory_title', g.lang)|default('Теория') }}</h3>
-          <p class="feature-description">
-            {{ t('theory_description', g.lang)|default('Структурированные модули по анатомии, физиологии и радиологии') }}
-          </p>
-          <div class="feature-tags">
-            <span class="tag">{{ t('anatomy', g.lang)|default('Анатомия') }}</span>
-            <span class="tag">{{ t('physiology', g.lang)|default('Физиология') }}</span>
-            <span class="tag">{{ t('radiology', g.lang)|default('Радиология') }}</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Practice Card -->
-      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
-        <div class="feature-card modern-card featured">
-          <div class="featured-badge">{{ t('most_popular', g.lang)|default('Популярное') }}</div>
-          <div class="feature-icon communication-gradient">
-            <i class="bi bi-chat-dots"></i>
-          </div>
-          <h3 class="feature-title">{{ t('practice_title', g.lang)|default('Практика') }}</h3>
-          <p class="feature-description">
-            {{ t('practice_description', g.lang)|default('Клинические случаи и симуляция работы с пациентами') }}
-          </p>
-          <div class="feature-tags">
-            <span class="tag">{{ t('case_studies', g.lang)|default('Клинические случаи') }}</span>
-            <span class="tag">{{ t('communication', g.lang)|default('Коммуникация') }}</span>
-            <span class="tag">{{ t('medical_dutch', g.lang)|default('Медицинский голландский') }}</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Exam Card -->
-      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
-        <div class="feature-card modern-card">
-          <div class="feature-icon workstation-gradient">
-            <i class="bi bi-award-fill"></i>
-          </div>
-          <h3 class="feature-title">{{ t('exam_title', g.lang)|default('Экзамен') }}</h3>
-          <p class="feature-description">
-            {{ t('exam_description', g.lang)|default('Подготовка к реальным экзаменам с анализом результатов') }}
-          </p>
-          <div class="feature-tags">
-            <span class="tag">{{ t('mock_exams', g.lang)|default('Пробные экзамены') }}</span>
-            <span class="tag">{{ t('analytics', g.lang)|default('Аналитика') }}</span>
-            <span class="tag">{{ t('strategy', g.lang)|default('Стратегия') }}</span>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Community Card -->
-      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
-        <div class="feature-card modern-card highlight">
-          <div class="feature-icon community-gradient">
-            <i class="bi bi-chat-heart-fill"></i>
-          </div>
-          <h3 class="feature-title">
-            {{ t('community', g.lang)|default('Community') }}
-          </h3>
-          <p class="feature-description">
-            {{ t('community_description', g.lang)|default('Connect with colleagues, share knowledge and learn from each other') }}
-          </p>
-          <div class="feature-tags">
-            <span class="tag">
-              {{ t('discussions', g.lang)|default('Discussions') }}
-            </span>
-            <span class="tag">
-              {{ t('networking', g.lang)|default('Networking') }}
-            </span>
-            <span class="tag">
-              {{ t('cases', g.lang)|default('Cases') }}
-            </span>
-          </div>
-          <a href="{{ url_for('main.community', lang=g.lang) }}" class="feature-link">
-            {{ t('visit_community', g.lang)|default('Visit Community →') }}
-          </a>
-        </div>
-      </div>
-      
-      <!-- Virtual Patients Card -->
-      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
-        <div class="feature-card modern-card highlight">
-          <div class="feature-icon virtual-patient-gradient">
-            <i class="bi bi-person-heart"></i>
-          </div>
-          <h3 class="feature-title">
-            {{ t('virtual_patients', g.lang)|default('Virtual Patients') }}
-          </h3>
-          <p class="feature-description">
-            {{ t('virtual_patients_description', g.lang)|default('Practice with realistic clinical scenarios and improve your diagnostic skills') }}
-          </p>
-          <div class="feature-tags">
-            <span class="tag">
-              {{ t('diagnosis', g.lang)|default('Diagnosis') }}
-            </span>
-            <span class="tag">
-              {{ t('treatment', g.lang)|default('Treatment') }}
-            </span>
-            <span class="tag">
-              {{ t('scenarios', g.lang)|default('Scenarios') }}
-            </span>
-          </div>
-          <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="feature-link">
-            {{ t('start_scenario', g.lang)|default('Start scenario →') }}
-          </a>
-        </div>
-      </div>
-      
-      <!-- BIG Registration Card -->
-      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
-        <div class="feature-card modern-card highlight">
-          <div class="feature-icon big-gradient">
-            <i class="bi bi-shield-check"></i>
-          </div>
-          <h3 class="feature-title">
-            {{ t('big_registration', g.lang)|default('BIG Registration') }}
-          </h3>
-          <p class="feature-description">
-            {{ t('big_registration_description', g.lang)|default('Complete guide for BIG registration: requirements, process and tips for all healthcare professions') }}
-          </p>
-          <div class="feature-tags">
-            <span class="tag">
-              {{ t('documentation', g.lang)|default('Documentation') }}
-            </span>
-            <span class="tag">
-              {{ t('step_by_step', g.lang)|default('Step-by-step') }}
-            </span>
-            <span class="tag">
-              {{ t('all_professions', g.lang)|default('All professions') }}
-            </span>
-          </div>
-          <a href="{{ url_for('main.big_info', lang=g.lang) }}" class="feature-link">
-            {{ t('view_big_guide', g.lang)|default('View BIG guide →') }}
-          </a>
-        </div>
-      </div>
-    </div>
-    
-    <!-- CTA Section -->
-    <div class="text-center mt-5" data-animate="fadeInUp">
-      {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="btn-modern btn-primary btn-lg">
-          <i class="bi bi-play-fill"></i>
-          {{ t('continue_learning', g.lang)|default('Продолжить обучение') }}
-        </a>
-      {% else %}
-                                         <a href="{{ url_for('auth.login', lang=g.lang) }}" class="btn-modern btn-primary btn-lg">
-              <i class="bi bi-box-arrow-in-right me-2"></i>
-              {{ t('login', g.lang)|default('Login') }}
-            </a>
-      {% endif %}
-    </div>
+<div id="pathway" class="pathway-section" style="position: relative; z-index: 2;">
+  <div class="section-label fade-up">{{ t('landing_your_pathway', lang)|default('Your pathway') }}</div>
+  <div class="section-title fade-up d1">{{ t('landing_abroad_to_nl', lang)|default('From abroad to registered in NL') }}</div>
+  <div class="pathways">
+    <div class="pcard fade-up d1"><div class="pcard-step">STEP 01</div><h3>{{ t('landing_step1_t', lang)|default('Create your profile') }}</h3><p>{{ t('landing_step1_d', lang)|default('Upload credentials, specialty, and language level. We verify everything.') }}</p><div class="pcard-arrow">→</div></div>
+    <div class="pcard fade-up d2"><div class="pcard-step">STEP 02</div><h3>{{ t('landing_step2_t', lang)|default('Document vault') }}</h3><p>{{ t('landing_step2_d', lang)|default('Apostille, translations, work experience — all in one secure place.') }}</p><div class="pcard-arrow">→</div></div>
+    <div class="pcard fade-up d3"><div class="pcard-step">STEP 03</div><h3>{{ t('landing_step3_t', lang)|default('BIG preparation') }}</h3><p>{{ t('landing_step3_d', lang)|default('Language + exam prep tailored to your specialty and current level.') }}</p><div class="pcard-arrow">→</div></div>
+    <div class="pcard fade-up d4"><div class="pcard-step">STEP 04</div><h3>{{ t('landing_step4_t', lang)|default('Get placed') }}</h3><p>{{ t('landing_step4_d', lang)|default('Matched with institutions that need your exact profile. Start working.') }}</p></div>
   </div>
-</section>
-
-{# === PLATFORM FEATURES SECTION === #}
-<section class="platform-features-section py-5">
-  <div class="container">
-    <div class="row justify-content-center mb-5">
-      <div class="col-lg-8 text-center" data-animate="fadeInUp">
-        <span class="section-subtitle">
-          {{ t('platform_features', g.lang)|default('Возможности платформы') }}
-        </span>
-        <h2 class="section-title">
-          {{ t('why_choose_us', g.lang)|default('Почему выбирают нас') | safe }}
-        </h2>
-        <p class="section-description">
-          {{ t('comprehensive_approach', g.lang)|default('Комплексный подход к подготовке стоматологов') }}
-        </p>
-      </div>
-    </div>
-    
-    <div class="row g-4">
-      <div class="col-lg-3 col-md-6" data-animate="fadeInUp">
-        <div class="platform-feature">
-          <div class="platform-icon">
-            <i class="bi bi-globe"></i>
-          </div>
-          <h3 class="platform-title">
-            {{ t('multilingual_support', g.lang)|default('Многоязычность') }}
-          </h3>
-          <p class="platform-description">
-            {{ t('multilingual_description', g.lang)|default('Обучение на 8 языках для удобства студентов из разных стран') }}
-          </p>
-        </div>
-      </div>
-      
-      <div class="col-lg-3 col-md-6" data-animate="fadeInUp">
-        <div class="platform-feature">
-          <div class="platform-icon">
-            <i class="bi bi-clock"></i>
-          </div>
-          <h3 class="platform-title">
-            {{ t('flexible_schedule', g.lang)|default('Гибкий график') }}
-          </h3>
-          <p class="platform-description">
-            {{ t('flexible_description', g.lang)|default('Учитесь в удобное время в своем темпе') }}
-          </p>
-        </div>
-      </div>
-      
-      <div class="col-lg-3 col-md-6" data-animate="fadeInUp">
-        <div class="platform-feature">
-          <div class="platform-icon">
-            <i class="bi bi-shield-check"></i>
-          </div>
-          <h3 class="platform-title">
-            {{ t('quality_assurance', g.lang)|default('Гарантия качества') }}
-          </h3>
-          <p class="platform-description">
-            {{ t('quality_description', g.lang)|default('Контент разработан экспертами в области стоматологии') }}
-          </p>
-        </div>
-      </div>
-      
-      <div class="col-lg-3 col-md-6" data-animate="fadeInUp">
-        <div class="platform-feature">
-          <div class="platform-icon">
-            <i class="bi bi-briefcase"></i>
-          </div>
-          <h3 class="platform-title">
-            {{ t('support_247', g.lang)|default('Поддержка 24/7') }}
-          </h3>
-          <p class="platform-description">
-            {{ t('support_description', g.lang)|default('Круглосуточная поддержка пользователей') }}
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-{# === BENEFITS SECTION === #}
-<section class="benefits-section py-5">
-  <div class="container">
-    <div class="row justify-content-center mb-5">
-      <div class="col-lg-8 text-center" data-animate="fadeInUp">
-        <span class="section-subtitle">
-          {{ t('learning_approach', g.lang)|default('Подход к обучению') }}
-        </span>
-        <h2 class="section-title">
-          {{ t('our_methodology', g.lang)|default('Наша методология') | safe }}
-        </h2>
-        <p class="section-description">
-          {{ t('evidence_based', g.lang)|default('Основанная на доказательствах система обучения') }}
-        </p>
-      </div>
-    </div>
-    
-    <div class="row g-4">
-      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
-        <div class="benefit-card">
-          <div class="benefit-icon">
-            <i class="bi bi-journal-medical"></i>
-          </div>
-          <h3 class="benefit-title">
-            {{ t('structured_modules', g.lang)|default('Структурированные модули') }}
-          </h3>
-          <p class="benefit-description">
-            {{ t('structured_modules_desc', g.lang)|default('Логически выстроенная программа обучения от базовых знаний к продвинутым навыкам') }}
-          </p>
-        </div>
-      </div>
-      
-      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
-        <div class="benefit-card">
-          <div class="benefit-icon">
-            <i class="bi bi-card-checklist"></i>
-          </div>
-          <h3 class="benefit-title">
-            {{ t('adaptive_testing', g.lang)|default('Адаптивное тестирование') }}
-          </h3>
-          <p class="benefit-description">
-            {{ t('adaptive_testing_desc', g.lang)|default('Тесты, адаптирующиеся под ваш уровень знаний для оптимального обучения') }}
-          </p>
-        </div>
-      </div>
-      
-      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
-        <div class="benefit-card">
-          <div class="benefit-icon">
-            <i class="bi bi-translate"></i>
-          </div>
-          <h3 class="benefit-title">
-            {{ t('medical_dutch', g.lang)|default('Медицинский голландский') }}
-          </h3>
-          <p class="benefit-description">
-            {{ t('medical_dutch_desc', g.lang)|default('Специализированный курс медицинского голландского языка для работы в Нидерландах') }}
-          </p>
-        </div>
-      </div>
-      
-      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
-        <div class="benefit-card">
-          <div class="benefit-icon">
-            <i class="bi bi-clipboard-data"></i>
-          </div>
-          <h3 class="benefit-title">
-            {{ t('realistic_simulations', g.lang)|default('Реалистичные симуляции') }}
-          </h3>
-          <p class="benefit-description">
-            {{ t('realistic_simulations_desc', g.lang)|default('Виртуальные пациенты и клинические сценарии, максимально приближенные к реальности') }}
-          </p>
-        </div>
-      </div>
-      
-      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
-        <div class="benefit-card">
-          <div class="benefit-icon">
-            <i class="bi bi-bar-chart-line"></i>
-          </div>
-          <h3 class="benefit-title">
-            {{ t('detailed_analytics', g.lang)|default('Подробная аналитика') }}
-          </h3>
-          <p class="benefit-description">
-            {{ t('detailed_analytics_desc', g.lang)|default('Детальная статистика прогресса с персональными рекомендациями') }}
-          </p>
-        </div>
-      </div>
-      
-      <div class="col-lg-4 col-md-6" data-animate="fadeInUp">
-        <div class="benefit-card">
-          <div class="benefit-icon">
-            <i class="bi bi-people"></i>
-          </div>
-          <h3 class="benefit-title">
-            {{ t('community_learning', g.lang)|default('Обучение в сообществе') }}
-          </h3>
-          <p class="benefit-description">
-            {{ t('community_learning_desc', g.lang)|default('Активное сообщество студентов и экспертов для обмена знаниями') }}
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-{# === CALL TO ACTION SECTION === #}
-<section class="cta-section py-5">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-lg-8 text-center" data-animate="fadeInUp">
-        <div class="cta-card">
-          <h2 class="cta-title">
-            {{ t('ready_to_start', g.lang)|default('Готовы начать?') }}
-          </h2>
-          <p class="cta-description">
-            {{ t('join_thousands', g.lang)|default('Присоединяйтесь к студентам, которые готовятся к BIG экзамену с нашей платформой') }}
-          </p>
-          <div class="cta-buttons">
-            {% if not current_user.is_authenticated %}
-            <a href="{{ url_for('auth.login', lang=g.lang) }}" class="btn-modern btn-primary btn-lg">
-              <i class="bi bi-box-arrow-in-right me-2"></i>
-              {{ t('login', g.lang)|default('Login') }}
-            </a>
-            <a href="{{ url_for('main.big_info', lang=g.lang) }}" class="btn-modern btn-secondary btn-lg">
-              <i class="bi bi-info-circle"></i>
-              {{ t('learn_about_big', g.lang)|default('Узнать о BIG') }}
-            </a>
-            {% else %}
-            <a href="{{ url_for('learning_map_bp.learning_map', lang=g.lang) }}" class="btn-modern btn-primary btn-lg">
-              <i class="bi bi-play-circle"></i>
-              {{ t('continue_learning', g.lang)|default('Продолжить обучение') }}
-            </a>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-
-
-
-
-
-<!-- IRT Test Announcement Sticker -->
-{#
-<div id="irt-announcement" class="irt-announcement-sticker">
-  <div class="irt-sticker-content">
-    <div class="irt-sticker-icon">
-      🧠
-    </div>
-    <div class="irt-sticker-text">
-      <h4>🧠 {{ t('irt_test_title', g.lang) | default('IRT Test') }}</h4>
-      <p>{{ t('irt_test_announcement', g.lang) | default('Soon available: diagnostic IRT test in beta mode!') }}</p>
-      <small class="irt-sticker-note">* {{ t('irt_test_note', g.lang) | default('For all registered users') }}</small>
-    </div>
-    <button class="irt-sticker-close" onclick="closeIrtAnnouncement()">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
-  <div class="irt-sticker-ribbon"></div>
 </div>
-#}
 
-{% endblock %}
+<!-- BROKEN SYSTEM -->
+<div class="broken-section">
+  <div class="section-label fade-up">{{ t('landing_reality', lang)|default('The reality') }}</div>
+  <div class="broken-title fade-up d1">{{ t('landing_system_1', lang)|default("The system wasn't") }}<br>{{ t('landing_system_2', lang)|default('built') }} <em>{{ t('landing_system_3', lang)|default('for them.') }}</em></div>
+  <p class="broken-lead fade-up d2">{{ t('landing_broken_lead', lang)|default('BIG registration means navigating 6+ government bodies... Most qualified doctors simply give up.') }}</p>
+  <div class="broken-grid">
+    <div class="broken-card fade-up d1"><div class="broken-num">{{ t('landing_broken_1_t', lang)|default('6+') }}</div><div class="broken-desc">{{ t('landing_broken_1_d', lang)|default('Government bodies involved in a single registration process — CIBG, IGJ, DUO, IND, municipality, and more.') }}</div></div>
+    <div class="broken-card fade-up d2"><div class="broken-num">{{ t('landing_broken_2_t', lang)|default('3–5') }}</div><div class="broken-desc">{{ t('landing_broken_2_d', lang)|default('Years. The average time from arrival in the Netherlands to BIG registration — without structured support.') }}</div></div>
+    <div class="broken-card fade-up d3"><div class="broken-num">{{ t('landing_broken_3_t', lang)|default('B2+') }}</div><div class="broken-desc">{{ t('landing_broken_3_d', lang)|default('Medical Dutch required. Not just conversational — clinical terminology, patient communication, exam language.') }}</div></div>
+  </div>
+  <div class="broken-conclusion fade-up d2">
+    <p>{{ t('landing_broken_conc_1', lang)|default('Meanwhile, Dutch hospitals are understaffed and spending millions recruiting from abroad — while') }} <strong>{{ t('landing_broken_conc_2', lang)|default('400+ qualified specialists already live here') }}</strong>{{ t('landing_broken_conc_3', lang)|default(', working as cleaners and warehouse workers. Mentora fixes this.') }}</p>
+  </div>
+</div>
 
-{% block body_scripts %}
-{{ super() }}
+<!-- LAYER DIVIDER -->
+<div id="institutions" class="layer-divider fade-up" style="position: relative; z-index: 2;">
+  <div class="layer-divider-left">
+    <strong>Are you a Healthcare Provider or Partner?</strong>
+    <p>Behind this section: the economic case, the system architecture, and what makes Mentora a scalable infrastructure — not just a product.</p>
+  </div>
+  <button class="layer-divider-btn" id="toggleBtn" onclick="toggleInvestor()">View Institutional Case Study ↓</button>
+</div>
 
-<!-- Phone animation script -->
-<script src="{{ url_for('static', filename='js/phone-animation.js') }}"></script>
+<!-- LAYER 2: INVESTORS -->
+<div class="investor-layer">
+  <!-- Blur spots for Investor layer -->
+  <div class="blur-spot blur-blue investor-blur-1"></div>
+  <div class="blur-spot blur-teal investor-blur-2"></div>
 
-<!-- Initialize theme on page load (theme-controller is already loaded in base.html) -->
+  <div class="investor-panel" id="investorPanel">
+
+    <div class="layer-tag" style="border-top: 0.5px solid rgba(0,0,0,0.08);">
+      <div class="layer-dot" style="background:#ef9f27;"></div>
+      {{ t('landing_investor_tag', lang)|default('For institutions & investors') }}
+    </div>
+
+    <div style="padding: 52px 40px 0;">
+      <div class="human-statement">
+        <p>{{ t('landing_investor_human', lang)|default('For us, these aren\'t just numbers. They are world-class surgeons and dentists whose expertise is currently being wasted in low-skilled jobs.') }} <em>{{ t('landing_investor_human_em', lang)|default('We bridge the financial and bureaucratic gap to give them back their careers') }}</em>{{ t('landing_investor_human_end', lang)|default(' — and give Dutch healthcare the talent it desperately needs.') }}</p>
+      </div>
+    </div>
+
+    <div class="economic-section">
+      <div class="section-label">{{ t('landing_eco_label', lang)|default('Restoring professional dignity & economic value') }}</div>
+      <div class="section-title" style="max-width: 560px;">{{ t('landing_eco_title', lang)|default('The cost of the broken system — and what fixing it looks like') }}</div>
+      <div class="cost-grid">
+        <div class="cost-card traditional">
+          <div class="cost-label">{{ t('landing_eco_trad', lang)|default('Traditional path') }}</div>
+          <div class="cost-num">€500k</div>
+          <div class="cost-sublabel">{{ t('landing_eco_trad_sub', lang)|default('Training cost from scratch') }}</div>
+          <div class="cost-desc">{{ t('landing_eco_trad_desc', lang)|default('Average cost + 7+ years to train a medical specialist from scratch in the Netherlands.') }}</div>
+        </div>
+        <div class="cost-card mentora">
+          <div class="cost-badge">{{ t('landing_eco_mentora', lang)|default('MENTORA PATH') }}</div>
+          <div class="cost-label">{{ t('landing_eco_mentora_l', lang)|default('Cost of integration support') }}</div>
+          <div class="cost-num">€15k</div>
+          <div class="cost-sublabel">{{ t('landing_eco_mentora_sub', lang)|default('Per experienced specialist') }}</div>
+          <div class="cost-desc">{{ t('landing_eco_mentora_desc', lang)|default('Supporting an already qualified international doctor through the full BIG-registration process via our platform.') }}</div>
+        </div>
+      </div>
+      <div class="cost-saving">{{ t('landing_eco_saving_1', lang)|default('That\'s a') }} <strong>{{ t('landing_eco_saving_2', lang)|default('97% reduction in integration cost') }}</strong>{{ t('landing_eco_saving_3', lang)|default(' — for a specialist who already has 10+ years of clinical experience and just needs the system to recognise it.') }}</div>
+    </div>
+
+    <div class="quote-block" style="position: relative; z-index: 2; box-shadow: 0 4px 20px rgba(0,0,0,0.03);">
+      <div class="quote-text">{{ t('landing_quote', lang)|default('"Mentora is not a school. It is a scalable HR-Tech infrastructure that solves the healthcare staffing crisis by digitizing the BIG-registration pathway — connecting verified talent directly to institutions that need them."') }}</div>
+      <div class="quote-src">{{ t('landing_quote_src', lang)|default('— Founder · bigmentor.nl') }}</div>
+    </div>
+
+    <div class="pillars-section" style="position: relative; z-index: 2;">
+      <div class="section-label">{{ t('landing_arch', lang)|default('The architecture') }}</div>
+      <div class="section-title">{{ t('landing_arch_3', lang)|default('Three things no one else provides') }}</div>
+      <div class="pillars">
+        <div class="pillar"><div class="pillar-num">01</div><h3>{{ t('landing_p1_t', lang)|default('Structured pathway') }}</h3><p>{{ t('landing_p1_d', lang)|default('A single guided process covering every step from credential validation to BIG registration — no specialist gets lost in bureaucracy.') }}</p></div>
+        <div class="pillar"><div class="pillar-num">02</div><h3>{{ t('landing_p2_t', lang)|default('Verified talent pool') }}</h3><p>{{ t('landing_p2_d', lang)|default('Institutions get access to pre-screened, documented professionals — ready to place, not starting from scratch.') }}</p></div>
+        <div class="pillar"><div class="pillar-num">03</div><h3>{{ t('landing_p3_t', lang)|default('Compliance engine') }}</h3><p>{{ t('landing_p3_d', lang)|default('Document vault, progress tracking, automated reporting — every stakeholder always knows exactly where each candidate stands.') }}</p></div>
+      </div>
+    </div>
+
+    <div class="mock-section" style="position: relative; z-index: 2;">
+      <div class="section-label">{{ t('landing_plat', lang)|default('The platform') }}</div>
+      <div class="section-title" style="margin-bottom: 24px;">{{ t('landing_plat_one', lang)|default('One dashboard. Full integration pipeline.') }}</div>
+      <div class="mock-window">
+        <div class="mock-bar">
+          <div class="dot" style="background:#e24b4a"></div>
+          <div class="dot" style="background:#ef9f27"></div>
+          <div class="dot" style="background:#639922"></div>
+          <span class="mock-url">bigmentor.nl/profile</span>
+        </div>
+        <div class="mock-body">
+          <div class="mock-side">
+            <div class="mock-logo-s">MENTORA</div>
+            <div class="mni a">{{ t('profile', lang)|default('My profile') }}</div>
+            <div class="mni">{{ t('landing_mock_step2', lang)|default('Documents') }}</div>
+            <div class="mni">{{ t('landing_mock_p_status', lang)|default('BIG status') }}</div>
+            <div class="mni">{{ t('exam_preparation', lang)|default('Preparation') }}</div>
+            <div class="mni">{{ t('landing_mock_step4', lang)|default('Placements') }}</div>
+            <div class="mni">{{ t('community', lang)|default('Community') }}</div>
+          </div>
+          <div class="mock-main">
+            <div class="profile-header">
+              <div class="avatar">AK</div>
+              <div><div class="profile-name">Anna Kovalenko, MD</div><div class="profile-role">{{ t('landing_mock_p_role', lang)|default('General practitioner · Ukraine') }}</div></div>
+              <div class="status-pill">{{ t('landing_mock_p_status', lang)|default('BIG in progress') }}</div>
+            </div>
+            <div class="pipeline">
+              <div class="pipe-label">{{ t('landing_mock_pipe', lang)|default('Integration pipeline') }}</div>
+              <div class="pipe-steps">
+                <div class="pipe-step"><div class="pipe-dot done">✓</div><div class="pipe-name">{{ t('landing_mock_step1', lang)|default('Profile') }}</div></div>
+                <div class="pipe-step"><div class="pipe-dot done">✓</div><div class="pipe-name">{{ t('landing_mock_step2', lang)|default('Docs') }}</div></div>
+                <div class="pipe-step"><div class="pipe-dot active">3</div><div class="pipe-name">{{ t('landing_mock_step3', lang)|default('BIG exam') }}</div></div>
+                <div class="pipe-step"><div class="pipe-dot todo">4</div><div class="pipe-name">{{ t('landing_mock_step4', lang)|default('Placement') }}</div></div>
+                <div class="pipe-step"><div class="pipe-dot todo">5</div><div class="pipe-name">{{ t('landing_mock_step5', lang)|default('Registered') }}</div></div>
+              </div>
+            </div>
+            <div class="doc-row"><div class="doc-left"><div class="doc-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="doc-name">{{ t('landing_mock_doc1_t', lang)|default('Medical diploma (apostille)') }}</div><div class="doc-sub">{{ t('landing_mock_doc1_d', lang)|default('Uploaded · Verified') }}</div></div></div><div class="badge ok">{{ t('landing_mock_badge_v', lang)|default('Verified') }}</div></div>
+            <div class="doc-row"><div class="doc-left"><div class="doc-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div><div class="doc-name">{{ t('landing_mock_doc2_t', lang)|default('Dutch language certificate') }}</div><div class="doc-sub">{{ t('landing_mock_doc2_d', lang)|default('B2 level required') }}</div></div></div><div class="badge pending">{{ t('landing_mock_badge_p', lang)|default('Pending') }}</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="contact" class="cta-block" style="position: relative; z-index: 2;">
+      <div>
+        <h2>{{ t('landing_cta_t', lang)|default('See the platform.<br><em>Not a deck.</em>')|safe }}</h2>
+        <p>{{ t('landing_cta_d', lang)|default('Register and explore what a working integration pipeline looks like.') }}</p>
+      </div>
+      <div class="cta-btns">
+        <a href="{{ url_for('auth.register', lang=g.lang|default('en')) }}" class="btn-white">{{ t('landing_cta_b1', lang)|default('Explore the platform') }}</a>
+        <a href="mailto:info@bigmentor.nl" class="btn-ghost-dark">{{ t('landing_cta_b2', lang)|default('Get in touch →') }}</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <script>
+function toggleInvestor() {
+  const panel = document.getElementById('investorPanel');
+  const btn = document.getElementById('toggleBtn');
+  const isOpen = panel.classList.contains('open');
+  if (isOpen) {
+    panel.classList.remove('open');
+    btn.textContent = 'View Institutional Case Study ↓';
+  } else {
+    panel.classList.add('open');
+    btn.textContent = 'Close ↑';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Ensure theme is applied from localStorage or system preference
-    // Theme controller will handle this automatically, but we ensure it runs
-    if (window.themeController) {
-        window.themeController.applyTheme();
-    }
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-up:not(.visible)').forEach(el => obs.observe(el));
 });
 </script>
-
-<!-- IRT Announcement Script -->
-<script>
-// IRT announcement was intentionally removed
-</script>
-
+</div>
 {% endblock %}
