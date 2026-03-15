@@ -1,7 +1,9 @@
 """
 Административные роуты для управления системой
 """
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app, make_response
+import csv
+import io
 from flask_login import login_required, current_user
 from extensions import csrf
 from utils.decorators import admin_required
@@ -2623,8 +2625,13 @@ def users_list():
         status_filter = request.args.get('status', 'all')
         role_filter = request.args.get('role', 'all')
         consent_filter = request.args.get('consent_filter', 'all')
+        profession_filter = request.args.get('profession', 'all')
+        nationality_filter = request.args.get('nationality', 'all')
+        dutch_level_filter = request.args.get('dutch_level', 'all')
+        legal_status_filter = request.args.get('legal_status', 'all')
         sort_by = request.args.get('sort', 'created_at')
         sort_order = request.args.get('order', 'desc')
+        export_format = request.args.get('export', None)
         
         # Base query - по умолчанию исключаем удаленных пользователей
         query = User.query.filter(User.is_deleted == False)
@@ -2669,6 +2676,22 @@ def users_list():
             elif consent_filter == 'marketing_no':
                 query = query.filter(User.optional_consents == False)
         
+        # Apply profession filter
+        if profession_filter != 'all':
+            query = query.filter(User.profession == profession_filter)
+        
+        # Apply nationality filter
+        if nationality_filter != 'all':
+            query = query.filter(User.nationality == nationality_filter)
+        
+        # Apply dutch level filter
+        if dutch_level_filter != 'all':
+            query = query.filter(User.dutch_level == dutch_level_filter)
+        
+        # Apply legal status filter
+        if legal_status_filter != 'all':
+            query = query.filter(User.legal_status == legal_status_filter)
+        
         # Apply sorting
         if sort_by == 'name':
             order_col = User.first_name
@@ -2686,6 +2709,78 @@ def users_list():
         
         query = query.order_by(order_col)
         
+        # ========================================
+        # CSV EXPORT
+        # ========================================
+        if export_format == 'csv':
+            all_users = query.all()
+            
+            output = io.StringIO()
+            writer = csv.writer(output)
+            
+            # CSV Header
+            writer.writerow([
+                'ID', 'Email', 'Имя', 'Фамилия', 'Телефон', 'Код страны',
+                'Дата рождения', 'Пол', 'Гражданство',
+                'Профессия', 'Специализация', 'Место работы',
+                'Правовой статус', 'Уровень голландского', 'Уровень английского',
+                'Университет', 'Тип диплома', 'Начало обучения', 'Конец обучения',
+                'Страна обучения', 'Мед. специализация', 'Опыт работы',
+                'Доп. квалификации',
+                'IDW оценка', 'BIG зарегистрирован', 'Дата экзамена', 'Время подготовки',
+                'Диплом загружен', 'Язык. сертификат', 'Доп. документы',
+                'Обязательные согласия', 'Маркетинг согласие', 'Цифровая подпись',
+                'Роль', 'Статус', 'Email подтвержден', 'DigiD', 'BSN',
+                'Язык интерфейса', 'Member ID',
+                'Дата регистрации', 'Последний вход',
+                'Мотивация', 'Интересы к программе'
+            ])
+            
+            # CSV Rows
+            for u in all_users:
+                writer.writerow([
+                    u.id, u.email, u.first_name or '', u.last_name or '',
+                    u.phone or '', u.country_code or '',
+                    u.birth_date.strftime('%d.%m.%Y') if u.birth_date else '',
+                    u.gender or '', u.nationality or '',
+                    u.profession or '', u.specialization or '', u.workplace or '',
+                    u.legal_status or '', u.dutch_level or '', u.english_level or '',
+                    u.university_name or '', u.degree_type or '',
+                    u.study_start_year or '', u.study_end_year or '',
+                    u.study_country or '', u.medical_specialization or '',
+                    u.work_experience or '', u.additional_qualifications or '',
+                    u.idw_assessment or '', u.big_exam_registered or '',
+                    u.exam_date.strftime('%d.%m.%Y') if u.exam_date else '',
+                    u.preparation_time or '',
+                    'Да' if u.diploma_file else 'Нет',
+                    'Да' if u.language_certificate else 'Нет',
+                    'Да' if u.additional_documents else 'Нет',
+                    'Да' if u.required_consents else 'Нет',
+                    'Да' if u.optional_consents else 'Нет',
+                    u.digital_signature or '',
+                    u.role or '', 'Активен' if u.is_active else 'Неактивен',
+                    'Да' if u.email_confirmed else 'Нет',
+                    'Да' if u.created_via_digid else 'Нет', u.bsn or '',
+                    u.language or '', u.member_id or '',
+                    u.created_at.strftime('%d.%m.%Y %H:%M') if u.created_at else '',
+                    u.last_login.strftime('%d.%m.%Y %H:%M') if u.last_login else '',
+                    u.motivation or '', u.program_interests or ''
+                ])
+            
+            # Build response
+            csv_output = output.getvalue()
+            output.close()
+            
+            response = make_response(csv_output)
+            response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+            response.headers['Content-Disposition'] = f'attachment; filename=mentora_users_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+            # Add BOM for Excel to recognize UTF-8
+            response.data = '\ufeff' + csv_output
+            return response
+        
+        # ========================================
+        # NORMAL PAGE RENDER
+        # ========================================
         # Paginate
         try:
             users = query.paginate(
@@ -2733,6 +2828,23 @@ def users_list():
         
         stats['inactive_users'] = stats['total_users'] - stats['active_users']
         
+        # Get distinct values for filter dropdowns
+        professions_list = [r[0] for r in db.session.query(User.profession).filter(
+            User.profession.isnot(None), User.profession != ''
+        ).distinct().order_by(User.profession).all()]
+        
+        nationalities_list = [r[0] for r in db.session.query(User.nationality).filter(
+            User.nationality.isnot(None), User.nationality != ''
+        ).distinct().order_by(User.nationality).all()]
+        
+        dutch_levels_list = [r[0] for r in db.session.query(User.dutch_level).filter(
+            User.dutch_level.isnot(None), User.dutch_level != ''
+        ).distinct().order_by(User.dutch_level).all()]
+        
+        legal_statuses_list = [r[0] for r in db.session.query(User.legal_status).filter(
+            User.legal_status.isnot(None), User.legal_status != ''
+        ).distinct().order_by(User.legal_status).all()]
+        
         return render_template('admin/users_list.html',
                              users=users,
                              stats=stats,
@@ -2740,6 +2852,14 @@ def users_list():
                              status_filter=status_filter,
                              role_filter=role_filter,
                              consent_filter=consent_filter,
+                             profession_filter=profession_filter,
+                             nationality_filter=nationality_filter,
+                             dutch_level_filter=dutch_level_filter,
+                             legal_status_filter=legal_status_filter,
+                             professions_list=professions_list,
+                             nationalities_list=nationalities_list,
+                             dutch_levels_list=dutch_levels_list,
+                             legal_statuses_list=legal_statuses_list,
                              sort_by=sort_by,
                              sort_order=sort_order,
                              error_message=None)
@@ -2763,6 +2883,14 @@ def users_list():
                              status_filter='all',
                              role_filter='all',
                              consent_filter='all',
+                             profession_filter='all',
+                             nationality_filter='all',
+                             dutch_level_filter='all',
+                             legal_status_filter='all',
+                             professions_list=[],
+                             nationalities_list=[],
+                             dutch_levels_list=[],
+                             legal_statuses_list=[],
                              sort_by='created_at',
                              sort_order='desc',
                              error_message=str(e))

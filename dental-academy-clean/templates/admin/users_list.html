@@ -139,7 +139,7 @@
         <h6 class="m-0 font-weight-bold text-primary">Фильтры и поиск</h6>
     </div>
     <div class="card-body">
-        <form method="GET" class="row g-3">
+        <form method="GET" class="row g-3" id="filtersForm">
             <div class="col-md-3">
                 <label for="search" class="form-label">Поиск</label>
                 <input type="text" class="form-control" id="search" name="search" value="{{ search }}" 
@@ -183,18 +183,77 @@
                     <option value="last_login" {% if sort_by == 'last_login' %}selected{% endif %}>Последний вход</option>
                 </select>
             </div>
-            <div class="col-md-2">
-                <label for="order" class="form-label">Порядок</label>
-                <select class="form-select" id="order" name="order" autocomplete="off">
-                    <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>По убыванию</option>
-                    <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>По возрастанию</option>
-                </select>
-            </div>
             <div class="col-md-1">
                 <label class="form-label">&nbsp;</label>
                 <button type="submit" class="btn btn-primary d-block">
                     <i class="bi bi-search"></i>
                 </button>
+            </div>
+            
+            <!-- Advanced Filters Toggle -->
+            <div class="col-12 mt-2">
+                <a class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" href="#advancedFilters" role="button" 
+                   aria-expanded="{% if profession_filter != 'all' or nationality_filter != 'all' or dutch_level_filter != 'all' or legal_status_filter != 'all' %}true{% else %}false{% endif %}">
+                    <i class="bi bi-funnel"></i> Расширенные фильтры
+                    {% if profession_filter != 'all' or nationality_filter != 'all' or dutch_level_filter != 'all' or legal_status_filter != 'all' %}
+                    <span class="badge bg-primary ms-1">активны</span>
+                    {% endif %}
+                </a>
+            </div>
+            
+            <!-- Advanced Filters Row (Collapsible) -->
+            <div class="collapse {% if profession_filter != 'all' or nationality_filter != 'all' or dutch_level_filter != 'all' or legal_status_filter != 'all' %}show{% endif %}" id="advancedFilters">
+                <div class="row g-3 mt-1 p-3 bg-light rounded">
+                    <div class="col-md-3">
+                        <label for="profession" class="form-label"><i class="bi bi-heart-pulse"></i> Профессия</label>
+                        <select class="form-select" id="profession" name="profession" autocomplete="off">
+                            <option value="all" {% if profession_filter == 'all' %}selected{% endif %}>Все профессии</option>
+                            {% for prof in professions_list %}
+                            <option value="{{ prof }}" {% if profession_filter == prof %}selected{% endif %}>{{ prof }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="nationality" class="form-label"><i class="bi bi-globe"></i> Гражданство</label>
+                        <select class="form-select" id="nationality" name="nationality" autocomplete="off">
+                            <option value="all" {% if nationality_filter == 'all' %}selected{% endif %}>Все гражданства</option>
+                            {% for nat in nationalities_list %}
+                            <option value="{{ nat }}" {% if nationality_filter == nat %}selected{% endif %}>{{ nat }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dutch_level" class="form-label"><i class="bi bi-translate"></i> Уровень голландского</label>
+                        <select class="form-select" id="dutch_level" name="dutch_level" autocomplete="off">
+                            <option value="all" {% if dutch_level_filter == 'all' %}selected{% endif %}>Все уровни</option>
+                            {% for lvl in dutch_levels_list %}
+                            <option value="{{ lvl }}" {% if dutch_level_filter == lvl %}selected{% endif %}>{{ lvl }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="legal_status" class="form-label"><i class="bi bi-shield-check"></i> Правовой статус</label>
+                        <select class="form-select" id="legal_status" name="legal_status" autocomplete="off">
+                            <option value="all" {% if legal_status_filter == 'all' %}selected{% endif %}>Все статусы</option>
+                            {% for ls in legal_statuses_list %}
+                            <option value="{{ ls }}" {% if legal_status_filter == ls %}selected{% endif %}>{{ ls }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="order" class="form-label">Порядок</label>
+                        <select class="form-select" id="order" name="order" autocomplete="off">
+                            <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>По убыванию</option>
+                            <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>По возрастанию</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <a href="{{ url_for('admin.users_list') }}" class="btn btn-outline-secondary d-block">
+                            <i class="bi bi-x-circle"></i> Сбросить
+                        </a>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
@@ -585,21 +644,24 @@ function bulkAction(action) {
 
 // Export users
 function exportUsers() {
-    const params = new URLSearchParams(window.location.search);
+    // Gather all current filter values from the form
+    const form = document.getElementById('filtersForm');
+    const formData = new FormData(form);
+    const params = new URLSearchParams(formData);
     params.set('export', 'csv');
     window.location.href = '{{ url_for("admin.users_list") }}?' + params.toString();
 }
 
 // Auto-submit form on filter change
 document.addEventListener('DOMContentLoaded', function() {
-    const filterInputs = document.querySelectorAll('#search, #status, #role, #sort, #order');
+    const filterInputs = document.querySelectorAll('#search, #status, #role, #sort, #order, #consent_filter, #profession, #nationality, #dutch_level, #legal_status');
     
     let timeout;
     filterInputs.forEach(input => {
         input.addEventListener('change', function() {
             clearTimeout(timeout);
             timeout = setTimeout(() => {
-                this.form.submit();
+                document.getElementById('filtersForm').submit();
             }, 500);
         });
     });
