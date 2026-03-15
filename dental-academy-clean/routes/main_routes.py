@@ -1303,3 +1303,142 @@ def health():
         'database': 'connected'
     })
 
+@main_bp.route('/api/b2b-lead', methods=['POST'])
+def b2b_lead_submission(lang):
+    """API endpoint for B2B partner lead generation forms"""
+    from utils.resend_email_service import send_email_via_resend
+    import html
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'No data provided'}), 400
+            
+        # Extract fields
+        name = data.get('name', '').strip()
+        organization = data.get('organization', '').strip()
+        role = data.get('role', '').strip()
+        email = data.get('email', '').strip()
+        phone = data.get('phone', '').strip()
+        message = data.get('message', '').strip()
+        form_type = data.get('form_type', 'Business Case Request') # default or "Partner Team Contact"
+        
+        # Basic validation
+        if not all([name, organization, role, email, phone]):
+            return jsonify({'success': False, 'error': 'Alle verplichte velden moeten worden ingevuld.'}), 400
+            
+        # Escape HTML to prevent injection in the email body
+        safe_name = html.escape(name)
+        safe_org = html.escape(organization)
+        safe_role = html.escape(role)
+        safe_email = html.escape(email)
+        safe_phone = html.escape(phone)
+        safe_msg = html.escape(message) if message else '<em>Geen bericht achtergelaten</em>'
+        
+        # Build HTML Email
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; }}
+                .header {{ background-color: #0f172a; color: white; padding: 15px 20px; border-radius: 6px 6px 0 0; margin-top: -20px; margin-left: -20px; margin-right: -20px; margin-bottom: 20px; }}
+                .field {{ margin-bottom: 15px; }}
+                .label {{ font-weight: 600; color: #475569; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }}
+                .value {{ font-size: 16px; color: #0f172a; background: #f8fafc; padding: 10px; border-radius: 4px; margin-top: 4px; }}
+                .message-box {{ background: #f1f5f9; padding: 15px; border-left: 4px solid #3b82f6; border-radius: 4px; font-style: italic; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2>Nieuwe B2B Aanvraag: {form_type}</h2>
+                </div>
+                
+                <div class="field">
+                    <div class="label">Naam & Achternaam</div>
+                    <div class="value">{safe_name}</div>
+                </div>
+                
+                <div class="field">
+                    <div class="label">Organisatie / Kliniek</div>
+                    <div class="value">{safe_org}</div>
+                </div>
+                
+                <div class="field">
+                    <div class="label">Functie</div>
+                    <div class="value">{safe_role}</div>
+                </div>
+                
+                <div class="field">
+                    <div class="label">Zakelijk e-mailadres</div>
+                    <div class="value"><a href="mailto:{safe_email}">{safe_email}</a></div>
+                </div>
+                
+                <div class="field">
+                    <div class="label">Telefoonnummer</div>
+                    <div class="value"><a href="tel:{safe_phone}">{safe_phone}</a></div>
+                </div>
+                
+                <div class="field">
+                    <div class="label">Bericht</div>
+                    <div class="message-box">{safe_msg}</div>
+                </div>
+                
+                <div style="margin-top: 30px; font-size: 12px; color: #94a3b8; text-align: center;">
+                    Mentora B2B Lead Generation System<br>
+                    Verzonden op: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        # Send email via Resend
+        subject = f"B2B Lead: {form_type} van {safe_org}"
+        success = send_email_via_resend(
+            to_email="xapstom@gmail.com",
+            subject=subject,
+            html_content=html_content,
+            from_name="Mentora B2B Portal"
+        )
+        
+        # Save to CRM database (Contact model)
+        from models import Contact, db
+        try:
+            contact = Contact.query.filter_by(email=safe_email).first()
+            if not contact:
+                contact = Contact(
+                    full_name=safe_name,
+                    email=safe_email,
+                    phone=safe_phone,
+                    workplace=safe_org,
+                    contact_status='lead',
+                    lead_source='b2b_form',
+                    notes=f"Role/Functie: {safe_role}\nForm Type: {form_type}"
+                )
+                db.session.add(contact)
+            else:
+                existing_notes = contact.notes or ""
+                contact.notes = existing_notes + f"\n\nNew B2B Lead ({datetime.now().strftime('%Y-%m-%d %H:%M')}): {form_type}, Role: {safe_role}"
+            db.session.commit()
+            current_app.logger.info(f"B2B lead saved to CRM for {safe_email}")
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Failed to save B2B lead to DB: {e}")
+        
+        if success:
+            current_app.logger.info(f"B2B lead ({form_type}) from {safe_email} sent successfully.")
+        else:
+            # We don't return 500 here because email delivery might fail due to misconfiguration,
+            # but we still want to give the user a success message since we saved their data to CRM.
+            current_app.logger.warning(f"Failed to send B2B lead email for {safe_email}, but lead was saved to CRM.")
+            
+        return jsonify({'success': True, 'message': 'Uw aanvraag is succesvol verzonden.'})
+            
+    except Exception as e:
+        current_app.logger.error(f"Exception in B2B lead submission: {str(e)}")
+        return jsonify({'success': False, 'error': 'Interne serverfout.'}), 500
+
+

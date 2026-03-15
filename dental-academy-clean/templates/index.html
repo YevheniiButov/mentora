@@ -661,8 +661,8 @@
     <div class="b2b-cta fade-up">
       <h2 class="b2b-cta-title">Investeer vandaag in de personele continuïteit van uw kliniek.</h2>
       <div class="b2b-cta-btns">
-        <a href="mailto:business@bigmentor.nl?subject=Business%20Case%20Presentation" class="b2b-btn-primary">Vraag de businesscase presentatie aan</a>
-        <a href="#contact" class="b2b-btn-outline">Spreken met ons partnerteam</a>
+        <a href="#" id="openModal1" class="b2b-btn-primary">Vraag de businesscase presentatie aan</a>
+        <a href="#" id="openModal2" class="b2b-btn-outline">Spreken met ons partnerteam</a>
       </div>
     </div>
 
@@ -682,6 +682,307 @@
 
   </div>
 </div>
+
+<!-- B2B Modals -->
+<div id="b2bModalOverlay" class="b2b-modal-overlay">
+  <div class="b2b-modal" id="b2bModalContent">
+    <div class="b2b-modal-header">
+      <h3 class="b2b-modal-title" id="b2bModalTitle">Aanvraag Businesscase</h3>
+      <button class="b2b-modal-close" id="b2bModalClose">&times;</button>
+    </div>
+    
+    <div class="b2b-modal-body">
+      <div id="b2bModalSuccess" class="b2b-modal-success" style="display: none;">
+        <svg viewBox="0 0 24 24" width="48" height="48" stroke="var(--teal)" stroke-width="2" fill="none" class="b2b-success-icon" style="margin: 0 auto 16px; display: block;">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <h4 style="color: var(--dark); font-size: 18px; margin-bottom: 8px; text-align: center;">Bedankt! Uw aanvraag is ontvangen.</h4>
+        <p style="color: var(--mentora-text-secondary); text-align: center; font-size: 14px; line-height: 1.6;">Ons partnerteam neemt binnen 24 uur contact met u op om de businesscase en ROI-analyse persoonlijk toe te lichten.</p>
+        <button class="b2b-btn-primary" style="margin-top: 24px; width: 100%;" onclick="closeB2BModal()">Sluiten</button>
+      </div>
+
+      <form id="b2bLeadForm">
+        <input type="hidden" id="b2bFormType" name="form_type" value="Business Case Request">
+        
+        <div class="b2b-form-group">
+          <label class="b2b-form-label" for="b2bName">Naam & Achternaam</label>
+          <input type="text" class="b2b-form-input" id="b2bName" required placeholder="Bijv. Jan Jansen">
+        </div>
+        
+        <div class="b2b-form-group">
+          <label class="b2b-form-label" for="b2bOrg">Organisatie / Kliniek</label>
+          <input type="text" class="b2b-form-input" id="b2bOrg" required placeholder="Bijv. Erasmus MC">
+        </div>
+        
+        <div class="b2b-form-group">
+          <label class="b2b-form-label" for="b2bRole">Functie</label>
+          <input type="text" class="b2b-form-input" id="b2bRole" required placeholder="Bijv. HR-manager">
+        </div>
+        
+        <div class="b2b-form-group">
+          <label class="b2b-form-label" for="b2bEmail">Zakelijk e-mailadres</label>
+          <input type="email" class="b2b-form-input" id="b2bEmail" required placeholder="jan@kliniek.nl">
+        </div>
+        
+        <div class="b2b-form-group">
+          <label class="b2b-form-label" for="b2bPhone">Telefoonnummer</label>
+          <input type="tel" class="b2b-form-input" id="b2bPhone" required placeholder="+31 6 12345678">
+        </div>
+        
+        <div class="b2b-form-group" id="b2bMessageGroup" style="display: none;">
+          <label class="b2b-form-label" for="b2bMessage">Bericht</label>
+          <textarea class="b2b-form-input" id="b2bMessage" rows="3" placeholder="Uw vraag of opmerking..."></textarea>
+        </div>
+        
+        <button type="submit" class="b2b-btn-primary" id="b2bSubmitBtn" style="width: 100%; margin-top: 8px;">
+          <span id="b2bBtnText">Versturen</span>
+          <div class="btn-loader" id="b2bBtnLoader" style="display: none;"></div>
+        </button>
+        <div id="b2bFormError" style="color: #ef4444; font-size: 13px; margin-top: 12px; display: none; text-align: center;"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+/* B2B Modal Styles */
+.b2b-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 25, 47, 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.b2b-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.b2b-modal {
+  background: #ffffff;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  transform: translateY(20px) scale(0.95);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.b2b-modal-overlay.active .b2b-modal {
+  transform: translateY(0) scale(1);
+}
+
+.b2b-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.b2b-modal-title {
+  color: var(--dark);
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.b2b-modal-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.b2b-modal-close:hover {
+  color: #ef4444;
+}
+
+.b2b-modal-body {
+  padding: 24px;
+}
+
+.b2b-form-group {
+  margin-bottom: 16px;
+}
+
+.b2b-form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.b2b-form-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: var(--dark);
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.b2b-form-input:focus {
+  outline: none;
+  border-color: var(--teal);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.15);
+}
+
+.b2b-form-input::placeholder {
+  color: #94a3b8;
+}
+
+.btn-loader {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin { 
+  to { transform: rotate(360deg); } 
+}
+</style>
+
+<script>
+// --- B2B Modal Logic ---
+const b2bOverlay = document.getElementById('b2bModalOverlay');
+const b2bCloseBtn = document.getElementById('b2bModalClose');
+const b2bFormType = document.getElementById('b2bFormType');
+const b2bTitle = document.getElementById('b2bModalTitle');
+const b2bMessageGroup = document.getElementById('b2bMessageGroup');
+
+function openB2BModal(type) {
+  const form = document.getElementById('b2bLeadForm');
+  const successDiv = document.getElementById('b2bModalSuccess');
+  
+  // reset state
+  form.style.display = 'block';
+  successDiv.style.display = 'none';
+  form.reset();
+  document.getElementById('b2bFormError').style.display = 'none';
+
+  if (type === 'business_case') {
+    b2bFormType.value = 'Business Case Request';
+    b2bTitle.textContent = 'Aanvraag Businesscase';
+    b2bMessageGroup.style.display = 'none';
+    document.getElementById('b2bMessage').required = false;
+  } else if (type === 'partner_team') {
+    b2bFormType.value = 'Partner Team Contact';
+    b2bTitle.textContent = 'Contact Partnerteam';
+    b2bMessageGroup.style.display = 'block';
+    // Optional or required message based on preference. Made optional.
+    document.getElementById('b2bMessage').required = false;
+  }
+  
+  b2bOverlay.classList.add('active');
+  document.body.style.overflow = 'hidden'; // prevent background scrolling
+}
+
+function closeB2BModal() {
+  b2bOverlay.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('openModal1').addEventListener('click', function(e) {
+  e.preventDefault();
+  openB2BModal('business_case');
+});
+
+document.getElementById('openModal2').addEventListener('click', function(e) {
+  e.preventDefault();
+  openB2BModal('partner_team');
+});
+
+b2bCloseBtn.addEventListener('click', closeB2BModal);
+
+// Close when clicking outside modal
+b2bOverlay.addEventListener('click', function(e) {
+  if (e.target === b2bOverlay) {
+    closeB2BModal();
+  }
+});
+
+// Form Submission
+document.getElementById('b2bLeadForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const submitBtn = document.getElementById('b2bSubmitBtn');
+  const btnText = document.getElementById('b2bBtnText');
+  const btnLoader = document.getElementById('b2bBtnLoader');
+  const errorDiv = document.getElementById('b2bFormError');
+  
+  // payload
+  const payload = {
+    form_type: document.getElementById('b2bFormType').value,
+    name: document.getElementById('b2bName').value,
+    organization: document.getElementById('b2bOrg').value,
+    role: document.getElementById('b2bRole').value,
+    email: document.getElementById('b2bEmail').value,
+    phone: document.getElementById('b2bPhone').value,
+    message: document.getElementById('b2bMessage').value || ''
+  };
+  
+  // Loading state
+  submitBtn.disabled = true;
+  btnText.style.display = 'none';
+  btnLoader.style.display = 'inline-block';
+  errorDiv.style.display = 'none';
+  
+  try {
+    const response = await fetch("{{ url_for('main.b2b_lead_submission', lang=g.lang|default('nl')) }}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+        // Include CSRF token if needed by Flask, but /api/ endpoints are usually exempt or use token-in-header. 
+        // We'll trust the main_routes before_request logic or simply bypass if CSRF is disabled for this route.
+      },
+      body: JSON.stringify(payload)
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      document.getElementById('b2bLeadForm').style.display = 'none';
+      document.getElementById('b2bModalSuccess').style.display = 'block';
+    } else {
+      errorDiv.textContent = data.error || 'Request failed.';
+      errorDiv.style.display = 'block';
+    }
+  } catch (err) {
+    errorDiv.textContent = 'Netwerkfout. Controleer uw verbinding.';
+    errorDiv.style.display = 'block';
+  } finally {
+    submitBtn.disabled = false;
+    btnText.style.display = 'inline-block';
+    btnLoader.style.display = 'none';
+  }
+});
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
