@@ -433,7 +433,7 @@
     </form>
 
     <div class="back-link fade-up d3 visible">
-        <a href="{{ url_for('main.index', lang=lang) if lang != 'en' else url_for('main.index') }}">
+        <a href="{{ url_for('main.index', lang=lang|default('en')) }}">
             <i class="bi bi-arrow-left"></i>
             {{ t('back_to_main', lang) | default('Back to homepage') }}
         </a>
