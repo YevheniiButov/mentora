@@ -3212,7 +3212,7 @@ translations = {
     'landing_eco_saving_2': 'Reducción del 97% en el coste de integración',
     'landing_eco_saving_3': ' — para un especialista que ya tiene 10+ años de experiencia clínica y apenas necesita que el sistema la reconozca.',
     'landing_quote': '"Mentora no es una escuela. Es una infraestructura HR-Tech escalable..."',
-    'landing_quote_src': '— Fundador · bigmentor.nl',
+    'landing_quote_src': '— bigmentor.nl',
     'landing_arch': 'La arquitectura',
     'landing_arch_3': 'Tres cosas que ningún otro ofrece',
     'landing_p1_t': 'Ruta estructurada',

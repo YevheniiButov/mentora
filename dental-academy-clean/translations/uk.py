@@ -3494,7 +3494,7 @@ translations = {
     'landing_eco_saving_2': 'Зменшення витрат на інтеграцію на 97%',
     'landing_eco_saving_3': ' — для спеціаліста, якому потрібне тільки визнання місцевою системою.',
     'landing_quote': '"Mentora — це не школа, а HR-Tech інфраструктура."',
-    'landing_quote_src': '— Засновник · bigmentor.nl',
+    'landing_quote_src': '— bigmentor.nl',
     'landing_arch': 'Архітектура',
     'landing_arch_3': 'Три особливості, яких немає ні в кого',
     'landing_p1_t': 'Структурований шлях',

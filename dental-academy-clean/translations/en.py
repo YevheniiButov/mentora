@@ -3790,7 +3790,7 @@ translations = {
     'landing_eco_saving_2': '97% reduction in integration cost',
     'landing_eco_saving_3': ' — for a specialist who already has 10+ years of clinical experience and just needs the system to recognise it.',
     'landing_quote': '"Mentora is not a school. It is a scalable HR-Tech infrastructure that solves the healthcare staffing crisis by digitizing the BIG-registration pathway — connecting verified talent directly to institutions that need them."',
-    'landing_quote_src': '— Founder · bigmentor.nl',
+    'landing_quote_src': '— bigmentor.nl',
     'landing_arch': 'The architecture',
     'landing_arch_3': 'Three things no one else provides',
     'landing_p1_t': 'Structured pathway',

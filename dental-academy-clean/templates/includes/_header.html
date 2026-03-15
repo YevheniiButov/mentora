@@ -38,17 +38,8 @@
            x-transition:leave-end="opacity-0 transform -translate-y-2"
            @click.away="if (!isDesktop) { mobileMenuOpen = false; }">
         <ul class="navbar-nav me-auto">
-          <!-- Hoofdpagina - всегда видна -->
-          <li class="nav-item">
-            <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'main.index' }}" 
-               href="/{{ lang }}/"
-               @click="closeMobileMenu()">
-              {{ t('home', lang)|default('Home') }}
-            </a>
-          </li>
-          
-          <!-- Learning Map - только после логина -->
           {% if current_user.is_authenticated %}
+          <!-- Learning Map - только после логина -->
           <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint and (request.endpoint == 'learning_map_bp.learning_map' or request.endpoint.startswith('profession_map_bp')) }}" 
                href="/{{ lang|default('en') }}/learning-map"
@@ -56,33 +47,7 @@
               {{ t('learning_map', lang|default('en'))|default('Learning Map') }}
             </a>
           </li>
-          <!-- Knowledge Base скрыта от пользователей -->
-          <!-- <li class="nav-item">
-            <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'daily_learning.knowledge_base' }}" 
-               href="/{{ lang|default('en') }}/knowledge-base"
-               @click="closeMobileMenu()">
-              {{ t('knowledge_base', lang|default('en'))|default('Knowledge Base') }}
-            </a>
-          </li> -->
           {% endif %}
-
-          <!-- Community - всегда видна -->
-          <li class="nav-item">
-            <a class="nav-link {{ 'active' if request.endpoint and request.endpoint == 'main.community' }}" 
-               href="/{{ lang|default('en') }}/community"
-               @click="closeMobileMenu()">
-              {{ t('community', lang|default('en'))|default('Community') }}
-            </a>
-          </li>
-          
-          <!-- Over BIG - всегда видна -->
-          <li class="nav-item">
-            <a class="nav-link" 
-               href="/{{ lang|default('en') }}/big-info"
-               @click="closeMobileMenu()">
-              {{ t('about_big', lang|default('en'))|default('About BIG') }}
-            </a>
-          </li>
         </ul>
         
         <!-- Right Side Actions -->
@@ -225,45 +190,13 @@
             </ul>
           </div>
           {% else %}
-          <!-- Settings Menu for Guests -->
-          <div class="dropdown" 
-               x-data="{ open: false }"
-               @click.away="open = false"
-               style="position: relative; z-index: 1002;">
-            <button class="btn user-btn-modern" 
-                    type="button" 
-                    @click.stop.prevent="open = !open;"
-                    :aria-expanded="open"
-                    title="{{ t('settings', lang)|default('Settings') }}">
-              <span class="settings-icon"><i class="bi bi-gear-fill"></i></span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end user-dropdown" 
-                x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0 transform scale-95 -translate-y-2"
-                x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
-                x-transition:leave="transition ease-in duration-150"
-                x-transition:leave-start="opacity-100 transform scale-100 translate-y-0"
-                x-transition:leave-end="opacity-0 transform scale-95 -translate-y-2"
-                style="position: absolute !important; top: calc(100% + 0.5rem) !important; right: 0 !important; display: none !important;"
-                :style="open ? 'display: block !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important;' : 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;'"
-                x-cloak
-                @click.stop="open = false">
-
-              
-              <li><hr class="dropdown-divider"></li>
-              
-              <!-- Login -->
-              <li><a class="dropdown-item" href="/{{ lang }}/auth/login">
-                <i class="bi bi-box-arrow-in-right fs-5 me-2"></i>
-                {{ t('login', lang)|default('Login') }}
-              </a></li>
-              <!-- Register -->
-              <li><a class="dropdown-item" href="/{{ lang }}/auth/register">
-                <i class="bi bi-person-plus fs-5 me-2"></i>
-                {{ t('register', lang)|default('Register') }}
-              </a></li>
-            </ul>
-          </div>
+          <!-- Visible Login & Register buttons for guests -->
+          <a href="/{{ lang }}/auth/login" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px; font-weight: 500; padding: 0.45rem 1rem; white-space: nowrap;">
+            {{ t('login', lang)|default('Log in') }}
+          </a>
+          <a href="/{{ lang }}/auth/register" class="btn btn-primary btn-sm" style="border-radius: 8px; font-weight: 500; padding: 0.45rem 1rem; white-space: nowrap; background: #4a9eb5; border-color: #4a9eb5;">
+            {{ t('register', lang)|default('Register') }}
+          </a>
           {% endif %}
         </div>
       </div>

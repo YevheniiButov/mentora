@@ -3588,7 +3588,7 @@ translations = {
     'landing_eco_saving_2': '97% reductie in integratiekosten',
     'landing_eco_saving_3': ' — voor een ervaren specialist die slechts erkenning zoekt.',
     'landing_quote': '"Mentora is geen school, maar een schaalbare HR-Tech infrastructuur die de personeelscrisis in de zorg oplost."',
-    'landing_quote_src': '— Oprichter · bigmentor.nl',
+    'landing_quote_src': '— bigmentor.nl',
     'landing_arch': 'De architectuur',
     'landing_arch_3': 'Drie unieke eigenschappen',
     'landing_p1_t': 'Gestructureerd pad',
