@@ -118,6 +118,23 @@
 {% block content %}
 <div class="profile-container">
     <div class="container">
+        
+        <!-- Privacy-First Dashboard Header -->
+        <div class="profile-header text-center mb-5 mt-3">
+            <h2 style="font-family: 'DM Serif Display', serif; color: var(--teal, #4a9eb5);">Привет, {{ current_user.first_name or current_user.email.split('@')[0] }}!</h2>
+            
+            <div class="alert alert-light mt-3" role="alert" style="max-width: 650px; margin: 0 auto; font-size: 0.95rem; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #f8fafc; color: #475569; text-align: left;">
+                <i class="fas fa-user-secret" style="color: #4a9eb5; margin-right: 8px;"></i>
+                <strong>Результаты теста строго конфиденциальны.</strong> Они видны только вам и используются исключительно для вашей самодиагностики. Мы не передаем эти данные третьим лицам без вашего согласия.
+            </div>
+            
+            <div class="mt-4">
+                <a href="{{ url_for('diagnostic_routes.start_diagnostic', lang=lang) }}" class="btn btn-primary btn-lg" style="background: linear-gradient(135deg, #4a9eb5, #3b8296); border: none; padding: 14px 40px; border-radius: 30px; font-weight: 600; font-size: 1.1rem; box-shadow: 0 10px 20px rgba(74, 158, 181, 0.2); transition: all 0.3s ease;">
+                    Начать самодиагностику (Quick Scan 10)
+                </a>
+            </div>
+        </div>
+
         <!-- Меню профиля -->
         <div class="profile-menu">
             <a href="{{ url_for('profile.personal_info', lang=lang) }}" class="menu-card">

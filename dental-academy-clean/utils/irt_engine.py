@@ -223,7 +223,11 @@ class IRTEngine:
         # Настройки в зависимости от типа диагностики
         self.diagnostic_type = diagnostic_type
         
-        if diagnostic_type == 'quick_30':
+        if diagnostic_type == 'quick_scan_10':
+            # Quick Scan 10: 10 вопросов, с фокусом на приоритетные домены
+            self.questions_per_domain = 1
+            self.max_questions = 10
+        elif diagnostic_type == 'quick_30':
             # Quick Test: 30 вопросов
             self.questions_per_domain = 1
             self.max_questions = 30
@@ -290,7 +294,9 @@ class IRTEngine:
             
             # ИСПРАВЛЕНИЕ: Если доменов нет, используем фиксированные минимумы
             if calculated_min == 0:
-                if self.diagnostic_type in ['quick_30', 'express', 'learning_30', 'learning']:
+                if self.diagnostic_type == 'quick_scan_10':
+                    calculated_min = 10
+                elif self.diagnostic_type in ['quick_30', 'express', 'learning_30', 'learning']:
                     calculated_min = 25  # Минимум 25 для быстрых тестов (target 30)
                 elif self.diagnostic_type in ['full_60', 'preliminary', 'full']:
                     calculated_min = 50  # Минимум 50 для полных тестов (target 60)
@@ -750,14 +756,30 @@ class IRTEngine:
         
         # Найти домены, которые нуждаются в дополнительных вопросах
         domains_needing_questions = []
+        priority_domains = ['huisartsgeneeskunde', 'farmacotherapie', 'ethiek', 'communicatie']
+        is_quick_scan = getattr(self, 'diagnostic_type', '') == 'quick_scan_10'
+        
         for domain_code in domains_with_questions:  # Только домены с вопросами
             current_count = domain_question_counts.get(domain_code, 0)
-            if current_count < self.questions_per_domain:
+            target_count = self.questions_per_domain
+            weight_bonus = 0
+            
+            if is_quick_scan:
+                # В quick_scan_10 отдаем приоритет 4 основным дисциплинам
+                domain_code_lower = domain_code.lower()
+                is_priority = any(p in domain_code_lower for p in priority_domains)
+                if is_priority:
+                    target_count = 2  # 2 вопроса на приоритетный домен
+                    weight_bonus = 100 # высокий приоритет при сортировке
+                else:
+                    target_count = 0  # Для остальных доменов не требуем вопросов принудительно
+            
+            if current_count < target_count:
                 domains_needing_questions.append({
                     'domain': domain_code,
                     'current_count': current_count,
-                    'needed_count': self.questions_per_domain - current_count,
-                    'weight': self.domain_weights.get(domain_code, 0)
+                    'needed_count': target_count - current_count,
+                    'weight': self.domain_weights.get(domain_code, 0) + weight_bonus
                 })
         
         if domains_needing_questions:

@@ -124,12 +124,20 @@ profession_map_bp = Blueprint(
 
 @profession_map_bp.before_request
 def load_profession_lang():
-    """Обработчик языка для профессиональных роутов"""
-    lang = request.view_args.get('lang', DEFAULT_LANGUAGE)
+    """Обработчик языка для профессиональных роутов + Gatekeeper"""
+    lang = request.view_args.get('lang', DEFAULT_LANGUAGE) if request.view_args else DEFAULT_LANGUAGE
     if lang not in SUPPORTED_LANGUAGES:
         lang = DEFAULT_LANGUAGE
     g.lang = lang
     session['lang'] = lang
+
+    # Gatekeeper: Запретить доступ всем, кроме админов
+    if request.endpoint and 'static' not in request.endpoint:
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            return redirect(url_for('auth.login', lang=lang))
+        if getattr(current_user, 'role', 'user') != 'admin':
+            flash('Обучающий модуль находится в разработке.', 'info')
+            return redirect(url_for('profile.profile', lang=lang))
 
 @profession_map_bp.context_processor
 def inject_lang_profession():
@@ -906,6 +914,19 @@ def before_request_learning_map():
     # Это предотвращает блокировку запросов к другим blueprints (например, /en/)
     if not path.startswith('/') or '/learning-map' not in path:
         return  # Пропускаем обработку - Flask продолжит поиск правильного endpoint
+    
+    # Извлекаем язык для редиректов
+    lang = request.view_args.get('lang', DEFAULT_LANGUAGE) if request.view_args else DEFAULT_LANGUAGE
+    g.lang = lang
+
+    # Gatekeeper: Запретить доступ всем, кроме админов
+    if request.endpoint and 'static' not in request.endpoint:
+        if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
+            # Для неавторизованных либо пусть работает штатный login_required, либо редиректим
+            pass 
+        elif getattr(current_user, 'role', 'user') != 'admin':
+            flash('Обучающий модуль находится в разработке.', 'info')
+            return redirect(url_for('profile.profile', lang=lang))
     
     # Очищаем кэш статистики при каждом запросе для актуальности данных
     # Проверяем, что пользователь авторизован перед вызовом функции

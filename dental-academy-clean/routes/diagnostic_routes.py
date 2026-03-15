@@ -149,9 +149,19 @@ def start_diagnostic(lang):
                 diagnostic_type = request.form.get('diagnostic_type', 'express')
             
             # Валидация типа диагностики
-            valid_types = ['quick_30', 'full_60', 'learning_30', 'express', 'preliminary', 'readiness']
+            valid_types = ['quick_scan_10', 'quick_30', 'full_60', 'learning_30', 'express', 'preliminary', 'readiness']
             if diagnostic_type not in valid_types:
-                diagnostic_type = 'quick_30'
+                diagnostic_type = 'quick_scan_10'
+                
+            # Gatekeeper: Если пользователь не админ, принудительно ставим quick_scan_10 
+            # как единственный возможный стартовый пункт (самодиагностика)
+            if current_user.role != 'admin':
+                # Проверяем, прошел ли уже пользователь это тестирование. Пока принудительно заставляем
+                # проходить только разрешенные типы. Фактически оставляем только quick_scan_10 и quick_30/full_60
+                # если он вручную выбрал их с дашборда после прохождения первого скрининга.
+                # Но по умолчанию для новых стартов - это quick_scan_10.
+                if diagnostic_type not in ['quick_scan_10', 'quick_30', 'full_60']:
+                    diagnostic_type = 'quick_scan_10'
             
             # Check for existing active session
             active_session = DiagnosticSession.query.filter_by(
@@ -254,7 +264,12 @@ def start_diagnostic(lang):
             diagnostic_session.started_at = datetime.now(timezone.utc)
             
             # Определяем правильный session_type и diagnostic_type на основе выбора пользователя
-            if diagnostic_type == 'quick_30':
+            if diagnostic_type == 'quick_scan_10':
+                session_type = 'preliminary'
+                diagnostic_type = 'quick_scan_10'  # Сохраняем оригинальный тип для IRT engine
+                estimated_questions = 10
+                questions_per_domain = 1
+            elif diagnostic_type == 'quick_30':
                 session_type = 'preliminary'
                 diagnostic_type = 'quick_30'  # Сохраняем оригинальный тип для IRT engine
                 estimated_questions = 30
@@ -1145,7 +1160,13 @@ def show_results(lang, session_id):
         # Определяем тип сессии - это диагностика или простое тестирование
         session_data = diagnostic_session.get_session_data()
         diagnostic_type = session_data.get('diagnostic_type', 'express')
-        is_simple_test = diagnostic_type in ['express', 'preliminary', 'quick_30', 'full_60', 'learning_30', 'learning']  # Простое тестирование
+        
+        if diagnostic_type == 'quick_scan_10':
+            # Для quick_scan_10 мы генерируем полные результаты, 
+            # но покажем их через специальный шаблон самодиагностики
+            is_simple_test = False
+        else:
+            is_simple_test = diagnostic_type in ['express', 'preliminary', 'quick_30', 'full_60', 'learning_30', 'learning']
         
         # Для простого тестирования показываем упрощенный шаблон
         if is_simple_test:
@@ -1417,10 +1438,15 @@ def show_results(lang, session_id):
                 
                 flash(f'План обучения обновлен! Улучшение в {sum(1 for d in improvements.values() if d["improved"])} доменах.', 'success')
         
-        # Рендерим шаблон результатов вместо редиректа на dashboard
-        return render_template('assessment/results.html', 
-                             diagnostic_data=diagnostic_data,
-                             lang=lang)
+        # Рендерим шаблон результатов
+        if diagnostic_type == 'quick_scan_10':
+            return render_template('assessment/quick_scan_results.html',
+                                 diagnostic_data=diagnostic_data,
+                                 lang=lang)
+        else:
+            return render_template('assessment/results.html', 
+                                 diagnostic_data=diagnostic_data,
+                                 lang=lang)
                              
     except Exception as e:
         print(f"❌ Ошибка в show_results: {e}")

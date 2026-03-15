@@ -14,6 +14,42 @@ import time
 
 logger = logging.getLogger(__name__)
 
+
+def get_real_ip():
+    """
+    Get the real client IP address, respecting X-Forwarded-For header
+    from reverse proxies / load balancers (e.g. Render, Cloudflare).
+    Falls back to request.remote_addr if no proxy header present.
+    """
+    forwarded_for = request.headers.get('X-Forwarded-For', '')
+    if forwarded_for:
+        # X-Forwarded-For: client, proxy1, proxy2 — take the first (real client)
+        return forwarded_for.split(',')[0].strip()
+    return request.remote_addr
+
+
+def is_private_ip(ip):
+    """
+    Check if IP is a private/internal address (RFC1918 + loopback).
+    These should never be blocked as they belong to load balancers / infra.
+    """
+    if not ip:
+        return False
+    return (
+        ip.startswith('10.') or
+        ip.startswith('172.16.') or ip.startswith('172.17.') or
+        ip.startswith('172.18.') or ip.startswith('172.19.') or
+        ip.startswith('172.20.') or ip.startswith('172.21.') or
+        ip.startswith('172.22.') or ip.startswith('172.23.') or
+        ip.startswith('172.24.') or ip.startswith('172.25.') or
+        ip.startswith('172.26.') or ip.startswith('172.27.') or
+        ip.startswith('172.28.') or ip.startswith('172.29.') or
+        ip.startswith('172.30.') or ip.startswith('172.31.') or
+        ip.startswith('192.168.') or
+        ip.startswith('127.') or
+        ip == '::1'
+    )
+
 # Setup security-specific logger for security.log file
 security_logger = logging.getLogger('security')
 security_logger.setLevel(logging.WARNING)
@@ -489,8 +525,12 @@ def security_middleware():
     Should be called in before_request hook
     """
     path = request.path
-    ip = request.remote_addr
+    ip = get_real_ip()
     user_agent = request.headers.get('User-Agent', '')
+    
+    # Never block private/internal IPs (load balancer, infra)
+    if is_private_ip(ip):
+        return None
     
     # Always allow static files - these are safe and shouldn't be blocked
     if path.startswith('/static/'):
@@ -571,7 +611,7 @@ def rate_limit_by_ip(max_requests=100, window=60):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            ip = request.remote_addr
+            ip = get_real_ip()
             current_time = time.time()
             
             # Clean old requests
