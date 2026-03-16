@@ -107,7 +107,6 @@ def validate_session(f):
 def cleanup_old_active_sessions():
     """Automatically mark old active sessions as abandoned (24 hours timeout)"""
     try:
-        from datetime import timedelta
         timeout_threshold = datetime.now(timezone.utc) - timedelta(hours=24)
         
         old_sessions = DiagnosticSession.query.filter(
@@ -1439,7 +1438,6 @@ def show_results(lang, session_id):
                     pass
                 
                 # Reset next diagnostic date
-                from datetime import date, timedelta
                 active_plan.next_diagnostic_date = date.today() + timedelta(days=14)
                 active_plan.diagnostic_reminder_sent = False
                 
@@ -1770,7 +1768,6 @@ def generate_learning_plan(lang):
         plan.diagnostic_session_id = diagnostic_session.id
         
         # Set next diagnostic date (14 days from today)
-        from datetime import date
         plan.next_diagnostic_date = date.today() + timedelta(days=14)
         plan.diagnostic_reminder_sent = False
         
@@ -2497,7 +2494,6 @@ def show_question(lang, session_id):
             return redirect(url_for('diagnostic.start_quick_test', lang=lang))
         
         # Check if session is too old (24 hours)
-        from datetime import timedelta
         if diagnostic_session.started_at:
             # Ensure started_at is timezone-aware before comparison
             started_at = diagnostic_session.started_at
