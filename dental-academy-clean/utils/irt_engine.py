@@ -429,25 +429,16 @@ class IRTEngine:
         
         for question in questions:
             # Убеждаемся, что объект Question привязан к session
-            try:
-                # Проверяем, что объект в session
-                _ = question.id
-            except Exception:
-                # Если объект detached, получаем его заново
-                from extensions import db
-                question = Question.query.get(question.id)
-                if not question:
-                    continue
+            if db.session.object_session(question) is None:
+                logger.warning(f"Question object {question.id} is detached, merging...")
+                question = db.session.merge(question)
             
             irt_params = question.irt_parameters
             if irt_params:
                 # Убеждаемся, что объект IRTParameters привязан к session
-                try:
-                    # Проверяем, что объект в session
-                    _ = irt_params.id
-                except Exception:
-                    # Если объект detached, получаем его заново
-                    irt_params = IRTParameters.query.get(irt_params.id)
+                if db.session.object_session(irt_params) is None:
+                    logger.warning(f"IRTParameters object {irt_params.id} for question {question.id} is detached, merging...")
+                    irt_params = db.session.merge(irt_params)
                 
                 if irt_params and irt_params.difficulty is not None:
                     questions_with_params.append((question, irt_params))
@@ -659,8 +650,19 @@ class IRTEngine:
             logger.error("No session available")
             self._recursion_counter = 0
             return None
+
+        # Strictly enforce max questions limit
+        if self.session.questions_answered >= self.max_questions:
+            logger.info(f"MAX QUESTIONS REACHED: {self.session.questions_answered} >= {self.max_questions}")
+            self._recursion_counter = 0
+            return None
         
         try:
+            # Предотвращаем ошибки с отвязанными объектами (detached objects)
+            # Если объект detached, привязываем его к текущей сессии
+            if db.session.object_session(self.session) is None:
+                logger.warning(f"Session object {self.session.id} is detached, merging...")
+                self.session = db.session.merge(self.session)
             # Получить все отвеченные вопросы из базы данных напрямую
             answered_questions = DiagnosticResponse.query.filter_by(
                 session_id=self.session.id

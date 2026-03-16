@@ -3225,15 +3225,15 @@ class DiagnosticSession(db.Model):
         
         # Return default session data structure instead of empty dict
         return {
-            'diagnostic_type': 'express',
-            'estimated_total_questions': 25,
-            'questions_answered': 0,
-            'correct_answers': 0,
-            'current_ability': 0.0,
-            'ability_se': 1.0,
+            'diagnostic_type': self.session_type if hasattr(self, 'session_type') and self.session_type else 'quick_scan_10',
+            'estimated_total_questions': self.test_length if hasattr(self, 'test_length') and self.test_length else 10,
+            'questions_answered': self.questions_answered if hasattr(self, 'questions_answered') else 0,
+            'correct_answers': self.correct_answers if hasattr(self, 'correct_answers') else 0,
+            'current_ability': self.current_ability if hasattr(self, 'current_ability') else 0.0,
+            'ability_se': self.ability_se if hasattr(self, 'ability_se') else 1.0,
             'response_history': [],
             'domain_scores': {},
-            'start_time': datetime.now(timezone.utc).isoformat()
+            'start_time': self.started_at.isoformat() if hasattr(self, 'started_at') and self.started_at else datetime.now(timezone.utc).isoformat()
         }
     
     def set_session_data(self, data):
@@ -3299,11 +3299,31 @@ class DiagnosticSession(db.Model):
         weak_domains = []
         strong_domains = []
         
+        # Mapping for the 6-axis radar chart
+        radar_domain_mapping = {
+            'Huisartsgeneeskunde': ['ALGEMENE_GENEESKUNDE', 'Internal Medicine', 'Surgery', 'Pediatrics'],
+            'Farmacotherapie': ['PHARMACOLOGY', 'Pharmacology'],
+            'Ethiek & Recht': ['ETHIEK', 'Medical Ethics', 'Medical Law'],
+            'Communicatie': ['COMMUNICATION', 'Communication Skills'],
+            'Klinisch Redeneren': ['DIAGNOSIS', 'Clinical Skills', 'Physiology'],
+            'Zorgstelsel': ['DUTCH', 'Social Medicine']
+        }
+        
+        # Initialize radar scores
+        radar_scores = {key: 0.0 for key in radar_domain_mapping.keys()}
+        radar_counts = {key: 0 for key in radar_domain_mapping.keys()}
+
         for domain_code, stats in domain_stats.items():
             if stats['has_data']:
                 # Use the actual accuracy percentage from domain statistics
                 ability_percentage = stats['accuracy_percentage']
                 domain_abilities[domain_code] = ability_percentage / 100.0  # Convert to decimal
+                
+                # Update radar scores based on mapping
+                for radar_label, matching_codes in radar_domain_mapping.items():
+                    if domain_code in matching_codes:
+                        radar_scores[radar_label] += ability_percentage
+                        radar_counts[radar_label] += 1
                 
                 # Classify domains based on percentage
                 if ability_percentage < 50:  # Weak domain (less than 50%)
@@ -3313,6 +3333,21 @@ class DiagnosticSession(db.Model):
             else:
                 # No data for this domain - set to 0.0 instead of None
                 domain_abilities[domain_code] = 0.0
+                
+        # Finalize radar scores (average if multiple domains map to one axis)
+        formatted_radar_scores = []
+        colors = ['#3b82f6', '#f59e0b', '#16a34a', '#8b5cf6', '#06b6d4', '#ec4899']
+        shorts = ['Therapie', 'Farma', 'Ethiek', 'Comm.', 'Klinisch', 'Zorgstelsel']
+        
+        for i, (label, score_sum) in enumerate(radar_scores.items()):
+            count = radar_counts[label]
+            avg_score = round(score_sum / count, 1) if count > 0 else 0.0
+            formatted_radar_scores.append({
+                'label': label,
+                'short': shorts[i],
+                'value': avg_score,
+                'color': colors[i]
+            })
         
         # Calculate overall statistics
         accuracy = self.get_accuracy()
@@ -3359,6 +3394,7 @@ class DiagnosticSession(db.Model):
             'ability_se': self.ability_se,
             'readiness_percentage': round(readiness_percentage, 1),
             'performance_percentage': round(performance_percentage, 1),
+            'insight_text': self._generate_insight_text(readiness_percentage),
             'target_ability': target_ability,
             'weeks_to_target': weeks_to_target,
             'study_hours_per_week': study_hours_per_week,
@@ -3373,6 +3409,7 @@ class DiagnosticSession(db.Model):
             # Domain analysis with real percentages
             'domain_abilities': domain_abilities,
             'domain_statistics': domain_stats,  # Detailed stats for each domain
+            'radar_scores': formatted_radar_scores,
             'weak_domains': weak_domains,
             'strong_domains': strong_domains,
             
@@ -3490,7 +3527,8 @@ class DiagnosticSession(db.Model):
         
         if response_data:
             # Use IRT engine to estimate ability with proper MLE
-            irt_engine = IRTEngine()
+            # Pass the session to the engine to ensure it has context
+            irt_engine = IRTEngine(session=self)
             theta, se = irt_engine.estimate_ability(response_data)
             
             # Update session with new estimates
@@ -3513,6 +3551,17 @@ class DiagnosticSession(db.Model):
                 self.ability_se = se
                 self.add_ability_estimate(theta, se, responses[-1].question_id)
     
+    def _generate_insight_text(self, score):
+        """Generate dynamic insight text based on readiness score"""
+        if score >= 80:
+            return f"U heeft een **uitstekende kennisbasis**. Uw resultaten plaatsen u in de **top 10%** van buitenlandse zorgverleners voor NHG-protocolkennis — een superieur startpunt."
+        elif score >= 60:
+            return f"U heeft een **solide kennisbasis**. Uw resultaten plaatsen u in de **top 30%** van buitenlandse zorgverleners voor NHG-protocolkennis — een uitstekend startpunt."
+        elif score >= 40:
+            return f"U heeft een **gemiddelde kennisbasis**. Uw resultaten plaatsen u in de **top 50%** van buitenlandse zorgverleners voor NHG-protocolkennis — een goed startpunt voor verdere ontwikkeling."
+        else:
+            return f"Uw **basis is in ontwikkeling**. Uw resultaten tonen potentieel voor groei. Mentora zal u helpen om uw NHG-protocolkennis naar een hoger niveau te tillen."
+
     def get_responses_dict(self):
         """Получить responses как список словарей (JSON-safe)"""
         return [response.to_dict() for response in self.responses.all()]

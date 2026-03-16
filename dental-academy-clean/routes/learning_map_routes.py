@@ -131,13 +131,21 @@ def load_profession_lang():
     g.lang = lang
     session['lang'] = lang
 
-    # Gatekeeper: Запретить доступ всем, кроме админов
+    # Gatekeeper: Запретить доступ всем, кроме админов или прошедших скрининг
     if request.endpoint and 'static' not in request.endpoint:
         if not hasattr(current_user, 'is_authenticated') or not current_user.is_authenticated:
             return redirect(url_for('auth.login', lang=lang))
-        if getattr(current_user, 'role', 'user') != 'admin':
-            flash('Обучающий модуль находится в разработке.', 'info')
-            return redirect(url_for('profile.profile', lang=lang))
+            
+        # Проверяем прохождение скрининга
+        has_completed_screening = DiagnosticSession.query.filter(
+            DiagnosticSession.user_id == current_user.id,
+            DiagnosticSession.diagnostic_type == 'quick_scan_10',
+            DiagnosticSession.completed_at.isnot(None)
+        ).first() is not None
+        
+        if getattr(current_user, 'role', 'user') != 'admin' and not has_completed_screening:
+            flash('Для доступа к профессиональной карте необходимо пройти первичную диагностику (Quick Scan 10).', 'info')
+            return redirect(url_for('diagnostic.start_diagnostic_get', lang=lang))
 
 @profession_map_bp.context_processor
 def inject_lang_profession():
@@ -1080,8 +1088,14 @@ def learning_map(lang, path_id=None):
                 print(f"DEBUG:   Подкатегория: {subcat.name}, тем: {subcat.topics.count()}")
                 for topic in subcat.topics.all():
                     print(f"DEBUG:     Тема: {topic.name}")
-        # Определяем, нужно ли показывать баннер с диагностикой
-        has_completed_diagnostic = DiagnosticSession.query.filter(
+        # Определяем, прошел ли пользователь основной скрининг (Gatekeeper)
+        has_completed_screening = DiagnosticSession.query.filter(
+            DiagnosticSession.user_id == current_user.id,
+            DiagnosticSession.diagnostic_type == 'quick_scan_10',
+            DiagnosticSession.completed_at.isnot(None)
+        ).first() is not None
+        
+        has_completed_any_diagnostic = DiagnosticSession.query.filter(
             DiagnosticSession.user_id == current_user.id,
             DiagnosticSession.completed_at.isnot(None),
             DiagnosticSession.session_type != 'daily_practice'
@@ -1120,17 +1134,17 @@ def learning_map(lang, path_id=None):
                 db.session.rollback()
 
         diagnostic_required = (
-            not has_completed_diagnostic
+            not has_completed_screening
             or getattr(current_user, 'requires_diagnostic', False)
             or (active_plan and not schedule_valid)
         )
         
-        # КРИТИЧНО: Если диагностика не пройдена, перенаправляем на диагностику
-        if diagnostic_required and not has_completed_diagnostic:
-            flash('Для начала обучения необходимо пройти диагностический тест. Это поможет создать персонализированный план обучения.', 'info')
-            current_app.logger.info(f"User {current_user.id} redirected to diagnostic - no completed diagnostic found")
+        # КРИТИЧНО: Если скрининг не пройден, перенаправляем на диагностику (Gatekeeper)
+        if not has_completed_screening and getattr(current_user, 'role', 'user') != 'admin':
+            flash('Для начала обучения необходимо пройти диагностический тест Quick Scan 10. Это поможет создать персонализированный план обучения.', 'info')
+            current_app.logger.info(f"User {current_user.id} redirected to diagnostic - screening not completed")
             # Используем правильный URL для диагностики
-            return redirect(f'/{current_lang}/big-diagnostic/start')
+            return redirect(url_for('diagnostic.start_diagnostic_get', lang=lang))
 
         # Получаем все пути обучения
         learning_paths = LearningPath.query.filter_by(is_active=True).all()
@@ -1333,7 +1347,7 @@ def learning_map(lang, path_id=None):
                     due_reviews_count=due_reviews_count,
                     total_terms_studied=total_terms_studied,
                     current_language_streak=current_language_streak,
-                    diagnostic_completed=has_completed_diagnostic,
+                    diagnostic_completed=has_completed_any_diagnostic,
                     diagnostic_required=diagnostic_required
         )
     except Exception as e:

@@ -9,8 +9,10 @@ This module defines the top areas for Quick Diagnostic Tests for different profe
 
 # Quick Test configuration
 QUICK_TEST_TOTAL_QUESTIONS = 30
+QUICK_SCAN_10_TOTAL_QUESTIONS = 10 
 QUICK_TEST_TIME_LIMIT = 20  # minutes
 QUICK_TEST_DESCRIPTION = "Snelle diagnostische test - Top 10 belangrijkste gebieden"
+QUICK_SCAN_10_DESCRIPTION = "Quick Scan 10 - Focus op belangrijkste competenties"
 
 # Explanation for different professions
 QUICK_TEST_EXPLANATION = {
@@ -148,7 +150,20 @@ TOP_10_CATEGORIES_HUISARTS = [
         'questions_count': 2
     }
 ]
-# Total: 30 questions
+# Priority domains for Quick Scan 10
+PRIORITY_DOMAINS_HUISARTS = [
+    'Internal Medicine',  # Huisartsgeneeskunde
+    'Pharmacology',       # Farmacotherapie
+    'Medical Ethics',     # Ethiek
+    'Communication Skills' # Communicatie
+]
+
+PRIORITY_DOMAINS_TANDARTS = [
+    'Therapeutic Dentistry',
+    'Pharmacology',
+    'Ethics and Law',
+    'Communication Skills'
+]
 
 def get_top_areas_for_profession(profession):
     """
@@ -189,39 +204,47 @@ def get_top_areas_for_profession(profession):
         'areas': TOP_10_CATEGORIES_HUISARTS
     })
 
-def get_quick_test_config(profession):
+def get_quick_test_config(profession, diagnostic_type='quick_30'):
     """
     Get complete Quick Test configuration for a profession.
     
     Args:
         profession (str): Profession code
+        diagnostic_type (str): 'quick_30' or 'quick_scan_10'
         
     Returns:
         dict: Complete configuration including areas, timing, description
     """
     areas_config = get_top_areas_for_profession(profession)
     
+    total_q = QUICK_SCAN_10_TOTAL_QUESTIONS if diagnostic_type == 'quick_scan_10' else QUICK_TEST_TOTAL_QUESTIONS
+    desc = QUICK_SCAN_10_DESCRIPTION if diagnostic_type == 'quick_scan_10' else QUICK_TEST_DESCRIPTION
+    
+    priority_domains = PRIORITY_DOMAINS_HUISARTS if profession == 'huisarts' else PRIORITY_DOMAINS_TANDARTS
+    
     return {
         'profession': profession,
-        'total_questions': QUICK_TEST_TOTAL_QUESTIONS,
+        'total_questions': total_q,
         'time_limit': QUICK_TEST_TIME_LIMIT,
-        'description': QUICK_TEST_DESCRIPTION,
+        'description': desc,
         'explanation': QUICK_TEST_EXPLANATION.get(profession, QUICK_TEST_EXPLANATION['huisarts']),
         'filter_type': areas_config['type'],
-        'areas': areas_config['areas']
+        'areas': areas_config['areas'],
+        'priority_domains': priority_domains
     }
 
-def get_questions_per_area(profession):
+def get_questions_per_area(profession, diagnostic_type='quick_30'):
     """
     Get the distribution of questions per area for a profession.
     
     Args:
         profession (str): Profession code
+        diagnostic_type (str): Test type
         
     Returns:
         list: List of (area_name, questions_count) tuples
     """
-    config = get_top_areas_for_profession(profession)
+    config = get_quick_test_config(profession, diagnostic_type)
     return [(area['name'], area['questions_count']) for area in config['areas']]
 
 def validate_config():
@@ -257,7 +280,7 @@ if __name__ == "__main__":
     
     # Test for tandarts
     print("\n🦷 TANDARTS CONFIGURATION:")
-    tandarts_config = get_quick_test_config('tandarts')
+    tandarts_config = get_quick_test_config('tandarts', 'quick_30')
     print(f"   Filter type: {tandarts_config['filter_type']}")
     print(f"   Areas count: {len(tandarts_config['areas'])}")
     print(f"   Total questions: {sum(area['questions_count'] for area in tandarts_config['areas'])}")
@@ -265,11 +288,17 @@ if __name__ == "__main__":
     
     # Test for huisarts
     print("\n🩺 HUISARTS CONFIGURATION:")
-    huisarts_config = get_quick_test_config('huisarts')
+    huisarts_config = get_quick_test_config('huisarts', 'quick_30')
     print(f"   Filter type: {huisarts_config['filter_type']}")
     print(f"   Areas count: {len(huisarts_config['areas'])}")
     print(f"   Total questions: {sum(area['questions_count'] for area in huisarts_config['areas'])}")
     print(f"   Description: {huisarts_config['explanation']}")
+    
+    # Test for Quick Scan 10
+    print("\n⚡️ QUICK SCAN 10 CONFIGURATION (huisarts):")
+    qs10_config = get_quick_test_config('huisarts', 'quick_scan_10')
+    print(f"   Total questions: {qs10_config['total_questions']}")
+    print(f"   Priority domains: {qs10_config['priority_domains']}")
     
     # Validate configuration
     print("\n✅ VALIDATION:")

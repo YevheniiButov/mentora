@@ -201,15 +201,14 @@ def start_diagnostic(lang):
                     flash('У вас уже есть активная диагностическая сессия', 'warning')
                     return redirect(url_for('diagnostic.show_question', lang=lang, session_id=active_session.id))
 
-            # Get first question using IRT with diagnostic type BEFORE creating session
-            # For Quick Test, use TOP-10 configuration instead of IRT
-            if diagnostic_type == 'quick_30':
-                # Use TOP-10 configuration for Quick Test
+            # Get first question using selection logic BEFORE creating session
+            if diagnostic_type in ['quick_30', 'quick_scan_10']:
+                # Use configuration-based selection (TOP-10/Quick Scan)
                 selected_questions = select_questions_for_quick_test(current_user, diagnostic_type)
                 first_question = selected_questions[0] if selected_questions else None
                 
                 if not first_question:
-                    # Fallback to IRT if TOP-10 selection fails
+                    # Fallback to IRT if selection fails
                     irt_engine = IRTEngine(diagnostic_type=diagnostic_type, user=current_user)
                     first_question = irt_engine.select_initial_question()
             else:
@@ -403,7 +402,7 @@ def get_next_question(lang):
         
         # Получить тип диагностики из сессии
         session_data = diagnostic_session.get_session_data()
-        diagnostic_type = session_data.get('diagnostic_type', 'express')
+        diagnostic_type = session_data.get('diagnostic_type', 'quick_scan_10')
         logger.info(f"Session data: {session_data}")
         logger.info(f"Diagnostic type from session: {diagnostic_type}")
         
@@ -429,7 +428,7 @@ def get_next_question(lang):
         # Get next question using IRT with diagnostic type
         logger.info("About to create IRT Engine...")
         # ИСПРАВЛЕНИЕ: используем правильный diagnostic_type из session_data
-        correct_diagnostic_type = session_data.get('diagnostic_type', 'express')
+        correct_diagnostic_type = session_data.get('diagnostic_type', 'quick_scan_10')
         logger.info(f"Using correct diagnostic_type: {correct_diagnostic_type}")
         
         # For Quick Test, use pre-selected questions instead of IRT
@@ -610,10 +609,12 @@ def get_next_question(lang):
         })
         
     except Exception as e:
-        logger.error(f"Error getting next question: {str(e)}")
+        logger.error(f"FATAL ERROR in get_next_question: {e}")
+        logger.error(f"FULL TRACEBACK: {traceback.format_exc()}")
         return safe_jsonify({
             'success': False,
-            'error': 'Failed to get next question'
+            'error': f'Internal server error during question generation: {str(e)}',
+            'traceback': traceback.format_exc() if current_app.debug else None
         }), 500
 
 @diagnostic_bp.route('/learning-answer/<int:session_id>', methods=['POST'])
@@ -1440,7 +1441,10 @@ def show_results(lang, session_id):
         
         # Рендерим шаблон результатов
         if diagnostic_type == 'quick_scan_10':
-            return render_template('assessment/quick_scan_results.html',
+            return render_template('assessment/readiness_report.html',
+                                 readiness_percentage=results.get('readiness_percentage', 0),
+                                 insight_text=results.get('insight_text', ''),
+                                 domain_scores=results.get('radar_scores', []),
                                  diagnostic_data=diagnostic_data,
                                  lang=lang)
         else:
@@ -3235,11 +3239,11 @@ def get_next_quick_test_question(diagnostic_session, session_data):
 
 def select_questions_for_quick_test(user, diagnostic_type='quick_30'):
     """
-    Select questions for Quick Test using TOP-10 configuration
+    Select questions for Quick Test using configuration
     
     Args:
         user: Current user object
-        diagnostic_type: Type of diagnostic test
+        diagnostic_type: Type of diagnostic test ('quick_30' or 'quick_scan_10')
         
     Returns:
         list: Selected questions for the test
@@ -3250,44 +3254,105 @@ def select_questions_for_quick_test(user, diagnostic_type='quick_30'):
         if not profession_code:
             profession_code = 'huisarts'  # Default fallback
         
-        # Get Quick Test configuration
-        test_config = get_quick_test_config(profession_code)
-        logger.info(f"Quick Test config for {profession_code}: {test_config['filter_type']} with {len(test_config['areas'])} areas")
+        # Get test configuration
+        test_config = get_quick_test_config(profession_code, diagnostic_type)
+        total_q_needed = test_config['total_questions']
+        logger.info(f"Test config for {profession_code} ({diagnostic_type}): {total_q_needed} questions total")
         
         selected_questions = []
+        priority_questions = []
+        adaptive_questions = []
         
-        for area in test_config['areas']:
-            try:
-                if test_config['filter_type'] == 'big_domain':
-                    # For tandarts: filter by BIG domain
-                    big_domain = BIGDomain.query.filter_by(
-                        name=area['name']
-                    ).first()
-                    
-                    if big_domain:
-                        questions = Question.query.filter_by(
-                            profession=profession_code,
-                            big_domain_id=big_domain.id
-                        ).order_by(func.random()).limit(area['questions_count']).all()
-                        
-                        selected_questions.extend(questions)
-                        logger.info(f"Selected {len(questions)} questions from BIG domain '{area['name']}'")
+        # 1. Handle priority domains for quick_scan_10
+        if diagnostic_type == 'quick_scan_10' and 'priority_domains' in test_config:
+            priority_names = test_config['priority_domains']
+            logger.info(f"Selecting priority questions from: {priority_names}")
+            
+            # Target 6 questions from priority domains
+            questions_per_priority = max(1, 6 // len(priority_names))
+            
+            for p_name in priority_names:
+                try:
+                    query = Question.query.filter_by(profession=profession_code)
+                    if test_config['filter_type'] == 'big_domain':
+                        big_domain = BIGDomain.query.filter_by(name=p_name).first()
+                        if big_domain:
+                            query = query.filter_by(big_domain_id=big_domain.id)
                     else:
-                        logger.warning(f"BIG domain '{area['name']}' not found for profession {profession_code}")
-                
-                elif test_config['filter_type'] == 'category':
-                    # For huisarts: filter by category
-                    questions = Question.query.filter_by(
-                        profession=profession_code,
-                        category=area['name']
-                    ).order_by(func.random()).limit(area['questions_count']).all()
+                        query = query.filter_by(category=p_name)
                     
-                    selected_questions.extend(questions)
-                    logger.info(f"Selected {len(questions)} questions from category '{area['name']}'")
+                    # Get questions for this priority domain
+                    qs = query.order_by(func.random()).limit(questions_per_priority).all()
+                    priority_questions.extend(qs)
+                    logger.info(f"Selected {len(qs)} priority questions from {p_name}")
+                except Exception as e:
+                    logger.error(f"Error selecting priority questions for {p_name}: {e}")
+            
+            # If we didn't reach 6 priority questions, try to fill from any priority domain
+            if len(priority_questions) < 6:
+                needed = 6 - len(priority_questions)
+                try:
+                    query = Question.query.filter_by(profession=profession_code)
+                    if test_config['filter_type'] == 'big_domain':
+                        big_domain_ids = [d.id for d in BIGDomain.query.filter(BIGDomain.name.in_(priority_names)).all()]
+                        query = query.filter(Question.big_domain_id.in_(big_domain_ids))
+                    else:
+                        query = query.filter(Question.category.in_(priority_names))
+                    
+                    # Exclude already selected
+                    selected_ids = [q.id for q in priority_questions]
+                    if selected_ids:
+                        query = query.filter(Question.id.notin_(selected_ids))
+                    
+                    additional_qs = query.order_by(func.random()).limit(needed).all()
+                    priority_questions.extend(additional_qs)
+                    logger.info(f"Selected {len(additional_qs)} additional priority questions")
+                except Exception as e:
+                    logger.error(f"Error filling priority questions: {e}")
+            
+            # Limit to exactly 6 priority if needed (randomly)
+            import random
+            if len(priority_questions) > 6:
+                random.shuffle(priority_questions)
+                priority_questions = priority_questions[:6]
                 
-            except Exception as area_error:
-                logger.error(f"Error selecting questions for area '{area['name']}': {area_error}")
-                continue
+            selected_questions.extend(priority_questions)
+
+        # 2. Select remaining questions (adaptive/balanced)
+        needed_remaining = total_q_needed - len(selected_questions)
+        logger.info(f"Selecting {needed_remaining} remaining questions")
+        
+        if needed_remaining > 0:
+            # For quick_30 or filling up quick_scan_10
+            for area in test_config['areas']:
+                if len(selected_questions) >= total_q_needed:
+                    break
+                    
+                try:
+                    query = Question.query.filter_by(profession=profession_code)
+                    if test_config['filter_type'] == 'big_domain':
+                        big_domain = BIGDomain.query.filter_by(name=area['name']).first()
+                        if big_domain:
+                            query = query.filter_by(big_domain_id=big_domain.id)
+                    else:
+                        query = query.filter_by(category=area['name'])
+                    
+                    # Exclude already selected
+                    selected_ids = [q.id for q in selected_questions]
+                    if selected_ids:
+                        query = query.filter(Question.id.notin_(selected_ids))
+                    
+                    # Determine how many to take from this area
+                    if diagnostic_type == 'quick_scan_10':
+                        take = 1 # Take one from each area until filled
+                    else:
+                        take = area['questions_count']
+                        
+                    qs = query.order_by(func.random()).limit(take).all()
+                    selected_questions.extend(qs)
+                    logger.info(f"Added {len(qs)} questions from area {area['name']}")
+                except Exception as e:
+                    logger.error(f"Error selecting remaining questions from {area['name']}: {e}")
         
         # Deduplicate while preserving order
         unique_questions = []
@@ -3298,52 +3363,36 @@ def select_questions_for_quick_test(user, diagnostic_type='quick_30'):
                 seen_ids.add(question.id)
         selected_questions = unique_questions
         
-        # Shuffle final list
+        # Final fallback: if still not enough, add random
+        if len(selected_questions) < total_q_needed:
+            needed = total_q_needed - len(selected_questions)
+            logger.warning(f"Only {len(selected_questions)} questions selected, adding {needed} fallback")
+            
+            selected_ids = [q.id for q in selected_questions]
+            fallback_pool = Question.query.filter_by(profession=profession_code).filter(Question.id.notin_(selected_ids)).order_by(func.random()).limit(needed).all()
+            
+            if not fallback_pool and not selected_questions:
+                # Total fallback if DB is empty for profession
+                fallback_pool = Question.query.order_by(func.random()).limit(total_q_needed).all()
+            
+            selected_questions.extend(fallback_pool)
+        
+        # Final shuffle and limit
         import random
         random.shuffle(selected_questions)
-        
-        logger.info(f"Total selected questions after initial selection: {len(selected_questions)}")
-        
-        # Handle edge case: if not enough questions, add fallback
-        if len(selected_questions) < 30:
-            logger.warning(f"Only {len(selected_questions)} questions selected, adding fallback questions")
+        if len(selected_questions) > total_q_needed:
+            selected_questions = selected_questions[:total_q_needed]
             
-            # Get additional random questions without excluding already selected ones (allow duplicates if needed)
-            user_profession = get_user_profession_code(user)
-            fallback_pool = Question.query.filter_by(profession=user_profession).all()
-            
-            if not fallback_pool:
-                logger.warning(f"No fallback pool found for profession {user_profession}, using global pool")
-                fallback_pool = Question.query.order_by(func.random()).limit(30).all()
-            
-            missing = 30 - len(selected_questions)
-            added = 0
-            
-            if fallback_pool:
-                import random
-                for _ in range(missing):
-                    selected_questions.append(random.choice(fallback_pool))
-                    added += 1
-            
-            logger.info(f"Added {added} fallback questions (allowing repeats), total: {len(selected_questions)}")
-        
-        # Ensure final list is randomized and limited to 30
-        random.shuffle(selected_questions)
-        if len(selected_questions) > 30:
-            selected_questions = selected_questions[:30]
-        logger.info(f"Final Quick Test question count: {len(selected_questions)}")
+        logger.info(f"Final selected question count: {len(selected_questions)}")
         return selected_questions
         
     except Exception as e:
         logger.error(f"Error in select_questions_for_quick_test: {e}")
-        # Fallback: return random questions
-        user_profession = get_user_profession_code(user)
-        fallback_questions = Question.query.filter_by(
-            profession=user_profession
-        ).order_by(func.random()).limit(30).all()
-        
-        logger.warning(f"Using fallback: {len(fallback_questions)} random questions")
-        return fallback_questions
+        import traceback
+        logger.error(traceback.format_exc())
+        # Final safety fallback
+        user_profession = get_user_profession_code(user) or 'huisarts'
+        return Question.query.filter_by(profession=user_profession).order_by(func.random()).limit(10 if diagnostic_type == 'quick_scan_10' else 30).all()
 
  
 
