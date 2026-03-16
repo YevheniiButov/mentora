@@ -221,6 +221,67 @@ def update_personal_info(lang):
     
     return redirect(url_for('profile.personal_info', lang=lang))
 
+@profile_bp.route('/update_redesigned', methods=['POST'])
+@login_required
+def update_redesigned_profile(lang):
+    """Update profile using the redesigned form"""
+    try:
+        # Get form data
+        first_name = request.form.get('first_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
+        birth_date = request.form.get('birth_date', '').strip()
+        city = request.form.get('city', '').strip()
+        phone = request.form.get('phone', '').strip()
+        num_children = request.form.get('num_children', '').strip()
+        housing_needed = request.form.get('housing_needed', '').strip()
+        profession = request.form.get('profession', '').strip()
+        work_as_assistant = request.form.get('work_as_assistant', '').strip()
+        big_commitment = request.form.get('big_commitment', '').strip()
+        diploma_status = request.form.get('diploma_status', '').strip()
+        transcript_status = request.form.get('transcript_status', '').strip()
+        vog_status = request.form.get('vog_status', '').strip()
+
+        # Update basic info
+        if first_name:
+            current_user.first_name = first_name
+        if last_name:
+            current_user.last_name = last_name
+        if city:
+            current_user.city = city
+        if phone:
+            current_user.phone = phone
+        if birth_date:
+            from datetime import datetime
+            try:
+                current_user.birth_date = datetime.strptime(birth_date, '%Y-%m-%d').date()
+            except ValueError:
+                pass
+        
+        # Update new fields
+        if num_children:
+            try:
+                current_user.num_children = int(num_children)
+            except ValueError:
+                pass
+        
+        current_user.housing_needed = housing_needed
+        current_user.profession = profession
+        current_user.work_as_assistant = work_as_assistant
+        current_user.big_commitment = big_commitment
+        current_user.diploma_status = diploma_status
+        current_user.transcript_status = transcript_status
+        current_user.vog_status = vog_status
+        
+        db.session.commit()
+        flash(get_translation('profile_updated_successfully', lang, default='Profiel succesvol bijgewerkt!'), 'success')
+        
+    except Exception as e:
+        current_app.logger.error(f"Error updating redesigned profile: {e}", exc_info=True)
+        db.session.rollback()
+        flash(get_translation('error_updating_profile', lang, default='Fout bij het bijwerken van het profiel'), 'error')
+        
+    return redirect(url_for('profile.profile', lang=lang))
+
 @profile_bp.route('/settings', methods=['GET', 'POST'])
 @login_required
 def settings(lang):

@@ -60,6 +60,7 @@ class User(db.Model, UserMixin):
     birth_date = db.Column(db.Date, nullable=True)
     gender = db.Column(db.String(10), nullable=True)  # male, female, other
     nationality = db.Column(db.String(50), nullable=True)  # Nationality
+    city = db.Column(db.String(100), nullable=True)  # City
     
     # Registration completion fields
     registration_completed = db.Column(db.Boolean, default=False)
@@ -71,6 +72,16 @@ class User(db.Model, UserMixin):
     # Professional Information (Extended)
     workplace = db.Column(db.String(255), nullable=True)  # Current workplace/practice
     specialization = db.Column(db.String(100), nullable=True)  # Medical specialization
+    
+    # New redesigned profile fields
+    num_children = db.Column(db.Integer, nullable=True)
+    housing_needed = db.Column(db.String(20), nullable=True)
+    work_as_assistant = db.Column(db.String(20), nullable=True)
+    big_commitment = db.Column(db.String(20), nullable=True)
+    diploma_status = db.Column(db.String(50), nullable=True)
+    transcript_status = db.Column(db.String(50), nullable=True)
+    vog_status = db.Column(db.String(50), nullable=True)
+    
     other_profession = db.Column(db.String(100), nullable=True)  # Custom profession if "other" selected
     other_nationality = db.Column(db.String(100), nullable=True)  # Custom nationality if "other" selected
     other_legal_status = db.Column(db.String(100), nullable=True)  # Custom legal status if "other" selected
