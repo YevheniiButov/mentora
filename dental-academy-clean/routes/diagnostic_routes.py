@@ -1431,7 +1431,6 @@ def show_results(lang, session_id):
                 
                 # Log progress
                 try:
-                    from flask import current_app
                     current_app.logger.info(f"Reassessment for user {current_user.id}: "
                                    f"Overall ability {active_plan.current_ability:.2f}, "
                                    f"Weak domains: {still_weak}")
@@ -2669,7 +2668,6 @@ def start_quick_test(lang):
     """Start Quick Test directly - bypass selection template"""
     try:
         # Start diagnostic directly with quick_30 type (simulate POST request)
-        from flask import request
         
         # Check for existing active session
         active_session = DiagnosticSession.query.filter_by(
