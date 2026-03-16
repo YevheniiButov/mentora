@@ -514,8 +514,10 @@
   <h1 class="fade-up visible d1">{{ t('landing_bridge_to', lang)|default('The Bridge to Your') }}<br>{{ t('landing_medical_future', lang)|default('Medical Future in') }}<br><em>{{ t('landing_netherlands', lang)|default('the Netherlands.') }}</em></h1>
   <p class="fade-up visible d2">{{ t('landing_hero_desc', lang)|default('Connecting international medical talent with the Dutch healthcare ecosystem — through technology, language, and clinical practice.') }}</p>
   <div class="hero-btns fade-up visible d3">
-    <!-- Both buttons go to register -->
+    {% if not current_user.is_authenticated %}
+    <!-- Кнопка регистрации видна только гостям -->
     <a href="{{ url_for('auth.register', lang=g.lang|default('en')) }}" class="btn-primary">{{ t('landing_apply_spec', lang)|default('Apply as a Specialist') }}</a>
+    {% endif %}
     <a href="#institutions" class="btn-outline" onclick="document.getElementById('institutions').scrollIntoView({behavior:'smooth'}); return false;">{{ t('landing_partner_with_us', lang)|default('Partner with us ↘') }}</a>
   </div>
   <div class="hero-sub fade-up visible d4">{{ t('landing_hero_sub', lang)|default('Available in 9 languages · Active candidates onboard') }}</div>

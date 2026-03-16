@@ -38,13 +38,25 @@
            x-transition:leave-end="opacity-0 transform -translate-y-2"
            @click.away="if (!isDesktop) { mobileMenuOpen = false; }">
         <ul class="navbar-nav me-auto">
-          {% if current_user.is_authenticated %}
-          <!-- Learning Map - только после логина -->
+          {% if current_user.is_authenticated and current_user.role == 'admin' %}
+          <!-- Learning Map - только для админов -->
           <li class="nav-item">
             <a class="nav-link {{ 'active' if request.endpoint and (request.endpoint == 'learning_map_bp.learning_map' or request.endpoint.startswith('profession_map_bp')) }}" 
                href="/{{ lang|default('en') }}/learning-map"
                @click="closeMobileMenu()">
               {{ t('learning_map', lang|default('en'))|default('Learning Map') }}
+            </a>
+          </li>
+          {% endif %}
+
+          {% if current_user.is_authenticated and current_user.role != 'admin' %}
+          <!-- Assessment - основной путь для врача (Pivot) -->
+          <li class="nav-item">
+            <a class="nav-link {{ 'active' if request.endpoint and 'diagnostic' in request.endpoint }}" 
+               href="{{ url_for('diagnostic.start_diagnostic', lang=lang, diagnostic_type='quick_scan_10') }}"
+               @click="closeMobileMenu()">
+              <i class="bi bi-clipboard2-check me-1"></i>
+              {{ t('assessment', lang|default('en'))|default('Assessment') }}
             </a>
           </li>
           {% endif %}
@@ -163,9 +175,16 @@
                 </small>
               </li>
               
-              <li><hr class="dropdown-divider"></li>
-              
-              <!-- Profile -->
+                
+               <!-- Assessment (Pivot) -->
+               {% if current_user.role != 'admin' %}
+               <li><a class="dropdown-item" href="{{ url_for('diagnostic.start_diagnostic', lang=lang, diagnostic_type='quick_scan_10') }}">
+                 <i class="bi bi-clipboard2-check fs-5 me-2"></i>
+                 {{ t('assessment', lang)|default('Assessment') }}
+               </a></li>
+               {% endif %}
+               
+               <!-- Profile -->
               <li><a class="dropdown-item" href="/{{ lang }}/profile">
                 <i class="bi bi-person-gear fs-5 me-2"></i>
                 {{ t('edit_profile', lang)|default('Edit profile') }}

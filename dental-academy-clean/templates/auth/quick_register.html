@@ -642,20 +642,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div style="text-align: left; line-height: 1.8;">
                         <p><strong>✅ Registration Successful!</strong></p>
                         <p><strong>📧 Email:</strong> ${userEmail}</p>
-                        <p><strong>🔑 Password:</strong> The password you just created</p>
-                        <p><strong>🚀 Next steps:</strong> You can now log in with your email and password to access your account.</p>
+                        <p><strong>🚀 Next steps:</strong> Logging you in and redirecting to your destination...</p>
                         <p style="margin-top: 20px; font-size: 14px; opacity: 0.9;">
-                            <em>Welcome to Mentora! You'll receive updates about our program.</em>
+                            <em>Welcome to Mentora!</em>
                         </p>
                     </div>
                 `;
                 
                 showSuccessMessage(successMessage);
                 
-                // Перенаправляем через 5 секунд (больше времени для чтения)
+                // Перенаправляем через 1 секунду (ускоренный вход для Pivot)
                 setTimeout(() => {
-                    window.location.href = '/auth/login';
-                }, 5000);
+                    window.location.href = result.redirect_url || '/auth/login';
+                }, 1000);
             } else {
                 console.error('Registration failed:', result.error);
                 showErrorMessage(result.error || '{{ t("registration_error", lang) | default("Ошибка регистрации") }}');
@@ -743,7 +742,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 ${message}
             </div>
             <div style="margin-top: 20px; font-size: 14px; opacity: 0.9;">
-                Redirecting to login page in a few seconds...
+                Redirecting in a moment...
             </div>
         `;
         

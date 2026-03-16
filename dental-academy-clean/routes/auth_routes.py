@@ -1041,13 +1041,16 @@ def quick_register(lang=None):
         print(f"Quick registration attempt - Data received: {data}")
         
         if not data:
-            print("No data received in request")
+            print("No JSON data provided in request")
             return jsonify({
                 'success': False,
-                'error': 'No data received'
+                'error': 'No data provided'
             }), 400
+            
+        print(f"JSON data received: {data.keys()}")
         
-        # Log registration start
+        # Получаем параметр 'next' для редиректа после логина
+        next_page = data.get('next') or request.args.get('next')
         safe_log('log_registration_start', 'quick_registration', data)
         
         # Валидация данных
@@ -1159,6 +1162,13 @@ def quick_register(lang=None):
                 # Сохраняем изменения
                 db.session.commit()
                 
+                # ✅ Автоматически логиним пользователя (для Pivot к анонимной диагностике)
+                login_user(existing_user, remember=True)
+                print(f"✅ AUTO-LOGIN SUCCESSFUL for restored user: {existing_user.email}")
+                
+                # Направляем на 'next_page' или в дашборд
+                redirect_url = next_page if next_page else url_for('main.dashboard')
+                
                 # Отправляем welcome email
                 try:
                     from utils.email_service import send_welcome_email
@@ -1169,8 +1179,8 @@ def quick_register(lang=None):
                 
                 return jsonify({
                     'success': True,
-                    'message': 'Account restored successfully! Welcome back! Check your email for login details.',
-                    'redirect_url': url_for('auth.login')
+                    'message': 'Account restored and logged in! Welcome back!',
+                    'redirect_url': redirect_url
                 })
             else:
                 # Пользователь активен, нельзя регистрироваться
@@ -1242,10 +1252,17 @@ def quick_register(lang=None):
         # Отслеживаем завершение регистрации
         VisitorTracker.track_registration_completion('quick_register', user.id)
         
+        # ✅ Автоматически логиним пользователя
+        login_user(user, remember=True)
+        print(f"✅ AUTO-LOGIN SUCCESSFUL for new user: {user.email}")
+        
+        # Направляем на 'next_page' или в дашборд
+        redirect_url = next_page if next_page else url_for('main.dashboard')
+        
         return jsonify({
             'success': True,
-            'message': 'Registration successful! Welcome to Mentora! Check your email for login details.',
-            'redirect_url': url_for('auth.login')
+            'message': 'Registration successful! Welcome to Mentora!',
+            'redirect_url': redirect_url
         })
         
     except Exception as e:
