@@ -55,8 +55,7 @@
             <a class="nav-link {{ 'active' if request.endpoint and 'diagnostic' in request.endpoint }}" 
                href="{{ url_for('diagnostic.start_diagnostic', lang=lang, diagnostic_type='quick_scan_10') }}"
                @click="closeMobileMenu()">
-              <i class="bi bi-clipboard2-check me-1"></i>
-              {{ t('assessment', lang|default('en'))|default('Assessment') }}
+              {{ t('assessment', lang|default('en'))|capitalize|default('Assessment') }}
             </a>
           </li>
           {% endif %}
@@ -179,8 +178,7 @@
                <!-- Assessment (Pivot) -->
                {% if current_user.role != 'admin' %}
                <li><a class="dropdown-item" href="{{ url_for('diagnostic.start_diagnostic', lang=lang, diagnostic_type='quick_scan_10') }}">
-                 <i class="bi bi-clipboard2-check fs-5 me-2"></i>
-                 {{ t('assessment', lang)|default('Assessment') }}
+                 {{ t('assessment', lang)|capitalize|default('Assessment') }}
                </a></li>
                {% endif %}
                
