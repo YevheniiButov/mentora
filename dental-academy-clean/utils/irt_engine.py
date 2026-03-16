@@ -1016,16 +1016,28 @@ class IRTEngine:
             for response in responses:
                 # Get question with domain information
                 question = Question.query.get(response.question_id)
-                if question and hasattr(question, 'big_domain') and question.big_domain:
+                if not question:
+                    continue
+                    
+                domain_code = None
+                if hasattr(question, 'big_domain') and question.big_domain:
                     domain_code = question.big_domain.code
+                elif hasattr(question, 'domain') and question.domain:
+                    domain_code = question.domain
+                
+                if domain_code:
                     if domain_code not in domain_responses:
                         domain_responses[domain_code] = []
                     domain_responses[domain_code].append(response)
             
             # Calculate detailed statistics for each domain
             domain_stats = {}
-            for domain_code in self.all_domains.keys():
-                domain = self.all_domains[domain_code]
+            
+            # Combine all domains from response data with predefined active domains
+            all_relevant_codes = set(self.all_domains.keys()) | set(domain_responses.keys())
+            
+            for domain_code in all_relevant_codes:
+                domain = self.all_domains.get(domain_code)
                 
                 if domain_code in domain_responses and domain_responses[domain_code]:
                     # Real data available for this domain
@@ -1070,8 +1082,9 @@ class IRTEngine:
                         standard_error = None
                         confidence_interval = None
                     
+                    display_name = domain.name if domain else domain_code.replace('_', ' ').title()
                     domain_stats[domain_code] = {
-                        'name': domain.name,
+                        'name': display_name,
                         'questions_answered': total_count,
                         'correct_answers': correct_count,
                         'accuracy': accuracy,
@@ -1095,10 +1108,15 @@ class IRTEngine:
             logger.error(traceback.format_exc())
             return self._get_default_domain_statistics()
     
-    def _get_domain_default_stats(self, domain) -> Dict:
+    def _get_domain_default_stats(self, domain_obj_or_code) -> Dict:
         """Get meaningful default statistics for domain with no responses"""
+        if hasattr(domain_obj_or_code, 'name'):
+            name = domain_obj_or_code.name
+        else:
+            name = str(domain_obj_or_code).replace('_', ' ').title()
+            
         return {
-            'name': domain.name,
+            'name': name,
             'questions_answered': 0,
             'correct_answers': 0,
             'accuracy': None,
@@ -1108,7 +1126,7 @@ class IRTEngine:
             'standard_error': None,
             'confidence_interval': None,
             'irt_responses_count': 0,
-            'message': f'No diagnostic data available for {domain.name}. Complete a diagnostic test to see your performance.'
+            'message': f'No diagnostic data available for {name}. Complete a diagnostic test to see your performance.'
         }
     
     def _get_default_domain_statistics(self) -> Dict[str, Dict]:

@@ -3301,12 +3301,12 @@ class DiagnosticSession(db.Model):
         
         # Mapping for the 6-axis radar chart
         radar_domain_mapping = {
-            'Huisartsgeneeskunde': ['ALGEMENE_GENEESKUNDE', 'Internal Medicine', 'Surgery', 'Pediatrics'],
+            'Huisartsgeneeskunde': ['ALGEMENE_GENEESKUNDE', 'huisarts', 'Internal Medicine', 'Surgery', 'Pediatrics', 'THER', 'PROTH', 'ORTHO', 'PEDI', 'PARO', 'TREATMENT_PLANNING', 'SPECIAL', 'EMERGENCY', 'INFECTION', 'MICROBIOLOGIE', 'PREV'],
             'Farmacotherapie': ['PHARMACOLOGY', 'Pharmacology'],
-            'Ethiek & Recht': ['ETHIEK', 'Medical Ethics', 'Medical Law'],
+            'Ethiek & Recht': ['ETHIEK', 'Medical Ethics', 'Medical Law', 'PROFESSIONAL'],
             'Communicatie': ['COMMUNICATION', 'Communication Skills'],
-            'Klinisch Redeneren': ['DIAGNOSIS', 'Clinical Skills', 'Physiology'],
-            'Zorgstelsel': ['DUTCH', 'Social Medicine']
+            'Klinisch Redeneren': ['DIAGNOSIS', 'DIAGNOSIS_SPECIAL', 'Clinical Skills', 'Physiology', 'FYSIOLOGIE', 'ANATOMIE', 'PATHOLOGIE', 'RADIOLOGIE', 'SYSTEMIC', 'MATERIAALKUNDE', 'SURG', 'PRACTICAL_SKILLS'],
+            'Zorgstelsel': ['DUTCH', 'Social Medicine', 'STATISTICS', 'RESEARCH_METHOD']
         }
         
         # Initialize radar scores

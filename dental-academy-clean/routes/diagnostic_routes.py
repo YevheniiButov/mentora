@@ -871,6 +871,7 @@ def submit_answer(lang, session_id):
             return jsonify({'success': False, 'error': 'Failed to create response'}), 500
         
         logger.info(f"Response created successfully: {response.id} for question {question_id}")
+        logger.info(f"DEBUG ANSWER: question_id={question_id}, selected_index={selected_option}, correct_index={question.correct_answer_index}, is_correct={response.is_correct}")
         
         # ✅ Add to Spaced Repetition if answer is incorrect (for daily practice sessions)
         # Check if this is a daily practice session
