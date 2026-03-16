@@ -3768,7 +3768,7 @@ translations = {
     'landing_broken_3_t': 'B2+',
     'landing_broken_3_d': 'Medical Dutch required. Not just conversational — clinical terminology, patient communication, exam language.',
     'landing_broken_conc_1': 'Meanwhile, Dutch hospitals are understaffed and spending millions recruiting from abroad — while',
-    'landing_broken_conc_2': '400+ qualified specialists already live here',
+    'landing_broken_conc_2': 'thousands of qualified specialists already live here',
     'landing_broken_conc_3': ', working as cleaners and warehouse workers. Mentora fixes this.',
     'landing_investor_toggle_t': 'Are you a Healthcare Provider or Partner?',
     'landing_investor_toggle_d': 'Behind this section: the economic case, the system architecture, and what makes Mentora a scalable infrastructure — not just a product.',

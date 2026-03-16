@@ -3566,7 +3566,7 @@ translations = {
     'landing_broken_3_t': 'B2+',
     'landing_broken_3_d': 'Medisch Nederlands vereist, inclusief jargon.',
     'landing_broken_conc_1': 'Nederlandse ziekenhuizen hebben personeelstekorten en geven miljoenen uit aan werving in het buitenland — terwijl',
-    'landing_broken_conc_2': '400+ gekwalificeerde specialisten hier al wonen',
+    'landing_broken_conc_2': 'duizenden gekwalificeerde specialisten hier al wonen',
     'landing_broken_conc_3': ', en werken als schoonmaker. Mentora lost dit op.',
     'landing_investor_toggle_t': 'Bent u Zorgverlener of Partner?',
     'landing_investor_toggle_d': 'Achter deze sectie: de economische rationale en systeemarchitectuur van Mentora.',

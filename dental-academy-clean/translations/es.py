@@ -3190,7 +3190,7 @@ translations = {
     'landing_broken_3_t': 'B2+',
     'landing_broken_3_d': 'Holandés médico requerido.',
     'landing_broken_conc_1': 'Mientras tanto, los hospitales están escasos de personal y gastan millones en reclutamiento en el extranjero — mientras que',
-    'landing_broken_conc_2': 'Más de 400 especialistas cualificados ya viven aquí',
+    'landing_broken_conc_2': 'miles de especialistas cualificados ya viven aquí',
     'landing_broken_conc_3': ', trabajando en otros empleos. Mentora soluciona esto.',
     'landing_investor_toggle_t': '¿Eres un proveedor de atención médica o un socio?',
     'landing_investor_toggle_d': 'Detrás de esta sección: el caso económico, la arquitectura del sistema y lo que hace de Mentora una infraestructura escalable — no solo un producto.',

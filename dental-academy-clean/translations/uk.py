@@ -3472,7 +3472,7 @@ translations = {
     'landing_broken_3_t': 'B2+',
     'landing_broken_3_d': 'Потрібна медична нідерландська.',
     'landing_broken_conc_1': 'Лікарні мають дефіцит кадрів — в той час як',
-    'landing_broken_conc_2': 'Понад 400 кваліфікованих спеціалістів вже живуть тут',
+    'landing_broken_conc_2': 'тисячі кваліфікованих спеціалістів вже живуть тут',
     'landing_broken_conc_3': '. Mentora вирішує цю проблему.',
     'landing_investor_toggle_t': 'Ви представник клініки чи партнер?',
     'landing_investor_toggle_d': 'У цьому розділі: економічне обгрунтування Mentora.',
