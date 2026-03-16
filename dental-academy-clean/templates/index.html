@@ -96,33 +96,74 @@
 /* WHAT WE CONNECT */
   .wc-section { padding: 56px 40px 48px; background: var(--mentora-bg-secondary); border-top: 0.5px solid var(--mentora-border); border-bottom: 0.5px solid var(--mentora-border); }
 
-  .wc-eyebrow {
-    text-align: center;
+  .wc-sub {
+    font-size: 15px;
+    color: #64748b;
+    line-height: 1.65;
+    max-width: 440px;
+    margin-bottom: 44px;
+  }
+
+  .section-label {
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 1.4px;
     text-transform: uppercase;
     color: #94a3b8;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
-  .wc-title {
-    text-align: center;
-    font-size: clamp(22px, 4vw, 28px);
-    font-weight: 600;
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4.5vw, 36px);
+    font-weight: 400;
+    line-height: 1.15;
     color: #0f172a;
-    margin-bottom: 8px;
+    margin-bottom: 24px;
     letter-spacing: -0.4px;
-    line-height: 1.2;
   }
-  .wc-sub {
-    text-align: center;
-    font-size: 15px;
-    color: #64748b;
-    margin-bottom: 44px;
-    line-height: 1.65;
-    max-width: 440px;
-    margin-left: auto;
-    margin-right: auto;
+
+  /* Side label layout for sections */
+  .side-layout-container {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .side-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    position: sticky;
+    top: 100px;
+    height: fit-content;
+    padding-top: 4px;
+  }
+
+  @media (max-width: 900px) {
+    .side-layout-container {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+    .side-label {
+      position: static;
+      margin-bottom: 12px;
+    }
+  }
+
+  .wc-outer {
+    position: relative;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .wc-connections {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 0;
   }
 
   .wc-grid {
@@ -130,8 +171,8 @@
     grid-template-columns: 1fr auto 1fr;
     gap: 0 20px;
     align-items: center;
-    max-width: 700px;
-    margin: 0 auto;
+    position: relative;
+    z-index: 1;
   }
   .wc-col { display: flex; flex-direction: column; gap: 10px; }
   .wc-col.left { align-items: flex-end; }
@@ -171,34 +212,26 @@
   .wc-hub { display: flex; flex-direction: column; align-items: center; gap: 10px; }
   .hub-label { font-size: 11px; font-weight: 600; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; }
 
-  /* Outer ring: slow clockwise */
   @keyframes spin-slow { to { transform: rotate(360deg); } }
-  /* Molecule: fast clockwise */
   @keyframes spin-fast { to { transform: rotate(360deg); } }
+  @keyframes draw-line {
+    0%   { stroke-dashoffset: 160; opacity: 0; }
+    5%   { opacity: 0.55; }
+    45%  { stroke-dashoffset: 0; opacity: 0.28; }
+    90%  { stroke-dashoffset: 0; opacity: 0.28; }
+    100% { stroke-dashoffset: 0; opacity: 0; }
+  }
 
   .hub-outer { width: 100px; height: 100px; position: relative; flex-shrink: 0; }
-
   .hub-bg-circle {
-    position: absolute;
-    inset: 10px;
-    border-radius: 50%;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    position: absolute; inset: 10px; border-radius: 50%;
+    background: #f8fafc; border: 1px solid #e2e8f0;
   }
-  .hub-ring-svg {
-    position: absolute;
-    inset: 0;
-    animation: spin-slow 22s linear infinite;
-  }
-  .hub-molecule-wrap {
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 0; height: 0;
-  }
+  .hub-ring-svg { position: absolute; inset: 0; animation: spin-slow 22s linear infinite; }
+  .hub-molecule-wrap { position: absolute; top: 50%; left: 50%; width: 0; height: 0; }
   .hub-molecule-inner {
     width: 72px; height: 72px;
-    position: absolute;
-    top: -36px; left: -36px;
+    position: absolute; top: -36px; left: -36px;
     animation: spin-fast 8s linear infinite;
   }
 
@@ -633,121 +666,117 @@
     {% endif %}
     <a href="#institutions" class="btn-outline" onclick="document.getElementById('institutions').scrollIntoView({behavior:'smooth'}); return false;">{{ t('landing_partner_with_us', lang)|default('Partner with us ↘') }}</a>
   </div>
-  <div class="hero-sub fade-up visible d4">{{ t('landing_hero_sub', lang)|default('Available in 9 languages · Active candidates onboard') }}</div>
 </div>
 
 <section class="wc-section">
-  <div class="fade-up">
-    <p class="wc-eyebrow">{{ t('landing_what_connect_eyebrow', lang)|default('The connection') }}</p>
-    <h2 class="wc-title">{{ t('landing_what_connect', lang)|default('What we connect') }}</h2>
-    <p class="wc-sub">
-      {{ t('landing_what_connect_sub', lang)|default('Mentora sits at the intersection of talent, compliance, and placement — bridging three worlds that rarely talk to each other.') }}
-    </p>
+  <div class="side-layout-container fade-up">
+    <div class="side-label">{{ t('landing_what_connect', lang)|default('What we connect') }}</div>
+    <div class="wc-content">
+      <p class="wc-sub">
+        {{ t('landing_what_connect_sub', lang)|default('Mentora sits at the intersection of talent, compliance, and placement — bridging three worlds that rarely talk to each other.') }}
+      </p>
+    <div class="wc-outer" id="wcOuter">
+      <svg class="wc-connections" id="connSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="wc-grid">
+        <!-- LEFT: Specialists -->
+        <div class="wc-col left">
+          <div class="wc-tag left" id="tL1">
+            <span class="wc-dot dot-blue"></span>
+            <div class="tag-label">
+              <span class="tag-name">{{ t('landing_dentists_surgeons', lang)|default('Dentists & surgeons') }}</span>
+              <span class="tag-meta">{{ t('landing_non_eu_diploma', lang)|default('Non-EU diploma') }}</span>
+            </div>
+          </div>
+          <div class="wc-tag left" id="tL2">
+            <span class="wc-dot dot-teal"></span>
+            <div class="tag-label">
+              <span class="tag-name">{{ t('landing_gps_nurses_tag', lang)|default('GPs & nurses') }}</span>
+              <span class="tag-meta">{{ t('landing_active_in_nl', lang)|default('Active in NL') }}</span>
+            </div>
+          </div>
+          <div class="wc-tag left" id="tL3">
+            <span class="wc-dot dot-violet"></span>
+            <div class="tag-label">
+              <span class="tag-name">{{ t('landing_specialists_tag', lang)|default('Specialists') }}</span>
+              <span class="tag-meta">{{ t('landing_big_pending_tag', lang)|default('BIG process pending') }}</span>
+            </div>
+          </div>
+        </div>
 
-    <div class="wc-grid">
-      <!-- LEFT: Specialists -->
-      <div class="wc-col left">
-        <div class="wc-tag left">
-          <span class="wc-dot dot-blue"></span>
-          <div class="tag-label">
-            <span class="tag-name">{{ t('landing_dentists_surgeons', lang)|default('Dentists & surgeons') }}</span>
-            <span class="tag-meta">{{ t('landing_non_eu_diploma', lang)|default('Non-EU diploma') }}</span>
-          </div>
-        </div>
-        <div class="wc-tag left">
-          <span class="wc-dot dot-teal"></span>
-          <div class="tag-label">
-            <span class="tag-name">{{ t('landing_gps_nurses_tag', lang)|default('GPs & nurses') }}</span>
-            <span class="tag-meta">{{ t('landing_active_in_nl', lang)|default('Active in NL') }}</span>
-          </div>
-        </div>
-        <div class="wc-tag left">
-          <span class="wc-dot dot-violet"></span>
-          <div class="tag-label">
-            <span class="tag-name">{{ t('landing_specialists_tag', lang)|default('Specialists') }}</span>
-            <span class="tag-meta">{{ t('landing_big_pending_tag', lang)|default('BIG process pending') }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- CENTER: Hub -->
-      <div class="wc-hub">
-        <div class="hub-outer">
-          <div class="hub-bg-circle"></div>
-          <!-- Outer ring: slow clockwise 22s -->
-          <svg class="hub-ring-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="50" cy="50" r="46" stroke="#94a3b8" stroke-width="0.8" stroke-dasharray="4 5" stroke-linecap="round" opacity="0.5"/>
-            <circle cx="50" cy="4"  r="2.5" fill="#3b82f6" opacity="0.7"/>
-            <circle cx="96" cy="50" r="2.5" fill="#16a34a" opacity="0.7"/>
-            <circle cx="50" cy="96" r="2.5" fill="#7c3aed" opacity="0.7"/>
-            <circle cx="4"  cy="50" r="2.5" fill="#d97706" opacity="0.7"/>
-          </svg>
-          <!-- Molecule: fast clockwise 8s -->
-          <div class="hub-molecule-wrap">
-            <svg class="hub-molecule-inner" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <line x1="36" y1="36" x2="32" y2="29" stroke="#2a9d8f" stroke-width="0.9" opacity="0.55"/>
-              <line x1="36" y1="36" x2="40" y2="29" stroke="#2a9d8f" stroke-width="0.9" opacity="0.55"/>
-              <line x1="36" y1="36" x2="28" y2="38" stroke="#2a9d8f" stroke-width="0.9" opacity="0.55"/>
-              <line x1="36" y1="36" x2="44" y2="38" stroke="#2a9d8f" stroke-width="0.9" opacity="0.55"/>
-              <line x1="36" y1="36" x2="32" y2="45" stroke="#2a9d8f" stroke-width="0.9" opacity="0.55"/>
-              <line x1="36" y1="36" x2="42" y2="44" stroke="#2a9d8f" stroke-width="0.9" opacity="0.55"/>
-              <line x1="32" y1="29" x2="25" y2="23" stroke="#2a9d8f" stroke-width="0.65" opacity="0.38"/>
-              <line x1="40" y1="29" x2="47" y2="23" stroke="#2a9d8f" stroke-width="0.65" opacity="0.38"/>
-              <line x1="28" y1="38" x2="19" y2="34" stroke="#2a9d8f" stroke-width="0.65" opacity="0.38"/>
-              <line x1="44" y1="38" x2="53" y2="35" stroke="#2a9d8f" stroke-width="0.65" opacity="0.38"/>
-              <line x1="32" y1="45" x2="26" y2="53" stroke="#2a9d8f" stroke-width="0.65" opacity="0.38"/>
-              <line x1="42" y1="44" x2="49" y2="52" stroke="#2a9d8f" stroke-width="0.65" opacity="0.38"/>
-              <line x1="32" y1="29" x2="40" y2="29" stroke="#2a9d8f" stroke-width="0.6" opacity="0.28"/>
-              <line x1="28" y1="38" x2="32" y2="45" stroke="#2a9d8f" stroke-width="0.6" opacity="0.28"/>
-              <line x1="44" y1="38" x2="42" y2="44" stroke="#2a9d8f" stroke-width="0.6" opacity="0.28"/>
-              <circle cx="25" cy="23" r="2.2" fill="#2a9d8f" opacity="0.42"/>
-              <circle cx="47" cy="23" r="1.9" fill="#2a9d8f" opacity="0.42"/>
-              <circle cx="19" cy="34" r="2.4" fill="#2a9d8f" opacity="0.46"/>
-              <circle cx="53" cy="35" r="1.9" fill="#2a9d8f" opacity="0.42"/>
-              <circle cx="26" cy="53" r="2.1" fill="#2a9d8f" opacity="0.42"/>
-              <circle cx="49" cy="52" r="2.1" fill="#2a9d8f" opacity="0.42"/>
-              <circle cx="32" cy="29" r="3.2" fill="#2a9d8f" opacity="0.78"/>
-              <circle cx="40" cy="29" r="2.7" fill="#2a9d8f" opacity="0.72"/>
-              <circle cx="28" cy="38" r="3.4" fill="#2a9d8f" opacity="0.82"/>
-              <circle cx="44" cy="38" r="2.7" fill="#2a9d8f" opacity="0.72"/>
-              <circle cx="32" cy="45" r="3.2" fill="#2a9d8f" opacity="0.78"/>
-              <circle cx="42" cy="44" r="2.7" fill="#2a9d8f" opacity="0.72"/>
-              <circle cx="36" cy="36" r="4.8" fill="#1d857a"/>
+        <!-- CENTER: Hub -->
+        <div class="wc-hub">
+          <div class="hub-outer" id="hubEl">
+            <div class="hub-bg-circle"></div>
+            <svg class="hub-ring-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="50" cy="50" r="46" stroke="#94a3b8" stroke-width="0.8" stroke-dasharray="4 5" stroke-linecap="round" opacity="0.5"/>
+              <circle cx="50" cy="4"  r="2.5" fill="#3b82f6" opacity="0.7"/>
+              <circle cx="96" cy="50" r="2.5" fill="#16a34a" opacity="0.7"/>
+              <circle cx="50" cy="96" r="2.5" fill="#7c3aed" opacity="0.7"/>
+              <circle cx="4"  cy="50" r="2.5" fill="#d97706" opacity="0.7"/>
             </svg>
+            <div class="hub-molecule-wrap">
+              <svg class="hub-molecule-inner" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <line x1="36" y1="36" x2="32" y2="29" stroke="#2a9d8f" stroke-width="0.9" opacity="0.55"/>
+                <line x1="36" y1="36" x2="40" y2="29" stroke="#2a9d8f" stroke-width="0.9" opacity="0.55"/>
+                <line x1="36" y1="36" x2="28" y2="38" stroke="#2a9d8f" stroke-width="0.9" opacity="0.55"/>
+                <line x1="36" y1="36" x2="44" y2="38" stroke="#2a9d8f" stroke-width="0.9" opacity="0.55"/>
+                <line x1="36" y1="36" x2="32" y2="45" stroke="#2a9d8f" stroke-width="0.9" opacity="0.55"/>
+                <line x1="36" y1="36" x2="42" y2="44" stroke="#2a9d8f" stroke-width="0.9" opacity="0.55"/>
+                <line x1="32" y1="29" x2="25" y2="23" stroke="#2a9d8f" stroke-width="0.65" opacity="0.38"/>
+                <line x1="40" y1="29" x2="47" y2="23" stroke="#2a9d8f" stroke-width="0.65" opacity="0.38"/>
+                <line x1="28" y1="38" x2="19" y2="34" stroke="#2a9d8f" stroke-width="0.65" opacity="0.38"/>
+                <line x1="44" y1="38" x2="53" y2="35" stroke="#2a9d8f" stroke-width="0.65" opacity="0.38"/>
+                <line x1="32" y1="45" x2="26" y2="53" stroke="#2a9d8f" stroke-width="0.65" opacity="0.38"/>
+                <line x1="42" y1="44" x2="49" y2="52" stroke="#2a9d8f" stroke-width="0.65" opacity="0.38"/>
+                <circle cx="25" cy="23" r="2.2" fill="#2a9d8f" opacity="0.42"/>
+                <circle cx="47" cy="23" r="1.9" fill="#2a9d8f" opacity="0.42"/>
+                <circle cx="19" cy="34" r="2.4" fill="#2a9d8f" opacity="0.46"/>
+                <circle cx="53" cy="35" r="1.9" fill="#2a9d8f" opacity="0.42"/>
+                <circle cx="26" cy="53" r="2.1" fill="#2a9d8f" opacity="0.42"/>
+                <circle cx="49" cy="52" r="2.1" fill="#2a9d8f" opacity="0.42"/>
+                <circle cx="32" cy="29" r="3.2" fill="#2a9d8f" opacity="0.78"/>
+                <circle cx="40" cy="29" r="2.7" fill="#2a9d8f" opacity="0.72"/>
+                <circle cx="28" cy="38" r="3.4" fill="#2a9d8f" opacity="0.82"/>
+                <circle cx="44" cy="38" r="2.7" fill="#2a9d8f" opacity="0.72"/>
+                <circle cx="32" cy="45" r="3.2" fill="#2a9d8f" opacity="0.78"/>
+                <circle cx="42" cy="44" r="2.7" fill="#2a9d8f" opacity="0.72"/>
+                <circle cx="36" cy="36" r="4.8" fill="#1d857a"/>
+              </svg>
+            </div>
           </div>
+          <span class="hub-label">Mentora</span>
         </div>
-        <span class="hub-label">Mentora</span>
-      </div>
 
-      <!-- RIGHT: System & Institutions -->
-      <div class="wc-col">
-        <div class="wc-tag">
-          <span class="wc-dot dot-green"></span>
-          <div class="tag-label">
-            <span class="tag-name">{{ t('landing_big_reg_tag', lang)|default('BIG register & CIBG') }}</span>
-            <span class="tag-meta">{{ t('landing_compliance_tag', lang)|default('Compliance & docs') }}</span>
+        <!-- RIGHT: Ecosystem -->
+        <div class="wc-col">
+          <div class="wc-tag" id="tR1">
+            <span class="wc-dot dot-green"></span>
+            <div class="tag-label">
+              <span class="tag-name">{{ t('landing_big_reg_tag', lang)|default('BIG register & CIBG') }}</span>
+              <span class="tag-meta">{{ t('landing_compliance_tag', lang)|default('Compliance & docs') }}</span>
+            </div>
           </div>
-        </div>
-        <div class="wc-tag">
-          <span class="wc-dot dot-amber"></span>
-          <div class="tag-label">
-            <span class="tag-name">{{ t('landing_healthcare_inst', lang)|default('Healthcare institutions') }}</span>
-            <span class="tag-meta">{{ t('landing_staffing_tag', lang)|default('Staffing needs') }}</span>
+          <div class="wc-tag" id="tR2">
+            <span class="wc-dot dot-amber"></span>
+            <div class="tag-label">
+              <span class="tag-name">{{ t('landing_healthcare_inst', lang)|default('Healthcare institutions') }}</span>
+              <span class="tag-meta">{{ t('landing_staffing_tag', lang)|default('Staffing needs') }}</span>
+            </div>
           </div>
-        </div>
-        <div class="wc-tag">
-          <span class="wc-dot dot-slate"></span>
-          <div class="tag-label">
-            <span class="tag-name">{{ t('landing_vault_tag', lang)|default('Credential vault') }}</span>
-            <span class="tag-meta">{{ t('landing_apostille_tag', lang)|default('Apostille & translations') }}</span>
+          <div class="wc-tag" id="tR3">
+            <span class="wc-dot dot-slate"></span>
+            <div class="tag-label">
+              <span class="tag-name">{{ t('landing_vault_tag', lang)|default('Credential vault') }}</span>
+              <span class="tag-meta">{{ t('landing_apostille_tag', lang)|default('Apostille & translations') }}</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
-    <p class="wc-note">
-      {{ t('landing_wc_note_1', lang)|default('Every specialist who joins Mentora gets a verified profile matched against real institutional demand — reducing the average BIG trajectory from') }} <strong>{{ t('landing_wc_note_2', lang)|default('3–5 years') }}</strong> {{ t('landing_wc_note_3', lang)|default('to a structured') }} <strong>{{ t('landing_wc_note_4', lang)|default('18-month pathway') }}</strong>.
-    </p>
+      <p class="wc-note" style="margin-left: 0; margin-right: auto; text-align: left;">
+        {{ t('landing_wc_note_1', lang)|default('Every specialist who joins Mentora gets a verified profile matched against real institutional demand — reducing the average BIG trajectory from') }} <strong>{{ t('landing_wc_note_2', lang)|default('3–5 years') }}</strong> {{ t('landing_wc_note_3', lang)|default('to a structured') }} <strong>{{ t('landing_wc_note_4', lang)|default('18-month pathway') }}</strong>.
+      </p>
+    </div>
   </div>
 </section>
 
@@ -1189,6 +1218,86 @@ document.getElementById('b2bLeadForm').addEventListener('submit', async function
     btnLoader.style.display = 'none';
   }
 });
+</script>
+
+<script>
+(function() {
+  function center(el, ref) {
+    const er = el.getBoundingClientRect();
+    const rr = ref.getBoundingClientRect();
+    return { x: er.left - rr.left + er.width / 2, y: er.top - rr.top + er.height / 2 };
+  }
+
+  function buildLines() {
+    const svg    = document.getElementById('connSvg');
+    const outer  = document.getElementById('wcOuter');
+    const hub    = document.getElementById('hubEl');
+    if (!svg || !outer || !hub) return;
+
+    const tagIds = ['tL1','tL2','tL3','tR1','tR2','tR3'];
+    const colors = ['#3b82f6','#0d9488','#7c3aed','#16a34a','#d97706','#64748b'];
+    const delays = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5];
+    const period = 3000;
+
+    svg.innerHTML = '';
+    const outerR = outer.getBoundingClientRect();
+    svg.setAttribute('width',   outerR.width);
+    svg.setAttribute('height',  outerR.height);
+    svg.setAttribute('viewBox', `0 0 ${outerR.width} ${outerR.height}`);
+
+    const hc = center(hub, outer);
+    const dots = [];
+
+    tagIds.forEach((id, i) => {
+      const tag = document.getElementById(id);
+      if (!tag) return;
+      const tc = center(tag, outer);
+      const mx = (hc.x + tc.x) / 2;
+      const my = (hc.y + tc.y) / 2 - 14;
+      const d  = `M ${hc.x} ${hc.y} Q ${mx} ${my} ${tc.x} ${tc.y}`;
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('stroke', colors[i]);
+      path.setAttribute('stroke-width', '0.7');
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke-dasharray', '160');
+      path.setAttribute('stroke-dashoffset', '160');
+      path.setAttribute('opacity', '0');
+      path.style.animation = `draw-line 3s ease-out ${delays[i]}s infinite`;
+      svg.appendChild(path);
+
+      const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      dot.setAttribute('r', '2.5');
+      dot.setAttribute('fill', colors[i]);
+      dot.setAttribute('opacity', '0');
+      svg.appendChild(dot);
+      dots.push({ dot, path, delay: delays[i] * 1000 });
+    });
+
+    const startTime = performance.now();
+    function animFrame(now) {
+      dots.forEach(({ dot, path, delay }) => {
+        const elapsed = (now - startTime - delay + period * 10) % period;
+        const enter = period * 0.15;
+        const exit  = period * 0.60;
+        if (elapsed < enter || elapsed > exit) { dot.setAttribute('opacity', '0'); return; }
+        const t = (elapsed - enter) / (exit - enter);
+        try {
+          const pt = path.getPointAtLength(t * path.getTotalLength());
+          dot.setAttribute('cx', pt.x);
+          dot.setAttribute('cy', pt.y);
+          dot.setAttribute('opacity', Math.sin(t * Math.PI) * 0.85);
+        } catch(e) {}
+      });
+      requestAnimationFrame(animFrame);
+    }
+    requestAnimationFrame(animFrame);
+  }
+
+  setTimeout(buildLines, 150);
+  window.addEventListener('resize', buildLines);
+})();
 </script>
 
 <script>
