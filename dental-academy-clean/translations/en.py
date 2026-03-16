@@ -570,6 +570,27 @@ translations = {
     'your_progress': 'Your progress',
     'completed': 'Completed',
     
+    # What we connect block
+    'landing_what_connect_eyebrow': 'The connection',
+    'landing_what_connect': 'What we connect',
+    'landing_what_connect_sub': 'Mentora sits at the intersection of talent, compliance, and placement — bridging three worlds that rarely talk to each other.',
+    'landing_dentists_surgeons': 'Dentists & surgeons',
+    'landing_non_eu_diploma': 'Non-EU diploma',
+    'landing_gps_nurses_tag': 'GPs & nurses',
+    'landing_active_in_nl': 'Active in NL',
+    'landing_specialists_tag': 'Specialists',
+    'landing_big_pending_tag': 'BIG process pending',
+    'landing_big_reg_tag': 'BIG register & CIBG',
+    'landing_compliance_tag': 'Compliance & docs',
+    'landing_healthcare_inst': 'Healthcare institutions',
+    'landing_staffing_tag': 'Staffing needs',
+    'landing_vault_tag': 'Credential vault',
+    'landing_apostille_tag': 'Apostille & translations',
+    'landing_wc_note_1': 'Every specialist who joins Mentora gets a verified profile matched against real institutional demand — reducing the average BIG trajectory from',
+    'landing_wc_note_2': '3–5 years',
+    'landing_wc_note_3': 'to a structured',
+    'landing_wc_note_4': '18-month pathway',
+    
     # Two-stage learning process
     'knowledge_assessment': 'Knowledge Assessment',
     'diagnostic_explanation': 'To start learning, you must first take a knowledge test to determine your current level.',
