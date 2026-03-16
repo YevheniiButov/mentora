@@ -163,6 +163,10 @@ def start_diagnostic(lang):
                 if diagnostic_type not in ['quick_scan_10', 'quick_30', 'full_60']:
                     diagnostic_type = 'quick_scan_10'
             
+            # GET requests or simple calls often come here - ensure we respect the type
+            if request.method == 'GET' and not request.is_json:
+                diagnostic_type = request.args.get('diagnostic_type', diagnostic_type)
+            
             # Check for existing active session
             active_session = DiagnosticSession.query.filter_by(
                 user_id=current_user.id,
@@ -958,9 +962,11 @@ def submit_answer(lang, session_id):
         diagnostic_type = session_data.get('diagnostic_type', 'express')
         
         # Validate diagnostic type
-        if diagnostic_type not in ['express', 'quick_30', 'preliminary', 'readiness', 'full', 'comprehensive']:
+        if diagnostic_type not in ['quick_scan_10', 'express', 'quick_30', 'preliminary', 'readiness', 'full', 'comprehensive', 'full_60']:
             logger.warning(f"Invalid diagnostic type: {diagnostic_type}")
-            diagnostic_type = 'express'
+            # Do not force fallback if it's already quick_scan_10 (it might be missing from list but valid in dict)
+            if diagnostic_type not in ['quick_scan_10']:
+                diagnostic_type = 'quick_scan_10'
         
         # Determine max questions with validation
         estimated_total = session_data.get('estimated_total_questions')
@@ -968,6 +974,7 @@ def submit_answer(lang, session_id):
             max_questions = int(estimated_total)
         else:
             max_questions = {
+                'quick_scan_10': 10,
                 'express': 30,  # Изменено с 25 на 30 для совместимости
                 'quick_30': 30,  # 30 вопросов для Quick Test
                 'full_60': 60,   # 60 вопросов для Full Test
@@ -1418,12 +1425,12 @@ def show_results(lang, session_id):
                 
                 # Log progress
                 try:
-                    from app import app
-                    app.logger.info(f"Reassessment for user {current_user.id}: "
+                    from flask import current_app
+                    current_app.logger.info(f"Reassessment for user {current_user.id}: "
                                    f"Overall ability {active_plan.current_ability:.2f}, "
                                    f"Weak domains: {still_weak}")
-                except ImportError:
-                    # If app is not available, just continue
+                except Exception:
+                    # If logging fails, just continue
                     pass
                 
                 # Reset next diagnostic date
@@ -2676,8 +2683,11 @@ def start_quick_test(lang):
             active_session.completed_at = datetime.now(timezone.utc)
             db.session.commit()
 
-        # Get first question using TOP-10 configuration for Quick Test
-        selected_questions = select_questions_for_quick_test(current_user, 'quick_30')
+        # Get diagnostic type from arguments
+        diagnostic_type = request.args.get('diagnostic_type', 'quick_scan_10')
+        
+        # Get first question using correct configuration
+        selected_questions = select_questions_for_quick_test(current_user, diagnostic_type)
         first_question = selected_questions[0] if selected_questions else None
         
         if not first_question:
@@ -2692,11 +2702,12 @@ def start_quick_test(lang):
         )
         
         # Set session data for Quick Test
+        estimated_questions = 10 if diagnostic_type == 'quick_scan_10' else 30
         session_data = {
-            'diagnostic_type': 'quick_30',
+            'diagnostic_type': diagnostic_type,
             'selected_questions': [q.id for q in selected_questions],
             'quick_test_config': get_quick_test_config(get_user_profession_code(current_user)),
-            'estimated_total_questions': 30,
+            'estimated_total_questions': estimated_questions,
             'time_limit_minutes': 20
         }
         
