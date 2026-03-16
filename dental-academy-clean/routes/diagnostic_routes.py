@@ -2900,6 +2900,39 @@ def start_reassessment(lang, plan_id):
         lang = g.get('lang') or session.get('lang') or 'nl'
         return redirect(url_for('learning_map_bp.learning_map', lang=lang))
 
+@diagnostic_bp.route('/session/<int:session_id>/terminate', methods=['POST'])
+@login_required
+@validate_session
+def terminate_session(lang, session_id):
+    """Explicitly terminate/abort diagnostic session"""
+    try:
+        session = g.current_session
+        
+        if session.status == 'completed':
+            return safe_jsonify({
+                'success': False,
+                'message': 'Cannot terminate a completed session'
+            })
+            
+        session.status = 'terminated'
+        session.termination_reason = 'user_aborted'
+        session.completed_at = datetime.now(timezone.utc)
+        
+        db.session.commit()
+        
+        return safe_jsonify({
+            'success': True,
+            'message': 'Session terminated successfully',
+            'redirect_url': url_for('learning_map_bp.learning_map', lang=lang)
+        })
+    except Exception as e:
+        logger.error(f"Error terminating session: {e}")
+        return safe_jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
 @diagnostic_bp.route('/session/<int:session_id>/complete', methods=['POST'])
 @login_required
 @validate_session
@@ -2917,6 +2950,18 @@ def complete_session(lang, session_id):
             return safe_jsonify({
                 'success': True,
                 'message': 'Session already completed'
+            })
+        
+        # Check if zero answers - then we just abort
+        if session.questions_answered == 0:
+            session.status = 'terminated'
+            session.termination_reason = 'user_requested_empty'
+            session.completed_at = datetime.now(timezone.utc)
+            db.session.commit()
+            return safe_jsonify({
+                'success': True,
+                'message': 'Session aborted (zero answers)',
+                'redirect_url': url_for('learning_map_bp.learning_map', lang=lang)
             })
         
         # Принудительно завершаем сессию

@@ -3553,6 +3553,10 @@ class DiagnosticSession(db.Model):
     
     def _generate_insight_text(self, score):
         """Generate dynamic insight text based on readiness score"""
+        # Handle zero answers case
+        if self.questions_answered == 0:
+            return f"Uw **basis is in ontwikkeling**. Uw resultaten tonen potentieel voor groei. Mentora zal u helpen om uw NHG-protocolkennis naar een hoger уровень те тилло."
+
         if score >= 80:
             return f"U heeft een **uitstekende kennisbasis**. Uw resultaten plaatsen u in de **top 10%** van buitenlandse zorgverleners voor NHG-protocolkennis — een superieur startpunt."
         elif score >= 60:

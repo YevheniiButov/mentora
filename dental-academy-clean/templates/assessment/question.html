@@ -455,6 +455,12 @@ async function finishAssessment() {
 }
 
 function forceFinishDiagnostic() {
+    // If no questions answered, treat as abort/exit
+    if (answeredQuestionsCount === 0) {
+        exitDiagnostic();
+        return;
+    }
+
     showModal('{{ t("complete_diagnostic", lang) | default("Complete Diagnostic") }}', 
         '{{ t("confirm_complete_diagnostic", lang) | default("Are you sure you want to complete the diagnostic? Results will be based on already answered questions.") }}', [
         { text: '{{ t("cancel", lang) | default("Cancel") }}', class: 'btn-secondary', onclick: hideModal },
@@ -594,7 +600,25 @@ function exitDiagnostic() {
         { text: '{{ t("cancel", lang) | default("Cancel") }}', class: 'btn-secondary', onclick: hideModal },
         { text: '{{ t("exit", lang) | default("Exit") }}', class: 'btn-error', onclick: () => {
             hideModal();
-        window.location.href = '{{ url_for("learning_map_bp.learning_map", lang=lang) }}';
+            // Call termination API
+            fetch('{{ url_for("diagnostic.terminate_session", lang=lang, session_id=session_id) }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    window.location.href = '{{ url_for("learning_map_bp.learning_map", lang=lang) }}';
+                }
+            })
+            .catch(error => {
+                console.error('Error terminating session:', error);
+                window.location.href = '{{ url_for("learning_map_bp.learning_map", lang=lang) }}';
+            });
         }}
     ]);
 }

@@ -1403,6 +1403,10 @@ class IRTEngine:
             return 0.0
         
         try:
+            # Handle case with no answers
+            if self.session and self.session.questions_answered == 0:
+                return 0.0
+
             # Use logistic function to convert theta to probability
             # This gives us a smooth curve from 0 to 1
             import math
