@@ -1326,7 +1326,7 @@ def show_results(lang, session_id):
         db.session.commit()
         
         # Создание или обновление плана обучения на основе результатов диагностики
-        if diagnostic_session.session_type in ['diagnostic', 'express', 'preliminary', 'readiness', 'adaptive_diagnostic', 'full', 'learning', 'quick_30', 'full_60']:
+        if diagnostic_session.session_type in ['diagnostic', 'express', 'preliminary', 'readiness', 'adaptive_diagnostic', 'full', 'learning', 'quick_30', 'full_60', 'quick_scan_10']:
             # Проверяем, есть ли активный план
             existing_plan = PersonalLearningPlan.query.filter_by(
                 user_id=current_user.id,
@@ -1403,7 +1403,13 @@ def show_results(lang, session_id):
                 
                 for domain_code, new_data in new_abilities.items():
                     old_ability = old_abilities.get(domain_code, {}).get('ability_estimate', 0.0)
-                    new_ability = new_data.get('ability_estimate', 0.0)
+                    
+                    # Correctly handle float or dict for new_data
+                    if isinstance(new_data, dict):
+                        new_ability = new_data.get('ability_estimate', 0.0)
+                    else:
+                        new_ability = float(new_data)
+                        
                     improvement = new_ability - old_ability
                     
                     improvements[domain_code] = {
@@ -1463,6 +1469,8 @@ def show_results(lang, session_id):
         print(f"❌ Ошибка в show_results: {e}")
         import traceback
         traceback.print_exc()
+        flash('Произошла ошибка при загрузке результатов. Пожалуйста, попробуйте позже.', 'error')
+        return redirect(url_for('main.index', lang=lang))
         flash(f'Ошибка при генерации результатов: {str(e)}', 'error')
         lang = g.get('lang') or session.get('lang') or 'nl'
         return redirect(url_for('learning_map_bp.learning_map', lang=lang))
