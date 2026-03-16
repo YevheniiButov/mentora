@@ -153,6 +153,41 @@
     }
   }
 
+  .wc-section { padding: 80px 0; }
+
+  .wc-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 40px;
+    text-align: center;
+  }
+
+  .wc-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 12px;
+  }
+  .wc-title {
+    font-size: clamp(32px, 5vw, 44px);
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 16px;
+    letter-spacing: -0.4px;
+    line-height: 1.2;
+  }
+  .wc-sub {
+    font-size: 16px;
+    color: #64748b;
+    margin-bottom: 48px;
+    line-height: 1.7;
+    max-width: 580px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   .wc-outer {
     position: relative;
     max-width: 700px;
@@ -173,6 +208,7 @@
     align-items: center;
     position: relative;
     z-index: 1;
+    text-align: left; /* Keep tags text left-aligned */
   }
   .wc-col { display: flex; flex-direction: column; gap: 10px; }
   .wc-col.left { align-items: flex-end; }
@@ -236,16 +272,16 @@
   }
 
   .wc-note {
-    text-align: center;
     font-size: 13px;
     color: #94a3b8;
-    margin-top: 40px;
-    padding-top: 28px;
+    margin-top: 56px;
+    padding-top: 32px;
     border-top: 1px solid #f1f5f9;
-    max-width: 500px;
+    max-width: 600px;
     margin-left: auto;
     margin-right: auto;
-    line-height: 1.65;
+    line-height: 1.7;
+    text-align: center;
   }
   .wc-note strong { color: #475569; font-weight: 600; }
 
@@ -669,12 +705,13 @@
 </div>
 
 <section class="wc-section">
-  <div class="side-layout-container fade-up">
-    <div class="side-label">{{ t('landing_what_connect', lang)|default('What we connect') }}</div>
-    <div class="wc-content">
-      <p class="wc-sub">
-        {{ t('landing_what_connect_sub', lang)|default('Mentora sits at the intersection of talent, compliance, and placement — bridging three worlds that rarely talk to each other.') }}
-      </p>
+  <div class="wc-container fade-up">
+    <p class="wc-eyebrow">{{ t('landing_what_connect_eyebrow', lang)|default('The connection') }}</p>
+    <h2 class="wc-title">{{ t('landing_what_connect', lang)|default('What we connect') }}</h2>
+    <p class="wc-sub">
+      {{ t('landing_what_connect_sub', lang)|default('Mentora sits at the intersection of talent, compliance, and placement — bridging three worlds that rarely talk to each other.') }}
+    </p>
+
     <div class="wc-outer" id="wcOuter">
       <svg class="wc-connections" id="connSvg" xmlns="http://www.w3.org/2000/svg"></svg>
       <div class="wc-grid">
@@ -773,10 +810,9 @@
         </div>
       </div>
     </div>
-      <p class="wc-note" style="margin-left: 0; margin-right: auto; text-align: left;">
-        {{ t('landing_wc_note_1', lang)|default('Every specialist who joins Mentora gets a verified profile matched against real institutional demand — reducing the average BIG trajectory from') }} <strong>{{ t('landing_wc_note_2', lang)|default('3–5 years') }}</strong> {{ t('landing_wc_note_3', lang)|default('to a structured') }} <strong>{{ t('landing_wc_note_4', lang)|default('18-month pathway') }}</strong>.
-      </p>
-    </div>
+    <p class="wc-note">
+      {{ t('landing_wc_note_1', lang)|default('Every specialist who joins Mentora gets a verified profile matched against real institutional demand — reducing the average BIG trajectory from') }} <strong>{{ t('landing_wc_note_2', lang)|default('3–5 years') }}</strong> {{ t('landing_wc_note_3', lang)|default('to a structured') }} <strong>{{ t('landing_wc_note_4', lang)|default('18-month pathway') }}</strong>.
+    </p>
   </div>
 </section>
 
