@@ -81,6 +81,7 @@ class User(db.Model, UserMixin):
     diploma_status = db.Column(db.String(50), nullable=True)
     transcript_status = db.Column(db.String(50), nullable=True)
     vog_status = db.Column(db.String(50), nullable=True)
+    bsn_number = db.Column(db.String(20), nullable=True)
     
     other_profession = db.Column(db.String(100), nullable=True)  # Custom profession if "other" selected
     other_nationality = db.Column(db.String(100), nullable=True)  # Custom nationality if "other" selected

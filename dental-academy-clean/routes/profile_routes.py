@@ -227,14 +227,17 @@ def update_redesigned_profile(lang):
     """Update profile using the redesigned form"""
     try:
         # Get form data
-        first_name = request.form.get('first_name', '').strip()
-        last_name = request.form.get('last_name', '').strip()
+        full_name = request.form.get('full_name', '').strip()
         birth_date = request.form.get('birth_date', '').strip()
         city = request.form.get('city', '').strip()
         phone = request.form.get('phone', '').strip()
+        bsn_number = request.form.get('bsn_number', '').strip()
+        
         num_children = request.form.get('num_children', '').strip()
         housing_needed = request.form.get('housing_needed', '').strip()
         profession = request.form.get('profession', '').strip()
+        university_name = request.form.get('university_name', '').strip()
+        
         work_as_assistant = request.form.get('work_as_assistant', '').strip()
         big_commitment = request.form.get('big_commitment', '').strip()
         diploma_status = request.form.get('diploma_status', '').strip()
@@ -242,14 +245,18 @@ def update_redesigned_profile(lang):
         vog_status = request.form.get('vog_status', '').strip()
 
         # Update basic info
-        if first_name:
-            current_user.first_name = first_name
-        if last_name:
-            current_user.last_name = last_name
+        if full_name:
+            parts = full_name.split(' ', 1)
+            current_user.first_name = parts[0]
+            current_user.last_name = parts[1] if len(parts) > 1 else ''
+            
         if city:
             current_user.city = city
         if phone:
             current_user.phone = phone
+        if bsn_number:
+            current_user.bsn_number = bsn_number
+            
         if birth_date:
             from datetime import datetime
             try:
@@ -257,13 +264,16 @@ def update_redesigned_profile(lang):
             except ValueError:
                 pass
         
-        # Update new fields
+        # Update extra fields
         if num_children:
             try:
                 current_user.num_children = int(num_children)
             except ValueError:
                 pass
         
+        if university_name:
+            current_user.university_name = university_name
+            
         current_user.housing_needed = housing_needed
         current_user.profession = profession
         current_user.work_as_assistant = work_as_assistant
