@@ -567,7 +567,7 @@
         </g>
       </svg>
       <div class="gauge-center">
-        <div class="gauge-number" id="gaugeNumber">72</div>
+        <div class="gauge-number" id="gaugeNumber">{{ overall_score }}</div>
         <span class="gauge-unit">/ 100</span>
       </div>
     </div>
@@ -577,7 +577,7 @@
     </div>
 
     <div class="hero-insight">
-      <p>U heeft een <strong>solide kennisbasis</strong>. Uw resultaten plaatsen u in de <strong>top 30%</strong> van buitenlandse zorgverleners voor NHG-protocolkennis — een uitstekend startpunt.</p>
+      <p>{{ insight_text | safe }}</p>
     </div>
   </section>
 
@@ -594,99 +594,41 @@
     </div>
   </section>
 
-  <!-- ─── Insight cards ─── -->
+  <!-- ─── Insight cards (Mocked for now, can be expanded later) ─── -->
   <section class="section anim-4">
     <p class="section-heading">Inzichten</p>
     <div class="insight-grid">
 
-      <!-- Strengths -->
-      <div class="insight-card green">
-        <div class="insight-icon green">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </div>
-        <h3>Sterke punten</h3>
-
-        <div class="score-bar-row">
-          <div class="score-bar-item">
-            <div class="score-bar-header">
-              <span class="score-bar-label">Klinisch redeneren</span>
-              <span class="score-bar-value">88%</span>
-            </div>
-            <div class="score-bar-track"><div class="score-bar-fill green" data-width="88"></div></div>
-          </div>
-          <div class="score-bar-item">
-            <div class="score-bar-header">
-              <span class="score-bar-label">Communicatie</span>
-              <span class="score-bar-value">82%</span>
-            </div>
-            <div class="score-bar-track"><div class="score-bar-fill green" data-width="82"></div></div>
-          </div>
-          <div class="score-bar-item">
-            <div class="score-bar-header">
-              <span class="score-bar-label">Ethiek & Recht</span>
-              <span class="score-bar-value">79%</span>
-            </div>
-            <div class="score-bar-track"><div class="score-bar-fill green" data-width="79"></div></div>
-          </div>
-        </div>
-
-        <div style="margin-top:14px">
-          <div class="insight-item">
-            <div class="insight-dot"></div>
-            <p>Diagnostisch denkvermogen op <strong>gevorderd niveau</strong></p>
-          </div>
-          <div class="insight-item">
-            <div class="insight-dot"></div>
-            <p>Patiëntcommunicatie: boven Europees gemiddelde</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Focus zones -->
-      <div class="insight-card amber">
+      <!-- Individual Learning Plan (Premium Locked) -->
+      <div class="insight-card amber" style="position: relative; overflow: hidden; grid-column: span 2;">
         <div class="insight-icon amber">
           <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
           </svg>
         </div>
-        <h3>Kalibratiepunten</h3>
-
-        <div class="score-bar-row">
+        <h3>Индивидуальный план обучения</h3>
+        
+        <div class="score-bar-row" style="filter: blur(4px); opacity: 0.5;">
           <div class="score-bar-item">
-            <div class="score-bar-header">
-              <span class="score-bar-label">Farmacotherapie</span>
-              <span class="score-bar-value">58%</span>
-            </div>
-            <div class="score-bar-track"><div class="score-bar-fill amber" data-width="58"></div></div>
-          </div>
-          <div class="score-bar-item">
-            <div class="score-bar-header">
-              <span class="score-bar-label">Zorgstelsel</span>
-              <span class="score-bar-value">61%</span>
-            </div>
-            <div class="score-bar-track"><div class="score-bar-fill amber" data-width="61"></div></div>
-          </div>
-          <div class="score-bar-item">
-            <div class="score-bar-header">
-              <span class="score-bar-label">Methodologie</span>
-              <span class="score-bar-value">65%</span>
-            </div>
-            <div class="score-bar-track"><div class="score-bar-fill amber" data-width="65"></div></div>
+            <div class="score-bar-header"><span class="score-bar-label">Vakinhoud</span><span class="score-bar-value">45%</span></div>
+            <div class="score-bar-track"><div class="score-bar-fill amber" style="width: 45%;"></div></div>
           </div>
         </div>
 
-        <div style="margin-top:14px">
-          <div class="insight-item">
-            <div class="insight-dot"></div>
-            <p>NHG-richtlijnen farmacologie: <strong>specifieke lacunes</strong></p>
+        {% if not is_premium %}
+        <div style="position: absolute; inset: 0; background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; z-index: 10;">
+          <div style="background: #fbbf24; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(251,191,36,0.3);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
           </div>
-          <div class="insight-item">
-            <div class="insight-dot"></div>
-            <p>Zorgstelsel: structuurkennis verdiepen</p>
-          </div>
+          <h4 style="font-size: 16px; font-weight: 600; color: #92400e; margin-bottom: 8px;">Premium Lock</h4>
+          <p style="font-size: 13px; color: #b45309; max-width: 280px; font-weight: 500;">
+            Индивидуальный план обучения разблокируется после подтверждения стажировки в клинике
+          </p>
         </div>
+        {% endif %}
       </div>
 
     </div>
@@ -700,9 +642,9 @@
       <p class="sub">Gebaseerd op uw persoonlijk profiel</p>
       <div class="action-buttons">
 
-        <button class="btn btn-primary" onclick="handleAction('refine')">
+        <a class="btn btn-primary" href="{{ url_for('diagnostic.start_diagnostic', lang=lang, diagnostic_type='quick_scan_10') }}">
           <div class="btn-content">
-            <span class="btn-title">Profiel verfijnen (+10 vragen)</span>
+            <span class="btn-title">Continue Audit (+10 vragen)</span>
             <span class="btn-sub">Verhoog meetnauwkeurigheid met ~18%</span>
           </div>
           <div class="btn-arrow">
@@ -710,19 +652,19 @@
               <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
             </svg>
           </div>
-        </button>
+        </a>
 
-        <button class="btn btn-secondary" onclick="handleAction('full')">
+        <a class="btn btn-secondary" href="{{ url_for('diagnostic.start_diagnostic', lang=lang, diagnostic_type='full_60') }}">
           <div class="btn-content">
-            <span class="btn-title">Volledige kwalificatieaudit</span>
-            <span class="btn-sub">30 vragen · ~20 minuten · gedetailleerd rapport</span>
+            <span class="btn-title">Deep Audit (Full Diagnostic)</span>
+            <span class="btn-sub">30-60 vragen · ~40 minuten · gedetailleerd rapport</span>
           </div>
           <div class="btn-arrow">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
             </svg>
           </div>
-        </button>
+        </a>
 
       </div>
     </div>
@@ -741,7 +683,7 @@
 <script>
 // ─── Gauge animation ───
 (function() {
-  const score = 72;
+  const score = {{ overall_score }};
   const total = 100;
   const pct = score / total;
   const arcLen = 276; // approx arc length for the semicircle
@@ -756,18 +698,13 @@
 // ─── Score bars ───
 document.querySelectorAll('.score-bar-fill').forEach(bar => {
   const w = bar.dataset.width;
-  setTimeout(() => { bar.style.width = w + '%'; }, 600);
+  if (w) {
+    setTimeout(() => { bar.style.width = w + '%'; }, 600);
+  }
 });
 
 // ─── Radar Chart ───
-const domains = [
-  { label: 'Huisartsgeneeskunde',   short: 'Therapie',      value: 74, color: '#3b82f6' },
-  { label: 'Farmacotherapie',        short: 'Farma',         value: 58, color: '#f59e0b' },
-  { label: 'Ethiek & Recht',         short: 'Ethiek',        value: 79, color: '#16a34a' },
-  { label: 'Communicatie',           short: 'Comm.',         value: 82, color: '#8b5cf6' },
-  { label: 'Klinisch Redeneren',     short: 'Klinisch',      value: 88, color: '#06b6d4' },
-  { label: 'Zorgstelsel',            short: 'Zorgstelsel',   value: 61, color: '#ec4899' },
-];
+const domains = {{ domains_data | tojson }};
 
 const ctx = document.getElementById('radarChart').getContext('2d');
 new Chart(ctx, {
@@ -832,16 +769,6 @@ domains.forEach(d => {
   pill.innerHTML = `<span class="domain-dot" style="background:${d.color}"></span>${d.short} <strong style="color:#334155;margin-left:2px">${d.value}</strong>`;
   pillsContainer.appendChild(pill);
 });
-
-// ─── Button actions (demo) ───
-function handleAction(type) {
-  const msg = type === 'refine'
-    ? 'Extra vragen worden geladen...'
-    : 'Volledige audit wordt gestart...';
-  // In production: redirect to appropriate route
-  console.log(msg);
-  alert(msg + '\n\n(In productie: doorsturen naar /diagnostic/start)');
-}
 </script>
 
 </body>

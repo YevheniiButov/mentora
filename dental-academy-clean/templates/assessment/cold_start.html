@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block title %}Mentora — Start uw BIG-readiness check{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --medical-blue: #1d4ed8;
+    --medical-blue-light: #3b82f6;
+    --medical-blue-pale: #eff6ff;
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-700: #334155;
+    --slate-900: #0f172a;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --shadow-md: 0 4px 16px rgba(15,23,42,0.08), 0 2px 6px rgba(15,23,42,0.04);
+  }
+
+  .assessment-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .cold-start-card {
+    background: white;
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-xl);
+    padding: 60px 40px;
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cold-start-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 6px;
+    background: linear-gradient(90deg, var(--medical-blue), var(--medical-blue-light));
+  }
+
+  .hero-label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--medical-blue-light);
+    background: var(--medical-blue-pale);
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 24px;
+  }
+
+  .hero-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 5vw, 42px);
+    line-height: 1.1;
+    color: var(--slate-900);
+    margin-bottom: 20px;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--medical-blue);
+  }
+
+  .hero-description {
+    font-size: 18px;
+    color: var(--slate-500);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto 40px;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-bottom: 48px;
+    text-align: left;
+  }
+
+  .feature-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .feature-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--medical-blue-pale);
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    color: var(--medical-blue);
+  }
+
+  .feature-text h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--slate-900);
+    margin-bottom: 4px;
+  }
+
+  .feature-text p {
+    font-size: 13px;
+    color: var(--slate-500);
+    line-height: 1.4;
+  }
+
+  .btn-start {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: linear-gradient(135deg, var(--medical-blue) 0%, var(--medical-blue-light) 100%);
+    color: white;
+    padding: 18px 36px;
+    border-radius: var(--radius-md);
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 16px rgba(29,78,216,0.28);
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-start:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(29,78,216,0.35);
+  }
+
+  .btn-start svg {
+    transition: transform 0.2s ease;
+  }
+
+  .btn-start:hover svg {
+    transform: translateX(4px);
+  }
+
+  .stats-info {
+    margin-top: 32px;
+    font-size: 13px;
+    color: var(--slate-400);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="assessment-container">
+  <div class="cold-start-card">
+    <span class="hero-label">Kwalificatie Dashboard</span>
+    <h1 class="hero-title">Ontdek uw <em>BIG-gereedheid</em></h1>
+    <p class="hero-description">
+      Krijg direct inzicht in uw medische kennis volgens de Nederlandse NHG-standaarden. Start uw eerste scan om uw persoonlijke dashboard te activeren.
+    </p>
+
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <h3>Kennisprofiel</h3>
+          <p>Visuele analyse van uw sterke punten en verbeterpunten.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <h3>Leerplan</h3>
+          <p>Een op maat gemaakt pad om uw BIG-registratie te versnellen.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <h3>Slechts 10 min</h3>
+          <p>Een snelle Quick Scan is voldoende voor uw eerste rapport.</p>
+        </div>
+      </div>
+    </div>
+
+    <form action="{{ url_for('diagnostic.start_diagnostic', lang=lang) }}" method="POST">
+      <input type="hidden" name="diagnostic_type" value="quick_scan_10">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn-start">
+        Start Quick Scan (10 vragen)
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </button>
+    </form>
+
+    <p class="stats-info">
+      Al meer dan 1.200 artsen gingen u voor deze week.
+    </p>
+  </div>
+</div>
+{% endblock %}

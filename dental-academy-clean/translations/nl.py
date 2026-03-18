@@ -53,6 +53,7 @@ translations = {
     'progress': 'Voortgang',
     'learning_planner': 'Leerplanner',
     'edit_profile': 'Profiel bewerken',
+    'profile_updated_successfully': 'Profiel succesvol bijgewerkt.',
     'switch_theme': 'Thema wisselen',
     'light_theme': 'Lichte thema',
     'dark_theme': 'Donkere thema',

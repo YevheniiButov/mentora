@@ -14,6 +14,7 @@ translations = {
     'registration': 'Регистрация',
     'patients': 'Пациенты',
     'ai_assistant': 'AI Ассистент',
+    'assessment_center': 'Assessment Center',
     
     # Кнопки
     'save': 'Сохранить',

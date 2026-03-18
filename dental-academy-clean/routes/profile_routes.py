@@ -1,4 +1,5 @@
-# profile_routes.py - Profile management routes
+from datetime import datetime, timedelta
+import hashlib
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app, g, session
 from flask_login import login_required, current_user
 from models import User
@@ -62,14 +63,12 @@ def membership_card(lang):
     """Display membership card in profile"""
     # Generate member ID if not exists
     if not hasattr(current_user, 'member_id') or not current_user.member_id:
-        import hashlib
         user_hash = hashlib.md5(str(current_user.id).encode()).hexdigest()[:5].upper()
         current_user.member_id = f"MNT-{user_hash}"
         db.session.commit()
     
     # Set membership expiry date if not exists (1 year from now)
     if not hasattr(current_user, 'membership_expires') or not current_user.membership_expires:
-        from datetime import datetime, timedelta
         current_user.membership_expires = datetime.now() + timedelta(days=365)
         db.session.commit()
     
@@ -258,7 +257,6 @@ def update_redesigned_profile(lang):
             current_user.bsn_number = bsn_number
             
         if birth_date:
-            from datetime import datetime
             try:
                 current_user.birth_date = datetime.strptime(birth_date, '%Y-%m-%d').date()
             except ValueError:

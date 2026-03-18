@@ -15,6 +15,7 @@ translations = {
     'registration': 'Реєстрація',
     'patients': 'Пацієнти',
     'ai_assistant': 'AI Асистент',
+    'assessment_center': 'Assessment Center',
     
     # Кнопки
     'save': 'Зберегти',
@@ -53,6 +54,7 @@ translations = {
     'progress': 'Прогрес',
     'learning_planner': 'Планувальник навчання',
     'edit_profile': 'Редагувати профіль',
+    'profile_updated_successfully': 'Профіль успішно оновлено.',
     'switch_theme': 'Змінити тему',
     'light_theme': 'Світла тема',
     'dark_theme': 'Темна тема',

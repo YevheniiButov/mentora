@@ -2,7 +2,7 @@
 
 from flask import Blueprint, render_template, g, send_from_directory, request, session, current_app, jsonify, redirect, url_for
 from flask_login import current_user, login_required
-from models import LearningPath, Subject, Module, Lesson, UserProgress, ForumTopic, ForumPost
+from models import LearningPath, Subject, Module, Lesson, UserProgress, ForumTopic, ForumPost, DiagnosticSession
 from extensions import db
 from sqlalchemy import or_
 from datetime import datetime, timezone
@@ -153,6 +153,47 @@ def auth_login_redirect(lang):
 def auth_register_redirect(lang):
     """Redirect to auth register page"""
     return redirect(url_for('auth.register', lang=lang))
+
+@main_bp.route('/assessment')
+@login_required
+def assessment_dashboard(lang):
+    """
+    Main Assessment Dashboard (Achievements Dashboard)
+    Renders Cold Start if no sessions, or the Full Dashboard if sessions exist.
+    """
+    # 1. Проверяем наличие завершенных сессий для пользователя
+    completed_sessions = DiagnosticSession.query.filter_by(
+        user_id=current_user.id, 
+        status='completed'
+    ).order_by(DiagnosticSession.completed_at.desc()).all()
+
+    # 2. Логика переключения (Branching)
+    if not completed_sessions:
+        # Если сессий нет -> Cold Start
+        return render_template('assessment/cold_start.html', lang=lang)
+    
+    # 3. Если есть сессии -> Берем последнюю и готовим данные для Dashboard
+    latest_session = completed_sessions[0]
+    
+    # Генерируем результаты через метод модели
+    results_data = latest_session.generate_results()
+    
+    # Вытаскиваем нужные данные для шаблона
+    overall_score = results_data.get('overall_readiness', 0)
+    insight_text = results_data.get('insight', '')
+    domains_data = results_data.get('domains', [])
+    
+    # Check for premium status (for the lock)
+    is_premium = current_user.membership_type == 'premium' if hasattr(current_user, 'membership_type') else False
+    
+    # 4. Рендерим Premium Dashboard (big_readiness_profile.html)
+    return render_template('big_readiness_profile.html',
+                         overall_score=overall_score,
+                         insight_text=insight_text,
+                         domains_data=domains_data,
+                         is_premium=is_premium,
+                         lang=lang)
+
 
 @main_bp.route('/coming-soon')
 def coming_soon(lang):

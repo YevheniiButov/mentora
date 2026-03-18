@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mentora — What we connect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+.page {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 48px 20px;
+}
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 28px;
+  max-width: 880px;
+  width: 100%;
+  padding: 60px 48px 52px;
+  box-shadow: 0 4px 40px rgba(15,23,42,.06);
+}
+
+/* ── Header ── */
+.eyebrow {
+  text-align: center;
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 1.6px; text-transform: uppercase;
+  color: #94a3b8; margin-bottom: 12px;
+}
+.title {
+  text-align: center;
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 400; color: #0f172a;
+  letter-spacing: -0.4px; line-height: 1.15;
+  margin-bottom: 12px;
+}
+.title em { font-style: italic; color: #1d4ed8; }
+.subtitle {
+  text-align: center;
+  font-size: 14.5px; color: #64748b;
+  line-height: 1.7; max-width: 400px;
+  margin: 0 auto 52px; font-weight: 300;
+}
+
+/* ══════════════════════════════════════
+   SECTION E: BEFORE / AFTER
+══════════════════════════════════════ */
+.transform-section {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0 24px;
+  align-items: center;
+  margin-bottom: 48px;
+}
+
+.profile-card {
+  border-radius: 16px;
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.profile-card.before {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+.profile-card.after {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+.profile-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.before .profile-label { color: #94a3b8; }
+.after  .profile-label { color: #3b82f6; }
+
+.profile-name {
+  font-size: 15px; font-weight: 600; color: #1e293b;
+}
+.after .profile-name { color: #1d4ed8; }
+
+.profile-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px;
+}
+.before .profile-row { color: #94a3b8; }
+.after  .profile-row { color: #2563eb; }
+
+.profile-bar {
+  height: 6px; border-radius: 100px;
+  background: #e2e8f0;
+}
+.after .profile-bar { background: #bfdbfe; }
+.profile-bar-fill {
+  height: 100%; border-radius: 100px;
+}
+.before .profile-bar-fill { background: #cbd5e1; width: 0%; transition: width 1s ease .4s; }
+.after  .profile-bar-fill { background: #1d4ed8; width: 0%; transition: width 1s ease .9s; }
+
+.profile-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 500;
+  padding: 3px 10px; border-radius: 100px;
+}
+.before .profile-tag { background: #e2e8f0; color: #64748b; }
+.after  .profile-tag { background: #dbeafe; color: #1d4ed8; }
+
+.profile-time {
+  font-size: 12px; font-weight: 500;
+  margin-top: 4px;
+}
+.before .profile-time { color: #94a3b8; }
+.after  .profile-time { color: #1d4ed8; }
+
+/* Arrow center */
+.transform-arrow {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  flex-shrink: 0;
+}
+.arrow-box {
+  background: #1d4ed8;
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 96px;
+  opacity: 0;
+  transform: scale(.85);
+  transition: opacity .5s ease .3s, transform .5s ease .3s;
+}
+.arrow-box.visible { opacity: 1; transform: scale(1); }
+.arrow-word {
+  font-size: 13px; font-weight: 600;
+  color: white; letter-spacing: .3px;
+}
+.arrow-sub {
+  font-size: 10px; color: rgba(255,255,255,.65);
+  text-align: center; line-height: 1.4;
+}
+.arrow-icon {
+  margin-top: 4px;
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ══════════════════════════════════════
+   SECTION F: LIVE FEED
+══════════════════════════════════════ */
+.divider {
+  border: none; border-top: 1px solid #f1f5f9;
+  margin-bottom: 32px;
+}
+
+.feed-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+.feed-title {
+  font-size: 12px; font-weight: 600;
+  color: #64748b; letter-spacing: .5px; text-transform: uppercase;
+}
+.live-badge {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600;
+  color: #16a34a;
+}
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #16a34a;
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .3; }
+}
+
+.feed-terminal {
+  background: #0f172a;
+  border-radius: 16px;
+  overflow: hidden;
+  font-family: 'DM Mono', 'Fira Code', 'Courier New', monospace;
+}
+.terminal-bar {
+  background: #1e293b;
+  padding: 10px 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.t-dot { width: 10px; height: 10px; border-radius: 50%; }
+.terminal-title {
+  font-size: 11px; color: #475569;
+  margin-left: auto; letter-spacing: .3px;
+  font-family: 'DM Sans', sans-serif;
+}
+.feed-rows { padding: 4px 0 8px; }
+.feed-row {
+  display: flex; align-items: center; gap: 0;
+  padding: 9px 16px;
+  border-bottom: 1px solid #1e293b;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity .4s ease, transform .4s ease;
+  min-height: 38px;
+}
+.feed-row:last-child { border-bottom: none; }
+.feed-row.visible { opacity: 1; transform: translateY(0); }
+
+.row-indicator {
+  font-size: 11px; margin-right: 10px; flex-shrink: 0;
+  width: 14px; text-align: center;
+}
+.row-indicator.done  { color: #22c55e; }
+.row-indicator.progress { color: #f59e0b; animation: blink .9s step-end infinite; }
+.row-indicator.queue { color: #334155; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.row-specialist {
+  font-size: 12.5px; color: #e2e8f0;
+  flex: 1; min-width: 0;
+}
+.row-specialist .spec-name { font-weight: 500; }
+.row-specialist .spec-meta { color: #64748b; font-size: 11px; }
+
+.row-arrow {
+  font-size: 12px; color: #334155;
+  margin: 0 10px; flex-shrink: 0;
+}
+.row-arrow.active { color: #3b82f6; }
+
+.row-dest {
+  font-size: 12px; text-align: right; flex-shrink: 0;
+  min-width: 160px;
+}
+.row-dest.done     { color: #3b82f6; }
+.row-dest.progress { color: #f59e0b; }
+.row-dest.queue    { color: #334155; }
+
+.row-status {
+  font-size: 10px; font-weight: 600;
+  padding: 2px 8px; border-radius: 100px;
+  margin-left: 10px; flex-shrink: 0;
+  font-family: 'DM Sans', sans-serif;
+}
+.status-done     { background: #052e16; color: #22c55e; }
+.status-progress { background: #1c1400; color: #f59e0b; }
+.status-queue    { background: #0f172a; color: #334155; border: 1px solid #1e293b; }
+
+/* ── Footer note ── */
+.note {
+  text-align: center; font-size: 13px; color: #94a3b8;
+  margin-top: 36px; padding-top: 24px;
+  border-top: 1px solid #f1f5f9;
+  max-width: 480px; margin-left: auto; margin-right: auto;
+  line-height: 1.7; font-weight: 300;
+}
+.note strong { color: #475569; font-weight: 500; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .card { padding: 40px 20px 36px; }
+  .transform-section { grid-template-columns: 1fr; gap: 16px; }
+  .transform-arrow { flex-direction: row; }
+  .arrow-box { flex-direction: row; min-width: auto; }
+  .row-dest, .row-status { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="card">
+
+  <p class="eyebrow">The connection</p>
+  <h2 class="title">What we <em>connect</em></h2>
+  <p class="subtitle">
+    One platform transforms unrecognised talent
+    into placed professionals — in 18 months.
+  </p>
+
+  <!-- ══ E: BEFORE / AFTER ══ -->
+  <div class="transform-section">
+
+    <!-- Before -->
+    <div class="profile-card before" id="cardBefore">
+      <div class="profile-label">Without Mentora</div>
+      <div class="profile-name">Olena Kovalenko</div>
+
+      <div class="profile-row">
+        <span>Tandarts · Kyiv, UA</span>
+      </div>
+
+      <div>
+        <div class="profile-bar" style="width:100%">
+          <div class="profile-bar-fill" id="bar-before" style="width:22%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px">
+          <span style="font-size:11px;color:#94a3b8">BIG voortgang</span>
+          <span style="font-size:11px;color:#94a3b8">22%</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:2px">
+        <span class="profile-tag">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Diploma niet erkend
+        </span>
+        <span class="profile-tag">Geen netwerk</span>
+        <span class="profile-tag">Geen stage</span>
+      </div>
+
+      <div class="profile-time">Verwachte duur: 3–5 jaar · €20–35k</div>
+    </div>
+
+    <!-- Center arrow -->
+    <div class="transform-arrow">
+      <div class="arrow-box" id="arrowBox">
+        <div class="arrow-word">mentora</div>
+        <div class="arrow-sub">verify · prepare<br>match · place</div>
+        <div class="arrow-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- After -->
+    <div class="profile-card after" id="cardAfter">
+      <div class="profile-label">With Mentora</div>
+      <div class="profile-name">Olena Kovalenko</div>
+
+      <div class="profile-row">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span>Tandarts · BIG-geregistreerd</span>
+      </div>
+
+      <div>
+        <div class="profile-bar" style="width:100%">
+          <div class="profile-bar-fill" id="bar-after" style="width:0%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px">
+          <span style="font-size:11px;color:#3b82f6">BIG voortgang</span>
+          <span style="font-size:11px;color:#1d4ed8">100%</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:2px">
+        <span class="profile-tag">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Diploma geverifieerd
+        </span>
+        <span class="profile-tag">Stage AMC</span>
+        <span class="profile-tag">Geplaatst</span>
+      </div>
+
+      <div class="profile-time">Traject: 18 maanden · gestructureerd</div>
+    </div>
+
+  </div>
+
+  <!-- ══ F: LIVE FEED ══ -->
+  <hr class="divider">
+
+  <div class="feed-header">
+    <span class="feed-title">Live verbindingen</span>
+    <span class="live-badge">
+      <span class="live-dot"></span>
+      live
+    </span>
+  </div>
+
+  <div class="feed-terminal">
+    <div class="terminal-bar">
+      <span class="t-dot" style="background:#ef4444"></span>
+      <span class="t-dot" style="background:#f59e0b"></span>
+      <span class="t-dot" style="background:#22c55e"></span>
+      <span class="terminal-title">mentora · matching engine</span>
+    </div>
+    <div class="feed-rows" id="feedRows">
+
+      <div class="feed-row" id="row0">
+        <span class="row-indicator done">✓</span>
+        <div class="row-specialist">
+          <span class="spec-name">Dmytro S.</span>
+          <span class="spec-meta"> · Huisarts · Lviv</span>
+        </div>
+        <span class="row-arrow active">→</span>
+        <span class="row-dest done">Huisartspraktijk Utrecht</span>
+        <span class="row-status status-done">geplaatst</span>
+      </div>
+
+      <div class="feed-row" id="row1">
+        <span class="row-indicator done">✓</span>
+        <div class="row-specialist">
+          <span class="spec-name">Aisha M.</span>
+          <span class="spec-meta"> · Tandarts · Damascus</span>
+        </div>
+        <span class="row-arrow active">→</span>
+        <span class="row-dest done">ACTA Amsterdam</span>
+        <span class="row-status status-done">stage</span>
+      </div>
+
+      <div class="feed-row" id="row2">
+        <span class="row-indicator progress">▶</span>
+        <div class="row-specialist">
+          <span class="spec-name">Olena K.</span>
+          <span class="spec-meta"> · Tandarts · Kyiv</span>
+        </div>
+        <span class="row-arrow active">→</span>
+        <span class="row-dest progress">BIG-register NL</span>
+        <span class="row-status status-progress">in traject</span>
+      </div>
+
+      <div class="feed-row" id="row3">
+        <span class="row-indicator queue">○</span>
+        <div class="row-specialist">
+          <span class="spec-name">Taras B.</span>
+          <span class="spec-meta"> · Verpleegkundige · Kharkiv</span>
+        </div>
+        <span class="row-arrow">→</span>
+        <span class="row-dest queue">matching...</span>
+        <span class="row-status status-queue">wachtrij</span>
+      </div>
+
+    </div>
+  </div>
+
+  <p class="note">
+    Every specialist who joins Mentora gets a verified profile matched
+    against real institutional demand — reducing the average BIG trajectory
+    from <strong>3–5 years</strong> to a structured <strong>18-month pathway</strong>.
+  </p>
+
+</div>
+</div>
+
+<script>
+// ── Animate on load ──
+window.addEventListener('load', () => {
+
+  // 1. Before bar
+  setTimeout(() => {
+    document.getElementById('bar-before').style.width = '22%';
+  }, 300);
+
+  // 2. Arrow box appears
+  setTimeout(() => {
+    document.getElementById('arrowBox').classList.add('visible');
+  }, 600);
+
+  // 3. After bar fills to 100%
+  setTimeout(() => {
+    document.getElementById('bar-after').style.width = '100%';
+  }, 900);
+
+  // 4. Feed rows appear one by one
+  [0, 1, 2, 3].forEach((i) => {
+    setTimeout(() => {
+      document.getElementById('row' + i).classList.add('visible');
+    }, 1100 + i * 220);
+  });
+
+  // 5. Animate new match appearing periodically
+  let counter = 0;
+  const names = [
+    { name: 'Sofia V.', meta: ' · Huisarts · Odessa',      dest: 'UMC Groningen',        status: 'geplaatst', cls: 'done' },
+    { name: 'Ivan P.',  meta: ' · Chirurg · Dnipro',        dest: 'Elisabeth Ziekenhuis', status: 'stage',     cls: 'done' },
+    { name: 'Mira K.',  meta: ' · Verpleegk. · Zaporizhzhia', dest: 'matching...',        status: 'wachtrij',  cls: 'queue' },
+  ];
+
+  setInterval(() => {
+    const n = names[counter % names.length];
+    counter++;
+
+    // move rows up: remove first, shift rest
+    const rows = document.getElementById('feedRows');
+    const firstRow = rows.querySelector('.feed-row');
+    if (firstRow) {
+      firstRow.style.opacity = '0';
+      firstRow.style.transform = 'translateY(-6px)';
+      setTimeout(() => firstRow.remove(), 350);
+    }
+
+    setTimeout(() => {
+      const isDone = n.cls === 'done';
+      const row = document.createElement('div');
+      row.className = 'feed-row';
+      row.innerHTML = `
+        <span class="row-indicator ${isDone ? 'done' : 'queue'}">${isDone ? '✓' : '○'}</span>
+        <div class="row-specialist">
+          <span class="spec-name">${n.name}</span>
+          <span class="spec-meta">${n.meta}</span>
+        </div>
+        <span class="row-arrow ${isDone ? 'active' : ''}">→</span>
+        <span class="row-dest ${n.cls}">${n.dest}</span>
+        <span class="row-status status-${n.cls}">${n.status}</span>
+      `;
+      rows.appendChild(row);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => row.classList.add('visible'));
+      });
+    }, 400);
+
+  }, 3200);
+
+});
+</script>
+</body>
+</html>

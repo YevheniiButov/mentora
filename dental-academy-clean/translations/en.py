@@ -52,6 +52,7 @@ translations = {
     'progress': 'Progress',
     'learning_planner': 'Learning Planner',
     'edit_profile': 'Edit profile',
+    'profile_updated_successfully': 'Profile updated successfully.',
     'switch_theme': 'Switch theme',
     'light_theme': 'Light theme',
     'dark_theme': 'Dark theme',

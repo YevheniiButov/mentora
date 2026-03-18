@@ -6,8 +6,7 @@
       <!-- Logo -->
       <a class="navbar-brand" href="/{{ lang }}/">
         <div class="logo-container">
-          <img class="logo logo-light" src="{{ url_for('static', filename='images/logo.png') }}" alt="Mentora Light" height="40">
-          <img class="logo logo-dark" src="{{ url_for('static', filename='images/logo_black.png') }}" alt="Mentora Dark" height="40">
+          <img class="logo" src="{{ url_for('static', filename='images/logo.png') }}" alt="Mentora" height="40">
         </div>
       </a>
       
@@ -49,16 +48,7 @@
           </li>
           {% endif %}
 
-          {% if current_user.is_authenticated and current_user.role != 'admin' %}
-          <!-- Assessment - основной путь для врача (Pivot) -->
-          <li class="nav-item">
-            <a class="nav-link {{ 'active' if request.endpoint and 'diagnostic' in request.endpoint }}" 
-               href="{{ url_for('diagnostic.start_diagnostic', lang=lang, diagnostic_type='quick_scan_10') }}"
-               @click="closeMobileMenu()">
-              {{ t('assessment', lang|default('en'))|capitalize|default('Assessment') }}
-            </a>
-          </li>
-          {% endif %}
+
         </ul>
         
         <!-- Right Side Actions -->

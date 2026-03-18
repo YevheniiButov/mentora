@@ -1450,18 +1450,8 @@ def show_results(lang, session_id):
                 
                 flash(f'План обучения обновлен! Улучшение в {sum(1 for d in improvements.values() if d["improved"])} доменах.', 'success')
         
-        # Рендерим шаблон результатов
-        if diagnostic_type == 'quick_scan_10':
-            return render_template('assessment/readiness_report.html',
-                                 readiness_percentage=results.get('readiness_percentage', 0),
-                                 insight_text=results.get('insight_text', ''),
-                                 domain_scores=results.get('radar_scores', []),
-                                 diagnostic_data=diagnostic_data,
-                                 lang=lang)
-        else:
-            return render_template('assessment/results.html', 
-                                 diagnostic_data=diagnostic_data,
-                                 lang=lang)
+        # Redirect to the main assessment dashboard instead of rendering results here
+        return redirect(url_for('main.assessment_dashboard', lang=lang))
                              
     except Exception as e:
         print(f"❌ Ошибка в show_results: {e}")

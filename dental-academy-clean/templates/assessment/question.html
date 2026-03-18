@@ -517,15 +517,20 @@ async function submitAnswer() {
     });
     
     // Защита от двойной отправки
-    const submitBtn = document.getElementById('submit-answer-btn');
-    if (submitBtn && submitBtn.disabled) {
-        console.warn('⚠️ Submit button already disabled, ignoring duplicate call');
+    const nextBtn = document.getElementById('next-btn');
+    const finishBtn = document.getElementById('finish-btn');
+    const submitBtn = nextBtn || finishBtn;
+    
+    if (submitBtn && submitBtn.disabled && submitBtn.classList.contains('submitting')) {
+        console.warn('⚠️ Submission already in progress, ignoring duplicate call');
         return;
     }
     
     if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = '{{ t("sending", lang) | default("Sending...") }}';
+        submitBtn.classList.add('submitting');
+        submitBtn.dataset.originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = `<span>{{ t("sending", lang) | default("Sending...") }}</span> <i class="fas fa-spinner fa-spin"></i>`;
     }
     
     showLoading('{{ t("sending_answer", lang) | default("Sending answer") }}...');
@@ -581,7 +586,8 @@ async function submitAnswer() {
         // Восстановить кнопку при ошибке
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.textContent = '{{ t("submit_answer", lang) | default("Submit Answer") }}';
+            submitBtn.classList.remove('submitting');
+            submitBtn.innerHTML = submitBtn.dataset.originalText || '{{ t("next", lang) | default("Next") }}';
         }
         
         throw error;
@@ -589,7 +595,8 @@ async function submitAnswer() {
         // Восстановить кнопку в любом случае
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.textContent = '{{ t("submit_answer", lang) | default("Submit Answer") }}';
+            submitBtn.classList.remove('submitting');
+            submitBtn.innerHTML = submitBtn.dataset.originalText || '{{ t("next", lang) | default("Next") }}';
         }
     }
 }
