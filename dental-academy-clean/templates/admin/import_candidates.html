@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="bi bi-file-earmark-arrow-up me-2"></i> Import Candidates</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-info-circle me-2"></i> Instructions</h6>
+                        <p class="mb-2">Please upload an Excel (.xlsx, .xls) or CSV file with the following column headers exactly as shown:</p>
+                        <ul class="small mb-0">
+                            <li><strong>Email Address</strong> (Required)</li>
+                            <li><strong>Full Name</strong> (e.g. "John Doe")</li>
+                            <li><strong>What is your profession?</strong></li>
+                            <li><strong>Medical Specialization</strong></li>
+                            <li><strong>Current Dutch Level</strong></li>
+                            <li><strong>Work Experience (Years/Desc)</strong></li>
+                            <li><strong>Legal Status in EU</strong></li>
+                            <li><strong>Do you need housing?</strong> (Yes/No)</li>
+                            <li><strong>Registered for BIG-exam?</strong></li>
+                            <li><strong>Mobile Number</strong></li>
+                        </ul>
+                    </div>
+
+                    <form action="{{ url_for('admin_actions.import_candidates') }}" method="POST" enctype="multipart/form-data" class="mt-4">
+                        <div class="mb-4">
+                            <label for="file" class="form-label fw-bold">Select File</label>
+                            <input type="file" name="file" id="file" class="form-control" accept=".csv, .xlsx, .xls" required>
+                            <div class="form-text mt-2">Maximum file size: 10MB</div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('hub.users') }}" class="btn btn-light border px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-5">
+                                <i class="bi bi-cloud-arrow-up me-2"></i> Start Import
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card mt-4 shadow-sm border-0 bg-light">
+                <div class="card-body">
+                    <h6><i class="bi bi-shield-check me-2"></i> Import Logic</h6>
+                    <p class="small text-muted mb-0">
+                        The system uses the <strong>Email Address</strong> as a unique identifier. 
+                        If a candidate already exists in the system, their record will be <strong>updated</strong>. 
+                        New records will be created otherwise. All imported users will be marked for <strong>onboarding</strong>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

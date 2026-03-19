@@ -178,10 +178,29 @@ def assessment_dashboard(lang):
     # Генерируем результаты через метод модели
     results_data = latest_session.generate_results()
     
-    # Вытаскиваем нужные данные для шаблона
-    overall_score = results_data.get('overall_readiness', 0)
-    insight_text = results_data.get('insight', '')
-    domains_data = results_data.get('domains', [])
+    # Вытаскиваем нужные данные для шаблона (используя правильные ключи из generate_results)
+    overall_score = results_data.get('readiness_percentage', 0)
+    insight_text = results_data.get('insight_text', '')
+    domains_data = results_data.get('radar_scores', [])
+    weak_domains = results_data.get('weak_domains', [])
+    strong_domains = results_data.get('strong_domains', [])
+    
+    # Translate domain codes to names
+    from models import BIGDomain
+    
+    def get_names(codes):
+        names = []
+        for code in codes:
+            domain = BIGDomain.query.filter_by(code=code).first()
+            names.append(domain.name if domain else code)
+        return names
+
+    strong_domain_names = get_names(strong_domains)
+    weak_domain_names = get_names(weak_domains)
+    
+    # Check for personal learning plan
+    from models import PersonalLearningPlan
+    learning_plan = PersonalLearningPlan.query.filter_by(user_id=current_user.id, status='active').first()
     
     # Check for premium status (for the lock)
     is_premium = current_user.membership_type == 'premium' if hasattr(current_user, 'membership_type') else False
@@ -191,6 +210,9 @@ def assessment_dashboard(lang):
                          overall_score=overall_score,
                          insight_text=insight_text,
                          domains_data=domains_data,
+                         weak_domains=weak_domain_names,
+                         strong_domains=strong_domain_names,
+                         learning_plan=learning_plan,
                          is_premium=is_premium,
                          lang=lang)
 

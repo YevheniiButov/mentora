@@ -230,13 +230,13 @@
         </button>
         <div class="w-100 d-none d-md-block">
             <form class="w-100 p-2">
-                <input class="form-control form-control-dark" type="text" placeholder="Поиск..." aria-label="Search">
+                <input class="form-control form-control-dark" type="text" placeholder="Search..." aria-label="Search">
             </form>
         </div>
         <ul class="navbar-nav px-3">
             <li class="nav-item text-nowrap">
                 <a class="nav-link" href="{{ main_index_url('en') }}">
-                    <i class="bi bi-box-arrow-right"></i> Выйти в сайт
+                    <i class="bi bi-box-arrow-right"></i> Go to website
                 </a>
             </li>
         </ul>
@@ -248,8 +248,15 @@
             <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
                 <div class="sidebar-sticky pt-3">
                     <ul class="nav flex-column">
+                        <li class="nav-item mb-2 mx-2">
+                            <a class="nav-link btn btn-primary text-white d-flex align-items-center justify-content-center shadow-sm" 
+                               href="{{ url_for('hub.dashboard') }}" style="border-radius: 8px;">
+                                <i class="bi bi-grid-fill me-2"></i>
+                                <span class="fw-bold">OPEN NEW HUB</span>
+                            </a>
+                        </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request and request and request.endpoint == 'admin.dashboard' %}active{% endif %}" 
+                            <a class="nav-link {% if request and request.endpoint == 'admin.dashboard' %}active{% endif %}" 
                                href="{{ url_for('admin.dashboard') }}">
                                 <i class="bi bi-speedometer2"></i> Dashboard
                             </a>
@@ -257,18 +264,24 @@
                         <li class="nav-item">
                             <a class="nav-link {% if request and request.endpoint == 'admin.mobile_admin' %}active{% endif %}" 
                                href="{{ url_for('admin.mobile_admin') }}">
-                                <i class="bi bi-phone"></i> Мобильная версия
+                                <i class="bi bi-phone"></i> Mobile Version
                             </a>
                         </li>
                         
                         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
-                            <span>Пользователи</span>
+                            <span>Users</span>
                         </h6>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'users_list' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.users_list') }}">
-                                <i class="bi bi-people"></i> Все пользователи
+                                <i class="bi bi-people"></i> All Users
                             </a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link {% if request.endpoint == 'admin_export.export_page' %}active{% endif %}"
+                             href="{{ url_for('admin_export.export_page') }}">
+                            <i class="bi bi-file-earmark-excel me-2"></i>Export Candidates
+                          </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'crm_users' in request.endpoint %}active{% endif %}" 
@@ -285,7 +298,7 @@
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'monitoring' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('monitoring.dashboard') }}">
-                                <i class="bi bi-graph-up"></i> Мониторинг регистраций
+                                <i class="bi bi-graph-up"></i> Registration Monitoring
                             </a>
                         </li>
                         <li class="nav-item">
@@ -297,113 +310,113 @@
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'online_users' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.online_users') }}">
-                                <i class="bi bi-circle-fill text-success"></i> Онлайн
+                                <i class="bi bi-circle-fill text-success"></i> Online
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'support' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.support_dashboard') }}">
-                                <i class="bi bi-headset"></i> Поддержка
+                                <i class="bi bi-headset"></i> Support
                             </a>
                         </li>
                         
                         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
-                            <span>Аналитика</span>
+                            <span>Analytics</span>
                         </h6>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'advanced_analytics' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.advanced_analytics') }}">
-                                <i class="bi bi-graph-up-arrow"></i> Расширенная
+                                <i class="bi bi-graph-up-arrow"></i> Advanced
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'visitors_analytics' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.visitors_analytics') }}">
-                                <i class="bi bi-graph-up"></i> Посетители
+                                <i class="bi bi-graph-up"></i> Visitors
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'analytics_countries' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.analytics_countries') }}">
-                                <i class="bi bi-globe"></i> Страны
+                                <i class="bi bi-globe"></i> Countries
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'analytics_devices' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.analytics_devices') }}">
-                                <i class="bi bi-phone"></i> Устройства
+                                <i class="bi bi-phone"></i> Devices
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'analytics_professions' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.analytics_professions') }}">
-                                <i class="bi bi-person-badge"></i> Профессии
+                                <i class="bi bi-person-badge"></i> Professions
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'analytics_events' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.analytics_events') }}">
-                                <i class="bi bi-activity"></i> События
+                                <i class="bi bi-activity"></i> Events
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'profession_clicks' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('analytics.profession_clicks') }}">
-                                <i class="bi bi-mouse"></i> Клики по профессиям
+                                <i class="bi bi-mouse"></i> Profession Clicks
                             </a>
                         </li>
                         
                         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
-                            <span>Диагностика</span>
+                            <span>Diagnostic</span>
                         </h6>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'diagnostic_analytics' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.diagnostic_analytics') }}">
-                                <i class="bi bi-graph-up"></i> Аналитика
+                                <i class="bi bi-graph-up"></i> Analytics
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'sessions' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.diagnostic_sessions_list') }}">
-                                <i class="bi bi-clipboard-data"></i> Сессии
+                                <i class="bi bi-clipboard-data"></i> Sessions
                             </a>
                         </li>
                         
                         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
-                            <span>Контент</span>
+                            <span>Content</span>
                         </h6>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'content_management' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.content_management') }}">
-                                <i class="bi bi-collection"></i> Обзор
+                                <i class="bi bi-collection"></i> Overview
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'questions' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.questions_management') }}">
-                                <i class="bi bi-question-circle"></i> Вопросы
+                                <i class="bi bi-question-circle"></i> Questions
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'virtual_patients' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.virtual_patients') }}">
-                                <i class="bi bi-person-video3"></i> Виртуальные пациенты
+                                <i class="bi bi-person-video3"></i> Virtual Patients
                             </a>
                         </li>
                         
                         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
-                            <span>Административные инструменты</span>
+                            <span>Admin Tools</span>
                         </h6>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'database' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.database_management') }}">
-                                <i class="bi bi-database"></i> Управление БД
+                                <i class="bi bi-database"></i> Database Management
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'system_health' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.system_health') }}">
-                                <i class="bi bi-heart-pulse"></i> Мониторинг системы
+                                <i class="bi bi-heart-pulse"></i> System Monitoring
                             </a>
                         </li>
                         <li class="nav-item">
@@ -415,41 +428,41 @@
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'audit' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.audit_logs') }}">
-                                <i class="bi bi-shield-check"></i> Логи аудита
+                                <i class="bi bi-shield-check"></i> Audit Logs
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'blocked_ips' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.blocked_ips') }}">
-                                <i class="bi bi-shield-lock"></i> Заблокированные IP
+                                <i class="bi bi-shield-lock"></i> Blocked IPs
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'notifications' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.system_notifications') }}">
-                                <i class="bi bi-bell"></i> Уведомления
+                                <i class="bi bi-bell"></i> Notifications
                             </a>
                         </li>
                         
                         <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
-                            <span>Система</span>
+                            <span>System</span>
                         </h6>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'scheduler' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.scheduler_dashboard') }}">
-                                <i class="bi bi-clock-history"></i> Планировщик
+                                <i class="bi bi-clock-history"></i> Scheduler
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'monitoring' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('monitoring.events') }}">
-                                <i class="bi bi-activity"></i> Мониторинг
+                                <i class="bi bi-activity"></i> Monitoring
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link {% if request and 'settings' in request.endpoint %}active{% endif %}" 
                                href="{{ url_for('admin.system_settings') }}">
-                                <i class="bi bi-gear"></i> Настройки
+                                <i class="bi bi-gear"></i> Settings
                             </a>
                         </li>
                     </ul>

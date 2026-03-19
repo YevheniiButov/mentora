@@ -481,6 +481,9 @@ try:
     from routes.learning_routes import learning_bp
     from routes.test_routes import test_bp
     from routes.admin_routes import admin_bp
+    from routes.admin_users_export import admin_export_bp
+    from routes.admin_actions import admin_actions_bp
+    from routes.hub_routes import hub_bp
     from routes.virtual_patient_routes import virtual_patient_bp
     
     # Импорт новых роутов системы обучения
@@ -571,6 +574,8 @@ try:
     app.register_blueprint(learning_bp, url_prefix='/learning')  # ВКЛЮЧЕНО с декораторами блокировки
     # app.register_blueprint(test_bp, url_prefix='/tests')  # ОТКЛЮЧЕНО для предварительного запуска
     app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(admin_export_bp)
+    app.register_blueprint(hub_bp)
     app.register_blueprint(virtual_patient_bp)  # ВКЛЮЧЕНО с декораторами блокировки
     
     # Регистрация новых blueprint-ов системы обучения

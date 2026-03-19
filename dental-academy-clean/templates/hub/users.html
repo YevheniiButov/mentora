@@ -1,0 +1,295 @@
+{% extends "hub/base.html" %}
+
+{% block title %}Candidates - Mentora Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    .filter-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 8px;
+    }
+    .table-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    .status-pill {
+        font-size: 0.7rem;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 20px;
+    }
+    .btn-export-excel {
+        background-color: #217346;
+        color: white;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .btn-export-excel:hover {
+        background-color: #1a5c38;
+        color: white;
+        transform: translateY(-1px);
+    }
+    .level-badge {
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+    .level-low { background: #fee2e2; color: #b91c1c; }
+    .level-mid { background: #fef3c7; color: #92400e; }
+    .level-high { background: #dcfce7; color: #15803d; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0">Candidate Management</h2>
+        <p class="text-muted">Filter, search, and export registered medical professionals.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('hub.import_candidates') }}" class="btn btn-outline-primary shadow-sm px-4">
+            <i class="bi bi-cloud-arrow-up-fill me-2"></i> Import
+        </a>
+        <a href="{{ url_for('admin_export.export_download', **active_filters) }}" class="btn btn-export-excel shadow-sm px-4">
+            <i class="bi bi-file-earmark-excel-fill me-2"></i> Export to Excel
+        </a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="filter-card shadow-sm">
+    <form method="GET" action="{{ url_for('hub.users') }}" class="row g-3 align-items-end">
+        <div class="col-md-2">
+            <div class="filter-label">Search</div>
+            <input type="text" name="search" class="form-control bg-light" 
+                   placeholder="Name, email..." value="{{ active_filters.get('search', '') }}">
+        </div>
+        <div class="col-md-2">
+            <div class="filter-label">Profession</div>
+            <select name="profession" class="form-select bg-light">
+                <option value="">All professions</option>
+                {% for p in filter_options.professions %}
+                <option value="{{ p }}" {{ 'selected' if active_filters.get('profession') == p }}>{{ p|title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <div class="filter-label">Dutch Level</div>
+            <select name="dutch_level" class="form-select bg-light">
+                <option value="">Any level</option>
+                {% for lvl in filter_options.dutch_levels %}
+                <option value="{{ lvl }}" {{ 'selected' if active_filters.get('dutch_level') == lvl }}>{{ lvl }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <div class="filter-label">Legal Status</div>
+            <select name="legal_status" class="form-select bg-light">
+                <option value="">All statuses</option>
+                {% for s in filter_options.legal_statuses %}
+                <option value="{{ s }}" {{ 'selected' if active_filters.get('legal_status') == s }}>{{ s|replace('_', ' ')|title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-1">
+            <div class="filter-label">BIG Exam</div>
+            <select name="big_exam_registered" class="form-select bg-light">
+                <option value="">Any</option>
+                {% for b in filter_options.big_exam_opts %}
+                <option value="{{ b }}" {{ 'selected' if active_filters.get('big_exam_registered') == b }}>{{ b|replace('_', ' ')|title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-1">
+            <div class="filter-label">Housing</div>
+            <select name="housing_needed" class="form-select bg-light">
+                <option value="">Any</option>
+                {% for h in filter_options.housing_opts %}
+                <option value="{{ h }}" {{ 'selected' if active_filters.get('housing_needed') == h }}>{{ h|title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1 px-3">
+                <i class="bi bi-funnel-fill"></i> Filter
+            </button>
+            <a href="{{ url_for('hub.users') }}" class="btn btn-light border">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Results Summary -->
+<div class="d-flex align-items-center mb-3">
+    <span class="badge bg-primary rounded-pill px-3 me-2">{{ total_filtered }}</span>
+    <span class="text-muted small fw-semibold text-uppercase">Candidates found</span>
+</div>
+
+<!-- Table -->
+<div class="table-card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="bg-light">
+                <tr class="small text-uppercase text-muted fw-bold">
+                    <th class="ps-4">Candidate</th>
+                    <th>Profession</th>
+                    <th>Dutch</th>
+                    <th class="text-center">Readiness</th>
+                    <th class="text-center">Med. Asst.</th>
+                    <th>Legal Status</th>
+                    <th>BIG Exam</th>
+                    <th>Diploma</th>
+                    <th class="text-center">Housing</th>
+                    <th>Registered</th>
+                    <th class="pe-4 text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="border-top-0">
+                {% for user in users %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <div class="fw-bold text-primary">{{ user.first_name }} {{ user.last_name }}</div>
+                            {% if user.motivation and '[Google Form Import]' in user.motivation %}
+                                <span class="badge bg-info-subtle text-info border border-info-subtle" style="font-size: 0.65rem;">
+                                    <i class="bi bi-google me-1"></i>Google Form
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="small text-muted mb-1">{{ user.email }}</div>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if user.phone %}
+                            <div class="small text-muted" style="font-size: 0.7rem;"><i class="bi bi-telephone me-1"></i>{{ user.phone }}</div>
+                            {% endif %}
+                            {% if user.city %}
+                            <div class="small text-muted" style="font-size: 0.7rem;"><i class="bi bi-geo-alt me-1"></i>{{ user.city }}</div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark border fw-normal">{{ user.profession|title if user.profession else '—' }}</span>
+                    </td>
+                    <td>
+                        {% if user.dutch_level %}
+                            {% set lvl_class = 'level-high' if user.dutch_level in ['B2', 'C1', 'C2', 'native'] else ('level-mid' if user.dutch_level in ['B1'] else 'level-low') %}
+                            <span class="level-badge {{ lvl_class }}">{{ user.dutch_level }}</span>
+                        {% else %}
+                            <span class="text-muted small">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if user.latest_readiness %}
+                            {% set score = user.latest_readiness %}
+                            {% set score_class = 'text-success' if score >= 70 else ('text-warning' if score >= 40 else 'text-danger') %}
+                            <div class="fw-bold {{ score_class }}">{{ score }}%</div>
+                            <div class="progress mt-1" style="height: 4px; border-radius: 2px; width: 60px; margin: 0 auto;">
+                                <div class="progress-bar {{ 'bg-success' if score >= 70 else ('bg-warning' if score >= 40 else 'bg-danger') }}" 
+                                     role="progressbar" style="width: {{ score }}%"></div>
+                            </div>
+                        {% else %}
+                            <span class="text-muted small">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if user.work_as_assistant == 'yes' %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle fw-medium">Willing</span>
+                        {% elif user.work_as_assistant == 'no' %}
+                            <span class="badge bg-light text-muted border fw-normal">No</span>
+                        {% else %}
+                            <span class="text-muted small">—</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.legal_status|replace('_',' ')|title if user.legal_status else '—' }}</td>
+                    <td>
+                        {% if user.big_exam_registered == 'registered' %}
+                            <span class="status-pill bg-success bg-opacity-10 text-success">Registered</span>
+                        {% elif user.big_exam_registered == 'planning_to_register' %}
+                            <span class="status-pill bg-warning bg-opacity-10 text-warning">Exam Planned</span>
+                        {% else %}
+                            <span class="status-pill bg-light text-muted">Not Started</span>
+                        {% endif %}
+                    </td>
+                    <td class="small">
+                        {% if user.diploma_status %}
+                            <i class="bi bi-circle-fill {{ 'text-success' if 'complete' in user.diploma_status else 'text-warning' }} me-1" style="font-size: 0.5rem;"></i>
+                            {{ user.diploma_status|replace('_',' ')|title }}
+                        {% else %}
+                            {{ user.diploma_file|basename if user.diploma_file else '—' }}
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if user.housing_needed == 'yes' %}
+                            <i class="bi bi-house-fill text-warning" title="Needs housing"></i>
+                        {% elif user.housing_needed == 'no' %}
+                            <i class="bi bi-check-circle-fill text-success" title="No housing needed"></i>
+                        {% else %}
+                            <span class="text-muted small">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="small text-muted">{{ user.created_at.strftime('%d.%m.%y') if user.created_at else '—' }}</div>
+                    </td>
+                    <td class="pe-4 text-end">
+                        <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="btn btn-sm btn-outline-primary px-3 rounded-pill" target="_blank">
+                            Details
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center py-5">
+                        <i class="bi bi-people text-muted opacity-25" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-3">No candidates found matching your criteria.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if pagination.pages > 1 %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center pagination-sm">
+        {% if pagination.has_prev %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('hub.users', page=pagination.prev_num, **active_filters) }}">Previous</a>
+        </li>
+        {% endif %}
+        
+        {% for p in pagination.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+            {% if p %}
+                <li class="page-item {{ 'active' if p == pagination.page }}">
+                    <a class="page-link" href="{{ url_for('hub.users', page=p, **active_filters) }}">{{ p }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('hub.users', page=pagination.next_num, **active_filters) }}">Next</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% endblock %}

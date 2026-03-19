@@ -594,12 +594,52 @@
     </div>
   </section>
 
-  <!-- ─── Insight cards (Mocked for now, can be expanded later) ─── -->
+  <!-- ─── Insight cards ─── -->
   <section class="section anim-4">
     <p class="section-heading">Inzichten</p>
     <div class="insight-grid">
 
-      <!-- Individual Learning Plan (Premium Locked) -->
+      <!-- Strengths -->
+      <div class="insight-card green">
+        <div class="insight-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <h3>Sterke punten</h3>
+        {% if strong_domains %}
+          {% for domain in strong_domains %}
+          <div class="insight-item">
+            <span class="insight-dot"></span>
+            <p><strong>{{ domain }}</strong> Вы демонстрируете высокий уровень компетенции.</p>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="font-size: 13px; color: var(--slate-400);">Продолжайте практиковаться, чтобы выявить свои сильные стороны.</p>
+        {% endif %}
+      </div>
+
+      <!-- Weaknesses -->
+      <div class="insight-card amber">
+        <div class="insight-icon amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <h3>Области для улучшения</h3>
+        {% if weak_domains %}
+          {% for domain in weak_domains %}
+          <div class="insight-item">
+            <span class="insight-dot"></span>
+            <p><strong>{{ domain }}</strong> Рекомендуется дополнительное изучение этой темы.</p>
+          </div>
+          {% endfor %}
+        {% else %}
+          <p style="font-size: 13px; color: var(--slate-400);">У вас нет критических пробелов в основных доменах!</p>
+        {% endif %}
+      </div>
+
+      <!-- Individual Learning Plan -->
       <div class="insight-card amber" style="position: relative; overflow: hidden; grid-column: span 2;">
         <div class="insight-icon amber">
           <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -608,14 +648,31 @@
         </div>
         <h3>Индивидуальный план обучения</h3>
         
+        {% if learning_plan %}
+        <div class="score-bar-row">
+          <div class="score-bar-item">
+            <div class="score-bar-header">
+              <span class="score-bar-label">Общий прогресс обучения</span>
+              <span class="score-bar-value">{{ learning_plan.overall_progress | int }}%</span>
+            </div>
+            <div class="score-bar-track">
+              <div class="score-bar-fill green" style="width: {{ learning_plan.overall_progress | int }}%;"></div>
+            </div>
+          </div>
+          <p style="font-size: 13px; color: var(--slate-500); margin-top: 8px;">
+            Ваш план обучения активен. Следуйте ежедневным целям для достижения готовности к экзамену.
+          </p>
+        </div>
+        {% else %}
         <div class="score-bar-row" style="filter: blur(4px); opacity: 0.5;">
           <div class="score-bar-item">
             <div class="score-bar-header"><span class="score-bar-label">Vakinhoud</span><span class="score-bar-value">45%</span></div>
             <div class="score-bar-track"><div class="score-bar-fill amber" style="width: 45%;"></div></div>
           </div>
         </div>
+        {% endif %}
 
-        {% if not is_premium %}
+        {% if not is_premium and not learning_plan %}
         <div style="position: absolute; inset: 0; background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; z-index: 10;">
           <div style="background: #fbbf24; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(251,191,36,0.3);">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -625,7 +682,7 @@
           </div>
           <h4 style="font-size: 16px; font-weight: 600; color: #92400e; margin-bottom: 8px;">Premium Lock</h4>
           <p style="font-size: 13px; color: #b45309; max-width: 280px; font-weight: 500;">
-            Индивидуальный план обучения разблокируется после подтверждения стажировки в клинике
+            Индивидуальный план обучения разблокируется после подтверждения стажировки в клинике или приобретения подписки
           </p>
         </div>
         {% endif %}

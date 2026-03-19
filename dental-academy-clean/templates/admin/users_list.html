@@ -1,34 +1,34 @@
 {% extends "admin/base.html" %}
 
-{% block title %}Управление пользователями{% endblock %}
+{% block title %}User Management{% endblock %}
 
 {% block breadcrumbs %}
 <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
-<li class="breadcrumb-item active">Пользователи</li>
+<li class="breadcrumb-item active">Users</li>
 {% endblock %}
 
 {% block content %}
 {% if error_message %}
 <div class="alert alert-warning" role="alert">
-    <h4 class="alert-heading">⚠️ Ошибка загрузки данных</h4>
+    <h4 class="alert-heading">⚠️ Data Load Error</h4>
     <p>{{ error_message }}</p>
     <hr>
-    <p class="mb-0">Показана базовая информация. Некоторые данные могут быть недоступны.</p>
+    <p class="mb-0">Showing basic information. Some data may be unavailable.</p>
 </div>
 {% endif %}
 
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Управление пользователями</h1>
+    <h1 class="h2">User Management</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
         <div class="btn-group me-2">
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="exportUsers()">
-                <i class="bi bi-download"></i> Экспорт
-            </button>
+            <a href="{{ url_for('admin_export.export_page') }}" class="btn btn-sm btn-success">
+                <i class="bi bi-file-earmark-excel-fill me-1"></i> Export Candidates
+            </a>
             <a href="{{ url_for('admin.deleted_users') }}" class="btn btn-sm btn-outline-danger">
-                <i class="bi bi-trash"></i> Удаленные пользователи
+                <i class="bi bi-trash"></i> Deleted Users
             </a>
             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                <i class="bi bi-person-plus"></i> Добавить пользователя
+                <i class="bi bi-person-plus"></i> Add User
             </button>
         </div>
     </div>
@@ -41,7 +41,7 @@
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Всего</div>
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total</div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_users }}</div>
                     </div>
                     <div class="col-auto">
@@ -57,7 +57,7 @@
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Активных</div>
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Active</div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.active_users }}</div>
                     </div>
                     <div class="col-auto">
@@ -73,7 +73,7 @@
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Онлайн</div>
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Online</div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800" id="online-users-count">{{ stats.online_users }}</div>
                     </div>
                     <div class="col-auto">
@@ -89,7 +89,7 @@
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Админов</div>
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Admins</div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.admin_users }}</div>
                     </div>
                     <div class="col-auto">
@@ -121,7 +121,7 @@
             <div class="card-body">
                 <div class="row no-gutters align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Неактивных</div>
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Inactive</div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.inactive_users }}</div>
                     </div>
                     <div class="col-auto">
@@ -136,51 +136,51 @@
 <!-- Filters and Search -->
 <div class="card shadow mb-4">
     <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Фильтры и поиск</h6>
+        <h6 class="m-0 font-weight-bold text-primary">Filters and Search</h6>
     </div>
     <div class="card-body">
         <form method="GET" class="row g-3" id="filtersForm">
             <div class="col-md-3">
-                <label for="search" class="form-label">Поиск</label>
+                <label for="search" class="form-label">Search</label>
                 <input type="text" class="form-control" id="search" name="search" value="{{ search }}" 
-                       placeholder="Имя, email, логин..." autocomplete="off">
+                       placeholder="Name, email, login..." autocomplete="off">
             </div>
             <div class="col-md-2">
-                <label for="status" class="form-label">Статус</label>
+                <label for="status" class="form-label">Status</label>
                 <select class="form-select" id="status" name="status" autocomplete="off">
-                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Все</option>
-                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Активные</option>
-                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Неактивные</option>
-                    <option value="email_verified" {% if status_filter == 'email_verified' %}selected{% endif %}>Email подтвержден</option>
-                    <option value="email_unverified" {% if status_filter == 'email_unverified' %}selected{% endif %}>Email не подтвержден</option>
-                    <option value="digid" {% if status_filter == 'digid' %}selected{% endif %}>DigiD пользователи</option>
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                    <option value="email_verified" {% if status_filter == 'email_verified' %}selected{% endif %}>Email Verified</option>
+                    <option value="email_unverified" {% if status_filter == 'email_unverified' %}selected{% endif %}>Email Unverified</option>
+                    <option value="digid" {% if status_filter == 'digid' %}selected{% endif %}>DigiD Users</option>
                 </select>
             </div>
             <div class="col-md-2">
-                <label for="consent_filter" class="form-label">Согласия</label>
+                <label for="consent_filter" class="form-label">Consents</label>
                 <select class="form-select" id="consent_filter" name="consent_filter" autocomplete="off">
-                    <option value="all" {% if consent_filter == 'all' %}selected{% endif %}>Все</option>
-                    <option value="required_yes" {% if consent_filter == 'required_yes' %}selected{% endif %}>Обязательные: Да</option>
-                    <option value="required_no" {% if consent_filter == 'required_no' %}selected{% endif %}>Обязательные: Нет</option>
-                    <option value="marketing_yes" {% if consent_filter == 'marketing_yes' %}selected{% endif %}>Маркетинг: Да</option>
-                    <option value="marketing_no" {% if consent_filter == 'marketing_no' %}selected{% endif %}>Маркетинг: Нет</option>
+                    <option value="all" {% if consent_filter == 'all' %}selected{% endif %}>All</option>
+                    <option value="required_yes" {% if consent_filter == 'required_yes' %}selected{% endif %}>Required: Yes</option>
+                    <option value="required_no" {% if consent_filter == 'required_no' %}selected{% endif %}>Required: No</option>
+                    <option value="marketing_yes" {% if consent_filter == 'marketing_yes' %}selected{% endif %}>Marketing: Yes</option>
+                    <option value="marketing_no" {% if consent_filter == 'marketing_no' %}selected{% endif %}>Marketing: No</option>
                 </select>
             </div>
             <div class="col-md-2">
-                <label for="role" class="form-label">Роль</label>
+                <label for="role" class="form-label">Role</label>
                 <select class="form-select" id="role" name="role" autocomplete="off">
-                    <option value="all" {% if role_filter == 'all' %}selected{% endif %}>Все</option>
-                    <option value="user" {% if role_filter == 'user' %}selected{% endif %}>Пользователи</option>
-                    <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Администраторы</option>
+                    <option value="all" {% if role_filter == 'all' %}selected{% endif %}>All</option>
+                    <option value="user" {% if role_filter == 'user' %}selected{% endif %}>Users</option>
+                    <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Administrators</option>
                 </select>
             </div>
             <div class="col-md-2">
-                <label for="sort" class="form-label">Сортировка</label>
+                <label for="sort" class="form-label">Sort By</label>
                 <select class="form-select" id="sort" name="sort" autocomplete="off">
-                    <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Дата регистрации</option>
-                    <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Имя</option>
+                    <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Registration Date</option>
+                    <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name</option>
                     <option value="email" {% if sort_by == 'email' %}selected{% endif %}>Email</option>
-                    <option value="last_login" {% if sort_by == 'last_login' %}selected{% endif %}>Последний вход</option>
+                    <option value="last_login" {% if sort_by == 'last_login' %}selected{% endif %}>Last Login</option>
                 </select>
             </div>
             <div class="col-md-1">
@@ -194,9 +194,9 @@
             <div class="col-12 mt-2">
                 <a class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" href="#advancedFilters" role="button" 
                    aria-expanded="{% if profession_filter != 'all' or nationality_filter != 'all' or dutch_level_filter != 'all' or legal_status_filter != 'all' %}true{% else %}false{% endif %}">
-                    <i class="bi bi-funnel"></i> Расширенные фильтры
+                    <i class="bi bi-funnel"></i> Advanced Filters
                     {% if profession_filter != 'all' or nationality_filter != 'all' or dutch_level_filter != 'all' or legal_status_filter != 'all' %}
-                    <span class="badge bg-primary ms-1">активны</span>
+                    <span class="badge bg-primary ms-1">active</span>
                     {% endif %}
                 </a>
             </div>
@@ -205,52 +205,52 @@
             <div class="collapse {% if profession_filter != 'all' or nationality_filter != 'all' or dutch_level_filter != 'all' or legal_status_filter != 'all' %}show{% endif %}" id="advancedFilters">
                 <div class="row g-3 mt-1 p-3 bg-light rounded">
                     <div class="col-md-3">
-                        <label for="profession" class="form-label"><i class="bi bi-heart-pulse"></i> Профессия</label>
+                        <label for="profession" class="form-label"><i class="bi bi-heart-pulse"></i> Profession</label>
                         <select class="form-select" id="profession" name="profession" autocomplete="off">
-                            <option value="all" {% if profession_filter == 'all' %}selected{% endif %}>Все профессии</option>
+                            <option value="all" {% if profession_filter == 'all' %}selected{% endif %}>All Professions</option>
                             {% for prof in professions_list %}
                             <option value="{{ prof }}" {% if profession_filter == prof %}selected{% endif %}>{{ prof }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label for="nationality" class="form-label"><i class="bi bi-globe"></i> Гражданство</label>
+                        <label for="nationality" class="form-label"><i class="bi bi-globe"></i> Nationality</label>
                         <select class="form-select" id="nationality" name="nationality" autocomplete="off">
-                            <option value="all" {% if nationality_filter == 'all' %}selected{% endif %}>Все гражданства</option>
+                            <option value="all" {% if nationality_filter == 'all' %}selected{% endif %}>All Nationalities</option>
                             {% for nat in nationalities_list %}
                             <option value="{{ nat }}" {% if nationality_filter == nat %}selected{% endif %}>{{ nat }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label for="dutch_level" class="form-label"><i class="bi bi-translate"></i> Уровень голландского</label>
+                        <label for="dutch_level" class="form-label"><i class="bi bi-translate"></i> Dutch Level</label>
                         <select class="form-select" id="dutch_level" name="dutch_level" autocomplete="off">
-                            <option value="all" {% if dutch_level_filter == 'all' %}selected{% endif %}>Все уровни</option>
+                            <option value="all" {% if dutch_level_filter == 'all' %}selected{% endif %}>All Levels</option>
                             {% for lvl in dutch_levels_list %}
                             <option value="{{ lvl }}" {% if dutch_level_filter == lvl %}selected{% endif %}>{{ lvl }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label for="legal_status" class="form-label"><i class="bi bi-shield-check"></i> Правовой статус</label>
+                        <label for="legal_status" class="form-label"><i class="bi bi-shield-check"></i> Legal Status</label>
                         <select class="form-select" id="legal_status" name="legal_status" autocomplete="off">
-                            <option value="all" {% if legal_status_filter == 'all' %}selected{% endif %}>Все статусы</option>
+                            <option value="all" {% if legal_status_filter == 'all' %}selected{% endif %}>All Statuses</option>
                             {% for ls in legal_statuses_list %}
                             <option value="{{ ls }}" {% if legal_status_filter == ls %}selected{% endif %}>{{ ls }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label for="order" class="form-label">Порядок</label>
+                        <label for="order" class="form-label">Order</label>
                         <select class="form-select" id="order" name="order" autocomplete="off">
-                            <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>По убыванию</option>
-                            <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>По возрастанию</option>
+                            <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Descending</option>
+                            <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>Ascending</option>
                         </select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">&nbsp;</label>
                         <a href="{{ url_for('admin.users_list') }}" class="btn btn-outline-secondary d-block">
-                            <i class="bi bi-x-circle"></i> Сбросить
+                            <i class="bi bi-x-circle"></i> Reset
                         </a>
                     </div>
                 </div>
@@ -262,18 +262,18 @@
 <!-- Users Table -->
 <div class="card shadow mb-4">
     <div class="card-header py-3 d-flex justify-content-between align-items-center">
-        <h6 class="m-0 font-weight-bold text-primary">Список пользователей</h6>
+        <h6 class="m-0 font-weight-bold text-primary">User List</h6>
         <div class="dropdown">
             <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                Массовые действия
+                Bulk Actions
             </button>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#" onclick="bulkAction('activate')">Активировать</a></li>
-                <li><a class="dropdown-item" href="#" onclick="bulkAction('deactivate')">Деактивировать</a></li>
-                <li><a class="dropdown-item" href="#" onclick="bulkAction('make_admin')">Сделать админами</a></li>
-                <li><a class="dropdown-item" href="#" onclick="bulkAction('make_user')">Сделать пользователями</a></li>
+                <li><a class="dropdown-item" href="#" onclick="bulkAction('activate')">Activate</a></li>
+                <li><a class="dropdown-item" href="#" onclick="bulkAction('deactivate')">Deactivate</a></li>
+                <li><a class="dropdown-item" href="#" onclick="bulkAction('make_admin')">Make Admins</a></li>
+                <li><a class="dropdown-item" href="#" onclick="bulkAction('make_user')">Make Users</a></li>
                 <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item text-danger" href="#" onclick="bulkAction('delete')">Удалить</a></li>
+                <li><a class="dropdown-item text-danger" href="#" onclick="bulkAction('delete')">Delete</a></li>
             </ul>
         </div>
     </div>
@@ -288,15 +288,15 @@
                             <th width="3%">
                                 <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
                             </th>
-                            <th>Пользователь</th>
+                            <th>User</th>
                             <th>Email</th>
-                            <th>Роль</th>
-                            <th>Статус</th>
-                            <th>Обязательные согласия</th>
-                            <th>Маркетинг</th>
-                            <th>Последний вход</th>
-                            <th>Регистрация</th>
-                            <th>Действия</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Required Consents</th>
+                            <th>Marketing</th>
+                            <th>Last Login</th>
+                            <th>Registration</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -310,9 +310,9 @@
                                 <div class="d-flex align-items-center">
                                     <div class="me-2">
                                         {% if user.last_login %}
-                                        <i class="bi bi-circle-fill text-success" title="Онлайн"></i>
+                                        <i class="bi bi-circle-fill text-success" title="Online"></i>
                                         {% else %}
-                                        <i class="bi bi-circle text-secondary" title="Офлайн"></i>
+                                        <i class="bi bi-circle text-secondary" title="Offline"></i>
                                         {% endif %}
                                     </div>
                                     <div>
@@ -332,54 +332,54 @@
                             <td>
                                 {{ user.email }}
                                 {% if not user.email_confirmed %}
-                                <i class="bi bi-exclamation-triangle text-warning" title="Email не подтвержден"></i>
+                                <i class="bi bi-exclamation-triangle text-warning" title="Email not verified"></i>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if user.is_admin %}
-                                <span class="badge bg-danger">Администратор</span>
+                                <span class="badge bg-danger">Administrator</span>
                                 {% else %}
-                                <span class="badge bg-secondary">Пользователь</span>
+                                <span class="badge bg-secondary">User</span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if user.is_deleted %}
-                                <span class="badge bg-danger">🗑️ Удален</span>
+                                <span class="badge bg-danger">🗑️ Deleted</span>
                                 {% elif user.is_active %}
-                                <span class="badge bg-success">Активен</span>
+                                <span class="badge bg-success">Active</span>
                                 {% else %}
-                                <span class="badge bg-warning">Неактивен</span>
+                                <span class="badge bg-warning">Inactive</span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if user.required_consents %}
-                                <span class="badge bg-success" title="Согласие дано">
-                                    <i class="bi bi-check-circle"></i> Да
+                                <span class="badge bg-success" title="Consent given">
+                                    <i class="bi bi-check-circle"></i> Yes
                                 </span>
                                 {% else %}
-                                <span class="badge bg-danger" title="Согласие не дано">
-                                    <i class="bi bi-x-circle"></i> Нет
+                                <span class="badge bg-danger" title="Consent not given">
+                                    <i class="bi bi-x-circle"></i> No
                                 </span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if user.optional_consents %}
-                                <span class="badge bg-info" title="Согласие на маркетинг дано">
-                                    <i class="bi bi-check-circle"></i> Да
+                                <span class="badge bg-info" title="Marketing consent given">
+                                    <i class="bi bi-check-circle"></i> Yes
                                 </span>
                                 {% else %}
-                                <span class="badge bg-secondary" title="Согласие на маркетинг не дано">
-                                    <i class="bi bi-x-circle"></i> Нет
+                                <span class="badge bg-secondary" title="Marketing consent not given">
+                                    <i class="bi bi-x-circle"></i> No
                                 </span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if user.last_login %}
                                 <span title="{{ user.last_login.strftime('%d.%m.%Y %H:%M:%S') }}">
-                                    {{ user.last_login.strftime('%d.%m.%Y %H:%M') if user.last_login else 'Никогда' }}
+                                    {{ user.last_login.strftime('%d.%m.%Y %H:%M') if user.last_login else 'Never' }}
                                 </span>
                                 {% else %}
-                                <span class="text-muted">Никогда</span>
+                                <span class="text-muted">Never</span>
                                 {% endif %}
                             </td>
                             <td>
@@ -390,39 +390,39 @@
                             <td>
                                 <div class="btn-group btn-group-sm">
                                     <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" 
-                                       class="btn btn-outline-primary" title="Просмотр">
+                                       class="btn btn-outline-primary" title="View">
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
-                                       class="btn btn-outline-secondary" title="Редактировать">
+                                       class="btn btn-outline-secondary" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     {% if user.id != current_user.id %}
                                         {% if user.is_deleted %}
-                                            <!-- Кнопки для удаленных пользователей -->
+                                            <!-- Buttons for deleted users -->
                                             <a href="{{ url_for('admin.restore_user', user_id=user.id) }}" 
-                                               class="btn btn-outline-success" title="Восстановить пользователя"
-                                               onclick="return confirm('Восстановить пользователя {{ user.get_display_name() }}?')">
+                                               class="btn btn-outline-success" title="Restore User"
+                                               onclick="return confirm('Restore user {{ user.get_display_name() }}?')">
                                                 <i class="bi bi-arrow-clockwise"></i>
                                             </a>
                                             <a href="{{ url_for('admin.hard_delete_user', user_id=user.id) }}" 
-                                               class="btn btn-outline-danger" title="Полностью удалить"
-                                               onclick="return confirm('⚠️ ВНИМАНИЕ! Это действие удалит пользователя {{ user.get_display_name() }} навсегда! Все данные будут потеряны!')">
+                                               class="btn btn-outline-danger" title="Hard Delete"
+                                               onclick="return confirm('⚠️ ATTENTION! This action will delete user {{ user.get_display_name() }} forever! All data will be lost!')">
                                                 <i class="bi bi-trash3"></i>
                                             </a>
                                         {% else %}
-                                            <!-- Кнопки для активных пользователей -->
+                                            <!-- Buttons for active users -->
                                             <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}" 
                                                   style="display: inline;">
                                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                 <button type="submit" class="btn btn-outline-warning btn-sm" 
-                                                        title="{% if user.is_active %}Деактивировать{% else %}Активировать{% endif %}">
+                                                        title="{% if user.is_active %}Deactivate{% else %}Activate{% endif %}">
                                                     <i class="bi bi-{% if user.is_active %}pause{% else %}play{% endif %}"></i>
                                                 </button>
                                             </form>
                                             <div class="btn-group">
                                                 <button type="button" class="btn btn-outline-danger btn-sm dropdown-toggle" 
-                                                        data-bs-toggle="dropdown" title="Удалить пользователя">
+                                                        data-bs-toggle="dropdown" title="Delete User">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                                 <ul class="dropdown-menu">
@@ -431,8 +431,8 @@
                                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                             <input type="hidden" name="delete_type" value="soft">
                                                             <button type="submit" class="dropdown-item text-warning"
-                                                                    onclick="return confirm('Мягко удалить пользователя {{ user.get_display_name() }}? Данные будут сохранены и могут быть восстановлены.')">
-                                                                <i class="bi bi-archive"></i> Мягкое удаление
+                                                                    onclick="return confirm('Soft delete user {{ user.get_display_name() }}? Data will be preserved and can be restored.')">
+                                                                <i class="bi bi-archive"></i> Soft Delete
                                                             </button>
                                                         </form>
                                                     </li>
@@ -442,8 +442,8 @@
                                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                                             <input type="hidden" name="delete_type" value="hard">
                                                             <button type="submit" class="dropdown-item text-danger"
-                                                                    onclick="return confirm('⚠️ ВНИМАНИЕ! ⚠️\n\nПолностью удалить пользователя {{ user.get_display_name() }}?\n\nЭто действие НЕОБРАТИМО! Все данные будут удалены навсегда!')">
-                                                                <i class="bi bi-trash-fill"></i> Полное удаление
+                                                                    onclick="return confirm('⚠️ ATTENTION! ⚠️\n\nCompletely delete user {{ user.get_display_name() }}?\n\nThis action is IRREVERSIBLE! All data will be deleted forever!')">
+                                                                <i class="bi bi-trash-fill"></i> Hard Delete
                                                             </button>
                                                         </form>
                                                     </li>
@@ -459,7 +459,7 @@
                         <tr>
                             <td colspan="10" class="text-center py-4">
                                 <i class="bi bi-person-x fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">Нет пользователей для отображения</p>
+                                <p class="text-muted">No users to display</p>
                             </td>
                         </tr>
                         {% endif %}
@@ -515,9 +515,9 @@
             <div class="col-sm-12 col-md-5">
                 <div class="text-muted">
                     {% if users %}
-                    Показано {{ users.per_page * (users.page - 1) + 1 }} - {{ users.per_page * (users.page - 1) + users.items|length }} из {{ users.total }} записей
+                    Showing {{ users.per_page * (users.page - 1) + 1 }} - {{ users.per_page * (users.page - 1) + users.items|length }} of {{ users.total }} records
                     {% else %}
-                    Нет данных для отображения
+                    No data to display
                     {% endif %}
                 </div>
             </div>
@@ -530,18 +530,18 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Добавить пользователя</h5>
+                <h5 class="modal-title">Add User</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="addUserForm" method="POST" action="{{ url_for('admin.users_list') }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
-                        <label for="first_name" class="form-label">Имя</label>
+                        <label for="first_name" class="form-label">First Name</label>
                         <input type="text" class="form-control" id="first_name" name="first_name" required>
                     </div>
                     <div class="mb-3">
-                        <label for="last_name" class="form-label">Фамилия</label>
+                        <label for="last_name" class="form-label">Last Name</label>
                         <input type="text" class="form-control" id="last_name" name="last_name" required>
                     </div>
                     <div class="mb-3">
@@ -549,21 +549,21 @@
                         <input type="email" class="form-control" id="email" name="email" required autocomplete="email">
                     </div>
                     <div class="mb-3">
-                        <label for="password" class="form-label">Пароль</label>
+                        <label for="password" class="form-label">Password</label>
                         <input type="password" class="form-control" id="password" name="password" autocomplete="new-password" required>
                     </div>
                     <div class="mb-3">
-                        <label for="user_role" class="form-label">Роль</label>
+                        <label for="user_role" class="form-label">Role</label>
                         <select class="form-select" id="user_role" name="role">
-                            <option value="user">Пользователь</option>
-                            <option value="admin">Администратор</option>
+                            <option value="user">User</option>
+                            <option value="admin">Administrator</option>
                         </select>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                <button type="submit" form="addUserForm" class="btn btn-primary">Создать</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="addUserForm" class="btn btn-primary">Create</button>
             </div>
         </div>
     </div>
@@ -606,26 +606,26 @@ function bulkAction(action) {
     console.log('Selected users count:', selectedUsers.length);
     
     if (selectedUsers.length === 0) {
-        alert('Выберите пользователей для выполнения действия');
+        alert('Please select users to perform the action');
         return;
     }
     
     let confirmMessage = '';
     switch(action) {
         case 'delete':
-            confirmMessage = `Вы уверены, что хотите удалить ${selectedUsers.length} пользователей?`;
+            confirmMessage = `Are you sure you want to delete ${selectedUsers.length} users?`;
             break;
         case 'activate':
-            confirmMessage = `Активировать ${selectedUsers.length} пользователей?`;
+            confirmMessage = `Activate ${selectedUsers.length} users?`;
             break;
         case 'deactivate':
-            confirmMessage = `Деактивировать ${selectedUsers.length} пользователей?`;
+            confirmMessage = `Deactivate ${selectedUsers.length} users?`;
             break;
         case 'make_admin':
-            confirmMessage = `Назначить ${selectedUsers.length} пользователей администраторами?`;
+            confirmMessage = `Assign ${selectedUsers.length} users as administrators?`;
             break;
         case 'make_user':
-            confirmMessage = `Понизить ${selectedUsers.length} администраторов до обычных пользователей?`;
+            confirmMessage = `Demote ${selectedUsers.length} administrators to regular users?`;
             break;
     }
     

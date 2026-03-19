@@ -1,0 +1,448 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Export Candidates — Admin{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+<li class="breadcrumb-item"><a href="{{ url_for('admin.users_list') }}">Users</a></li>
+<li class="breadcrumb-item active">Export Candidates</li>
+{% endblock %}
+
+{% block content %}
+
+<style>
+  /* ── Page header ── */
+  .export-header {
+    background: linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+  .export-header h1 { font-size: 1.5rem; font-weight: 700; margin: 0; }
+  .export-header p  { opacity: .75; margin: 4px 0 0; font-size: .875rem; }
+
+  /* ── Filter card ── */
+  .filter-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .filter-card .filter-label {
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #64748b;
+    margin-bottom: 6px;
+  }
+  .filter-card select,
+  .filter-card input[type=text] {
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-size: .875rem;
+    padding: 7px 12px;
+    background: #f8fafc;
+    transition: border-color .15s;
+  }
+  .filter-card select:focus,
+  .filter-card input[type=text]:focus {
+    border-color: #2d6a9f;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(45,106,159,.12);
+    outline: none;
+  }
+
+  /* ── Stats badges ── */
+  .result-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    margin-bottom: 4px;
+  }
+  .result-bar .count-badge {
+    background: #1a3a5c;
+    color: #fff;
+    font-size: .8rem;
+    font-weight: 700;
+    border-radius: 20px;
+    padding: 4px 14px;
+  }
+  .result-bar .label { color: #64748b; font-size: .875rem; }
+
+  /* ── Download button ── */
+  .btn-export {
+    background: linear-gradient(135deg, #217346 0%, #2ecc71 100%);
+    color: #fff;
+    font-weight: 600;
+    font-size: .875rem;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 22px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity .15s, transform .1s;
+    text-decoration: none;
+  }
+  .btn-export:hover { opacity: .9; transform: translateY(-1px); color: #fff; }
+  .btn-export:active { transform: translateY(0); }
+  .btn-export i { font-size: 1rem; }
+
+  /* ── Table ── */
+  .candidates-table { border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .candidates-table thead th {
+    background: #1a3a5c;
+    color: #fff;
+    font-size: .72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    border: none;
+    padding: 12px 14px;
+    white-space: nowrap;
+  }
+  .candidates-table tbody tr { transition: background .1s; }
+  .candidates-table tbody tr:hover { background: #f0f6ff; }
+  .candidates-table tbody td {
+    font-size: .82rem;
+    padding: 10px 14px;
+    vertical-align: middle;
+    color: #334155;
+    border-color: #f1f5f9;
+  }
+
+  /* ── Level badges ── */
+  .level-badge {
+    display: inline-block;
+    font-size: .68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+  .level-A1, .level-A2 { background:#fee2e2; color:#b91c1c; }
+  .level-B1, .level-B2 { background:#fef3c7; color:#92400e; }
+  .level-C1, .level-C2, .level-native { background:#dcfce7; color:#15803d; }
+
+  /* ── Status dots ── */
+  .dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:5px; }
+  .dot-green  { background:#22c55e; }
+  .dot-yellow { background:#f59e0b; }
+  .dot-red    { background:#ef4444; }
+  .dot-gray   { background:#94a3b8; }
+
+  /* ── Active filters strip ── */
+  .active-filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #e0f0ff;
+    color: #1a3a5c;
+    font-size: .72rem;
+    font-weight: 600;
+    border-radius: 20px;
+    padding: 3px 10px;
+  }
+  .active-filter-tag a { color: #1a3a5c; text-decoration: none; }
+</style>
+
+{# ── Page header ── #}
+<div class="export-header">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <h1><i class="bi bi-file-earmark-spreadsheet me-2"></i>Partner-Ready Export</h1>
+      <p>Filter qualified candidates and generate a partner-ready Excel file for organisations like AMC Amsterdam and Randstad.</p>
+    </div>
+    <a href="{{ url_for('admin_export.export_download') }}{% if request.query_string %}?{{ request.query_string.decode() }}{% endif %}" class="btn-export" id="downloadBtn">
+      <i class="bi bi-file-earmark-excel-fill"></i>
+      Download Excel
+      {% if total_filtered %}
+        <span style="background:rgba(255,255,255,.25); border-radius:20px; padding:1px 8px;">{{ total_filtered }}</span>
+      {% endif %}
+    </a>
+  </div>
+</div>
+
+{# ── Filters ── #}
+<div class="filter-card">
+  <form method="GET" action="{{ url_for('admin_export.export_page') }}" id="filterForm">
+
+    <div class="row g-3 align-items-end">
+
+      {# Search #}
+      <div class="col-md-3">
+        <div class="filter-label">🔍 Search</div>
+        <input type="text" name="search" class="form-control"
+               placeholder="Name, email, city…"
+               value="{{ active_filters.get('search', '') }}">
+      </div>
+
+      {# Profession #}
+      <div class="col-md-2">
+        <div class="filter-label">💼 Profession</div>
+        <select name="profession" class="form-select">
+          <option value="">All professions</option>
+          {% for p in filter_options.professions %}
+            <option value="{{ p }}" {{ 'selected' if active_filters.get('profession') == p }}>{{ p | title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {# Dutch level #}
+      <div class="col-md-2">
+        <div class="filter-label">🇳🇱 Dutch level</div>
+        <select name="dutch_level" class="form-select">
+          <option value="">Any level</option>
+          {% for lvl in filter_options.dutch_levels %}
+            <option value="{{ lvl }}" {{ 'selected' if active_filters.get('dutch_level') == lvl }}>{{ lvl }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {# Legal status #}
+      <div class="col-md-2">
+        <div class="filter-label">📋 Legal status</div>
+        <select name="legal_status" class="form-select">
+          <option value="">All statuses</option>
+          {% for s in filter_options.legal_statuses %}
+            <option value="{{ s }}" {{ 'selected' if active_filters.get('legal_status') == s }}>{{ s | replace('_', ' ') | title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {# BIG exam #}
+      <div class="col-md-2">
+        <div class="filter-label">📝 BIG exam</div>
+        <select name="big_exam_registered" class="form-select">
+          <option value="">Any</option>
+          {% for b in filter_options.big_exam_opts %}
+            <option value="{{ b }}" {{ 'selected' if active_filters.get('big_exam_registered') == b }}>{{ b | replace('_', ' ') | title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {# Housing #}
+      <div class="col-md-1">
+        <div class="filter-label">🏠 Housing</div>
+        <select name="housing_needed" class="form-select">
+          <option value="">Any</option>
+          {% for h in filter_options.housing_opts %}
+            <option value="{{ h }}" {{ 'selected' if active_filters.get('housing_needed') == h }}>{{ h | title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {# Buttons #}
+      <div class="col-md-12 d-flex gap-2 pt-1">
+        <button type="submit" class="btn btn-primary btn-sm px-4">
+          <i class="bi bi-funnel-fill me-1"></i> Apply filters
+        </button>
+        <a href="{{ url_for('admin_export.export_page') }}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-x-circle me-1"></i> Clear all
+        </a>
+      </div>
+    </div>
+  </form>
+</div>
+
+{# ── Active filter tags ── #}
+{% set active_params = [] %}
+{% if active_filters.get('search') %}{% set _ = active_params.append(('search', active_filters.get('search'))) %}{% endif %}
+{% if active_filters.get('profession') %}{% set _ = active_params.append(('profession', active_filters.get('profession'))) %}{% endif %}
+{% if active_filters.get('dutch_level') %}{% set _ = active_params.append(('dutch_level', active_filters.get('dutch_level'))) %}{% endif %}
+{% if active_filters.get('legal_status') %}{% set _ = active_params.append(('legal_status', active_filters.get('legal_status'))) %}{% endif %}
+{% if active_filters.get('big_exam_registered') %}{% set _ = active_params.append(('big_exam_registered', active_filters.get('big_exam_registered'))) %}{% endif %}
+{% if active_filters.get('housing_needed') %}{% set _ = active_params.append(('housing_needed', active_filters.get('housing_needed'))) %}{% endif %}
+
+{% if active_params %}
+<div class="d-flex gap-2 flex-wrap mb-3">
+  <span style="font-size:.75rem; color:#64748b; align-self:center;">Active filters:</span>
+  {% for key, val in active_params %}
+    <span class="active-filter-tag">
+      {{ key | replace('_', ' ') }}: <strong>{{ val }}</strong>
+    </span>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# ── Result bar ── #}
+<div class="result-bar">
+  <span class="count-badge">{{ total_filtered }}</span>
+  <span class="label">candidates match your filters</span>
+  <div class="ms-auto">
+    <a href="{{ url_for('admin_export.export_download') }}{% if request.query_string %}?{{ request.query_string.decode() }}{% endif %}"
+       class="btn-export" style="padding:7px 16px; font-size:.8rem;">
+      <i class="bi bi-file-earmark-excel-fill"></i>
+      Export {{ total_filtered }} rows to Excel
+    </a>
+  </div>
+</div>
+
+{# ── Table ── #}
+<div class="candidates-table table-responsive">
+  <table class="table table-hover mb-0">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Profession</th>
+        <th>Dutch</th>
+        <th>Legal Status</th>
+        <th>BIG Exam</th>
+        <th>Diploma</th>
+        <th>Housing</th>
+        <th>City</th>
+        <th>Registered</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td class="text-muted" style="font-size:.75rem;">{{ loop.index + (pagination.page - 1) * 25 }}</td>
+
+        {# Name #}
+        <td>
+          <div style="font-weight:600; white-space:nowrap;">
+            {{ user.first_name or '—' }} {{ user.last_name or '' }}
+          </div>
+          {% if user.phone %}
+            <div style="font-size:.72rem; color:#94a3b8;">{{ user.phone }}</div>
+          {% endif %}
+        </td>
+
+        {# Email #}
+        <td style="font-size:.8rem;">{{ user.email }}</td>
+
+        {# Profession #}
+        <td>
+          {% if user.profession %}
+            <span class="badge bg-light text-dark border" style="font-size:.72rem;">{{ user.profession | replace('_',' ') | title }}</span>
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+
+        {# Dutch level #}
+        <td>
+          {% if user.dutch_level %}
+            <span class="level-badge level-{{ user.dutch_level }}">{{ user.dutch_level }}</span>
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+
+        {# Legal status #}
+        <td style="font-size:.78rem;">
+          {% if user.legal_status %}
+            {{ user.legal_status | replace('_', ' ') | title }}
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+
+        {# BIG exam #}
+        <td style="font-size:.78rem;">
+          {% if user.big_exam_registered == 'registered' %}
+            <span class="dot dot-green"></span>Registered
+          {% elif user.big_exam_registered == 'planning_to_register' %}
+            <span class="dot dot-yellow"></span>Planning
+          {% elif user.big_exam_registered == 'not_registered' %}
+            <span class="dot dot-gray"></span>Not yet
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+
+        {# Diploma #}
+        <td style="font-size:.78rem;">
+          {% if user.diploma_status %}
+            <span class="dot {{ 'dot-green' if 'complete' in user.diploma_status or 'ready' in user.diploma_status else 'dot-yellow' }}"></span>
+            {{ user.diploma_status | replace('_', ' ') | title }}
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+
+        {# Housing #}
+        <td style="font-size:.78rem; text-align:center;">
+          {% if user.housing_needed == 'yes' %}
+            <i class="bi bi-house-fill text-warning" title="Needs housing"></i>
+          {% elif user.housing_needed == 'no' %}
+            <i class="bi bi-check-circle text-success" title="No housing needed"></i>
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+
+        {# City #}
+        <td style="font-size:.78rem;">{{ user.city or '—' }}</td>
+
+        {# Registration date #}
+        <td style="font-size:.72rem; color:#94a3b8; white-space:nowrap;">
+          {{ user.created_at.strftime('%d.%m.%Y') if user.created_at else '—' }}
+        </td>
+
+        {# Detail link #}
+        <td>
+          <a href="{{ url_for('admin.user_detail', user_id=user.id) }}"
+             class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size:.72rem;">
+            View
+          </a>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="12" class="text-center py-5 text-muted">
+          <i class="bi bi-search fs-2 d-block mb-2 opacity-25"></i>
+          No candidates match the current filters.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{# ── Pagination ── #}
+{% if pagination.pages > 1 %}
+<nav class="mt-3 d-flex justify-content-center">
+  <ul class="pagination pagination-sm">
+    {% if pagination.has_prev %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('admin_export.export_page', page=pagination.prev_num, **active_filters) }}">‹ Prev</a>
+      </li>
+    {% endif %}
+    {% for p in pagination.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+      {% if p %}
+        <li class="page-item {{ 'active' if p == pagination.page }}">
+          <a class="page-link" href="{{ url_for('admin_export.export_page', page=p, **active_filters) }}">{{ p }}</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    {% if pagination.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('admin_export.export_page', page=pagination.next_num, **active_filters) }}">Next ›</a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
+{# ── GDPR notice ── #}
+<div class="alert alert-light border mt-4 d-flex gap-3 align-items-start" style="font-size:.8rem;">
+  <i class="bi bi-shield-lock-fill text-primary fs-5 mt-1"></i>
+  <div>
+    <strong>GDPR notice:</strong> The exported file contains personal data of registered professionals.
+    BSN numbers and passwords are <strong>never</strong> included. Share only with authorised partner organisations.
+    All exports are logged for audit purposes.
+  </div>
+</div>
+
+{% endblock %}

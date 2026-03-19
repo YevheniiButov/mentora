@@ -7,511 +7,410 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'DM Sans', -apple-system, sans-serif;
-  background: #f8fafc;
-  color: #0f172a;
-  -webkit-font-smoothing: antialiased;
-}
-.page {
-  min-height: 100vh;
-  display: flex; align-items: center; justify-content: center;
-  padding: 48px 20px;
-}
-.card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 28px;
-  max-width: 880px;
-  width: 100%;
-  padding: 60px 48px 52px;
-  box-shadow: 0 4px 40px rgba(15,23,42,.06);
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', -apple-system, sans-serif;
+    background: #f8fafc;
+    color: #0f172a;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 20px;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 28px;
+    max-width: 880px;
+    width: 100%;
+    padding: 60px 40px 52px;
+    box-shadow: 0 4px 40px rgba(15,23,42,.06);
+  }
 
-/* ── Header ── */
-.eyebrow {
-  text-align: center;
-  font-size: 11px; font-weight: 500;
-  letter-spacing: 1.6px; text-transform: uppercase;
-  color: #94a3b8; margin-bottom: 12px;
-}
-.title {
-  text-align: center;
-  font-family: 'DM Serif Display', serif;
-  font-size: clamp(24px, 4vw, 34px);
-  font-weight: 400; color: #0f172a;
-  letter-spacing: -0.4px; line-height: 1.15;
-  margin-bottom: 12px;
-}
-.title em { font-style: italic; color: #1d4ed8; }
-.subtitle {
-  text-align: center;
-  font-size: 14.5px; color: #64748b;
-  line-height: 1.7; max-width: 400px;
-  margin: 0 auto 52px; font-weight: 300;
-}
+  .eyebrow {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 12px;
+  }
+  .title {
+    text-align: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(24px, 4vw, 34px);
+    font-weight: 400;
+    color: #0f172a;
+    letter-spacing: -0.4px;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  .title em { font-style: italic; color: #1d4ed8; }
+  .subtitle {
+    text-align: center;
+    font-size: 14.5px;
+    color: #64748b;
+    line-height: 1.7;
+    max-width: 400px;
+    margin: 0 auto 52px;
+    font-weight: 300;
+  }
 
-/* ══════════════════════════════════════
-   SECTION E: BEFORE / AFTER
-══════════════════════════════════════ */
-.transform-section {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 0 24px;
-  align-items: center;
-  margin-bottom: 48px;
-}
+  .stage { width: 100%; }
+  .stage svg { width: 100%; height: auto; display: block; overflow: visible; }
 
-.profile-card {
-  border-radius: 16px;
-  padding: 20px;
-  display: flex; flex-direction: column; gap: 10px;
-}
-.profile-card.before {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-}
-.profile-card.after {
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-}
-.profile-label {
-  font-size: 10px; font-weight: 600;
-  letter-spacing: 1px; text-transform: uppercase;
-  margin-bottom: 4px;
-}
-.before .profile-label { color: #94a3b8; }
-.after  .profile-label { color: #3b82f6; }
+  /* ══ Left branches — draw from hub outward ══ */
+  #bl1,#bl2,#bl3 { fill: none; stroke-linecap: round; }
+  #bl1 { stroke:#334155; stroke-width:2;   stroke-opacity:.28; stroke-dasharray:260; stroke-dashoffset:260; animation: draw 1.4s ease .6s  forwards; }
+  #bl2 { stroke:#334155; stroke-width:1.7; stroke-opacity:.20; stroke-dasharray:240; stroke-dashoffset:240; animation: draw 1.4s ease .85s forwards; }
+  #bl3 { stroke:#334155; stroke-width:1.4; stroke-opacity:.15; stroke-dasharray:220; stroke-dashoffset:220; animation: draw 1.4s ease 1.1s  forwards; }
 
-.profile-name {
-  font-size: 15px; font-weight: 600; color: #1e293b;
-}
-.after .profile-name { color: #1d4ed8; }
+  /* ══ Right branches ══ */
+  #br1,#br2,#br3 { fill: none; stroke-linecap: round; }
+  #br1 { stroke:#1d4ed8; stroke-width:2;   stroke-opacity:.52; stroke-dasharray:260; stroke-dashoffset:260; animation: draw 1.4s ease .65s forwards; }
+  #br2 { stroke:#1d4ed8; stroke-width:1.7; stroke-opacity:.38; stroke-dasharray:240; stroke-dashoffset:240; animation: draw 1.4s ease .90s forwards; }
+  #br3 { stroke:#1d4ed8; stroke-width:1.4; stroke-opacity:.28; stroke-dasharray:220; stroke-dashoffset:220; animation: draw 1.4s ease 1.15s forwards; }
 
-.profile-row {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 13px;
-}
-.before .profile-row { color: #94a3b8; }
-.after  .profile-row { color: #2563eb; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
 
-.profile-bar {
-  height: 6px; border-radius: 100px;
-  background: #e2e8f0;
-}
-.after .profile-bar { background: #bfdbfe; }
-.profile-bar-fill {
-  height: 100%; border-radius: 100px;
-}
-.before .profile-bar-fill { background: #cbd5e1; width: 0%; transition: width 1s ease .4s; }
-.after  .profile-bar-fill { background: #1d4ed8; width: 0%; transition: width 1s ease .9s; }
+  /* ══ Hub ══ */
+  #hub {
+    opacity: 0;
+    transform-origin: 380px 210px;
+    animation: hub-in .7s cubic-bezier(.34,1.5,.64,1) .1s forwards;
+  }
+  @keyframes hub-in {
+    from { opacity:0; transform:scale(.3); }
+    to   { opacity:1; transform:scale(1); }
+  }
+  #hub-glow {
+    transform-origin: 380px 210px;
+    animation: glow 5s ease-in-out 1.2s infinite;
+  }
+  @keyframes glow {
+    0%,100% { opacity:.10; r:46; }
+    50%      { opacity:.04; r:54; }
+  }
 
-.profile-tag {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 11px; font-weight: 500;
-  padding: 3px 10px; border-radius: 100px;
-}
-.before .profile-tag { background: #e2e8f0; color: #64748b; }
-.after  .profile-tag { background: #dbeafe; color: #1d4ed8; }
+  /* ══ Leaves ══ */
+  /* left branch leaves */
+  #ll1a,#ll1b { transform-origin:245px 190px; }
+  #ll2a,#ll2b { transform-origin:210px 252px; }
+  #ll3a,#ll3b { transform-origin:228px 318px; }
+  /* right branch leaves */
+  #lr1a,#lr1b { transform-origin:515px 188px; }
+  #lr2a,#lr2b { transform-origin:550px 250px; }
+  #lr3a,#lr3b { transform-origin:532px 316px; }
 
-.profile-time {
-  font-size: 12px; font-weight: 500;
-  margin-top: 4px;
-}
-.before .profile-time { color: #94a3b8; }
-.after  .profile-time { color: #1d4ed8; }
+  .lf {
+    opacity: 0;
+    transform: scale(0);
+    animation: bloom .55s cubic-bezier(.34,1.6,.64,1) forwards;
+  }
+  #ll1a{animation-delay:1.80s;} #ll1b{animation-delay:1.98s;}
+  #ll2a{animation-delay:2.05s;} #ll2b{animation-delay:2.23s;}
+  #ll3a{animation-delay:2.30s;} #ll3b{animation-delay:2.48s;}
+  #lr1a{animation-delay:1.85s;} #lr1b{animation-delay:2.03s;}
+  #lr2a{animation-delay:2.10s;} #lr2b{animation-delay:2.28s;}
+  #lr3a{animation-delay:2.35s;} #lr3b{animation-delay:2.53s;}
 
-/* Arrow center */
-.transform-arrow {
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
-  flex-shrink: 0;
-}
-.arrow-box {
-  background: #1d4ed8;
-  border-radius: 14px;
-  padding: 14px 18px;
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  min-width: 96px;
-  opacity: 0;
-  transform: scale(.85);
-  transition: opacity .5s ease .3s, transform .5s ease .3s;
-}
-.arrow-box.visible { opacity: 1; transform: scale(1); }
-.arrow-word {
-  font-size: 13px; font-weight: 600;
-  color: white; letter-spacing: .3px;
-}
-.arrow-sub {
-  font-size: 10px; color: rgba(255,255,255,.65);
-  text-align: center; line-height: 1.4;
-}
-.arrow-icon {
-  margin-top: 4px;
-  width: 20px; height: 20px;
-  display: flex; align-items: center; justify-content: center;
-}
+  @keyframes bloom { to { opacity:1; transform:scale(1); } }
 
-/* ══════════════════════════════════════
-   SECTION F: LIVE FEED
-══════════════════════════════════════ */
-.divider {
-  border: none; border-top: 1px solid #f1f5f9;
-  margin-bottom: 32px;
-}
+  /* ══ Tip dots ══ */
+  .td { opacity:0; animation: tdpop .45s cubic-bezier(.34,1.6,.64,1) forwards; }
+  #td-l1{animation-delay:1.90s;} #td-l2{animation-delay:2.10s;} #td-l3{animation-delay:2.30s;}
+  #td-r1{animation-delay:1.95s;} #td-r2{animation-delay:2.15s;} #td-r3{animation-delay:2.35s;}
+  @keyframes tdpop { to { opacity:1; } }
 
-.feed-header {
-  display: flex; align-items: center; gap: 10px;
-  margin-bottom: 14px;
-}
-.feed-title {
-  font-size: 12px; font-weight: 600;
-  color: #64748b; letter-spacing: .5px; text-transform: uppercase;
-}
-.live-badge {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 11px; font-weight: 600;
-  color: #16a34a;
-}
-.live-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: #16a34a;
-  animation: pulse-dot 1.8s ease-in-out infinite;
-}
-@keyframes pulse-dot {
-  0%,100% { opacity: 1; }
-  50%      { opacity: .3; }
-}
+  /* ══ Labels ══ */
+  .lbl { opacity:0; animation: lblin .45s ease forwards; }
+  #ll-1{animation-delay:2.00s;} #ll-2{animation-delay:2.20s;} #ll-3{animation-delay:2.40s;}
+  #lr-1{animation-delay:2.05s;} #lr-2{animation-delay:2.25s;} #lr-3{animation-delay:2.45s;}
+  @keyframes lblin { to { opacity:1; } }
 
-.feed-terminal {
-  background: #0f172a;
-  border-radius: 16px;
-  overflow: hidden;
-  font-family: 'DM Mono', 'Fira Code', 'Courier New', monospace;
-}
-.terminal-bar {
-  background: #1e293b;
-  padding: 10px 16px;
-  display: flex; align-items: center; gap: 8px;
-}
-.t-dot { width: 10px; height: 10px; border-radius: 50%; }
-.terminal-title {
-  font-size: 11px; color: #475569;
-  margin-left: auto; letter-spacing: .3px;
-  font-family: 'DM Sans', sans-serif;
-}
-.feed-rows { padding: 4px 0 8px; }
-.feed-row {
-  display: flex; align-items: center; gap: 0;
-  padding: 9px 16px;
-  border-bottom: 1px solid #1e293b;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity .4s ease, transform .4s ease;
-  min-height: 38px;
-}
-.feed-row:last-child { border-bottom: none; }
-.feed-row.visible { opacity: 1; transform: translateY(0); }
+  /* ══ Sap traveling dots ══ */
+  .sap      { fill:#1d4ed8; }
+  .sap-dark { fill:#64748b; }
 
-.row-indicator {
-  font-size: 11px; margin-right: 10px; flex-shrink: 0;
-  width: 14px; text-align: center;
-}
-.row-indicator.done  { color: #22c55e; }
-.row-indicator.progress { color: #f59e0b; animation: blink .9s step-end infinite; }
-.row-indicator.queue { color: #334155; }
-@keyframes blink { 50% { opacity: 0; } }
-
-.row-specialist {
-  font-size: 12.5px; color: #e2e8f0;
-  flex: 1; min-width: 0;
-}
-.row-specialist .spec-name { font-weight: 500; }
-.row-specialist .spec-meta { color: #64748b; font-size: 11px; }
-
-.row-arrow {
-  font-size: 12px; color: #334155;
-  margin: 0 10px; flex-shrink: 0;
-}
-.row-arrow.active { color: #3b82f6; }
-
-.row-dest {
-  font-size: 12px; text-align: right; flex-shrink: 0;
-  min-width: 160px;
-}
-.row-dest.done     { color: #3b82f6; }
-.row-dest.progress { color: #f59e0b; }
-.row-dest.queue    { color: #334155; }
-
-.row-status {
-  font-size: 10px; font-weight: 600;
-  padding: 2px 8px; border-radius: 100px;
-  margin-left: 10px; flex-shrink: 0;
-  font-family: 'DM Sans', sans-serif;
-}
-.status-done     { background: #052e16; color: #22c55e; }
-.status-progress { background: #1c1400; color: #f59e0b; }
-.status-queue    { background: #0f172a; color: #334155; border: 1px solid #1e293b; }
-
-/* ── Footer note ── */
-.note {
-  text-align: center; font-size: 13px; color: #94a3b8;
-  margin-top: 36px; padding-top: 24px;
-  border-top: 1px solid #f1f5f9;
-  max-width: 480px; margin-left: auto; margin-right: auto;
-  line-height: 1.7; font-weight: 300;
-}
-.note strong { color: #475569; font-weight: 500; }
-
-/* Responsive */
-@media (max-width: 600px) {
-  .card { padding: 40px 20px 36px; }
-  .transform-section { grid-template-columns: 1fr; gap: 16px; }
-  .transform-arrow { flex-direction: row; }
-  .arrow-box { flex-direction: row; min-width: auto; }
-  .row-dest, .row-status { display: none; }
-}
+  .note {
+    text-align: center;
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 1px solid #f1f5f9;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+  .note strong { color: #475569; font-weight: 500; }
 </style>
 </head>
 <body>
 <div class="page">
-<div class="card">
+  <div class="card">
 
-  <p class="eyebrow">The connection</p>
-  <h2 class="title">What we <em>connect</em></h2>
-  <p class="subtitle">
-    One platform transforms unrecognised talent
-    into placed professionals — in 18 months.
-  </p>
+    <p class="eyebrow">The connection</p>
+    <h2 class="title">What we <em>connect</em></h2>
+    <p class="subtitle">
+      One platform. Two worlds. Specialists who are ready
+      and institutions that need them — grown together.
+    </p>
 
-  <!-- ══ E: BEFORE / AFTER ══ -->
-  <div class="transform-section">
+    <!--
+      Layout (viewBox 0 0 760 420):
+      Hub:        cx=380, cy=210  r=36
+      Left tips:  x≈128–138, y: 178 / 252 / 324
+      Right tips: x≈622–632, y: 176 / 250 / 322
+      Labels L:   x=118 anchor=end
+      Labels R:   x=642 anchor=start  (max "Compliance & docs" ~115px → 642+115=757 ✓)
+      Branches:   S-curves (2 cubic segments) for organic feel
+    -->
+    <div class="stage">
+      <svg viewBox="0 0 760 420" fill="none" xmlns="http://www.w3.org/2000/svg">
 
-    <!-- Before -->
-    <div class="profile-card before" id="cardBefore">
-      <div class="profile-label">Without Mentora</div>
-      <div class="profile-name">Olena Kovalenko</div>
+        <!-- ══════════════════════════════════════
+             LEFT BRANCHES — wavy S-curves from hub
+        ══════════════════════════════════════ -->
 
-      <div class="profile-row">
-        <span>Tandarts · Kyiv, UA</span>
-      </div>
+        <!-- Branch 1 — Tandarts (upper left) -->
+        <path id="bl1"
+          d="M 344 210
+             C 300 205  255 195  215 185
+             C 190 180  160 178  132 178"/>
 
-      <div>
-        <div class="profile-bar" style="width:100%">
-          <div class="profile-bar-fill" id="bar-before" style="width:22%"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px">
-          <span style="font-size:11px;color:#94a3b8">BIG voortgang</span>
-          <span style="font-size:11px;color:#94a3b8">22%</span>
-        </div>
-      </div>
+        <!-- Branch 2 — Huisarts (mid left) -->
+        <path id="bl2"
+          d="M 344 210
+             C 295 215  248 230  208 242
+             C 178 252  155 255  132 254"/>
 
-      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:2px">
-        <span class="profile-tag">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          Diploma niet erkend
-        </span>
-        <span class="profile-tag">Geen netwerk</span>
-        <span class="profile-tag">Geen stage</span>
-      </div>
+        <!-- Branch 3 — Verpleegkundige (lower left) -->
+        <path id="bl3"
+          d="M 344 210
+             C 305 222  262 258  228 288
+             C 200 310  165 320  132 324"/>
 
-      <div class="profile-time">Verwachte duur: 3–5 jaar · €20–35k</div>
+        <!-- ══════════════════════════════════════
+             RIGHT BRANCHES — wavy S-curves from hub
+        ══════════════════════════════════════ -->
+
+        <!-- Branch 1 — BIG-register (upper right) -->
+        <path id="br1"
+          d="M 416 210
+             C 460 205  505 193  545 183
+             C 572 176  598 174  628 174"/>
+
+        <!-- Branch 2 — Ziekenhuis (mid right) -->
+        <path id="br2"
+          d="M 416 210
+             C 465 215  512 228  552 240
+             C 578 249  605 253  628 252"/>
+
+        <!-- Branch 3 — CIBG (lower right) -->
+        <path id="br3"
+          d="M 416 210
+             C 455 222  498 256  534 284
+             C 560 304  594 318  628 322"/>
+
+        <!-- ══════════════════════════════════════
+             TRAVELING SAP DOTS
+        ══════════════════════════════════════ -->
+
+        <!-- Specialists → hub -->
+        <circle r="2.6" class="sap-dark">
+          <animateMotion dur="3.2s" begin="1.3s" repeatCount="indefinite"
+            path="M 132 178 C 160 178 190 180 215 185 C 255 195 300 205 344 210"/>
+          <animate attributeName="opacity" values="0;.38;.38;0" dur="3.2s" begin="1.3s" repeatCount="indefinite"/>
+        </circle>
+        <circle r="2.6" class="sap-dark">
+          <animateMotion dur="3.2s" begin="1.9s" repeatCount="indefinite"
+            path="M 132 254 C 155 255 178 252 208 242 C 248 230 295 215 344 210"/>
+          <animate attributeName="opacity" values="0;.32;.32;0" dur="3.2s" begin="1.9s" repeatCount="indefinite"/>
+        </circle>
+        <circle r="2.6" class="sap-dark">
+          <animateMotion dur="3.2s" begin="2.5s" repeatCount="indefinite"
+            path="M 132 324 C 165 320 200 310 228 288 C 262 258 305 222 344 210"/>
+          <animate attributeName="opacity" values="0;.28;.28;0" dur="3.2s" begin="2.5s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- Hub → institutions -->
+        <circle r="2.6" class="sap">
+          <animateMotion dur="3.2s" begin="1.5s" repeatCount="indefinite"
+            path="M 416 210 C 460 205 505 193 545 183 C 572 176 598 174 628 174"/>
+          <animate attributeName="opacity" values="0;.68;.68;0" dur="3.2s" begin="1.5s" repeatCount="indefinite"/>
+        </circle>
+        <circle r="2.6" class="sap">
+          <animateMotion dur="3.2s" begin="2.1s" repeatCount="indefinite"
+            path="M 416 210 C 465 215 512 228 552 240 C 578 249 605 253 628 252"/>
+          <animate attributeName="opacity" values="0;.58;.58;0" dur="3.2s" begin="2.1s" repeatCount="indefinite"/>
+        </circle>
+        <circle r="2.6" class="sap">
+          <animateMotion dur="3.2s" begin="2.7s" repeatCount="indefinite"
+            path="M 416 210 C 455 222 498 256 534 284 C 560 304 594 318 628 322"/>
+          <animate attributeName="opacity" values="0;.55;.55;0" dur="3.2s" begin="2.7s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- ══════════════════════════════════════
+             LEAVES — pairs along each branch
+        ══════════════════════════════════════ -->
+
+        <!-- Left branch 1 leaves — near midpoint ~x=220,y=185 -->
+        <g id="ll1a" class="lf" style="transform-origin:228px 183px">
+          <path d="M 228 183 Q 222 173 226 163 Q 232 174 230 181 Z" fill="#475569" opacity=".28"/>
+        </g>
+        <g id="ll1b" class="lf" style="transform-origin:252px 188px">
+          <path d="M 252 188 Q 248 176 254 167 Q 258 178 255 186 Z" fill="#475569" opacity=".22"/>
+        </g>
+
+        <!-- Left branch 2 leaves — near midpoint ~x=210,y=248 -->
+        <g id="ll2a" class="lf" style="transform-origin:215px 246px">
+          <path d="M 215 246 Q 205 237 208 227 Q 216 238 215 244 Z" fill="#475569" opacity=".22"/>
+        </g>
+        <g id="ll2b" class="lf" style="transform-origin:240px 252px">
+          <path d="M 240 252 Q 230 242 233 232 Q 241 243 240 250 Z" fill="#475569" opacity=".18"/>
+        </g>
+
+        <!-- Left branch 3 leaves — near midpoint ~x=240,y=295 -->
+        <g id="ll3a" class="lf" style="transform-origin:248px 294px">
+          <path d="M 248 294 Q 238 285 241 275 Q 249 286 248 292 Z" fill="#475569" opacity=".20"/>
+        </g>
+        <g id="ll3b" class="lf" style="transform-origin:268px 308px">
+          <path d="M 268 308 Q 258 298 261 289 Q 269 299 268 306 Z" fill="#475569" opacity=".16"/>
+        </g>
+
+        <!-- Right branch 1 leaves — near midpoint ~x=520,y=183 -->
+        <g id="lr1a" class="lf" style="transform-origin:508px 182px">
+          <path d="M 508 182 Q 516 171 524 173 Q 516 183 510 182 Z" fill="#1d4ed8" opacity=".42"/>
+        </g>
+        <g id="lr1b" class="lf" style="transform-origin:532px 177px">
+          <path d="M 532 177 Q 540 166 548 168 Q 540 178 534 177 Z" fill="#1d4ed8" opacity=".35"/>
+        </g>
+
+        <!-- Right branch 2 leaves — near midpoint ~x=545,y=244 -->
+        <g id="lr2a" class="lf" style="transform-origin:530px 242px">
+          <path d="M 530 242 Q 538 231 546 233 Q 538 243 532 242 Z" fill="#1d4ed8" opacity=".35"/>
+        </g>
+        <g id="lr2b" class="lf" style="transform-origin:554px 248px">
+          <path d="M 554 248 Q 562 237 570 239 Q 562 249 556 248 Z" fill="#1d4ed8" opacity=".28"/>
+        </g>
+
+        <!-- Right branch 3 leaves — near midpoint ~x=528,y=290 -->
+        <g id="lr3a" class="lf" style="transform-origin:516px 288px">
+          <path d="M 516 288 Q 524 277 532 279 Q 524 289 518 288 Z" fill="#1d4ed8" opacity=".32"/>
+        </g>
+        <g id="lr3b" class="lf" style="transform-origin:540px 302px">
+          <path d="M 540 302 Q 548 291 556 293 Q 548 303 542 302 Z" fill="#1d4ed8" opacity=".26"/>
+        </g>
+
+        <!-- ══════════════════════════════════════
+             TIP DOTS
+        ══════════════════════════════════════ -->
+        <circle id="td-l1" class="td" cx="132" cy="178" r="5.5" fill="#475569" opacity=".42"/>
+        <circle id="td-l2" class="td" cx="132" cy="254" r="5.5" fill="#475569" opacity=".35"/>
+        <circle id="td-l3" class="td" cx="132" cy="324" r="5.5" fill="#475569" opacity=".30"/>
+
+        <circle id="td-r1" class="td" cx="628" cy="174" r="5.5" fill="#1d4ed8" opacity=".9"/>
+        <circle id="td-r2" class="td" cx="628" cy="252" r="5.5" fill="#1d4ed8" opacity=".9"/>
+        <circle id="td-r3" class="td" cx="628" cy="322" r="5.5" fill="#1d4ed8" opacity=".9"/>
+
+        <!-- ══════════════════════════════════════
+             LABELS
+        ══════════════════════════════════════ -->
+        <!-- Left — text-anchor end, x=118 → fits comfortably -->
+        <g id="ll-1" class="lbl">
+          <text x="118" y="167" text-anchor="end"
+            font-family="'DM Sans',sans-serif" font-size="13.5" font-weight="500" fill="#1e293b">Tandarts</text>
+          <text x="118" y="182" text-anchor="end"
+            font-family="'DM Sans',sans-serif" font-size="11.5" font-weight="400" fill="#94a3b8">Non-EU diploma</text>
+        </g>
+        <g id="ll-2" class="lbl">
+          <text x="118" y="243" text-anchor="end"
+            font-family="'DM Sans',sans-serif" font-size="13.5" font-weight="500" fill="#1e293b">Huisarts</text>
+          <text x="118" y="258" text-anchor="end"
+            font-family="'DM Sans',sans-serif" font-size="11.5" font-weight="400" fill="#94a3b8">BIG-traject actief</text>
+        </g>
+        <g id="ll-3" class="lbl">
+          <text x="118" y="313" text-anchor="end"
+            font-family="'DM Sans',sans-serif" font-size="13.5" font-weight="500" fill="#1e293b">Verpleegkundige</text>
+          <text x="118" y="328" text-anchor="end"
+            font-family="'DM Sans',sans-serif" font-size="11.5" font-weight="400" fill="#94a3b8">Active in NL</text>
+        </g>
+
+        <!-- Right — text-anchor start, x=642 -->
+        <g id="lr-1" class="lbl">
+          <text x="642" y="163" text-anchor="start"
+            font-family="'DM Sans',sans-serif" font-size="13.5" font-weight="500" fill="#1e293b">BIG-register</text>
+          <text x="642" y="178" text-anchor="start"
+            font-family="'DM Sans',sans-serif" font-size="11.5" font-weight="400" fill="#94a3b8">Compliance &amp; docs</text>
+        </g>
+        <g id="lr-2" class="lbl">
+          <text x="642" y="241" text-anchor="start"
+            font-family="'DM Sans',sans-serif" font-size="13.5" font-weight="500" fill="#1e293b">Ziekenhuis</text>
+          <text x="642" y="256" text-anchor="start"
+            font-family="'DM Sans',sans-serif" font-size="11.5" font-weight="400" fill="#94a3b8">Staffing &amp; stages</text>
+        </g>
+        <g id="lr-3" class="lbl">
+          <text x="642" y="311" text-anchor="start"
+            font-family="'DM Sans',sans-serif" font-size="13.5" font-weight="500" fill="#1e293b">CIBG / IVTG</text>
+          <text x="642" y="326" text-anchor="start"
+            font-family="'DM Sans',sans-serif" font-size="11.5" font-weight="400" fill="#94a3b8">Credential vault</text>
+        </g>
+
+        <!-- ══════════════════════════════════════
+             CENTER HUB — logo only, no stem behind
+        ══════════════════════════════════════ -->
+        <g id="hub">
+          <!-- breathing glow ring -->
+          <circle id="hub-glow" cx="380" cy="210" r="46" fill="#1d4ed8" opacity=".08"/>
+          <!-- subtle shadow ring -->
+          <circle cx="380" cy="210" r="38" fill="white" opacity=".6"/>
+          <!-- main circle -->
+          <circle cx="380" cy="210" r="34" fill="white" stroke="#e2e8f0" stroke-width="1.5"/>
+
+          <!-- Sprout variant B, scale=1.0
+               tx = 380-22 = 358, ty = 210-26 = 184  (center mass y≈26)
+               fits inside r=34: left=8→-14px, right=38→+16px, top=2→-24px, bottom=44→+18px ✔
+          -->
+          <g transform="translate(358,184)">
+            <line x1="22" y1="44" x2="22" y2="14"
+              stroke="#1d4ed8" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M22 38 Q8 28 16 14 Q22 26 22 34 Z"
+              fill="#1d4ed8" opacity=".75"/>
+            <path d="M22 28 Q38 14 34 2 Q24 12 22 20 Z"
+              fill="#1d4ed8"/>
+            <path d="M22 28 Q32 16 33 4"
+              stroke="white" stroke-width="0.9" stroke-linecap="round"
+              fill="none" opacity=".5"/>
+          </g>
+
+          <!-- Mentora wordmark — below circle bottom edge (y=244+18 gap=18 → y=262) -->
+          <text x="380" y="264"
+            text-anchor="middle"
+            font-family="'DM Sans', sans-serif"
+            font-size="11" font-weight="500"
+            letter-spacing="2" fill="#94a3b8"
+            opacity="0"
+            style="animation: lblin .4s ease 1.0s forwards">mentora</text>
+        </g>
+
+      </svg>
     </div>
 
-    <!-- Center arrow -->
-    <div class="transform-arrow">
-      <div class="arrow-box" id="arrowBox">
-        <div class="arrow-word">mentora</div>
-        <div class="arrow-sub">verify · prepare<br>match · place</div>
-        <div class="arrow-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/>
-            <polyline points="12 5 19 12 12 19"/>
-          </svg>
-        </div>
-      </div>
-    </div>
-
-    <!-- After -->
-    <div class="profile-card after" id="cardAfter">
-      <div class="profile-label">With Mentora</div>
-      <div class="profile-name">Olena Kovalenko</div>
-
-      <div class="profile-row">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        <span>Tandarts · BIG-geregistreerd</span>
-      </div>
-
-      <div>
-        <div class="profile-bar" style="width:100%">
-          <div class="profile-bar-fill" id="bar-after" style="width:0%"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px">
-          <span style="font-size:11px;color:#3b82f6">BIG voortgang</span>
-          <span style="font-size:11px;color:#1d4ed8">100%</span>
-        </div>
-      </div>
-
-      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:2px">
-        <span class="profile-tag">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-          Diploma geverifieerd
-        </span>
-        <span class="profile-tag">Stage AMC</span>
-        <span class="profile-tag">Geplaatst</span>
-      </div>
-
-      <div class="profile-time">Traject: 18 maanden · gestructureerd</div>
-    </div>
+    <p class="note">
+      Every specialist who joins Mentora gets a verified profile matched
+      against real institutional demand — reducing the average BIG trajectory
+      from <strong>3–5 years</strong> to a structured <strong>18-month pathway</strong>.
+    </p>
 
   </div>
-
-  <!-- ══ F: LIVE FEED ══ -->
-  <hr class="divider">
-
-  <div class="feed-header">
-    <span class="feed-title">Live verbindingen</span>
-    <span class="live-badge">
-      <span class="live-dot"></span>
-      live
-    </span>
-  </div>
-
-  <div class="feed-terminal">
-    <div class="terminal-bar">
-      <span class="t-dot" style="background:#ef4444"></span>
-      <span class="t-dot" style="background:#f59e0b"></span>
-      <span class="t-dot" style="background:#22c55e"></span>
-      <span class="terminal-title">mentora · matching engine</span>
-    </div>
-    <div class="feed-rows" id="feedRows">
-
-      <div class="feed-row" id="row0">
-        <span class="row-indicator done">✓</span>
-        <div class="row-specialist">
-          <span class="spec-name">Dmytro S.</span>
-          <span class="spec-meta"> · Huisarts · Lviv</span>
-        </div>
-        <span class="row-arrow active">→</span>
-        <span class="row-dest done">Huisartspraktijk Utrecht</span>
-        <span class="row-status status-done">geplaatst</span>
-      </div>
-
-      <div class="feed-row" id="row1">
-        <span class="row-indicator done">✓</span>
-        <div class="row-specialist">
-          <span class="spec-name">Aisha M.</span>
-          <span class="spec-meta"> · Tandarts · Damascus</span>
-        </div>
-        <span class="row-arrow active">→</span>
-        <span class="row-dest done">ACTA Amsterdam</span>
-        <span class="row-status status-done">stage</span>
-      </div>
-
-      <div class="feed-row" id="row2">
-        <span class="row-indicator progress">▶</span>
-        <div class="row-specialist">
-          <span class="spec-name">Olena K.</span>
-          <span class="spec-meta"> · Tandarts · Kyiv</span>
-        </div>
-        <span class="row-arrow active">→</span>
-        <span class="row-dest progress">BIG-register NL</span>
-        <span class="row-status status-progress">in traject</span>
-      </div>
-
-      <div class="feed-row" id="row3">
-        <span class="row-indicator queue">○</span>
-        <div class="row-specialist">
-          <span class="spec-name">Taras B.</span>
-          <span class="spec-meta"> · Verpleegkundige · Kharkiv</span>
-        </div>
-        <span class="row-arrow">→</span>
-        <span class="row-dest queue">matching...</span>
-        <span class="row-status status-queue">wachtrij</span>
-      </div>
-
-    </div>
-  </div>
-
-  <p class="note">
-    Every specialist who joins Mentora gets a verified profile matched
-    against real institutional demand — reducing the average BIG trajectory
-    from <strong>3–5 years</strong> to a structured <strong>18-month pathway</strong>.
-  </p>
-
 </div>
-</div>
-
-<script>
-// ── Animate on load ──
-window.addEventListener('load', () => {
-
-  // 1. Before bar
-  setTimeout(() => {
-    document.getElementById('bar-before').style.width = '22%';
-  }, 300);
-
-  // 2. Arrow box appears
-  setTimeout(() => {
-    document.getElementById('arrowBox').classList.add('visible');
-  }, 600);
-
-  // 3. After bar fills to 100%
-  setTimeout(() => {
-    document.getElementById('bar-after').style.width = '100%';
-  }, 900);
-
-  // 4. Feed rows appear one by one
-  [0, 1, 2, 3].forEach((i) => {
-    setTimeout(() => {
-      document.getElementById('row' + i).classList.add('visible');
-    }, 1100 + i * 220);
-  });
-
-  // 5. Animate new match appearing periodically
-  let counter = 0;
-  const names = [
-    { name: 'Sofia V.', meta: ' · Huisarts · Odessa',      dest: 'UMC Groningen',        status: 'geplaatst', cls: 'done' },
-    { name: 'Ivan P.',  meta: ' · Chirurg · Dnipro',        dest: 'Elisabeth Ziekenhuis', status: 'stage',     cls: 'done' },
-    { name: 'Mira K.',  meta: ' · Verpleegk. · Zaporizhzhia', dest: 'matching...',        status: 'wachtrij',  cls: 'queue' },
-  ];
-
-  setInterval(() => {
-    const n = names[counter % names.length];
-    counter++;
-
-    // move rows up: remove first, shift rest
-    const rows = document.getElementById('feedRows');
-    const firstRow = rows.querySelector('.feed-row');
-    if (firstRow) {
-      firstRow.style.opacity = '0';
-      firstRow.style.transform = 'translateY(-6px)';
-      setTimeout(() => firstRow.remove(), 350);
-    }
-
-    setTimeout(() => {
-      const isDone = n.cls === 'done';
-      const row = document.createElement('div');
-      row.className = 'feed-row';
-      row.innerHTML = `
-        <span class="row-indicator ${isDone ? 'done' : 'queue'}">${isDone ? '✓' : '○'}</span>
-        <div class="row-specialist">
-          <span class="spec-name">${n.name}</span>
-          <span class="spec-meta">${n.meta}</span>
-        </div>
-        <span class="row-arrow ${isDone ? 'active' : ''}">→</span>
-        <span class="row-dest ${n.cls}">${n.dest}</span>
-        <span class="row-status status-${n.cls}">${n.status}</span>
-      `;
-      rows.appendChild(row);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => row.classList.add('visible'));
-      });
-    }, 400);
-
-  }, 3200);
-
-});
-</script>
 </body>
 </html>
