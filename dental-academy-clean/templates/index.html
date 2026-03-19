@@ -47,6 +47,7 @@
   background-attachment: fixed;
   overflow-x: hidden; 
   -webkit-font-smoothing: antialiased; 
+  padding-top: 70px;
 }
 .mentora-landing-wrapper a { text-decoration: none; }
 .mentora-landing-wrapper p { margin-bottom: 0; }
@@ -87,7 +88,7 @@
 .hero h1 em { color: var(--teal); font-style: italic; }
 .hero p { font-size: 17px; color: var(--mentora-text-secondary); line-height: 1.75; max-width: 560px; margin-bottom: 38px; font-weight: 300; }
 .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
-.btn-primary { background: var(--teal) !important; color: #fff !important; border: 1px solid var(--teal) !important; padding: 14px 30px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--font-body); text-decoration: none; display: inline-block; transition: all 0.3s ease; }
+.btn-primary { background: #4a9eb5 !important; color: #fff !important; border: 1px solid #4a9eb5 !important; padding: 14px 30px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--font-body); text-decoration: none; display: inline-block; transition: all 0.3s ease; }
 .btn-primary:hover { background: var(--teal) !important; color: #fff !important; opacity: 0.8; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(74, 158, 181, 0.2); }
 .btn-outline { background: transparent; color: var(--mentora-text-secondary); border: 0.5px solid var(--mentora-border-mid); padding: 14px 30px; border-radius: var(--radius-md); font-size: 14px; cursor: pointer; font-family: var(--font-body); text-decoration: none; display: inline-block; }
 .btn-outline:hover { color: var(--mentora-text); background: rgba(0,0,0,0.02); }
@@ -679,6 +680,163 @@
 {% endblock %}
 
 {% block content %}
+
+{# ─── INTRO OVERLAY ─── #}
+<div id="mentora-intro" style="
+  position: fixed; inset: 0; z-index: 99999;
+  background: #ffffff;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+  pointer-events: all;
+">
+
+  <style>
+    /* ── Intro: sprout grows ── */
+    #intro-sprout { opacity: 0; transform: scale(0.4); }
+    #intro-sprout.go { animation: intro-pop .6s cubic-bezier(.34,1.56,.64,1) forwards; }
+    @keyframes intro-pop { to { opacity:1; transform:scale(1); } }
+
+    #intro-stem    { stroke-dasharray:34; stroke-dashoffset:34; }
+    #intro-leaf-l  { opacity:0; transform:scale(0); transform-origin:22px 34px; }
+    #intro-leaf-r  { opacity:0; transform:scale(0); transform-origin:22px 24px; }
+    #intro-vein    { stroke-dasharray:26; stroke-dashoffset:26; opacity:0; }
+
+    #intro-sprout.go #intro-stem   { animation: intro-draw .9s ease .4s forwards; }
+    #intro-sprout.go #intro-leaf-l { animation: intro-bloom .7s cubic-bezier(.34,1.4,.64,1) 1.1s forwards; }
+    #intro-sprout.go #intro-leaf-r { animation: intro-bloom .7s cubic-bezier(.34,1.4,.64,1) 1.4s forwards; }
+    #intro-sprout.go #intro-vein   { animation: intro-draw .5s ease 1.9s forwards; }
+    @keyframes intro-draw  { to { stroke-dashoffset:0; opacity:1; } }
+    @keyframes intro-bloom { to { opacity:1; transform:scale(1); } }
+
+    /* ── Letters ── */
+    #intro-word { display:flex; gap:1px; margin-top: 20px; }
+    #intro-word span {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 28px; font-weight: 300;
+      letter-spacing: 3px;
+      color: #0f172a;
+      opacity: 0; transform: translateY(8px);
+    }
+    #intro-word span.show {
+      animation: letter-in .35s cubic-bezier(.34,1.3,.64,1) forwards;
+    }
+    @keyframes letter-in { to { opacity:1; transform:translateY(0); } }
+
+    /* ── Outro: whole block scales + fades ── */
+    #intro-inner.outro {
+      animation: intro-out .5s cubic-bezier(.4,0,1,1) forwards;
+    }
+    @keyframes intro-out {
+      to { opacity:0; transform: scale(0.7) translateY(-20px); }
+    }
+    /* ── Overlay fade ── */
+    #mentora-intro.fade-overlay {
+      animation: overlay-out .4s ease .1s forwards;
+    }
+    @keyframes overlay-out { to { opacity:0; } }
+
+    /* skip hint */
+    #intro-skip {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px; color: #94a3b8;
+      cursor: pointer; letter-spacing: .5px;
+      animation: fade-in-soft 1s ease 2s both;
+    }
+    @keyframes fade-in-soft { from{opacity:0} to{opacity:1} }
+    #intro-skip:hover { color: #64748b; }
+  </style>
+
+  <div id="intro-inner" style="display:flex;flex-direction:column;align-items:center;">
+    <!-- Sprout SVG -->
+    <div id="intro-sprout">
+      <svg viewBox="0 0 44 52" width="96" height="110" fill="none">
+        <line id="intro-stem"
+          x1="22" y1="48" x2="22" y2="14"
+          stroke="#1d4ed8" stroke-width="2.8" stroke-linecap="round"/>
+        <g id="intro-leaf-l">
+          <path d="M22 38 Q8 28 16 14 Q22 26 22 34 Z" fill="#1d4ed8" opacity=".75"/>
+        </g>
+        <g id="intro-leaf-r">
+          <path d="M22 28 Q38 14 34 2 Q24 12 22 20 Z" fill="#1d4ed8"/>
+          <path id="intro-vein" d="M22 28 Q32 16 33 4"
+            stroke="white" stroke-width="1" stroke-linecap="round" fill="none" opacity=".5"/>
+        </g>
+      </svg>
+    </div>
+    <!-- Word -->
+    <div id="intro-word">
+      <span>m</span><span>e</span><span>n</span><span>t</span><span>o</span><span>r</span><span>a</span>
+    </div>
+  </div>
+
+  <div id="intro-skip" onclick="skipIntro()">press any key to skip</div>
+</div>
+
+<script>
+(function() {
+  var KEY = 'mentora_intro_seen';
+  var overlay = document.getElementById('mentora-intro');
+  var sprout  = document.getElementById('intro-sprout');
+  var inner   = document.getElementById('intro-inner');
+  var letters = document.querySelectorAll('#intro-word span');
+
+  // Show page immediately if already seen this session
+  if (sessionStorage.getItem(KEY)) {
+    overlay.style.display = 'none';
+    return;
+  }
+
+  // Lock scroll
+  document.body.style.overflow = 'hidden';
+
+  function finish() {
+    sessionStorage.setItem(KEY, '1');
+    document.body.style.overflow = '';
+    inner.classList.add('outro');
+    setTimeout(function() {
+      overlay.classList.add('fade-overlay');
+      setTimeout(function() {
+        overlay.style.display = 'none';
+      }, 500);
+    }, 450);
+  }
+
+  window.skipIntro = finish;
+
+  // Skip on any key or click
+  function onSkip() {
+    document.removeEventListener('keydown', onSkip);
+    document.removeEventListener('click', onClick);
+    finish();
+  }
+  function onClick(e) {
+    if (e.target.id === 'intro-skip' || e.target.closest('#intro-skip')) return; // handled by onclick
+    onSkip();
+  }
+  setTimeout(function() {
+    document.addEventListener('keydown', onSkip);
+    document.addEventListener('click', onClick);
+  }, 800);
+
+  // Start animation sequence
+  requestAnimationFrame(function() {
+    sprout.classList.add('go');
+
+    // Letters appear one by one starting at t=2.2s
+    var startDelay = 2200;
+    var step = 130;
+    letters.forEach(function(l, i) {
+      setTimeout(function() { l.classList.add('show'); }, startDelay + i * step);
+    });
+
+    // Auto-finish after full sequence
+    var autoMs = startDelay + letters.length * step + 800;
+    setTimeout(finish, autoMs);
+  });
+})();
+</script>
+
 <div class="mentora-landing-wrapper" style="position: relative;">
 
 <!-- LAYER 1: SPECIALISTS -->
@@ -692,7 +850,6 @@
   <div class="blur-spot blur-teal hero-blur-1"></div>
   <div class="blur-spot blur-blue hero-blur-2"></div>
 
-  <div class="hero-tag fade-up visible" style="position: relative; z-index: 2;"><span class="tag-dot"></span>{{ t('landing_hero_tag', lang)|default('Integration platform · Netherlands') }}</div>
   <h1 class="fade-up visible d1">{{ t('landing_bridge_to', lang)|default('The Bridge to Your') }}<br>{{ t('landing_medical_future', lang)|default('Medical Future in') }}<br><em>{{ t('landing_netherlands', lang)|default('the Netherlands.') }}</em></h1>
   <p class="fade-up visible d2">{{ t('landing_hero_desc', lang)|default('Connecting international medical talent with the Dutch healthcare ecosystem — through technology, language, and clinical practice.') }}</p>
   <div class="hero-btns fade-up visible d3">
