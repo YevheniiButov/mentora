@@ -230,7 +230,7 @@ def update_redesigned_profile(lang):
         birth_date = request.form.get('birth_date', '').strip()
         city = request.form.get('city', '').strip()
         phone = request.form.get('phone', '').strip()
-        bsn_number = request.form.get('bsn_number', '').strip()
+        bsn = request.form.get('bsn', '').strip()
         
         num_children = request.form.get('num_children', '').strip()
         housing_needed = request.form.get('housing_needed', '').strip()
@@ -253,8 +253,8 @@ def update_redesigned_profile(lang):
             current_user.city = city
         if phone:
             current_user.phone = phone
-        if bsn_number:
-            current_user.bsn_number = bsn_number
+        if bsn:
+            current_user.bsn = bsn
             
         if birth_date:
             try:

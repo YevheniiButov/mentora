@@ -37,7 +37,7 @@ class User(db.Model, UserMixin):
     
     # DigiD Authentication fields
     digid_username = db.Column(db.String(80), unique=True, nullable=True, index=True)
-    bsn = db.Column(db.String(9), unique=True, nullable=True, index=True)  # Dutch Social Security Number
+    bsn = db.Column(db.String(20), unique=True, nullable=True, index=True)  # Dutch Social Security Number
     digid_verified = db.Column(db.Boolean, default=False)
     created_via_digid = db.Column(db.Boolean, default=False)
     
@@ -81,7 +81,6 @@ class User(db.Model, UserMixin):
     diploma_status = db.Column(db.String(50), nullable=True)
     transcript_status = db.Column(db.String(50), nullable=True)
     vog_status = db.Column(db.String(50), nullable=True)
-    bsn_number = db.Column(db.String(20), nullable=True)
     
     other_profession = db.Column(db.String(100), nullable=True)  # Custom profession if "other" selected
     other_nationality = db.Column(db.String(100), nullable=True)  # Custom nationality if "other" selected
