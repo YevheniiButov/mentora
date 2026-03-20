@@ -3312,12 +3312,12 @@ class DiagnosticSession(db.Model):
         
         # Mapping for the 6-axis radar chart
         radar_domain_mapping = {
-            'Huisartsgeneeskunde': ['ALGEMENE_GENEESKUNDE', 'huisarts', 'Internal Medicine', 'Surgery', 'Pediatrics', 'THER', 'PROTH', 'ORTHO', 'PEDI', 'PARO', 'TREATMENT_PLANNING', 'SPECIAL', 'EMERGENCY', 'INFECTION', 'MICROBIOLOGIE', 'PREV'],
-            'Farmacotherapie': ['PHARMACOLOGY', 'Pharmacology'],
-            'Ethiek & Recht': ['ETHIEK', 'Medical Ethics', 'Medical Law', 'PROFESSIONAL'],
-            'Communicatie': ['COMMUNICATION', 'Communication Skills'],
-            'Klinisch Redeneren': ['DIAGNOSIS', 'DIAGNOSIS_SPECIAL', 'Clinical Skills', 'Physiology', 'FYSIOLOGIE', 'ANATOMIE', 'PATHOLOGIE', 'RADIOLOGIE', 'SYSTEMIC', 'MATERIAALKUNDE', 'SURG', 'PRACTICAL_SKILLS'],
-            'Zorgstelsel': ['DUTCH', 'Social Medicine', 'STATISTICS', 'RESEARCH_METHOD']
+            'radar_huisarts': ['ALGEMENE_GENEESKUNDE', 'huisarts', 'Internal Medicine', 'Surgery', 'Pediatrics', 'THER', 'PROTH', 'ORTHO', 'PEDI', 'PARO', 'TREATMENT_PLANNING', 'SPECIAL', 'EMERGENCY', 'INFECTION', 'MICROBIOLOGIE', 'PREV'],
+            'radar_farmacotherapie': ['PHARMACOLOGY', 'Pharmacology'],
+            'radar_ethiek': ['ETHIEK', 'Medical Ethics', 'Medical Law', 'PROFESSIONAL'],
+            'radar_communicatie': ['COMMUNICATION', 'Communication Skills'],
+            'radar_klinisch': ['DIAGNOSIS', 'DIAGNOSIS_SPECIAL', 'Clinical Skills', 'Physiology', 'FYSIOLOGIE', 'ANATOMIE', 'PATHOLOGIE', 'RADIOLOGIE', 'SYSTEMIC', 'MATERIAALKUNDE', 'SURG', 'PRACTICAL_SKILLS'],
+            'radar_zorgstelsel': ['DUTCH', 'Social Medicine', 'STATISTICS', 'RESEARCH_METHOD']
         }
         
         # Initialize radar scores
@@ -3348,7 +3348,7 @@ class DiagnosticSession(db.Model):
         # Finalize radar scores (average if multiple domains map to one axis)
         formatted_radar_scores = []
         colors = ['#3b82f6', '#f59e0b', '#16a34a', '#8b5cf6', '#06b6d4', '#ec4899']
-        shorts = ['Therapie', 'Farma', 'Ethiek', 'Comm.', 'Klinisch', 'Zorgstelsel']
+        shorts = ['short_huisarts', 'short_farmacotherapie', 'short_ethiek', 'short_communicatie', 'short_klinisch', 'short_zorgstelsel']
         
         for i, (label, score_sum) in enumerate(radar_scores.items()):
             count = radar_counts[label]
@@ -3566,16 +3566,16 @@ class DiagnosticSession(db.Model):
         """Generate dynamic insight text based on readiness score"""
         # Handle zero answers case
         if self.questions_answered == 0:
-            return f"Uw **basis is in ontwikkeling**. Uw resultaten tonen potentieel voor groei. Mentora zal u helpen om uw NHG-protocolkennis naar een hoger уровень те тилло."
+            return "insight_developing"
 
         if score >= 80:
-            return f"U heeft een **uitstekende kennisbasis**. Uw resultaten plaatsen u in de **top 10%** van buitenlandse zorgverleners voor NHG-protocolkennis — een superieur startpunt."
+            return "insight_excellent"
         elif score >= 60:
-            return f"U heeft een **solide kennisbasis**. Uw resultaten plaatsen u in de **top 30%** van buitenlandse zorgverleners voor NHG-protocolkennis — een uitstekend startpunt."
+            return "insight_solid"
         elif score >= 40:
-            return f"U heeft een **gemiddelde kennisbasis**. Uw resultaten plaatsen u in de **top 50%** van buitenlandse zorgverleners voor NHG-protocolkennis — een goed startpunt voor verdere ontwikkeling."
+            return "insight_average"
         else:
-            return f"Uw **basis is in ontwikkeling**. Uw resultaten tonen potentieel voor groei. Mentora zal u helpen om uw NHG-protocolkennis naar een hoger niveau te tillen."
+            return "insight_developing"
 
     def get_responses_dict(self):
         """Получить responses как список словарей (JSON-safe)"""

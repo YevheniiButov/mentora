@@ -1,12 +1,12 @@
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mentora — Uw BIG-readiness profiel</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% extends "base.html" %}
+
+{% block title %}Mentora — {{ t('profile_title', lang)|default('Uw BIG-readiness profiel') }}{% endblock %}
+
+{% block head %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block extra_css %}
 <style>
   :root {
     --white: #ffffff;
@@ -30,29 +30,27 @@
     --radius-md: 14px;
     --radius-lg: 20px;
     --radius-xl: 28px;
-    --shadow-sm: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
-    --shadow-md: 0 4px 16px rgba(15,23,42,0.08), 0 2px 6px rgba(15,23,42,0.04);
-    --shadow-lg: 0 12px 40px rgba(15,23,42,0.10), 0 4px 12px rgba(15,23,42,0.05);
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
+    --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.10), 0 4px 12px rgba(15, 23, 42, 0.05);
   }
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
+  .profile-page-wrapper {
+    position: relative;
+    padding-top: 110px; /* Space for the site-wide fixed header */
+    padding-bottom: 80px;
     background: var(--slate-50);
-    color: var(--slate-900);
-    min-height: 100vh;
-    -webkit-font-smoothing: antialiased;
+    min-height: calc(100vh - 70px);
   }
 
   /* ─── Subtle background texture ─── */
-  body::before {
+  .profile-page-wrapper::before {
     content: '';
     position: fixed;
     inset: 0;
     background:
-      radial-gradient(ellipse 80% 60% at 20% -10%, rgba(29,78,216,0.05) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 50% at 90% 100%, rgba(22,163,74,0.04) 0%, transparent 60%);
+        radial-gradient(ellipse 80% 60% at 20% -10%, rgba(29, 78, 216, 0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 90% 100%, rgba(22, 163, 74, 0.04) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }
@@ -67,766 +65,905 @@
 
   /* ─── Animations ─── */
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-  }
-  @keyframes gaugeArc {
-    from { stroke-dasharray: 0 1000; }
-  }
-  @keyframes countUp {
-    from { opacity: 0; transform: scale(0.85); }
-    to   { opacity: 1; transform: scale(1); }
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes countUp {
+      from {
+        opacity: 0;
+        transform: scale(0.85);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
   }
 
-  .anim-1 { animation: fadeUp 0.55s cubic-bezier(.22,.68,0,1.2) 0.05s both; }
-  .anim-2 { animation: fadeUp 0.55s cubic-bezier(.22,.68,0,1.2) 0.15s both; }
-  .anim-3 { animation: fadeUp 0.55s cubic-bezier(.22,.68,0,1.2) 0.25s both; }
-  .anim-4 { animation: fadeUp 0.55s cubic-bezier(.22,.68,0,1.2) 0.35s both; }
-  .anim-5 { animation: fadeUp 0.55s cubic-bezier(.22,.68,0,1.2) 0.45s both; }
-  .anim-6 { animation: fadeUp 0.55s cubic-bezier(.22,.68,0,1.2) 0.55s both; }
+    .anim-1 {
+      animation: fadeUp 0.55s cubic-bezier(.22, .68, 0, 1.2) 0.05s both;
+    }
 
-  /* ─── Header ─── */
-  .header {
-    padding: 28px 0 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
+    .anim-2 {
+      animation: fadeUp 0.55s cubic-bezier(.22, .68, 0, 1.2) 0.15s both;
+    }
 
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    text-decoration: none;
-  }
-  .logo-mark {
-    width: 32px; height: 32px;
-    background: var(--medical-blue);
-    border-radius: 9px;
-    display: grid; place-items: center;
-  }
-  .logo-mark svg { width: 18px; height: 18px; }
-  .logo-name {
-    font-size: 17px;
-    font-weight: 600;
-    color: var(--slate-900);
-    letter-spacing: -0.3px;
-  }
+    .anim-3 {
+      animation: fadeUp 0.55s cubic-bezier(.22, .68, 0, 1.2) 0.25s both;
+    }
 
-  .privacy-badge {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    background: var(--white);
-    border: 1px solid var(--slate-200);
-    border-radius: 100px;
-    padding: 6px 13px 6px 10px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--slate-500);
-    box-shadow: var(--shadow-sm);
-    white-space: nowrap;
-  }
-  .privacy-badge svg { color: var(--success-green); flex-shrink: 0; }
+    .anim-4 {
+      animation: fadeUp 0.55s cubic-bezier(.22, .68, 0, 1.2) 0.35s both;
+    }
 
-  /* ─── Divider ─── */
-  .divider {
-    height: 1px;
-    background: var(--slate-200);
-    margin: 20px 0;
-  }
+    .anim-5 {
+      animation: fadeUp 0.55s cubic-bezier(.22, .68, 0, 1.2) 0.45s both;
+    }
 
-  /* ─── Hero ─── */
-  .hero { text-align: center; padding: 12px 0 8px; }
+    .anim-6 {
+      animation: fadeUp 0.55s cubic-bezier(.22, .68, 0, 1.2) 0.55s both;
+    }
+
+    /* ─── Hero Meta (Privacy Badge) ─── */
+    .hero-meta-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 12px;
+    }
+
+    .privacy-badge {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: 100px;
+      padding: 6px 13px 6px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--slate-500);
+      box-shadow: var(--shadow-sm);
+      white-space: nowrap;
+    }
+
+    .privacy-badge svg {
+      color: var(--success-green);
+      flex-shrink: 0;
+    }
+
+    /* ─── Divider ─── */
+    .divider {
+      height: 1px;
+      background: var(--slate-200);
+      margin: 20px 0;
+    }
+
+    /* ─── Hero ─── */
+    .hero {
+      text-align: center;
+      padding: 12px 0 8px;
+    }
 
   .hero-label {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    color: var(--medical-blue-light);
-    background: var(--medical-blue-pale);
-    padding: 4px 12px;
-    border-radius: 100px;
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--medical-blue-light);
+      background: var(--medical-blue-pale);
+      padding: 4px 12px;
+      border-radius: 100px;
     margin-bottom: 16px;
   }
 
   .hero-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(22px, 5vw, 30px);
-    line-height: 1.2;
-    color: var(--slate-900);
-    letter-spacing: -0.5px;
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(22px, 5vw, 30px);
+      line-height: 1.2;
+      color: var(--slate-900);
+      letter-spacing: -0.5px;
     margin-bottom: 32px;
   }
-  .hero-title em { font-style: italic; color: var(--medical-blue); }
 
-  /* ─── Gauge ─── */
-  .gauge-wrap {
-    position: relative;
-    width: 220px;
-    margin: 0 auto 20px;
-  }
-  .gauge-wrap svg { overflow: visible; display: block; }
+    .hero-title em {
+      font-style: italic;
+      color: var(--medical-blue);
+    }
 
-  .gauge-bg {
-    fill: none;
-    stroke: var(--slate-100);
-    stroke-width: 14;
-    stroke-linecap: round;
-  }
+    /* ─── Gauge ─── */
+    .gauge-wrap {
+      position: relative;
+      width: 220px;
+      margin: 0 auto 20px;
+    }
+
+    .gauge-wrap svg {
+      overflow: visible;
+      display: block;
+    }
+
+    .gauge-bg {
+      fill: none;
+      stroke: var(--slate-100);
+      stroke-width: 14;
+      stroke-linecap: round;
+    }
+
   .gauge-fill {
-    fill: none;
-    stroke: url(#gaugeGradient);
-    stroke-width: 14;
-    stroke-linecap: round;
-    stroke-dasharray: 0 1000;
-    transition: stroke-dasharray 1.4s cubic-bezier(.4,0,.2,1);
+      fill: none;
+      stroke: url(#gaugeGradient);
+      stroke-width: 14;
+      stroke-linecap: round;
+      stroke-dasharray: 0 1000;
+      transition: stroke-dasharray 1.4s cubic-bezier(.4, 0, .2, 1);
   }
+
   .gauge-center {
-    position: absolute;
-    top: 52%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
+      position: absolute;
+      top: 52%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
   }
+
   .gauge-number {
-    font-family: 'DM Serif Display', serif;
-    font-size: 48px;
-    line-height: 1;
-    color: var(--slate-900);
-    letter-spacing: -2px;
-    animation: countUp 0.7s cubic-bezier(.22,.68,0,1.2) 0.7s both;
+      font-family: 'DM Serif Display', serif;
+      font-size: 48px;
+      line-height: 1;
+      color: var(--slate-900);
+      letter-spacing: -2px;
+      animation: countUp 0.7s cubic-bezier(.22, .68, 0, 1.2) 0.7s both;
   }
-  .gauge-unit {
-    font-size: 16px;
-    color: var(--slate-400);
-    font-weight: 400;
-    display: block;
-    margin-top: 2px;
-  }
-  .gauge-labels {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 6px;
-    padding: 0 14px;
-  }
-  .gauge-label {
-    font-size: 11px;
-    color: var(--slate-400);
-    font-weight: 500;
-  }
+
+    .gauge-unit {
+      font-size: 16px;
+      color: var(--slate-400);
+      font-weight: 400;
+      display: block;
+      margin-top: 2px;
+    }
+
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      padding: 0 14px;
+    }
+
+    .gauge-label {
+      font-size: 11px;
+      color: var(--slate-400);
+      font-weight: 500;
+    }
 
   .hero-insight {
-    background: var(--white);
-    border: 1px solid var(--slate-200);
-    border-radius: var(--radius-lg);
-    padding: 16px 22px;
-    margin: 0 auto;
-    max-width: 480px;
-    box-shadow: var(--shadow-sm);
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-lg);
+      padding: 16px 22px;
+      margin: 0 auto;
+      max-width: 480px;
+      box-shadow: var(--shadow-sm);
   }
-  .hero-insight p {
-    font-size: 14px;
-    line-height: 1.6;
-    color: var(--slate-500);
-  }
-  .hero-insight strong { color: var(--slate-700); }
 
-  /* ─── Section heading ─── */
+    .hero-insight p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--slate-500);
+    }
+
+    .hero-insight strong {
+      color: var(--slate-700);
+    }
+
+    /* ─── Section heading ─── */
   .section-heading {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--slate-400);
-    margin-bottom: 14px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--slate-400);
+      margin-bottom: 14px;
   }
 
-  /* ─── Radar card ─── */
+    /* ─── Radar card ─── */
   .radar-card {
-    background: var(--white);
-    border: 1px solid var(--slate-200);
-    border-radius: var(--radius-xl);
-    padding: 28px 24px 20px;
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-xl);
+      padding: 28px 24px 20px;
     box-shadow: var(--shadow-md);
-    margin-top: 8px;
-  }
-  .radar-card h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 19px;
-    color: var(--slate-900);
-    letter-spacing: -0.3px;
-    margin-bottom: 4px;
-  }
-  .radar-card .sub {
-    font-size: 13px;
-    color: var(--slate-400);
-    margin-bottom: 20px;
-  }
-  .radar-container {
-    position: relative;
-    height: 260px;
-  }
+      margin-top: 8px;
+    }
 
-  /* ─── Domain pills ─── */
-  .domains-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-    margin-top: 16px;
-  }
+    .radar-card h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 19px;
+      color: var(--slate-900);
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+
+    .radar-card .sub {
+      font-size: 13px;
+      color: var(--slate-400);
+      margin-bottom: 20px;
+    }
+
+    .radar-container {
+      position: relative;
+      height: 260px;
+    }
+
+    /* ─── Domain pills ─── */
+    .domains-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 16px;
+    }
+
   .domain-pill {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--slate-50);
-    border: 1px solid var(--slate-200);
-    border-radius: 100px;
-    padding: 5px 11px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--slate-600);
-  }
-  .domain-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--slate-50);
+      border: 1px solid var(--slate-200);
+      border-radius: 100px;
+      padding: 5px 11px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--slate-600);
   }
 
-  /* ─── Insight cards ─── */
-  .insight-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-top: 8px;
-  }
-  @media (max-width: 520px) {
-    .insight-grid { grid-template-columns: 1fr; }
-  }
+    .domain-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ─── Insight cards ─── */
+    .insight-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 520px) {
+      .insight-grid {
+        grid-template-columns: 1fr;
+      }
+    }
 
   .insight-card {
-    background: var(--white);
-    border-radius: var(--radius-lg);
-    padding: 20px 18px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid transparent;
-  }
-  .insight-card.green {
-    border-color: rgba(22,163,74,0.15);
-    background: linear-gradient(135deg, #ffffff 60%, #f0fdf4);
-  }
-  .insight-card.amber {
-    border-color: rgba(217,119,6,0.12);
-    background: linear-gradient(135deg, #ffffff 60%, #fffbeb);
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 20px 18px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid transparent;
   }
 
-  .insight-icon {
-    width: 34px; height: 34px;
-    border-radius: 10px;
-    display: grid; place-items: center;
-    margin-bottom: 12px;
-  }
-  .insight-icon.green { background: var(--success-green-pale); }
-  .insight-icon.amber { background: var(--focus-amber-pale); }
-  .insight-icon svg { width: 18px; height: 18px; }
+    .insight-card.green {
+      border-color: rgba(22, 163, 74, 0.15);
+      background: linear-gradient(135deg, #ffffff 60%, #f0fdf4);
+    }
 
-  .insight-card h3 {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--slate-700);
-    margin-bottom: 10px;
-    letter-spacing: -0.1px;
-  }
+    .insight-card.amber {
+      border-color: rgba(217, 119, 6, 0.12);
+      background: linear-gradient(135deg, #ffffff 60%, #fffbeb);
+    }
 
-  .insight-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 9px;
-  }
-  .insight-item:last-child { margin-bottom: 0; }
+    .insight-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 12px;
+    }
 
-  .insight-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    margin-top: 5px;
-    flex-shrink: 0;
-  }
-  .green .insight-dot { background: var(--success-green-light); }
-  .amber .insight-dot { background: var(--focus-amber); }
+    .insight-icon.green {
+      background: var(--success-green-pale);
+    }
 
-  .insight-item p {
-    font-size: 13px;
-    line-height: 1.5;
-    color: var(--slate-500);
-  }
-  .insight-item strong { color: var(--slate-700); display: block; font-size: 12.5px; font-weight: 600; }
+    .insight-icon.amber {
+      background: var(--focus-amber-pale);
+    }
 
-  /* ─── Score bar mini ─── */
-  .score-bar-row {
-    margin-top: 14px;
-  }
-  .score-bar-item {
-    margin-bottom: 8px;
-  }
-  .score-bar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 5px;
-  }
-  .score-bar-label {
-    font-size: 12px;
-    color: var(--slate-500);
-    font-weight: 500;
-  }
-  .score-bar-value {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--slate-700);
-  }
-  .score-bar-track {
-    height: 5px;
-    background: var(--slate-100);
-    border-radius: 100px;
-    overflow: hidden;
-  }
-  .score-bar-fill {
-    height: 100%;
-    border-radius: 100px;
-    transition: width 1s cubic-bezier(.4,0,.2,1);
-  }
-  .green .score-bar-fill { background: var(--success-green-light); }
-  .amber .score-bar-fill { background: var(--focus-amber); }
+    .insight-icon svg {
+      width: 18px;
+      height: 18px;
+    }
 
-  /* ─── Action section ─── */
+    .insight-card h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--slate-700);
+      margin-bottom: 10px;
+      letter-spacing: -0.1px;
+    }
+
+    .insight-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-bottom: 9px;
+    }
+
+    .insight-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .insight-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .green .insight-dot {
+      background: var(--success-green-light);
+    }
+
+    .amber .insight-dot {
+      background: var(--focus-amber);
+    }
+
+    .insight-item p {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--slate-500);
+    }
+
+    .insight-item strong {
+      color: var(--slate-700);
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+
+    /* ─── Score bar mini ─── */
+    .score-bar-row {
+      margin-top: 14px;
+    }
+
+    .score-bar-item {
+      margin-bottom: 8px;
+    }
+
+    .score-bar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .score-bar-label {
+      font-size: 12px;
+      color: var(--slate-500);
+      font-weight: 500;
+    }
+
+    .score-bar-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--slate-700);
+    }
+
+    .score-bar-track {
+      height: 5px;
+      background: var(--slate-100);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 1s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    .green .score-bar-fill {
+      background: var(--success-green-light);
+    }
+
+    .amber .score-bar-fill {
+      background: var(--focus-amber);
+    }
+
+    /* ─── Action section ─── */
   .action-section {
-    background: var(--white);
-    border: 1px solid var(--slate-200);
-    border-radius: var(--radius-xl);
-    padding: 26px 24px;
+      background: var(--white);
+      border: 1px solid var(--slate-200);
+      border-radius: var(--radius-xl);
+      padding: 26px 24px;
     box-shadow: var(--shadow-md);
-    margin-top: 8px;
-  }
-  .action-section h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 19px;
-    color: var(--slate-900);
-    letter-spacing: -0.3px;
-    margin-bottom: 4px;
-  }
-  .action-section .sub {
-    font-size: 13px;
-    color: var(--slate-400);
-    margin-bottom: 20px;
-  }
+      margin-top: 8px;
+    }
 
-  .action-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+    .action-section h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 19px;
+      color: var(--slate-900);
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+
+    .action-section .sub {
+      font-size: 13px;
+      color: var(--slate-400);
+      margin-bottom: 20px;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
   .btn {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    border-radius: var(--radius-md);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
-    text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+      text-decoration: none;
     width: 100%;
   }
-  .btn:hover { transform: translateY(-1px); }
-  .btn:active { transform: translateY(0); }
 
-  .btn-primary {
-    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
-    color: white;
-    box-shadow: 0 4px 16px rgba(29,78,216,0.28), 0 1px 4px rgba(29,78,216,0.15);
-  }
-  .btn-primary:hover {
-    box-shadow: 0 6px 20px rgba(29,78,216,0.35), 0 2px 6px rgba(29,78,216,0.15);
-  }
+    .btn:hover {
+      transform: translateY(-1px);
+    }
 
-  .btn-secondary {
-    background: var(--slate-50);
-    color: var(--slate-700);
-    border: 1.5px solid var(--slate-200);
-    box-shadow: var(--shadow-sm);
-  }
-  .btn-secondary:hover {
-    background: var(--white);
-    border-color: var(--medical-blue-light);
-    color: var(--medical-blue);
-    box-shadow: var(--shadow-md);
-  }
+    .btn:active {
+      transform: translateY(0);
+    }
 
-  .btn-content { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
-  .btn-title { font-size: 14px; font-weight: 600; }
-  .btn-sub { font-size: 12px; font-weight: 400; opacity: 0.75; }
+    .btn-primary {
+      background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+      color: white;
+      box-shadow: 0 4px 16px rgba(29, 78, 216, 0.28), 0 1px 4px rgba(29, 78, 216, 0.15);
+      border: none;
+    }
 
-  .btn-arrow {
-    width: 32px; height: 32px;
-    border-radius: 8px;
-    display: grid; place-items: center;
-    flex-shrink: 0;
-  }
-  .btn-primary .btn-arrow { background: rgba(255,255,255,0.15); }
-  .btn-secondary .btn-arrow { background: var(--slate-100); }
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px rgba(29, 78, 216, 0.35), 0 2px 6px rgba(29, 78, 216, 0.15);
+      transform: translateY(-1px);
+    }
 
-  /* ─── Footer ─── */
-  .footer {
-    text-align: center;
-    padding: 32px 0 40px;
-  }
-  .footer p {
-    font-size: 12px;
-    color: var(--slate-400);
-    line-height: 1.7;
-  }
-  .footer a { color: var(--slate-400); text-decoration: underline; text-underline-offset: 2px; }
+    .btn-secondary {
+      background: var(--slate-50);
+      color: var(--slate-700);
+      border: 1.5px solid var(--slate-200);
+      box-shadow: var(--shadow-sm);
+    }
 
-  /* ─── Sections spacing ─── */
-  .section { margin-bottom: 28px; }
+    .btn-secondary:hover {
+      background: var(--white);
+      border-color: var(--medical-blue-light);
+      color: var(--medical-blue);
+      box-shadow: var(--shadow-md);
+    }
 
-  /* ─── Mobile tweaks ─── */
-  @media (max-width: 480px) {
-    .header { flex-direction: column; align-items: flex-start; gap: 12px; }
-    .privacy-badge { font-size: 11px; }
-    .gauge-wrap { width: 190px; }
-    .gauge-number { font-size: 40px; }
-  }
+    .btn-content {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+    }
+
+    .btn-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .btn-sub {
+      font-size: 12px;
+      font-weight: 400;
+      opacity: 0.75;
+    }
+
+    .btn-arrow {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+
+    .btn-primary .btn-arrow {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-secondary .btn-arrow {
+      background: var(--slate-100);
+    }
+
+    /* ─── Profile Footer (Internal) ─── */
+    .profile-footer {
+      text-align: center;
+      padding: 32px 0 40px;
+    }
+
+    .profile-footer p {
+      font-size: 12px;
+      color: var(--slate-400);
+      line-height: 1.7;
+    }
+
+    .profile-footer a {
+      color: var(--slate-400);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    /* ─── Sections spacing ─── */
+    .section {
+      margin-bottom: 28px;
+    }
+
+    /* ─── Mobile tweaks ─── */
+    @media (max-width: 480px) {
+      .privacy-badge {
+        font-size: 11px;
+      }
+
+      .gauge-wrap {
+        width: 190px;
+      }
+
+      .gauge-number {
+        font-size: 40px;
+      }
+    }
 </style>
-</head>
-<body>
+{% endblock %}
 
-<div class="container">
+{% block content %}
+<div class="profile-page-wrapper">
+  <div class="container">
 
-  <!-- ─── Header ─── -->
-  <header class="header anim-1">
-    <a href="#" class="logo">
-      <div class="logo-mark">
-        <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M9 2L9 16M2 9H16" stroke="white" stroke-width="2.4" stroke-linecap="round"/>
+    <!-- ─── Hero Meta (Privacy Badge) ─── -->
+    <div class="hero-meta-row anim-1">
+      <div class="privacy-badge">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>
-      </div>
-      <span class="logo-name">Mentora</span>
-    </a>
-    <div class="privacy-badge">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-      </svg>
-      Alleen zichtbaar voor u
-    </div>
-  </header>
-
-  <div class="divider anim-1"></div>
-
-  <!-- ─── Hero ─── -->
-  <section class="hero section anim-2">
-    <span class="hero-label">Diagnostisch rapport</span>
-    <h1 class="hero-title">Uw profiel van<br><em>BIG-gereedheid</em></h1>
-
-    <!-- Gauge SVG -->
-    <div class="gauge-wrap">
-      <svg viewBox="0 0 220 140" width="220" height="140">
-        <defs>
-          <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#3b82f6"/>
-            <stop offset="100%" stop-color="#16a34a"/>
-          </linearGradient>
-        </defs>
-        <!-- Background arc -->
-        <path class="gauge-bg"
-          d="M 22 120 A 88 88 0 0 1 198 120"
-          stroke-linecap="round"/>
-        <!-- Fill arc (js sets this) -->
-        <path class="gauge-fill" id="gaugeFill"
-          d="M 22 120 A 88 88 0 0 1 198 120"
-          stroke-linecap="round"/>
-        <!-- Tick marks -->
-        <g stroke="#e2e8f0" stroke-width="1.5">
-          <line x1="22" y1="120" x2="32" y2="120" transform="rotate(-5 110 120)"/>
-          <line x1="22" y1="120" x2="32" y2="120" transform="rotate(45 110 120)"/>
-          <line x1="22" y1="120" x2="32" y2="120" transform="rotate(95 110 120)"/>
-          <line x1="22" y1="120" x2="32" y2="120" transform="rotate(145 110 120)"/>
-          <line x1="22" y1="120" x2="32" y2="120" transform="rotate(185 110 120)"/>
-        </g>
-      </svg>
-      <div class="gauge-center">
-        <div class="gauge-number" id="gaugeNumber">{{ overall_score }}</div>
-        <span class="gauge-unit">/ 100</span>
+        {{ t('lock_visible_only_you', lang)|default('Alleen zichtbaar voor u') }}
       </div>
     </div>
-    <div class="gauge-labels" style="max-width:220px; margin:0 auto 20px;">
-      <span class="gauge-label">Beginner</span>
-      <span class="gauge-label">Expert</span>
-    </div>
 
-    <div class="hero-insight">
-      <p>{{ insight_text | safe }}</p>
-    </div>
-  </section>
+    <div class="divider anim-1"></div>
 
-  <!-- ─── Radar ─── -->
-  <section class="section anim-3">
-    <p class="section-heading">Gedetailleerde analyse</p>
-    <div class="radar-card">
-      <h2>Competentieprofiel</h2>
-      <p class="sub">Per vakgebied — op basis van uw antwoorden</p>
-      <div class="radar-container">
-        <canvas id="radarChart"></canvas>
-      </div>
-      <div class="domains-row" id="domainPills"></div>
-    </div>
-  </section>
+    <!-- ─── Hero ─── -->
+    <section class="hero section anim-2">
+      <span class="hero-label">{{ t('diagnostic_report', lang)|default('Diagnostisch rapport') }}</span>
+      <h1 class="hero-title">{{ t('big_readiness_profile_title', lang)|default('Uw profiel van BIG-gereedheid') | safe }}</h1>
 
-  <!-- ─── Insight cards ─── -->
-  <section class="section anim-4">
-    <p class="section-heading">Inzichten</p>
-    <div class="insight-grid">
-
-      <!-- Strengths -->
-      <div class="insight-card green">
-        <div class="insight-icon green">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
+      <!-- Gauge SVG -->
+      <div class="gauge-wrap">
+        <svg viewBox="0 0 220 140" width="220" height="140">
+          <defs>
+            <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#3b82f6" />
+              <stop offset="100%" stop-color="#16a34a" />
+            </linearGradient>
+          </defs>
+          <path class="gauge-bg" d="M 22 120 A 88 88 0 0 1 198 120" stroke-linecap="round" />
+          <path class="gauge-fill" id="gaugeFill" d="M 22 120 A 88 88 0 0 1 198 120" stroke-linecap="round" />
+        </svg>
+        <div class="gauge-center">
+          <div class="gauge-number" id="gaugeNumber">{{ overall_score }}</div>
+          <span class="gauge-unit">/ 100</span>
         </div>
-        <h3>Sterke punten</h3>
-        {% if strong_domains %}
+      </div>
+      <div class="gauge-labels" style="max-width:220px; margin:0 auto 20px;">
+        <span class="gauge-label">{{ t('beginner', lang)|default('Beginner') }}</span>
+        <span class="gauge-label">{{ t('expert', lang)|default('Expert') }}</span>
+      </div>
+
+      <div class="hero-insight">
+        <p>{{ insight_text | safe }}</p>
+      </div>
+    </section>
+
+    <!-- ─── Radar ─── -->
+    <section class="section anim-3">
+      <p class="section-heading">{{ t('detailed_analysis', lang)|default('Gedetailleerde analyse') }}</p>
+      <div class="radar-card">
+        <h2>{{ t('competency_profile', lang)|default('Competentieprofiel') }}</h2>
+        <p class="sub">{{ t('per_domain_answers', lang)|default('Per vakgebied — op basis van uw antwoorden') }}</p>
+        <div class="radar-container">
+          <canvas id="radarChart"></canvas>
+        </div>
+        <div class="domains-row" id="domainPills"></div>
+      </div>
+    </section>
+
+    <!-- ─── Insight cards ─── -->
+    <section class="section anim-4">
+      <p class="section-heading">{{ t('insights', lang)|default('Inzichten') }}</p>
+      <div class="insight-grid">
+
+        <!-- Strengths -->
+        <div class="insight-card green">
+          <div class="insight-icon green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <h3>{{ t('strengths', lang)|default('Sterke punten') }}</h3>
+          {% if strong_domains %}
           {% for domain in strong_domains %}
           <div class="insight-item">
             <span class="insight-dot"></span>
-            <p><strong>{{ domain }}</strong> Вы демонстрируете высокий уровень компетенции.</p>
+            <p><strong>{{ domain }}</strong> {{ t('strength_high_level', lang)|default('U toont een hoog niveau van bekwaamheid op dit gebied.') }}</p>
           </div>
           {% endfor %}
-        {% else %}
-          <p style="font-size: 13px; color: var(--slate-400);">Продолжайте практиковаться, чтобы выявить свои сильные стороны.</p>
-        {% endif %}
-      </div>
-
-      <!-- Weaknesses -->
-      <div class="insight-card amber">
-        <div class="insight-icon amber">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
+          {% else %}
+          <p style="font-size: 13px; color: var(--slate-400);">{{ t('no_strengths_yet', lang)|default('Blijf oefenen om uw sterke punten te ontdekken.') }}</p>
+          {% endif %}
         </div>
-        <h3>Области для улучшения</h3>
-        {% if weak_domains %}
+
+        <!-- Weaknesses -->
+        <div class="insight-card amber">
+          <div class="insight-icon amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <h3>{{ t('areas_for_improvement', lang)|default('Verbeterpunten') }}</h3>
+          {% if weak_domains %}
           {% for domain in weak_domains %}
           <div class="insight-item">
             <span class="insight-dot"></span>
-            <p><strong>{{ domain }}</strong> Рекомендуется дополнительное изучение этой темы.</p>
+            <p><strong>{{ domain }}</strong> {{ t('improvement_study_recommended', lang)|default('Aanvullende studie op dit gebied wordt aanbevolen.') }}</p>
           </div>
           {% endfor %}
-        {% else %}
-          <p style="font-size: 13px; color: var(--slate-400);">У вас нет критических пробелов в основных доменах!</p>
-        {% endif %}
-      </div>
-
-      <!-- Individual Learning Plan -->
-      <div class="insight-card amber" style="position: relative; overflow: hidden; grid-column: span 2;">
-        <div class="insight-icon amber">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-          </svg>
+          {% else %}
+          <p style="font-size: 13px; color: var(--slate-400);">{{ t('no_critical_gaps', lang)|default('U heeft geen kritieke gaten in de hoofddomeinen!') }}</p>
+          {% endif %}
         </div>
-        <h3>Индивидуальный план обучения</h3>
-        
-        {% if learning_plan %}
-        <div class="score-bar-row">
-          <div class="score-bar-item">
-            <div class="score-bar-header">
-              <span class="score-bar-label">Общий прогресс обучения</span>
-              <span class="score-bar-value">{{ learning_plan.overall_progress | int }}%</span>
+
+        <!-- Individual Learning Plan -->
+        <div class="insight-card amber" style="position: relative; overflow: hidden; grid-column: span 2;">
+          <div class="insight-icon amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+          </div>
+          <h3>{{ t('individual_learning_plan', lang)|default('Individueel leerplan') }}</h3>
+
+          {% if learning_plan %}
+          <div class="score-bar-row">
+            <div class="score-bar-item">
+              <div class="score-bar-header">
+                <span class="score-bar-label">{{ t('overall_learning_progress', lang)|default('Algemene leervoorgang') }}</span>
+                <span class="score-bar-value">{{ learning_plan.overall_progress | int }}%</span>
+              </div>
+              <div class="score-bar-track">
+                <div class="score-bar-fill green" style="width: {{ learning_plan.overall_progress | int }}%;"></div>
+              </div>
             </div>
-            <div class="score-bar-track">
-              <div class="score-bar-fill green" style="width: {{ learning_plan.overall_progress | int }}%;"></div>
+            <p style="font-size: 13px; color: var(--slate-500); margin-top: 8px;">
+              {{ t('learning_plan_active_msg', lang)|default('Uw leerplan is actief. Volg dagelijkse doelen om examenbereidheid te bereiken.') }}
+            </p>
+          </div>
+          {% else %}
+          <div class="score-bar-row" style="filter: blur(4px); opacity: 0.5;">
+            <div class="score-bar-item">
+              <div class="score-bar-header"><span class="score-bar-label">Vakinhoud</span><span
+                  class="score-bar-value">45%</span></div>
+              <div class="score-bar-track">
+                <div class="score-bar-fill amber" style="width: 45%;"></div>
+              </div>
             </div>
           </div>
-          <p style="font-size: 13px; color: var(--slate-500); margin-top: 8px;">
-            Ваш план обучения активен. Следуйте ежедневным целям для достижения готовности к экзамену.
-          </p>
+          {% endif %}
+
+          {% if not is_premium and not learning_plan %}
+          <div
+            style="position: absolute; inset: 0; background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; z-index: 10;">
+            <div
+              style="background: #fbbf24; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(251,191,36,0.3);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <h4 style="font-size: 16px; font-weight: 600; color: #92400e; margin-bottom: 8px;">{{ t('premium_lock_title', lang)|default('Premium Lock') }}</h4>
+            <p style="font-size: 13px; color: #b45309; max-width: 280px; font-weight: 500;">
+              {{ t('premium_lock_desc', lang)|default('Individueel leerplan wordt ontgrendeld na bevestiging van klinische stage of aankoop van abonnement') }}
+            </p>
+          </div>
+          {% endif %}
         </div>
-        {% else %}
-        <div class="score-bar-row" style="filter: blur(4px); opacity: 0.5;">
-          <div class="score-bar-item">
-            <div class="score-bar-header"><span class="score-bar-label">Vakinhoud</span><span class="score-bar-value">45%</span></div>
-            <div class="score-bar-track"><div class="score-bar-fill amber" style="width: 45%;"></div></div>
-          </div>
-        </div>
-        {% endif %}
-
-        {% if not is_premium and not learning_plan %}
-        <div style="position: absolute; inset: 0; background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; z-index: 10;">
-          <div style="background: #fbbf24; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(251,191,36,0.3);">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-            </svg>
-          </div>
-          <h4 style="font-size: 16px; font-weight: 600; color: #92400e; margin-bottom: 8px;">Premium Lock</h4>
-          <p style="font-size: 13px; color: #b45309; max-width: 280px; font-weight: 500;">
-            Индивидуальный план обучения разблокируется после подтверждения стажировки в клинике или приобретения подписки
-          </p>
-        </div>
-        {% endif %}
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ─── Action Plan ─── -->
-  <section class="section anim-5">
-    <p class="section-heading">Volgende stap</p>
-    <div class="action-section">
-      <h2>Aanbevolen acties</h2>
-      <p class="sub">Gebaseerd op uw persoonlijk profiel</p>
-      <div class="action-buttons">
-
-        <a class="btn btn-primary" href="{{ url_for('diagnostic.start_diagnostic', lang=lang, diagnostic_type='quick_scan_10') }}">
-          <div class="btn-content">
-            <span class="btn-title">Continue Audit (+10 vragen)</span>
-            <span class="btn-sub">Verhoog meetnauwkeurigheid met ~18%</span>
-          </div>
-          <div class="btn-arrow">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-            </svg>
-          </div>
-        </a>
-
-        <a class="btn btn-secondary" href="{{ url_for('diagnostic.start_diagnostic', lang=lang, diagnostic_type='full_60') }}">
-          <div class="btn-content">
-            <span class="btn-title">Deep Audit (Full Diagnostic)</span>
-            <span class="btn-sub">30-60 vragen · ~40 minuten · gedetailleerd rapport</span>
-          </div>
-          <div class="btn-arrow">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-            </svg>
-          </div>
-        </a>
 
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ─── Footer ─── -->
-  <footer class="footer anim-6">
-    <p>
-      Dit rapport is uitsluitend bedoeld voor persoonlijke zelfevaluatie.<br>
-      <a href="#">Privacybeleid</a> · <a href="#">BIG-register informatie</a> · © 2025 Mentora
-    </p>
-  </footer>
+    <!-- ─── Action Plan ─── -->
+    <section class="section anim-5">
+      <p class="section-heading">{{ t('next_step', lang)|default('Volgende stap') }}</p>
+      <div class="action-section">
+        <h2>{{ t('recommended_actions', lang)|default('Aanbevolen acties') }}</h2>
+        <p class="sub">{{ t('based_on_profile', lang)|default('Gebaseerd op uw persoonlijk profiel') }}</p>
+        <div class="action-buttons">
 
-</div><!-- /container -->
+          <a class="btn btn-primary"
+            href="{{ url_for('diagnostic.start_diagnostic', lang=lang, diagnostic_type='quick_scan_10') }}">
+            <div class="btn-content">
+              <span class="btn-title">{{ t('continue_audit_title', lang)|default('Continue Audit (+10 vragen)') }}</span>
+              <span class="btn-sub">{{ t('continue_audit_sub', lang)|default('Verhoog meetnauwкеurigheid met ~18%') }}</span>
+            </div>
+            <div class="btn-arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </div>
+          </a>
 
-<script>
-// ─── Gauge animation ───
-(function() {
-  const score = {{ overall_score }};
-  const total = 100;
-  const pct = score / total;
-  const arcLen = 276; // approx arc length for the semicircle
-  const fill = pct * arcLen;
+          <a class="btn btn-secondary"
+            href="{{ url_for('diagnostic.start_diagnostic', lang=lang, diagnostic_type='full_60') }}">
+            <div class="btn-content">
+              <span class="btn-title">{{ t('deep_audit_title', lang)|default('Deep Audit (Full Diagnostic)') }}</span>
+              <span class="btn-sub">{{ t('deep_audit_sub', lang)|default('30-60 vragen · ~40 minuten · gedetailleerd rapport') }}</span>
+            </div>
+            <div class="btn-arrow">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </div>
+          </a>
 
-  const gaugeFill = document.getElementById('gaugeFill');
-  setTimeout(() => {
-    gaugeFill.style.strokeDasharray = fill + ' ' + arcLen;
-  }, 400);
-})();
+        </div>
+      </div>
+    </section>
 
-// ─── Score bars ───
-document.querySelectorAll('.score-bar-fill').forEach(bar => {
-  const w = bar.dataset.width;
-  if (w) {
-    setTimeout(() => { bar.style.width = w + '%'; }, 600);
-  }
-});
+    <!-- ─── Profile Footer (Internal) ─── -->
+    <footer class="profile-footer anim-6">
+      <p>
+        {{ t('footer_personal_use', lang)|default('Dit rapport is uitsluitend bedoeld voor persoonlijke zelfevaluatie.') }}<br>
+        <a href="#">{{ t('privacy_policy', lang)|default('Privacybeleid') }}</a> · <a href="#">{{ t('big_register_info', lang)|default('BIG-register informatie') }}</a> · © 2025 Mentora
+      </p>
+    </footer>
 
-// ─── Radar Chart ───
-const domains = {{ domains_data | tojson }};
+  </div><!-- /container -->
+</div><!-- /profile-page-wrapper -->
+{% endblock %}
 
-const ctx = document.getElementById('radarChart').getContext('2d');
-new Chart(ctx, {
-  type: 'radar',
-  data: {
-    labels: domains.map(d => d.short),
-    datasets: [{
-      data: domains.map(d => d.value),
-      backgroundColor: 'rgba(29, 78, 216, 0.07)',
-      borderColor: 'rgba(29, 78, 216, 0.5)',
-      borderWidth: 2,
-      pointBackgroundColor: domains.map(d => d.color),
-      pointBorderColor: '#ffffff',
-      pointBorderWidth: 2,
-      pointRadius: 5,
-      pointHoverRadius: 7,
-    }]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    animation: { duration: 1000, easing: 'easeInOutQuart', delay: 400 },
-    scales: {
-      r: {
-        min: 0, max: 100,
-        ticks: {
-          display: false,
-          stepSize: 25,
+{% block scripts %}
+  <script>
+    // ─── Gauge animation ───
+    (function () {
+      const score = {{ overall_score }};
+      const total = 100;
+      const pct = score / total;
+      const arcLen = 276; // approx arc length for the semicircle
+      const fill = pct * arcLen;
+
+      const gaugeFill = document.getElementById('gaugeFill');
+      if (gaugeFill) {
+        setTimeout(() => {
+          gaugeFill.style.strokeDasharray = fill + ' ' + arcLen;
+        }, 400);
+      }
+    })();
+
+    // ─── Score bars ───
+    document.querySelectorAll('.score-bar-fill').forEach(bar => {
+      const w = bar.dataset.width;
+      if (w) {
+        setTimeout(() => { bar.style.width = w + '%'; }, 600);
+      }
+    });
+
+    // ─── Radar Chart ───
+    const domains = {{ domains_data | tojson }};
+
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: domains.map(d => d.short),
+        datasets: [{
+          data: domains.map(d => d.value),
+          backgroundColor: 'rgba(29, 78, 216, 0.07)',
+          borderColor: 'rgba(29, 78, 216, 0.5)',
+          borderWidth: 2,
+          pointBackgroundColor: domains.map(d => d.color),
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 1000, easing: 'easeInOutQuart', delay: 400 },
+        scales: {
+          r: {
+            min: 0, max: 100,
+            ticks: {
+              display: false,
+              stepSize: 25,
+            },
+            grid: {
+              color: '#e2e8f0',
+              lineWidth: 1,
+            },
+            angleLines: { color: '#e2e8f0', lineWidth: 1 },
+            pointLabels: {
+              font: { family: 'DM Sans', size: 12, weight: '500' },
+              color: '#64748b',
+            }
+          }
         },
-        grid: {
-          color: '#e2e8f0',
-          lineWidth: 1,
-        },
-        angleLines: { color: '#e2e8f0', lineWidth: 1 },
-        pointLabels: {
-          font: { family: 'DM Sans', size: 12, weight: '500' },
-          color: '#64748b',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleFont: { family: 'DM Sans', size: 12, weight: '600' },
+            bodyFont: { family: 'DM Sans', size: 13 },
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              label: ctx => ' ' + ctx.parsed.r + ' / 100'
+            }
+          }
         }
       }
-    },
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: '#0f172a',
-        titleFont: { family: 'DM Sans', size: 12, weight: '600' },
-        bodyFont: { family: 'DM Sans', size: 13 },
-        padding: 10,
-        cornerRadius: 8,
-        callbacks: {
-          label: ctx => ' ' + ctx.parsed.r + ' / 100'
-        }
-      }
-    }
-  }
-});
+    });
 
-// Domain pills
-const pillsContainer = document.getElementById('domainPills');
-domains.forEach(d => {
-  const pill = document.createElement('div');
-  pill.className = 'domain-pill';
-  pill.innerHTML = `<span class="domain-dot" style="background:${d.color}"></span>${d.short} <strong style="color:#334155;margin-left:2px">${d.value}</strong>`;
-  pillsContainer.appendChild(pill);
-});
-</script>
-
-</body>
-</html>
+    // Domain pills
+    const pillsContainer = document.getElementById('domainPills');
+    domains.forEach(d => {
+      const pill = document.createElement('div');
+      pill.className = 'domain-pill';
+      pill.innerHTML = `<span class="domain-dot" style="background:${d.color}"></span>${d.short} <strong style="color:#334155;margin-left:2px">${d.value}</strong>`;
+      pillsContainer.appendChild(pill);
+    });
+  </script>
+{% endblock %}

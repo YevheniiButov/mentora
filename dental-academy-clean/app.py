@@ -50,7 +50,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Supported languages
-SUPPORTED_LANGUAGES = ['nl', 'en', 'es', 'pt', 'uk', 'fa', 'tr', 'ru']
+SUPPORTED_LANGUAGES = ['nl', 'en']
 DEFAULT_LANGUAGE = 'nl'
 
 # Load configuration
@@ -88,16 +88,6 @@ def static_versioned(filename):
 with app.app_context():
     db.create_all()  # Создаст все таблицы
 
-# Initialize CSRF protection
-csrf = CSRFProtect(app)
-
-# CSRF configuration based on environment
-if app.config.get('FLASK_ENV') == 'production':
-    # Enable CSRF protection in production
-    csrf.exempt(lambda: False)
-else:
-    # Disable CSRF for development/testing only
-    csrf.exempt(lambda: True)
 
 # ========================================
 # USER LOADER
@@ -351,8 +341,8 @@ def route_by_domain():
     # ВАЖНО: Этот обработчик НЕ должен блокировать запросы для localhost
     if 'mentora.com.in' in host:
         # Разрешенные пути (включая языковые с завершающим слэшем)
-        allowed_paths = ['/', '/nl', '/en', '/ru', '/uk', '/es', '/pt', '/tr', '/fa', '/mentora-login']
-        allowed_paths_with_slash = ['/nl/', '/en/', '/ru/', '/uk/', '/es/', '/pt/', '/tr/', '/fa/']
+        allowed_paths = ['/', '/nl', '/en', '/mentora-login']
+        allowed_paths_with_slash = ['/nl/', '/en/']
         allowed_prefixes = ['/admin', '/api', '/analytics', '/static']
         
         # Проверяем, разрешен ли текущий путь
@@ -361,7 +351,7 @@ def route_by_domain():
             request.path in allowed_paths_with_slash or
             any(request.path.startswith(prefix) for prefix in allowed_prefixes) or
             # Разрешаем языковые пути с любыми путями после /<lang>/
-            any(request.path.startswith(f'/{lang}/') for lang in ['nl', 'en', 'ru', 'uk', 'es', 'pt', 'tr', 'fa'])
+            any(request.path.startswith(f'/{lang}/') for lang in ['nl', 'en'])
         )
         
         # Если путь не разрешен - редирект на главную

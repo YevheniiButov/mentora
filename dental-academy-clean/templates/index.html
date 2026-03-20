@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {# --- SEO Meta Tags --- #}
-{% block title %}Mentora — Integration Platform{% endblock %}
-{% block meta_description %}Connecting international medical talent with the Dutch healthcare ecosystem{% endblock %}
+{% block title %}{{ t('landing_title_tag', lang)|default('Mentora — Integration Platform') }}{% endblock %}
+{% block meta_description %}{{ t('landing_meta_description', lang)|default('Connecting international medical talent with the Dutch healthcare ecosystem') }}{% endblock %}
 
 {% block head %}
 {{ super() }}
@@ -122,6 +122,7 @@
     margin-bottom: 24px;
     letter-spacing: -0.4px;
   }
+  .section-title em { color: var(--teal); font-style: italic; }
 
   /* Side label layout for sections */
   .side-layout-container {
@@ -770,7 +771,7 @@
     </div>
   </div>
 
-  <div id="intro-skip" onclick="skipIntro()">press any key to skip</div>
+  <div id="intro-skip" onclick="skipIntro()">{{ t('landing_press_skip', lang)|default('press any key to skip') }}</div>
 </div>
 
 <script>
@@ -841,7 +842,7 @@
 
 <!-- LAYER 1: SPECIALISTS -->
 <div class="layer-tag" style="position: relative; z-index: 2;">
-  <div class="layer-dot" style="background:#4a9eb5;"></div>
+  <div class="layer-dot" style="background:#1d4ed8;"></div>
   {{ t('landing_for_specialists', lang)|default('For medical specialists') }}
 </div>
 
@@ -922,17 +923,17 @@
     .wc-animate #wc-lr-1{animation-delay:2.05s;} .wc-animate #wc-lr-2{animation-delay:2.25s;} .wc-animate #wc-lr-3{animation-delay:2.45s;}
     .wc-animate #wc-hub text { animation: wc-lblin .5s ease 1.0s forwards; }
 
-    .wc-sap      { fill:#4a9eb5; }
+    .wc-sap      { fill:#1d4ed8; }
     .wc-sap-dark { fill:#64748b; }
   </style>
 
   <div style="max-width:1200px;margin:0 auto;padding:0 0 32px;">
-    <p class="section-label">{{ t('landing_what_connect', lang)|default('The connection') }}</p>
+    <p class="section-label">{{ t('landing_what_connect_eyebrow', lang)|default('The connection') }}</p>
     <h2 style="font-family:'DM Serif Display',serif;font-size:clamp(28px,4.5vw,36px);font-weight:400;color:#0f172a;letter-spacing:-.4px;line-height:1.15;margin-bottom:12px;">
-      What we <em style="font-style:italic;color:#4a9eb5;">connect</em>
+      {{ t('landing_wc_title_2', lang)|default('What we') }} <em style="font-style:italic;color:#1d4ed8;">{{ t('landing_wc_title_3', lang)|default('connect') }}</em>
     </h2>
     <p style="font-size:15px;color:#64748b;line-height:1.7;max-width:520px;margin:0;font-weight:300;">
-      One platform. Two worlds. Specialists who are ready and institutions that need them — grown together.
+      {{ t('landing_wc_desc_full', lang)|default('One platform. Two worlds. Specialists who are ready and institutions that need them — grown together.') }}
     </p>
   </div>
 
@@ -1076,7 +1077,7 @@
 
 <div id="pathway" class="pathway-section" style="position: relative; z-index: 2;">
   <div class="section-label fade-up">{{ t('landing_your_pathway', lang)|default('Your pathway') }}</div>
-  <div class="section-title fade-up d1">{{ t('landing_abroad_to_nl', lang)|default('From abroad to registered in NL') }}</div>
+  <div class="section-title fade-up d1">{{ t('landing_abroad_to_nl', lang)|default('From abroad to registered in NL') | safe }}</div>
   <div class="pathways">
     <div class="pcard fade-up d1"><div class="pcard-step">STEP 01</div><h3>{{ t('landing_step1_t', lang)|default('Create your profile') }}</h3><p>{{ t('landing_step1_d', lang)|default('Upload credentials, specialty, and language level. We verify everything.') }}</p><div class="pcard-arrow">→</div></div>
     <div class="pcard fade-up d2"><div class="pcard-step">STEP 02</div><h3>{{ t('landing_step2_t', lang)|default('Document vault') }}</h3><p>{{ t('landing_step2_d', lang)|default('Apostille, translations, work experience — all in one secure place.') }}</p><div class="pcard-arrow">→</div></div>
@@ -1105,13 +1106,13 @@
   <div class="partners-container">
     
     <div class="layer-tag" style="margin-bottom: 40px; display: inline-flex; border: 1px solid var(--mentora-border);">
-      <div class="layer-dot" style="background:var(--teal);"></div>
-      Voor Partners & Zorginstellingen
+      <div class="layer-dot" style="background:#1d4ed8;"></div>
+      {{ t('landing_for_partners', lang)|default('Voor Partners & Zorginstellingen') }}
     </div>
 
     <div class="b2b-hero fade-up">
-      <h2 class="b2b-title">Een structurele oplossing voor het tekort aan zorgpersoneel in Nederland.</h2>
-      <p class="b2b-subtitle">Mentora is het technologieplatform dat internationaal medisch talent transformeert in BIG-geregistreerde professionals. Wij bouwen de integratie-infrastructuur die uw kliniek ontzorgt.</p>
+      <h2 class="b2b-title">{{ t('landing_structural_solution', lang)|default('Een structurele oplossing voor het tekort aan zorgpersoneel in Nederland.') }}</h2>
+      <p class="b2b-subtitle">{{ t('landing_b2b_desc', lang)|default('Mentora is het technologieplatform dat internationaal medisch talent transformeert in BIG-geregistreerde professionals. Wij bouwen de integratie-infrastructuur die uw kliniek ontzorgt.') }}</p>
     </div>
 
     <div class="b2b-grid">
@@ -1120,8 +1121,8 @@
         <div class="b2b-icon">
           <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
         </div>
-        <h3 class="b2b-card-title">Strikte Validatie & Audit</h3>
-        <p class="b2b-card-desc">Wij voeren een grondige audit uit op de medische achtergrond van onze kandidaten. U krijgt alleen toegang tot talent waarvan de diploma’s en ervaring voldoen aan de CIBG-normen.</p>
+        <h3 class="b2b-card-title">{{ t('landing_validation_audit', lang)|default('Strikte Validatie & Audit') }}</h3>
+        <p class="b2b-card-desc">{{ t('landing_validation_desc', lang)|default('Wij voeren een grondige audit uit op de medische achtergrond van onze kandidaten. U krijgt alleen toegang tot talent waarvan de diploma’s en ervaring voldoen aan de CIBG-normen.') }}</p>
       </div>
       
       <!-- Card 2 -->
@@ -1129,8 +1130,8 @@
         <div class="b2b-icon">
           <svg viewBox="0 0 24 24"><polyline points="13 2 13 9 22 9"/><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9l-7-7z"/><path d="M12 18v-6"/><path d="M9 15h6"/></svg>
         </div>
-        <h3 class="b2b-card-title">Versnelde Integratie (Pipeline)</h3>
-        <p class="b2b-card-desc">Onze methodiek verkort de weg naar BIG-registratie aanzienlijk. Wij stroomlijnen het proces van intensief medisch Nederlands (C1) tot de beroepsinhoudelijke toetsen (BI).</p>
+        <h3 class="b2b-card-title">{{ t('landing_pipeline_title', lang)|default('Versnelde Integratie (Pipeline)') }}</h3>
+        <p class="b2b-card-desc">{{ t('landing_pipeline_desc', lang)|default('Onze methodiek verkort de weg naar BIG-registratie aanzienlijk. Wij stroomlijnen het proces van intensief medisch Nederlands (C1) tot de beroepsinhoudelijke toetsen (BI).') }}</p>
       </div>
 
       <!-- Card 3 -->
@@ -1138,8 +1139,8 @@
         <div class="b2b-icon">
           <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
-        <h3 class="b2b-card-title">Risicobeheersing & Loyaliteit</h3>
-        <p class="b2b-card-desc">Wij implementeren juridische kaders zoals studiekostenbedingen. Dit waarborgt de return on investment (ROI) en de langdurige loyaliteit van de specialist aan uw instelling.</p>
+        <h3 class="b2b-card-title">{{ t('landing_risk_loyalty', lang)|default('Risicobeheersing & Loyaliteit') }}</h3>
+        <p class="b2b-card-desc">{{ t('landing_risk_desc', lang)|default('Wij implementeren juridische kaders zoals studiekostenbedingen. Dit waarborgt de return on investment (ROI) en de langdurige loyaliteit van de specialist aan uw instelling.') }}</p>
       </div>
 
       <!-- Card 4 -->
@@ -1147,41 +1148,41 @@
         <div class="b2b-icon">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"/></svg>
         </div>
-        <h3 class="b2b-card-title">Focus op Tekortgebieden</h3>
-        <p class="b2b-card-desc">Wij richten ons op regio's met de grootste personele tekorten. Mentora brengt talent en integratie-infrastructuur naar de plekken waar de zorgvraag het hoogst is.</p>
+        <h3 class="b2b-card-title">{{ t('landing_focus_shortage', lang)|default('Focus op Tekortgebieden') }}</h3>
+        <p class="b2b-card-desc">{{ t('landing_focus_desc', lang)|default('Wij richten ons op regio\'s met de grootste personele tekorten. Mentora brengt talent en integratie-infrastructuur naar the plekken waar de zorgvraag het hoogst is.') }}</p>
       </div>
     </div>
 
     <!-- Integration Pathway -->
     <div class="b2b-roadmap-wrapper fade-up">
-      <h3 class="b2b-roadmap-title">De Integratie Roadmap</h3>
+      <h3 class="b2b-roadmap-title">{{ t('landing_roadmap_title', lang)|default('De Integratie Roadmap') }}</h3>
       <div class="b2b-roadmap">
         <div class="b2b-step">
           <div class="b2b-step-num">1</div>
           <div>
-            <div class="b2b-step-title">Selectie & Audit</div>
-            <div class="b2b-step-desc">Screening van internationaal medisch talent en verificatie van opleidingsdocumenten.</div>
+            <div class="b2b-step-title">{{ t('landing_roadmap_step1_t', lang)|default('Selectie & Audit') }}</div>
+            <div class="b2b-step-desc">{{ t('landing_roadmap_step1_d', lang)|default('Screening van internationaal medisch talent en verificatie van opleidingsdocumenten.') }}</div>
           </div>
         </div>
         <div class="b2b-step">
           <div class="b2b-step-num">2</div>
           <div>
-            <div class="b2b-step-title">Taal & Adaptatie</div>
-            <div class="b2b-step-desc">Intensief Medisch Nederlands (C1) gecombineerd met culturele training.</div>
+            <div class="b2b-step-title">{{ t('landing_roadmap_step2_t', lang)|default('Taal & Adaptatie') }}</div>
+            <div class="b2b-step-desc">{{ t('landing_roadmap_step2_d', lang)|default('Intensief Medisch Nederlands (C1) gecombineerd met culturele training.') }}</div>
           </div>
         </div>
         <div class="b2b-step">
           <div class="b2b-step-num">3</div>
           <div>
-            <div class="b2b-step-title">ANIOS Placement</div>
-            <div class="b2b-step-desc">Klinische inzet als basisarts onder nauwe supervisie (werkervaringsplaats).</div>
+            <div class="b2b-step-title">{{ t('landing_roadmap_step3_t', lang)|default('ANIOS Placement') }}</div>
+            <div class="b2b-step-desc">{{ t('landing_roadmap_step3_d', lang)|default('Klinische inzet als basisarts onder nauwe supervisie (werkervaringsplaats).') }}</div>
           </div>
         </div>
         <div class="b2b-step">
           <div class="b2b-step-num">4</div>
           <div>
-            <div class="b2b-step-title">Volledige BIG-registratie</div>
-            <div class="b2b-step-desc">Succesvolle registratie en duurzame inzetbaarheid als erkend specialist.</div>
+            <div class="b2b-step-title">{{ t('landing_roadmap_step4_t', lang)|default('Volledige BIG-registratie') }}</div>
+            <div class="b2b-step-desc">{{ t('landing_roadmap_step4_d', lang)|default('Succesvolle registratie en duurzame inzetbaarheid als erkend specialist.') }}</div>
           </div>
         </div>
       </div>
@@ -1189,10 +1190,10 @@
 
     <!-- Final CTA -->
     <div class="b2b-cta fade-up">
-      <h2 class="b2b-cta-title">Investeer vandaag in de personele continuïteit van uw kliniek.</h2>
+      <h2 class="b2b-cta-title">{{ t('landing_b2b_cta_title', lang)|default('Investeer vandaag in de personele continuïteit van uw kliniek.') }}</h2>
       <div class="b2b-cta-btns">
-        <a href="#" id="openModal1" class="b2b-btn-primary">Vraag de businesscase presentatie aan</a>
-        <a href="#" id="openModal2" class="b2b-btn-outline">Spreken met ons partnerteam</a>
+        <a href="#" id="openModal1" class="b2b-btn-primary">{{ t('landing_b2b_cta_btn1', lang)|default('Vraag de businesscase presentatie aan') }}</a>
+        <a href="#" id="openModal2" class="b2b-btn-outline">{{ t('landing_b2b_cta_btn2', lang)|default('Spreken met ons partnerteam') }}</a>
       </div>
     </div>
 
@@ -1217,55 +1218,55 @@
 <div id="b2bModalOverlay" class="b2b-modal-overlay">
   <div class="b2b-modal" id="b2bModalContent">
     <div class="b2b-modal-header">
-      <h3 class="b2b-modal-title" id="b2bModalTitle">Aanvraag Businesscase</h3>
+      <h3 class="b2b-modal-title" id="b2bModalTitle">{{ t('modal_b2b_title', lang)|default('Aanvraag Businesscase') }}</h3>
       <button class="b2b-modal-close" id="b2bModalClose">&times;</button>
     </div>
     
     <div class="b2b-modal-body">
       <div id="b2bModalSuccess" class="b2b-modal-success" style="display: none;">
-        <svg viewBox="0 0 24 24" width="48" height="48" stroke="var(--teal)" stroke-width="2" fill="none" class="b2b-success-icon" style="margin: 0 auto 16px; display: block;">
+        <svg viewBox="0 0 24 24" width="48" height="48" stroke="#1d4ed8" stroke-width="2" fill="none" class="b2b-success-icon" style="margin: 0 auto 16px; display: block;">
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
-        <h4 style="color: var(--dark); font-size: 18px; margin-bottom: 8px; text-align: center;">Bedankt! Uw aanvraag is ontvangen.</h4>
-        <p style="color: var(--mentora-text-secondary); text-align: center; font-size: 14px; line-height: 1.6;">Ons partnerteam neemt binnen 24 uur contact met u op om de businesscase en ROI-analyse persoonlijk toe te lichten.</p>
-        <button class="b2b-btn-primary" style="margin-top: 24px; width: 100%;" onclick="closeB2BModal()">Sluiten</button>
+        <h4 style="color: var(--dark); font-size: 18px; margin-bottom: 8px; text-align: center;">{{ t('modal_b2b_success_t', lang)|default('Bedankt! Uw aanvraag is ontvangen.') }}</h4>
+        <p style="color: var(--mentora-text-secondary); text-align: center; font-size: 14px; line-height: 1.6;">{{ t('modal_b2b_success_d', lang)|default('Ons partnerteam neemt binnen 24 uur contact met u op om de businesscase en ROI-analyse persoonlijk toe te lichten.') }}</p>
+        <button class="b2b-btn-primary" style="margin-top: 24px; width: 100%;" onclick="closeB2BModal()">{{ t('modal_b2b_close', lang)|default('Sluiten') }}</button>
       </div>
 
       <form id="b2bLeadForm">
         <input type="hidden" id="b2bFormType" name="form_type" value="Business Case Request">
         
         <div class="b2b-form-group">
-          <label class="b2b-form-label" for="b2bName">Naam & Achternaam</label>
-          <input type="text" class="b2b-form-input" id="b2bName" required placeholder="Bijv. Jan Jansen">
+          <label class="b2b-form-label" for="b2bName">{{ t('form_label_name', lang)|default('Naam & Achternaam') }}</label>
+          <input type="text" class="b2b-form-input" id="b2bName" required placeholder="{{ t('form_placeholder_name', lang)|default('Bijv. Jan Jansen') }}">
         </div>
         
         <div class="b2b-form-group">
-          <label class="b2b-form-label" for="b2bOrg">Organisatie / Kliniek</label>
-          <input type="text" class="b2b-form-input" id="b2bOrg" required placeholder="Bijv. Erasmus MC">
+          <label class="b2b-form-label" for="b2bOrg">{{ t('form_label_org', lang)|default('Organisatie / Kliniek') }}</label>
+          <input type="text" class="b2b-form-input" id="b2bOrg" required placeholder="{{ t('form_placeholder_org', lang)|default('Bijv. Erasmus MC') }}">
         </div>
         
         <div class="b2b-form-group">
-          <label class="b2b-form-label" for="b2bRole">Functie</label>
-          <input type="text" class="b2b-form-input" id="b2bRole" required placeholder="Bijv. HR-manager">
+          <label class="b2b-form-label" for="b2bRole">{{ t('form_label_role', lang)|default('Functie') }}</label>
+          <input type="text" class="b2b-form-input" id="b2bRole" required placeholder="{{ t('form_placeholder_role', lang)|default('Bijv. HR-manager') }}">
         </div>
         
         <div class="b2b-form-group">
-          <label class="b2b-form-label" for="b2bEmail">Zakelijk e-mailadres</label>
-          <input type="email" class="b2b-form-input" id="b2bEmail" required placeholder="jan@kliniek.nl">
+          <label class="b2b-form-label" for="b2bEmail">{{ t('form_label_email', lang)|default('Zakelijk e-mailadres') }}</label>
+          <input type="email" class="b2b-form-input" id="b2bEmail" required placeholder="{{ t('form_placeholder_email', lang)|default('jan@kliniek.nl') }}">
         </div>
         
         <div class="b2b-form-group">
-          <label class="b2b-form-label" for="b2bPhone">Telefoonnummer</label>
-          <input type="tel" class="b2b-form-input" id="b2bPhone" required placeholder="+31 6 12345678">
+          <label class="b2b-form-label" for="b2bPhone">{{ t('form_label_phone', lang)|default('Telefoonnummer') }}</label>
+          <input type="tel" class="b2b-form-input" id="b2bPhone" required placeholder="{{ t('form_placeholder_phone', lang)|default('+31 6 12345678') }}">
         </div>
         
         <div class="b2b-form-group" id="b2bMessageGroup" style="display: none;">
-          <label class="b2b-form-label" for="b2bMessage">Bericht</label>
-          <textarea class="b2b-form-input" id="b2bMessage" rows="3" placeholder="Uw vraag of opmerking..."></textarea>
+          <label class="b2b-form-label" for="b2bMessage">{{ t('form_label_message', lang)|default('Bericht') }}</label>
+          <textarea class="b2b-form-input" id="b2bMessage" rows="3" placeholder="{{ t('form_placeholder_message', lang)|default('Uw vraag of opmerking...') }}"></textarea>
         </div>
         
         <button type="submit" class="b2b-btn-primary" id="b2bSubmitBtn" style="width: 100%; margin-top: 8px;">
-          <span id="b2bBtnText">Versturen</span>
+          <span id="b2bBtnText">{{ t('form_btn_send', lang)|default('Versturen') }}</span>
           <div class="btn-loader" id="b2bBtnLoader" style="display: none;"></div>
         </button>
         <div id="b2bFormError" style="color: #ef4444; font-size: 13px; margin-top: 12px; display: none; text-align: center;"></div>
@@ -1374,9 +1375,9 @@
 
 .b2b-form-input:focus {
   outline: none;
-  border-color: var(--teal);
+  border-color: var(--primary-color);
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(62, 205, 193, 0.15);
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15);
 }
 
 .b2b-form-input::placeholder {
@@ -1418,12 +1419,12 @@ function openB2BModal(type) {
 
   if (type === 'business_case') {
     b2bFormType.value = 'Business Case Request';
-    b2bTitle.textContent = 'Aanvraag Businesscase';
+    b2bTitle.textContent = "{{ t('modal_b2b_title', lang)|default('Aanvraag Businesscase') }}";
     b2bMessageGroup.style.display = 'none';
     document.getElementById('b2bMessage').required = false;
   } else if (type === 'partner_team') {
     b2bFormType.value = 'Partner Team Contact';
-    b2bTitle.textContent = 'Contact Partnerteam';
+    b2bTitle.textContent = "{{ t('modal_b2b_contact_title', lang)|default('Contact Partnerteam') }}";
     b2bMessageGroup.style.display = 'block';
     // Optional or required message based on preference. Made optional.
     document.getElementById('b2bMessage').required = false;
@@ -1504,7 +1505,7 @@ document.getElementById('b2bLeadForm').addEventListener('submit', async function
       errorDiv.style.display = 'block';
     }
   } catch (err) {
-    errorDiv.textContent = 'Netwerkfout. Controleer uw verbinding.';
+    errorDiv.textContent = "{{ t('form_error_network', lang)|default('Netwerkfout. Controleer uw verbinding.') }}";
     errorDiv.style.display = 'block';
   } finally {
     submitBtn.disabled = false;

@@ -180,8 +180,19 @@ def assessment_dashboard(lang):
     
     # Вытаскиваем нужные данные для шаблона (используя правильные ключи из generate_results)
     overall_score = results_data.get('readiness_percentage', 0)
-    insight_text = results_data.get('insight_text', '')
+    # Translate data for the dashboard
+    from translations import t
+    
+    # 1. Translate Insight Text
+    insight_key = results_data.get('insight_text', 'insight_developing')
+    insight_text = t(insight_key, lang)
+    
+    # 2. Translate Radar Data
     domains_data = results_data.get('radar_scores', [])
+    for d in domains_data:
+        d['label'] = t(d['label'], lang)
+        d['short'] = t(d['short'], lang)
+    
     weak_domains = results_data.get('weak_domains', [])
     strong_domains = results_data.get('strong_domains', [])
     

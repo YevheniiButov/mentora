@@ -5,26 +5,12 @@ Professional medical terminology in 9 languages
 
 from .nl import translations as nl_translations
 from .en import translations as en_translations
-from .es import translations as es_translations
-from .pt import translations as pt_translations
-from .uk import translations as uk_translations
-from .fa import translations as fa_translations
-from .tr import translations as tr_translations
-from .ru import translations as ru_translations
-from .ar import translations as ar_translations
 from .domain_diagnostic_translations import DOMAIN_DIAGNOSTIC_TRANSLATIONS
 
 # Combine all translations
 translations = {
     'nl': nl_translations,
     'en': en_translations,
-    'es': es_translations,
-    'pt': pt_translations,
-    'uk': uk_translations,
-    'fa': fa_translations,
-    'tr': tr_translations,
-    'ru': ru_translations,
-    'ar': ar_translations,
 }
 
 # Default language (Dutch)
@@ -34,29 +20,15 @@ DEFAULT_LANGUAGE = 'nl'
 LANGUAGE_NAMES = {
     'nl': 'Nederlands',
     'en': 'English',
-    'es': 'Español',
-    'pt': 'Português',
-    'uk': 'Українська',
-    'fa': 'فارسی',
-    'ar': 'العربية',
-    'tr': 'Türkçe',
-    'ru': 'Русский'
 }
 
 # RTL languages
-RTL_LANGUAGES = ['fa', 'ar']
+RTL_LANGUAGES = []
 
 # Country codes for flags
 COUNTRY_CODES = {
     'nl': 'nl',
     'en': 'gb',
-    'es': 'es',
-    'pt': 'pt',
-    'uk': 'ua',
-    'fa': 'ir',
-    'ar': 'sa',
-    'tr': 'tr',
-    'ru': 'ru'
 }
 
 def get_translation(key, lang=DEFAULT_LANGUAGE, **kwargs):
@@ -121,6 +93,9 @@ def get_translation(key, lang=DEFAULT_LANGUAGE, **kwargs):
     
     return translation_value
 
+# Alias for cleaner use in templates and code
+t = get_translation
+
 def get_available_languages():
     """Get list of available languages"""
     return list(translations.keys())
@@ -169,6 +144,7 @@ __all__ = [
     'RTL_LANGUAGES',
     'COUNTRY_CODES',
     'get_translation',
+    't',
     'get_available_languages',
     'get_language_names',
     'is_rtl_language',

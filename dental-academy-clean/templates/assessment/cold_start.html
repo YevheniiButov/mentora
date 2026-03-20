@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Mentora — Start uw BIG-readiness check{% endblock %}
+{% block title %}{{ t('cold_start_title_tag', lang)|default('Mentora — Start uw BIG-readiness check') }}{% endblock %}
 
 {% block extra_css %}
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link
+  href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap"
+  rel="stylesheet">
 <style>
   :root {
     --medical-blue: #1d4ed8;
@@ -19,7 +21,7 @@
     --radius-md: 14px;
     --radius-lg: 20px;
     --radius-xl: 28px;
-    --shadow-md: 0 4px 16px rgba(15,23,42,0.08), 0 2px 6px rgba(15,23,42,0.04);
+    --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
   }
 
   .assessment-container {
@@ -43,7 +45,10 @@
   .cold-start-card::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0; height: 6px;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
     background: linear-gradient(90deg, var(--medical-blue), var(--medical-blue-light));
   }
 
@@ -132,14 +137,14 @@
     font-weight: 600;
     text-decoration: none;
     transition: all 0.2s ease;
-    box-shadow: 0 4px 16px rgba(29,78,216,0.28);
+    box-shadow: 0 4px 16px rgba(29, 78, 216, 0.28);
     border: none;
     cursor: pointer;
   }
 
   .btn-start:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(29,78,216,0.35);
+    box-shadow: 0 8px 24px rgba(29, 78, 216, 0.35);
   }
 
   .btn-start svg {
@@ -161,46 +166,49 @@
 {% block content %}
 <div class="assessment-container">
   <div class="cold-start-card">
-    <span class="hero-label">Kwalificatie Dashboard</span>
-    <h1 class="hero-title">Ontdek uw <em>BIG-gereedheid</em></h1>
+    <span class="hero-label">{{ t('cold_start_hero_label', lang)|default('Kwalificatie Dashboard') }}</span>
+    <h1 class="hero-title">{{ t('cold_start_hero_title', lang)|default('Ontdek uw <em>BIG-gereedheid</em>') | safe }}</h1>
     <p class="hero-description">
-      Krijg direct inzicht in uw medische kennis volgens de Nederlandse NHG-standaarden. Start uw eerste scan om uw persoonlijke dashboard te activeren.
+      {{ t('cold_start_hero_desc', lang)|default('Krijg direct inzicht in uw medische kennis volgens de Nederlandse NHG-standaarden. Start uw eerste scan om uw persoonlijke dashboard te activeren.') }}
     </p>
 
     <div class="feature-grid">
       <div class="feature-item">
         <div class="feature-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
           </svg>
         </div>
         <div class="feature-text">
-          <h3>Kennisprofiel</h3>
-          <p>Visuele analyse van uw sterke punten en verbeterpunten.</p>
+          <h3>{{ t('cold_start_feature1_title', lang)|default('Kennisprofiel') }}</h3>
+          <p>{{ t('cold_start_feature1_desc', lang)|default('Visuele analyse van uw sterke punten en verbeterpunten.') }}</p>
         </div>
       </div>
       <div class="feature-item">
         <div class="feature-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 20h9"></path>
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
           </svg>
         </div>
         <div class="feature-text">
-          <h3>Leerplan</h3>
-          <p>Een op maat gemaakt pad om uw BIG-registratie te versnellen.</p>
+          <h3>{{ t('cold_start_feature2_title', lang)|default('Leerplan') }}</h3>
+          <p>{{ t('cold_start_feature2_desc', lang)|default('Een op maat gemaakt pad om uw BIG-registratie te versnellen.') }}</p>
         </div>
       </div>
       <div class="feature-item">
         <div class="feature-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
         </div>
         <div class="feature-text">
-          <h3>Slechts 10 min</h3>
-          <p>Een snelle Quick Scan is voldoende voor uw eerste rapport.</p>
+          <h3>{{ t('cold_start_feature3_title', lang)|default('Slechts 10 min') }}</h3>
+          <p>{{ t('cold_start_feature3_desc', lang)|default('Een snelle Quick Scan is voldoende voor uw eerste rapport.') }}</p>
         </div>
       </div>
     </div>
@@ -209,8 +217,9 @@
       <input type="hidden" name="diagnostic_type" value="quick_scan_10">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn-start">
-        Start Quick Scan (10 vragen)
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        {{ t('cold_start_btn_start', lang)|default('Start Quick Scan (10 vragen)') }}
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
           <line x1="5" y1="12" x2="19" y2="12"></line>
           <polyline points="12 5 19 12 12 19"></polyline>
         </svg>
@@ -218,7 +227,7 @@
     </form>
 
     <p class="stats-info">
-      Al meer dan 1.200 artsen gingen u voor deze week.
+      {{ t('cold_start_stats_info', lang)|default('Al meer dan 1.200 artsen gingen u voor deze week.') }}
     </p>
   </div>
 </div>
