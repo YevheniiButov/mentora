@@ -17,8 +17,8 @@ def is_user_admin(user):
 main_bp = Blueprint('main', __name__, url_prefix='/<string:lang>')
 
 # Поддерживаемые языки
-SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
-DEFAULT_LANGUAGE = 'en'
+SUPPORTED_LANGUAGES = ['nl', 'en']
+DEFAULT_LANGUAGE = 'nl'
 
 @main_bp.before_request
 def before_request_main():

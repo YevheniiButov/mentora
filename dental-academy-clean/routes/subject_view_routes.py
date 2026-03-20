@@ -23,7 +23,7 @@ subject_view_bp = Blueprint(
 )
 
 # Языковые настройки из Фрагмента 2
-SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
+SUPPORTED_LANGUAGES = ['nl', 'en']
 DEFAULT_LANGUAGE = 'en'
 
 @subject_view_bp.before_request

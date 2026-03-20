@@ -422,8 +422,8 @@ def handle_settings_update():
     }
     
     # Validation
-    if language not in ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']:
-        language = 'en'
+    if language not in ['nl', 'en']:
+        language = 'nl'
     
     if theme not in ['light', 'dark']:
         theme = 'light'
@@ -820,7 +820,7 @@ def forgot_password():
                 'en')
         
         # Убеждаемся, что язык поддерживается
-        SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
+        SUPPORTED_LANGUAGES = ['nl', 'en']
         if lang not in SUPPORTED_LANGUAGES:
             lang = 'en'
         

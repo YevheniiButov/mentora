@@ -31,7 +31,7 @@ def send_test_email():
         <html>
         <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5;">
             <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                <div style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                <div style="background: linear-gradient(135deg, #1d4ed8, #2DB5A9); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
                     <h1 style="margin: 0; font-size: 28px;">🦷 Mentora</h1>
                     <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Система обучения медицинских работников</p>
                 </div>
@@ -48,7 +48,7 @@ def send_test_email():
                         Если вы получили это сообщение, значит настройка email работает корректно!
                     </p>
                     
-                    <div style="background-color: #f7fafc; border-left: 4px solid #3ECDC1; padding: 15px; margin: 20px 0;">
+                    <div style="background-color: #f7fafc; border-left: 4px solid #1d4ed8; padding: 15px; margin: 20px 0;">
                         <h3 style="margin: 0 0 10px 0; color: #2d3748; font-size: 16px;">Информация о тесте:</h3>
                         <ul style="margin: 0; padding-left: 20px; color: #4a5568;">
                             <li>Время отправки: {datetime.now().strftime('%d.%m.%Y %H:%M')}</li>
@@ -60,7 +60,7 @@ def send_test_email():
                     
                     <div style="text-align: center; margin: 30px 0;">
                         <a href="https://mentora.com.in/dashboard" 
-                           style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                           style="background: linear-gradient(135deg, #1d4ed8, #2DB5A9); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
                             Перейти в дашборд
                         </a>
                     </div>
@@ -70,7 +70,7 @@ def send_test_email():
                     <p style="color: #718096; font-size: 14px; text-align: center; margin: 0;">
                         С уважением,<br>
                         <strong>Команда Mentora</strong><br>
-                        <a href="https://mentora.com.in" style="color: #3ECDC1;">mentora.com.in</a>
+                        <a href="https://mentora.com.in" style="color: #1d4ed8;">mentora.com.in</a>
                     </p>
                 </div>
             </div>

@@ -216,9 +216,9 @@ def get_confirmation_email_html(user, confirmation_url):
         <style>
             body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
             .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-            .header {{ background: #3ECDC1; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+            .header {{ background: #1d4ed8; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
             .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-            .button {{ display: inline-block; background: #3ECDC1; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+            .button {{ display: inline-block; background: #1d4ed8; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
             .footer {{ text-align: center; margin-top: 30px; color: #666; font-size: 12px; }}
         </style>
     </head>
@@ -487,7 +487,7 @@ def get_password_reset_html_resend(user, reset_url):
     <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
             <!-- Header -->
-            <div style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 40px 30px; text-align: center;">
+            <div style="background: linear-gradient(135deg, #1d4ed8, #2DB5A9); color: white; padding: 40px 30px; text-align: center;">
                 <h1 style="margin: 0; font-size: 32px; font-weight: bold;">MENTORA</h1>
                 <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Password Reset</p>
             </div>
@@ -507,7 +507,7 @@ def get_password_reset_html_resend(user, reset_url):
                 <!-- CTA Button -->
                 <div style="text-align: center; margin: 40px 0;">
                     <a href="{reset_url}" 
-                       style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); 
+                       style="background: linear-gradient(135deg, #1d4ed8, #2DB5A9); 
                               color: white; 
                               padding: 16px 32px; 
                               text-decoration: none; 
@@ -515,7 +515,7 @@ def get_password_reset_html_resend(user, reset_url):
                               font-weight: bold; 
                               font-size: 16px;
                               display: inline-block;
-                              box-shadow: 0 4px 12px rgba(62, 205, 193, 0.3);">
+                              box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);">
                         🔐 Reset Password
                     </a>
                 </div>
@@ -539,7 +539,7 @@ def get_password_reset_html_resend(user, reset_url):
                 
                 <p style="color: #4a5568; font-size: 14px; line-height: 1.6;">
                     If you have any questions, please contact our support team at 
-                    <a href="mailto:info@bigmentor.nl" style="color: #3ECDC1;">info@bigmentor.nl</a>
+                    <a href="mailto:info@bigmentor.nl" style="color: #1d4ed8;">info@bigmentor.nl</a>
                 </p>
             </div>
             
@@ -548,7 +548,7 @@ def get_password_reset_html_resend(user, reset_url):
                 <p style="color: #718096; font-size: 14px; margin: 0;">
                     <strong>Mentora Team</strong><br>
                     Professional Development Platform<br>
-                    Website: <a href="https://bigmentor.nl" style="color: #3ECDC1;">bigmentor.nl</a>
+                    Website: <a href="https://bigmentor.nl" style="color: #1d4ed8;">bigmentor.nl</a>
                 </p>
                 <p style="color: #a0aec0; font-size: 12px; margin: 10px 0 0 0;">
                     © 2024 Mentora. All rights reserved.<br>
@@ -618,7 +618,7 @@ def send_welcome_email_resend(user):
         <!DOCTYPE html>
         <html>
         <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <div style="background: linear-gradient(135deg, #1d4ed8, #2DB5A9); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
                 <h1 style="margin: 0;">🎉 Welcome!</h1>
             </div>
             
@@ -635,7 +635,7 @@ def send_welcome_email_resend(user):
                 
                 <div style="text-align: center; margin: 30px 0;">
                     <a href="https://bigmentor.nl/login" 
-                       style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                       style="background: linear-gradient(135deg, #1d4ed8, #2DB5A9); color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
                         🚀 Login to Mentora
                     </a>
                 </div>

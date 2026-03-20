@@ -115,7 +115,7 @@ def get_confirmation_email_html(user, confirmation_url, temp_password=None):
     <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
             <!-- Header -->
-            <div style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 40px 30px; text-align: center;">
+            <div style="background: linear-gradient(135deg, #1d4ed8, #2DB5A9); color: white; padding: 40px 30px; text-align: center;">
                 <h1 style="margin: 0; font-size: 32px; font-weight: bold;">MENTORA</h1>
                 <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Medical Education Platform</p>
             </div>
@@ -159,7 +159,7 @@ def get_confirmation_email_html(user, confirmation_url, temp_password=None):
                 <!-- CTA Button -->
                 <div style="text-align: center; margin: 40px 0;">
                     <a href="{confirmation_url}" 
-                       style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); 
+                       style="background: linear-gradient(135deg, #1d4ed8, #2DB5A9); 
                               color: white; 
                               padding: 16px 32px; 
                               text-decoration: none; 
@@ -167,7 +167,7 @@ def get_confirmation_email_html(user, confirmation_url, temp_password=None):
                               font-weight: bold; 
                               font-size: 16px;
                               display: inline-block;
-                              box-shadow: 0 4px 12px rgba(62, 205, 193, 0.3);">
+                              box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);">
                         ✅ Confirm Email
                     </a>
                 </div>
@@ -183,7 +183,7 @@ def get_confirmation_email_html(user, confirmation_url, temp_password=None):
                 </div>
                 
                 <!-- Next steps -->
-                <div style="background-color: #e6fffa; border-left: 4px solid #3ECDC1; padding: 20px; margin: 30px 0;">
+                <div style="background-color: #e6fffa; border-left: 4px solid #1d4ed8; padding: 20px; margin: 30px 0;">
                     <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px;">🚀 What happens next?</h3>
                     <ol style="color: #4a5568; font-size: 14px; line-height: 1.6; margin: 0; padding-left: 20px;">
                         <li>Click the "Confirm Email" button above</li>
@@ -469,7 +469,7 @@ def get_password_reset_html(user, reset_url):
     <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
             <!-- Header -->
-            <div style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 40px 30px; text-align: center;">
+            <div style="background: linear-gradient(135deg, #1d4ed8, #2DB5A9); color: white; padding: 40px 30px; text-align: center;">
                 <h1 style="margin: 0; font-size: 32px; font-weight: bold;">MENTORA</h1>
                 <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Password Reset</p>
             </div>
@@ -489,7 +489,7 @@ def get_password_reset_html(user, reset_url):
                 <!-- CTA Button -->
                 <div style="text-align: center; margin: 40px 0;">
                     <a href="{reset_url}" 
-                       style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); 
+                       style="background: linear-gradient(135deg, #1d4ed8, #2DB5A9); 
                               color: white; 
                               padding: 16px 32px; 
                               text-decoration: none; 
@@ -497,7 +497,7 @@ def get_password_reset_html(user, reset_url):
                               font-weight: bold; 
                               font-size: 16px;
                               display: inline-block;
-                              box-shadow: 0 4px 12px rgba(62, 205, 193, 0.3);">
+                              box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);">
                         🔐 Reset Password
                     </a>
                 </div>
@@ -602,7 +602,7 @@ def send_welcome_email_smtp(user):
         <!DOCTYPE html>
         <html>
         <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+            <div style="background: linear-gradient(135deg, #1d4ed8, #2DB5A9); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
                 <h1 style="margin: 0;">🎉 Welcome!</h1>
             </div>
             
@@ -619,7 +619,7 @@ def send_welcome_email_smtp(user):
                 
                 <div style="text-align: center; margin: 30px 0;">
                     <a href="https://bigmentor.nl/login" 
-                       style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                       style="background: linear-gradient(135deg, #1d4ed8, #2DB5A9); color: white; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
                         🚀 Login to Mentora
                     </a>
                 </div>
@@ -897,7 +897,7 @@ def get_invitation_with_password_html(user, confirmation_url, temp_password):
     <body style="font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f5f5f5;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
             <!-- Header -->
-            <div style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); color: white; padding: 40px 30px; text-align: center;">
+            <div style="background: linear-gradient(135deg, #1d4ed8, #2DB5A9); color: white; padding: 40px 30px; text-align: center;">
                 <h1 style="margin: 0; font-size: 32px; font-weight: bold;">MENTORA</h1>
                 <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Medical Education Platform</p>
             </div>
@@ -915,13 +915,13 @@ def get_invitation_with_password_html(user, confirmation_url, temp_password):
                 </p>
                 
                 <!-- Login Credentials -->
-                <div style="background-color: #e6fffa; border: 2px solid #3ECDC1; border-radius: 8px; padding: 20px; margin: 30px 0;">
+                <div style="background-color: #e6fffa; border: 2px solid #1d4ed8; border-radius: 8px; padding: 20px; margin: 30px 0;">
                     <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px;">🔑 Your Login Credentials</h3>
                     <p style="color: #4a5568; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">
                         <strong>📧 Email:</strong> {user.email}<br>
                         <strong>🔑 Temporary Password:</strong>
                     </p>
-                    <div style="background-color: #ffffff; border: 2px solid #3ECDC1; border-radius: 6px; padding: 15px; text-align: center; margin: 15px 0;">
+                    <div style="background-color: #ffffff; border: 2px solid #1d4ed8; border-radius: 6px; padding: 15px; text-align: center; margin: 15px 0;">
                         <p style="color: #2d3748; font-size: 20px; font-weight: bold; font-family: monospace; margin: 0; letter-spacing: 2px;">
                             {temp_password}
                         </p>
@@ -934,7 +934,7 @@ def get_invitation_with_password_html(user, confirmation_url, temp_password):
                 <!-- CTA Button -->
                 <div style="text-align: center; margin: 40px 0;">
                     <a href="{confirmation_url}" 
-                       style="background: linear-gradient(135deg, #3ECDC1, #2DB5A9); 
+                       style="background: linear-gradient(135deg, #1d4ed8, #2DB5A9); 
                               color: white; 
                               padding: 16px 32px; 
                               text-decoration: none; 
@@ -942,7 +942,7 @@ def get_invitation_with_password_html(user, confirmation_url, temp_password):
                               font-weight: bold; 
                               font-size: 16px;
                               display: inline-block;
-                              box-shadow: 0 4px 12px rgba(62, 205, 193, 0.3);">
+                              box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);">
                         ✅ Confirm Email & Activate Account
                     </a>
                 </div>

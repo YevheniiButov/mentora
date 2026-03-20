@@ -100,7 +100,7 @@ class ThemeController {
             metaThemeColor.name = 'theme-color';
             document.head.appendChild(metaThemeColor);
         }
-        metaThemeColor.content = appliedTheme === 'dark' ? '#1a1a2e' : '#3ECDC1';
+        metaThemeColor.content = appliedTheme === 'dark' ? '#1a1a2e' : '#1d4ed8';
         
         // Принудительно обновляем color-scheme
         document.documentElement.style.colorScheme = appliedTheme;

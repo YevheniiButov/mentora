@@ -3755,6 +3755,8 @@ translations = {
     'cold_start_feature3_desc': 'Een snelle Quick Scan is voldoende voor uw eerste rapport.',
     'cold_start_btn_start': 'Start Quick Scan (10 vragen)',
     'cold_start_stats_info': 'Al meer dan 1.200 artsen gingen u voor deze week.',
+    'error_occurred': 'Er is een fout opgetreden. Probeer het opnieuw.',
+    'sending': 'Verzenden...',
     'landing_title_tag': 'Mentora — Integratieplatform',
     'landing_meta_description': 'Verbinden van internationaal medisch talent met het Nederlandse gezondheidsecosysteem',
 }

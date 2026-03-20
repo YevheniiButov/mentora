@@ -21,7 +21,7 @@ class LearningNotificationSystem:
                 'subject': 'Напоминание о занятии - {{session_title}}',
                 'template': '''
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <div style="background: linear-gradient(135deg, #3ECDC1, #6C5CE7); color: white; padding: 20px; text-align: center;">
+                    <div style="background: linear-gradient(135deg, #1d4ed8, #6C5CE7); color: white; padding: 20px; text-align: center;">
                         <h1>MENTORA</h1>
                         <h2>Напоминание о занятии</h2>
                     </div>
@@ -29,7 +29,7 @@ class LearningNotificationSystem:
                     <div style="padding: 20px; background: #f8f9fa;">
                         <h3>Привет, {{user_name}}!</h3>
                         
-                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3ECDC1;">
+                        <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #1d4ed8;">
                             <h4>📚 Сегодня у вас запланировано занятие:</h4>
                             <p><strong>{{session_title}}</strong></p>
                             <p><strong>Время:</strong> {{session_time}}</p>
@@ -44,7 +44,7 @@ class LearningNotificationSystem:
                         </div>
                         
                         <div style="text-align: center; margin: 30px 0;">
-                            <a href="{{login_url}}" style="background: #3ECDC1; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                            <a href="{{login_url}}" style="background: #1d4ed8; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block;">
                                 Начать занятие
                             </a>
                         </div>
@@ -108,7 +108,7 @@ class LearningNotificationSystem:
                             <a href="{{diagnostic_url}}" style="background: #ef4444; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; margin-right: 10px;">
                                 Пройти диагностику
                             </a>
-                            <a href="{{study_url}}" style="background: #3ECDC1; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                            <a href="{{study_url}}" style="background: #1d4ed8; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block;">
                                 Продолжить изучение
                             </a>
                         </div>
@@ -174,7 +174,7 @@ class LearningNotificationSystem:
                 'subject': 'Еженедельный отчет прогресса - {{week_number}} неделя',
                 'template': '''
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <div style="background: linear-gradient(135deg, #22c55e, #3ECDC1); color: white; padding: 20px; text-align: center;">
+                    <div style="background: linear-gradient(135deg, #22c55e, #1d4ed8); color: white; padding: 20px; text-align: center;">
                         <h1>📊 Еженедельный отчет</h1>
                         <h2>Неделя {{week_number}} обучения</h2>
                     </div>

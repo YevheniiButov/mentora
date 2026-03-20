@@ -265,6 +265,7 @@ def export_data():
 
 
 @analytics_bp.route('/track-profession-click', methods=['POST'])
+@csrf.exempt
 def track_profession_click():
     """Track profession card clicks on BIG info page"""
     try:

@@ -10,7 +10,7 @@ from datetime import datetime, timezone, timedelta
 dutch_reading_bp = Blueprint('dutch_reading', __name__, url_prefix='/dutch')
 
 # Поддерживаемые языки интерфейса
-SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
+SUPPORTED_LANGUAGES = ['nl', 'en']
 DEFAULT_LANGUAGE = 'nl'  # По умолчанию нидерландский интерфейс
 
 @dutch_reading_bp.before_request

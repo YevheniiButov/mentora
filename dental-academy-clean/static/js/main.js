@@ -73,7 +73,9 @@ window.Mentora = {
     // Error handling
     handleError(event) {
         this.log(`Unhandled error: ${event.reason}`, 'error');
-        this.flashMessages.show('Произошла ошибка. Пожалуйста, попробуйте еще раз.', 'error');
+        // Use translation if available, fallback to neutral message
+        const errorMessage = (window.translations && window.translations.error_occurred) || 'An error occurred. Please try again.';
+        this.flashMessages.show(errorMessage, 'error');
     },
     
     handlePopState(event) {

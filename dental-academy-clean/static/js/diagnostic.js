@@ -157,12 +157,12 @@ function createDomainChart(domainCode, data) {
             datasets: [{
                 label: 'Progress',
                 data: data,
-                borderColor: '#3ECDC1',
-                backgroundColor: 'rgba(62, 205, 193, 0.1)',
+                borderColor: '#1d4ed8',
+                backgroundColor: 'rgba(29, 78, 216, 0.1)',
                 borderWidth: 3,
                 fill: true,
                 tension: 0.4,
-                pointBackgroundColor: '#3ECDC1',
+                pointBackgroundColor: '#1d4ed8',
                 pointBorderColor: '#ffffff',
                 pointBorderWidth: 2,
                 pointRadius: 5

@@ -1144,10 +1144,10 @@ def generate_email_template(greeting_name, main_title, main_subtitle, intro_text
     # Если нет элементов, добавляем дефолтные
     if not value_prop_html:
         value_prop_html = '''
-        <li style="margin-bottom: 10px;"><strong style="color: #3ECDC1;">Персонализированный подход</strong> — система адаптируется под ваш уровень</li>
-        <li style="margin-bottom: 10px;"><strong style="color: #3ECDC1;">Экономия времени</strong> — четкий план действий каждый день</li>
-        <li style="margin-bottom: 10px;"><strong style="color: #3ECDC1;">Отслеживание прогресса</strong> — видите свой рост в реальном времени</li>
-        <li style="margin-bottom: 0;"><strong style="color: #3ECDC1;">Гибкость</strong> — учитесь в своем темпе, когда удобно</li>
+        <li style="margin-bottom: 10px;"><strong style="color: #1d4ed8;">Персонализированный подход</strong> — система адаптируется под ваш уровень</li>
+        <li style="margin-bottom: 10px;"><strong style="color: #1d4ed8;">Экономия времени</strong> — четкий план действий каждый день</li>
+        <li style="margin-bottom: 10px;"><strong style="color: #1d4ed8;">Отслеживание прогресса</strong> — видите свой рост в реальном времени</li>
+        <li style="margin-bottom: 0;"><strong style="color: #1d4ed8;">Гибкость</strong> — учитесь в своем темпе, когда удобно</li>
         '''
     
     return f'''<!DOCTYPE html>
@@ -1169,7 +1169,7 @@ def generate_email_template(greeting_name, main_title, main_subtitle, intro_text
                     
                     <!-- Header with Gradient -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #3ECDC1 0%, #32A39A 100%); padding: 40px 40px 30px 40px; text-align: center;">
+                        <td style="background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%); padding: 40px 40px 30px 40px; text-align: center;">
                             <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
                                 {main_title}
                             </h1>
@@ -1189,11 +1189,11 @@ def generate_email_template(greeting_name, main_title, main_subtitle, intro_text
                             </p>
                             
                             <p style="margin: 0 0 24px 0; color: #64748b; font-size: 16px; line-height: 1.7;">
-                                {intro_text if intro_text else 'Подготовка к экзамену BI-toets — это важный шаг в вашей карьере. Мы создали <strong style="color: #3ECDC1;">Карту Обучения MENTORA</strong> — ваш персональный помощник, который сделает этот путь эффективным и структурированным.'}
+                                {intro_text if intro_text else 'Подготовка к экзамену BI-toets — это важный шаг в вашей карьере. Мы создали <strong style="color: #1d4ed8;">Карту Обучения MENTORA</strong> — ваш персональный помощник, который сделает этот путь эффективным и структурированным.'}
                             </p>
                             
                             <!-- Value Proposition -->
-                            <div style="background: linear-gradient(135deg, rgba(62, 205, 193, 0.1) 0%, rgba(50, 163, 154, 0.1) 100%); border-radius: 16px; padding: 24px; margin: 24px 0; border-left: 4px solid #3ECDC1;">
+                            <div style="background: linear-gradient(135deg, rgba(29, 78, 216, 0.1) 0%, rgba(50, 163, 154, 0.1) 100%); border-radius: 16px; padding: 24px; margin: 24px 0; border-left: 4px solid #1d4ed8;">
                                 <h3 style="margin: 0 0 12px 0; color: #1a202c; font-size: 20px; font-weight: 700;">
                                     {value_prop_title}
                                 </h3>
@@ -1207,7 +1207,7 @@ def generate_email_template(greeting_name, main_title, main_subtitle, intro_text
                                 <tr>
                                     <td align="center">
                                         <a href="{cta_url}" 
-                                           style="display: inline-block; background: linear-gradient(135deg, #3ECDC1 0%, #32A39A 100%); color: #ffffff; text-decoration: none; padding: 18px 48px; border-radius: 12px; font-weight: 600; font-size: 18px; box-shadow: 0 4px 16px rgba(62, 205, 193, 0.3); transition: transform 0.2s;">
+                                           style="display: inline-block; background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%); color: #ffffff; text-decoration: none; padding: 18px 48px; border-radius: 12px; font-weight: 600; font-size: 18px; box-shadow: 0 4px 16px rgba(29, 78, 216, 0.3); transition: transform 0.2s;">
                                             {cta_text}
                                         </a>
                                     </td>
@@ -1220,7 +1220,7 @@ def generate_email_template(greeting_name, main_title, main_subtitle, intro_text
                                     {motivation_title}
                                 </h3>
                                 <p style="margin: 0; color: #64748b; font-size: 16px; line-height: 1.7;">
-                                    {motivation_text if motivation_text else 'Не нужно сразу проходить все модули. Начните с <strong style="color: #3ECDC1;">15-20 минут в день</strong> — этого достаточно, чтобы поддерживать регулярность и видеть прогресс.'}
+                                    {motivation_text if motivation_text else 'Не нужно сразу проходить все модули. Начните с <strong style="color: #1d4ed8;">15-20 минут в день</strong> — этого достаточно, чтобы поддерживать регулярность и видеть прогресс.'}
                                 </p>
                             </div>
                             
@@ -1232,7 +1232,7 @@ def generate_email_template(greeting_name, main_title, main_subtitle, intro_text
                                 </p>
                                 <p style="margin: 0; color: #94a3b8; font-size: 14px;">
                                     Возникли вопросы? Напишите нам на 
-                                    <a href="mailto:support@mentora.nl" style="color: #3ECDC1; text-decoration: none; font-weight: 500;">support@mentora.nl</a>
+                                    <a href="mailto:support@mentora.nl" style="color: #1d4ed8; text-decoration: none; font-weight: 500;">support@mentora.nl</a>
                                 </p>
                             </div>
                             

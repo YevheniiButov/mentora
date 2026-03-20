@@ -339,7 +339,7 @@ async function handleFetchError(request, error) {
           }
           .retry-btn {
             padding: 12px 24px;
-            background: linear-gradient(135deg, #3ECDC1, #2BB6AC);
+            background: linear-gradient(135deg, #1d4ed8, #2BB6AC);
             color: white;
             border: none;
             border-radius: 12px;
@@ -352,7 +352,7 @@ async function handleFetchError(request, error) {
           }
           .retry-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(62, 205, 193, 0.3);
+            box-shadow: 0 8px 20px rgba(29, 78, 216, 0.3);
           }
           .status { 
             margin-top: 20px; 

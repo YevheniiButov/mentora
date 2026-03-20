@@ -4,7 +4,7 @@ from flask_login import login_required
 
 games_bp = Blueprint('games', __name__, url_prefix='/games')
 
-SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
+SUPPORTED_LANGUAGES = ['nl', 'en']
 DEFAULT_LANGUAGE = 'en'
 
 @games_bp.before_request

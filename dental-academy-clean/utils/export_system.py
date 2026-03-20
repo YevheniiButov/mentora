@@ -29,7 +29,7 @@ class LearningPlanExporter:
             fontSize=24,
             spaceAfter=30,
             alignment=TA_CENTER,
-            textColor=colors.HexColor('#3ECDC1')
+            textColor=colors.HexColor('#1d4ed8')
         )
         
         self.heading_style = ParagraphStyle(
@@ -374,7 +374,7 @@ class LearningPlanExporter:
         
         schedule_table = Table(schedule_data, colWidths=[1*inch, 0.8*inch, 1*inch, 1.5*inch, 0.8*inch, 1*inch])
         schedule_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3ECDC1')),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1d4ed8')),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),

@@ -3957,6 +3957,8 @@ translations = {
     'cold_start_feature3_desc': 'A quick Quick Scan is sufficient for your first report.',
     'cold_start_btn_start': 'Start Quick Scan (10 questions)',
     'cold_start_stats_info': 'More than 1,200 doctors went before you this week.',
+    'error_occurred': 'An error occurred. Please try again.',
+    'sending': 'Sending...',
     'landing_title_tag': 'Mentora — Integration Platform',
     'landing_meta_description': 'Connecting international medical talent with the Dutch healthcare ecosystem',
 }

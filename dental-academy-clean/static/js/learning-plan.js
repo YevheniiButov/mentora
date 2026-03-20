@@ -96,7 +96,7 @@ function generateSampleEvents() {
         { name: 'Preventive Care', score: 88 }
     ];
     
-    const colors = ['#3ECDC1', '#6C5CE7', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
+    const colors = ['#1d4ed8', '#6C5CE7', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
     const today = new Date();
     
     // Generate study sessions for next 30 days
@@ -442,7 +442,7 @@ function generateOptimizedEvents(plan = null) {
         { name: 'Preventive Care', score: 88, hours: 8 }
     ];
     
-    const colors = ['#3ECDC1', '#6C5CE7', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
+    const colors = ['#1d4ed8', '#6C5CE7', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6'];
     
     const startDate = new Date(studyPlan.startDate || new Date());
     const endDate = new Date(studyPlan.endDate || new Date(startDate.getTime() + 90 * 24 * 60 * 60 * 1000));
@@ -518,8 +518,8 @@ function addStudySession(date) {
             calendar.addEvent({
                 title: `${selectedDomain.name || selectedDomain} (2ч)`,
                 start: dateStr,
-                backgroundColor: '#3ECDC1',
-                borderColor: '#3ECDC1',
+                backgroundColor: '#1d4ed8',
+                borderColor: '#1d4ed8',
                 extendedProps: {
                     domain: selectedDomain.name || selectedDomain,
                     duration: 2,
@@ -582,7 +582,7 @@ function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed; top: 20px; right: 20px; 
-        background: ${type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#3ECDC1'}; 
+        background: ${type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#1d4ed8'}; 
         color: white; padding: 16px 24px; border-radius: 8px; 
         box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000;
         animation: slideIn 0.3s ease-out;

@@ -10,7 +10,7 @@ from utils.individual_plan_helpers import select_english_passage_for_today
 english_reading_bp = Blueprint('english_reading', __name__, url_prefix='/english')
 
 # Поддерживаемые языки
-SUPPORTED_LANGUAGES = ['en', 'ru', 'nl', 'uk', 'es', 'pt', 'tr', 'fa', 'ar']
+SUPPORTED_LANGUAGES = ['nl', 'en']
 DEFAULT_LANGUAGE = 'en'
 
 @english_reading_bp.before_request
