@@ -213,18 +213,37 @@
       </div>
     </div>
 
-    <form action="{{ url_for('diagnostic.start_diagnostic', lang=lang) }}" method="POST">
-      <input type="hidden" name="diagnostic_type" value="quick_scan_10">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn-start">
-        {{ t('cold_start_btn_start', lang)|default('Start Quick Scan (10 vragen)') }}
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-          stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-          <polyline points="12 5 19 12 12 19"></polyline>
-        </svg>
-      </button>
-    </form>
+    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:16px;">
+
+      <form action="{{ url_for('diagnostic.start_diagnostic', lang=lang) }}" method="POST">
+        <input type="hidden" name="diagnostic_type" value="quick_scan_10">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn-start">
+          {{ t('cold_start_btn_start', lang)|default('Snelle scan (10 vragen)') }}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+        <p style="font-size:12px; color:var(--slate-400); margin-top:8px; text-align:center;">~5 minuten</p>
+      </form>
+
+      <form action="{{ url_for('diagnostic.start_diagnostic', lang=lang) }}" method="POST">
+        <input type="hidden" name="diagnostic_type" value="full_60">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn-start" style="background: linear-gradient(135deg, #334155 0%, #64748b 100%); box-shadow: 0 4px 16px rgba(51,65,85,0.2);">
+          {{ t('cold_start_btn_full', lang)|default('Uitgebreide diagnostiek (30 vragen)') }}
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+        <p style="font-size:12px; color:var(--slate-400); margin-top:8px; text-align:center;">~20 minuten &middot; gedetailleerd rapport</p>
+      </form>
+
+    </div>
 
     <p class="stats-info">
       {{ t('cold_start_stats_info', lang)|default('Al meer dan 1.200 artsen gingen u voor deze week.') }}
