@@ -531,7 +531,13 @@
                 });
             }
 
-            // Scroll handler removed - now handled in includes/_header.html for better hero-mode support
+            // Scroll handler for modern-header
+            window.addEventListener('scroll', function() {
+                const header = document.querySelector('.modern-header');
+                if (header) {
+                    header.classList.toggle('scrolled', window.scrollY > 40);
+                }
+            });
         });
     </script>
 
