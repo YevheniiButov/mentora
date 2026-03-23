@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}Our Story | MentoraMedic{% endblock %}
+
+{% block styles %}
+<style>
+  /* Base Layout & Typography (Mirroring index.html) */
+  :root {
+    --mentora-bg-dark: #0f172a;
+    --mentora-bg-secondary: #000000;
+    --mentora-text-primary: #ffffff;
+    --mentora-text-secondary: #94a3b8;
+    --mentora-accent: #38bdf8;
+    --mentora-accent-hover: #0ea5e9;
+    --mentora-border: rgba(255, 255, 255, 0.1);
+    
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    background-color: var(--mentora-bg-dark);
+    color: var(--mentora-text-primary);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Editorial Formatting */
+  .editorial-section {
+    padding: 100px 40px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .editorial-hero {
+    padding: 140px 40px 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+
+  /* Typography */
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mentora-accent);
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  h1.editorial-title {
+    font-family: var(--font-display);
+    font-size: 56px;
+    font-weight: 400;
+    line-height: 1.1;
+    color: #fff;
+    margin: 0 0 24px 0;
+    letter-spacing: -0.02em;
+  }
+
+  h1.editorial-title em {
+    font-style: italic;
+    color: var(--mentora-text-secondary);
+  }
+
+  p.editorial-subtitle {
+    font-size: 18px;
+    color: var(--mentora-text-secondary);
+    line-height: 1.6;
+    font-weight: 300;
+    margin: 0 0 40px 0;
+    max-width: 500px;
+  }
+
+  /* Pull Quotes */
+  .pull-quote {
+    font-family: var(--font-display);
+    font-size: 32px;
+    line-height: 1.3;
+    color: rgba(255,255,255,0.9);
+    border-left: 3px solid var(--mentora-accent);
+    padding-left: 32px;
+    margin: 60px 0;
+    font-style: italic;
+  }
+
+  /* Text Columns */
+  .editorial-text {
+    font-size: 17px;
+    color: var(--mentora-text-secondary);
+    line-height: 1.8;
+    font-weight: 300;
+    max-width: 680px;
+  }
+
+  .editorial-text p {
+    margin-bottom: 24px;
+  }
+
+  .editorial-text strong {
+    color: #fff;
+    font-weight: 500;
+  }
+
+  /* Images with Premium Desaturated Filter */
+  .editorial-img-container {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  }
+
+  .editorial-img-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    pointer-events: none;
+  }
+
+  .editorial-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    /* The requested color grading */
+    filter: grayscale(20%) contrast(1.1) brightness(0.9);
+    transition: filter 0.5s ease, transform 0.5s ease;
+  }
+
+  .editorial-img:hover {
+    filter: grayscale(0%) contrast(1.05) brightness(1);
+    transform: scale(1.02);
+  }
+
+  .img-caption {
+    font-size: 13px;
+    color: var(--mentora-text-secondary);
+    margin-top: 12px;
+    text-align: right;
+    font-family: var(--font-mono);
+  }
+
+  /* Layout Grids */
+  .split-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin: 80px 0;
+    align-items: center;
+  }
+
+  .split-layout.reverse {
+    grid-template-columns: 1.2fr 1fr;
+    direction: rtl;
+  }
+  .split-layout.reverse > * {
+    direction: ltr;
+  }
+
+  /* Custom Divider */
+  .editorial-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    margin: 80px 0;
+    border: none;
+  }
+
+  /* Desktop/Mobile specific adjustments */
+  @media (max-width: 900px) {
+    .editorial-hero, .split-layout, .split-layout.reverse {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+    
+    h1.editorial-title {
+      font-size: 42px;
+    }
+    
+    .editorial-section {
+      padding: 60px 24px;
+    }
+    
+    .pull-quote {
+      font-size: 26px;
+      padding-left: 24px;
+      margin: 40px 0;
+    }
+  }
+
+  /* Copying identical button styles from index */
+  .btn-white {
+    background: #fff;
+    color: #1a1a2e;
+    padding: 14px 30px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .btn-white:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255,255,255,0.15);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO LAYER -->
+<div class="editorial-hero">
+  <div>
+    <span class="section-label">The Surgeon's Professional Identity</span>
+    <h1 class="editorial-title">{{ t('ourstory_hero_title', lang)|safe }}</h1>
+    <p class="editorial-subtitle">{{ t('ourstory_hero_subtitle', lang) }}</p>
+    
+    <div class="pull-quote" style="margin: 40px 0; font-size: 26px;">
+      {{ t('ourstory_hero_quote', lang) }}
+    </div>
+  </div>
+  
+  <div class="editorial-img-container" style="border-radius: 16px;">
+    <img src="{{ url_for('static', filename='images/story/profile.jpg') }}" alt="Yevhenii Butov" class="editorial-img">
+  </div>
+</div>
+
+<hr class="editorial-divider">
+
+<!-- LAYER 1: THE HERITAGE -->
+<div class="editorial-section" style="padding-top: 20px;">
+  <span class="section-label">{{ t('ourstory_layer1_label', lang) }}</span>
+  
+  <div class="split-layout">
+    <div class="editorial-text">
+      <p><strong>{{ t('ourstory_p1', lang) }}</strong></p>
+      <p>{{ t('ourstory_p2', lang) }}</p>
+      <p>{{ t('ourstory_p3', lang) }}</p>
+      <p>{{ t('ourstory_p4', lang) }}</p>
+      <p style="font-family: var(--font-display); font-size: 22px; color: #fff; margin-top: 32px; font-style: italic;">
+        {{ t('ourstory_p5', lang) }}
+      </p>
+    </div>
+    
+    <div>
+      <div class="editorial-img-container">
+        <img src="{{ url_for('static', filename='images/story/metpatient.jpg') }}" alt="Yevhenii with Patient" class="editorial-img">
+      </div>
+      <div class="img-caption">Kharkiv Region, Pre-2022</div>
+    </div>
+  </div>
+</div>
+
+<!-- LAYER 2: THE TURNING POINT -->
+<div class="editorial-section" style="background: rgba(255,255,255,0.02); border-radius: 24px; padding: 80px 60px;">
+  <span class="section-label">{{ t('ourstory_layer2_label', lang) }}</span>
+  
+  <div class="editorial-text" style="max-width: 800px; margin: 0 auto; text-align: center;">
+    <h2 style="font-family: var(--font-display); font-size: 42px; font-weight: 400; color: #fff; margin-bottom: 40px;">
+      {{ t('ourstory_p6', lang) }}
+    </h2>
+    <p>{{ t('ourstory_p7', lang) }}</p>
+    <p>{{ t('ourstory_p8', lang) }}</p>
+    <p>{{ t('ourstory_p9', lang) }}</p>
+    <p>{{ t('ourstory_p10', lang) }}</p>
+    <p>{{ t('ourstory_p11', lang) }}</p>
+    <p>{{ t('ourstory_p12', lang) }}</p>
+    
+    <div class="pull-quote" style="text-align: left; max-width: 600px; margin: 40px auto; font-size: 24px;">
+      "{{ t('ourstory_p14', lang) }} {{ t('ourstory_p15', lang) }}"
+    </div>
+  </div>
+</div>
+
+<!-- LAYER 3: THE VISION -->
+<div class="editorial-section">
+  <span class="section-label">{{ t('ourstory_layer3_label', lang) }}</span>
+  
+  <div class="editorial-text" style="max-width: 720px; font-size: 19px;">
+    <p>{{ t('ourstory_p16', lang) }}</p>
+    <p>{{ t('ourstory_p17', lang) }}</p>
+    <p>{{ t('ourstory_p18', lang) }}</p>
+    <p>{{ t('ourstory_p19', lang) }}</p>
+    <p><strong>{{ t('ourstory_p20', lang) }}</strong></p>
+    
+    <div class="pull-quote" style="border-left-color: #fff; color: #fff;">
+      {{ t('ourstory_p21', lang) }}
+    </div>
+    
+    <p>{{ t('ourstory_p22', lang) }}</p>
+    <p>{{ t('ourstory_p23', lang) }}</p>
+    <p>{{ t('ourstory_p24', lang) }}</p>
+    <p><strong>{{ t('ourstory_p25', lang) }}</strong></p>
+  </div>
+</div>
+
+<hr class="editorial-divider">
+
+<!-- LAYER 4: SYNERGY OF EXPERIENCE -->
+<div class="editorial-section" style="padding-top: 0;">
+  <div class="split-layout reverse" style="padding: 40px 0;">
+    <div class="editorial-text">
+      <span class="section-label" style="text-align: left;">{{ t('ourstory_layer4_label', lang) }}</span>
+      <h2 style="font-family: var(--font-display); font-size: 42px; font-weight: 400; color: #fff; margin-bottom: 40px; line-height: 1.15;">
+        Pioneering the Future of the Medical Workforce.
+      </h2>
+      <p style="margin-bottom: 32px; font-size: 19px;">{{ t('ourstory_p26', lang)|safe }}</p>
+      <p style="margin-bottom: 32px; font-size: 19px;">{{ t('ourstory_p27', lang) }}</p>
+      <p style="font-size: 19px;">{{ t('ourstory_p28', lang) }}</p>
+    </div>
+    
+    <div>
+      <div class="editorial-img-container">
+        <img src="{{ url_for('static', filename='images/story/meeting.jpg') }}" alt="Yevhenii and Bruno" class="editorial-img">
+      </div>
+      <div class="img-caption" style="line-height: 1.6;">Yevhenii Butov & Bruno Servaege:<br>Laying the foundation for MentoraMedic's 18-month victory pathway.</div>
+    </div>
+  </div>
+</div>
+
+<!-- VERIFICATION & CTA LAYER (Reused from index.html) -->
+<div style="padding: 100px 40px; background: #1a1a2e; margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.05);">
+  <div style="max-width: 1200px; margin: 0 auto;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;">
+      <div>
+        <div class="section-label" style="color: rgba(255,255,255,0.4);">
+          {{ t('amc_label', lang)|default('AMC Showcase · Amsterdam') }}
+        </div>
+        <h2 style="font-family: var(--font-display); font-size: 42px; font-weight: 400; color: #fff; line-height: 1.1; margin-bottom: 24px;">
+          {{ t('amc_title', lang)|default('The uniform is the same.<br><em>The expertise is identical.</em>')|safe }}
+        </h2>
+        <p style="font-size: 16px; color: #8fa8b4; line-height: 1.8; margin-bottom: 40px; font-weight: 300;">
+          {{ t('amc_desc', lang)|default('Our upcoming national campaign at the AMC Hospital features 30 specialists in full professional dress. It is a visual testament to the reality of our workforce: half are already practicing in the Netherlands, and half are ready to join them.') }}
+        </p>
+        <div style="padding: 24px 28px; border-left: 3px solid #4a9eb5; background: rgba(255,255,255,0.04); border-radius: 0 12px 12px 0;">
+          <p style="font-family: var(--font-display); font-size: 18px; color: rgba(255,255,255,0.9); line-height: 1.6; font-style: italic; margin: 0;">
+            {{ t('amc_quote', lang)|default('"We are proving to the nation that the only thing missing is the bridge — and MentoraMedic is that bridge."') }}
+          </p>
+        </div>
+      </div>
+      
+      <div style="background: rgba(255,255,255,0.02); padding: 50px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); text-align: center;">
+        <h3 style="font-family: var(--font-display); font-size: 32px; font-weight: 400; color: #fff; margin-bottom: 30px;">
+          {{ t('cta_headline', lang)|default('Ready to Restart Your <em>Vocation?</em>')|safe }}
+        </h3>
+        <a href="{{ url_for('auth.register', lang=g.lang|default('en')) }}" class="btn-white">
+          {{ t('cta_button', lang)|default('Join the MentoraMedic Family') }}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,323 @@
+{# ═══════════════════════════════════════════════════════════
+   STORY SECTION — replaces .broken-section in index.html
+   Photos go to: /static/images/story/
+     cabinet.jpg   → your clinic photo
+     profile.jpg   → b&w portrait
+     meeting.jpg   → you and Bruno
+   ═══════════════════════════════════════════════════════════ #}
+
+<style>
+.story-section {
+  padding: 80px 40px;
+  border-top: 0.5px solid var(--mentora-border);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.story-intro { max-width: 600px; margin-bottom: 64px; }
+
+.story-timeline { display: flex; flex-direction: column; }
+
+.story-stage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+  padding: 64px 0;
+  border-top: 0.5px solid var(--mentora-border);
+}
+.story-stage:last-child { border-bottom: 0.5px solid var(--mentora-border); }
+.story-stage.reverse .story-text { order: 2; }
+.story-stage.reverse .story-visual { order: 1; }
+
+.story-tag {
+  font-size: 10px; letter-spacing: 2px; font-weight: 600;
+  color: var(--teal); text-transform: uppercase; margin-bottom: 14px;
+  display: block;
+}
+.story-text h3 {
+  font-family: var(--font-display);
+  font-size: 28px; font-weight: 400; line-height: 1.2;
+  margin-bottom: 18px; color: var(--mentora-text);
+}
+.story-text h3 em { color: var(--teal); font-style: italic; }
+.story-text p {
+  font-size: 15px; color: var(--mentora-text-secondary);
+  line-height: 1.85; font-weight: 300; margin-bottom: 0;
+}
+.story-text p strong { color: var(--mentora-text); font-weight: 500; }
+
+/* Image visual */
+.story-visual {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  position: relative;
+}
+.story-visual img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+
+/* Stage 1 — clinic, portrait side by side */
+.stage1-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  height: 550px;
+}
+.stage1-grid .img-clinic {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  height: 100%;
+}
+.stage1-grid .img-portrait {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  height: 100%;
+}
+.stage1-grid img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+/* portrait: focus on face */
+.stage1-grid .img-portrait img {
+  object-position: center top;
+}
+/* clinic: focus on middle */
+.stage1-grid .img-clinic img {
+  object-position: center center;
+}
+
+/* Stage 2 — quote block, dark */
+.story-quote-block {
+  background: var(--dark);
+  border-radius: var(--radius-xl);
+  padding: 48px 40px;
+  position: relative;
+  overflow: hidden;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.story-quote-block::before {
+  content: '"';
+  position: absolute;
+  top: -20px; left: 24px;
+  font-family: var(--font-display);
+  font-size: 180px;
+  color: rgba(74,158,181,0.08);
+  line-height: 1;
+  pointer-events: none;
+}
+.story-quote-text {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-style: italic;
+  color: #fff;
+  line-height: 1.55;
+  position: relative;
+  z-index: 1;
+}
+.story-quote-text em { color: var(--teal); font-style: normal; }
+.story-quote-date {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.25);
+  text-transform: uppercase;
+  margin-top: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Stage 3 — insight, text-heavy left, stat right */
+.story-insight-visual {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+.insight-stat {
+  flex: 1;
+  border: 0.5px solid var(--mentora-border);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  background: var(--mentora-bg);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.insight-stat.accent {
+  background: rgba(74,158,181,0.05);
+  border-color: var(--teal-border);
+}
+.insight-stat-num {
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 400;
+  color: var(--teal);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.insight-stat-label {
+  font-size: 13px;
+  color: var(--mentora-text-secondary);
+  line-height: 1.5;
+}
+
+/* Stage 4 — meeting photo */
+.stage4-visual {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  height: 340px;
+  border: 0.5px solid var(--teal-border);
+  box-shadow: 0 0 0 6px rgba(74,158,181,0.06);
+}
+.stage4-visual img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+.stage4-caption {
+  font-size: 11px;
+  color: var(--mentora-text-tertiary);
+  margin-top: 10px;
+  letter-spacing: 0.5px;
+}
+
+/* Read more */
+.story-read-more {
+  margin-top: 56px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.story-read-more a {
+  font-size: 14px; font-weight: 500; color: var(--teal);
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid var(--teal-border);
+  padding-bottom: 2px;
+  transition: gap 0.2s;
+}
+.story-read-more a:hover { gap: 12px; }
+.story-read-more-note {
+  font-size: 13px; color: var(--mentora-text-tertiary);
+}
+
+@media (max-width: 768px) {
+  .story-stage { grid-template-columns: 1fr; gap: 32px; padding: 40px 0; }
+  .story-stage.reverse .story-text { order: 0; }
+  .story-stage.reverse .story-visual { order: 0; }
+  .stage1-grid { height: 280px; }
+  .stage4-visual { height: 260px; }
+  .story-quote-text { font-size: 18px; }
+}
+</style>
+
+{# ── STORY SECTION ── #}
+<div class="story-section">
+
+  <div class="story-intro fade-up">
+    <div class="section-label">{{ t('story_eyebrow', lang)|default('The founder') }}</div>
+    <h2 class="section-title">
+      {{ t('story_title_1', lang)|default('Built by someone who') }}<br>
+      <em>{{ t('story_title_2', lang)|default('lived this story.') }}</em>
+    </h2>
+    <p style="font-size:16px;color:var(--mentora-text-secondary);line-height:1.8;font-weight:300;margin:0;">
+      {{ t('story_intro_lead', lang)|default('I am a dentist with 15+ years of experience. I built this platform because I needed it myself — and because I saw world-class doctors working as gardeners.') }}
+    </p>
+  </div>
+
+  <div class="story-timeline">
+
+    {# ── STAGE 1: THE HERITAGE ── #}
+    <div class="story-stage fade-up">
+      <div class="story-text">
+        <span class="story-tag">{{ t('story_stage1_tag', lang)|default('01 — The Heritage') }}</span>
+        <h3>{{ t('story_stage1_title_1', lang)|default('15 years.') }}<br>{{ t('story_stage1_title_2', lang)|default('A practice built') }} <em>{{ t('story_stage1_title_3', lang)|default('from nothing.') }}</em></h3>
+        <p>{{ t('story_stage1_text', lang)|default('I started in Lyptsi — a village 10 km from the Russian border. By 2012 I built a dental department from scratch. By 2018, my own surgical and implantology practice, plus a dental lab with a partner. <strong>This was my life. My work. My path.</strong>') | safe }}</p>
+      </div>
+      <div class="story-visual">
+        <div class="stage1-grid">
+          <div class="img-clinic">
+            <img src="{{ url_for('static', filename='images/story/metpatient.jpg') }}"
+                 alt="Mentora Founder in clinic">
+          </div>
+          <div class="img-portrait">
+            <img src="{{ url_for('static', filename='images/story/prepare.jpg') }}"
+                 alt="Yevhenii Butov preparing for surgery">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── STAGE 2: THE TURNING POINT ── #}
+    <div class="story-stage reverse fade-up d1">
+      <div class="story-text">
+        <span class="story-tag">{{ t('story_stage2_tag', lang)|default('02 — The Turning Point') }}</span>
+        <h3>{{ t('story_stage2_title', lang)|default('4 AM.') }}<br><em>{{ t('story_stage2_subtitle', lang)|default('February 24, 2022.') }}</em></h3>
+        <p>{{ t('story_stage2_text', lang)|default('My wife woke me up. We packed what we could — food, clothes, documents — and left through explosions and burning planes. Four days. Strangers fed us, sheltered us. We slept in churches and schools. <strong>Then Jonas Linders opened his home to us in Amsterdam.</strong> That was safety. For the first time in weeks.') | safe }}</p>
+      </div>
+      <div class="story-visual">
+        <div class="story-quote-block">
+          <div class="story-quote-text">
+            "We saw <em>falling planes.</em> We didn't know if we'd make it. Four days on the road with my family — to find that a stranger could give us more than we had lost."
+          </div>
+          <div class="story-quote-date">{{ t('story_stage2_date', lang)|default('February 2022 · Ukraine → Netherlands') }}</div>
+        </div>
+      </div>
+    </div>
+
+    {# ── STAGE 3: THE INSIGHT ── #}
+    <div class="story-stage fade-up d2">
+      <div class="story-text">
+        <span class="story-tag">{{ t('story_stage3_tag', lang)|default('03 — The Insight') }}</span>
+        <h3>{{ t('story_stage3_title_1', lang)|default('Doctors working') }}<br>{{ t('story_stage3_title_2', lang)|default('as') }} <em>{{ t('story_stage3_title_3', lang)|default('gardeners.') }}</em></h3>
+        <p>{{ t('story_stage3_text', lang)|default('I met surgeons in construction. Dentists driving trucks. The problem wasn\'t the people — <strong>it was the absence of a clear path.</strong> So I learned Python and started building the system I needed myself. What began as a language tool became an infrastructure for everyone who had been through what I had.') | safe }}</p>
+      </div>
+      <div class="story-visual">
+        <div class="story-quote-block" style="min-height:300px;justify-content:center;">
+          <div class="story-quote-text" style="font-size:20px;">
+            "The problem wasn't the people. It was the absence of a <em>clear path.</em> So I built one."
+          </div>
+          <div class="story-quote-date" style="margin-top:28px;">
+            {{ t('story_stage3_attr', lang)|default('Yevhenii Butov · Founder, Mentora') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {# ── STAGE 4: THE PARTNERSHIP ── #}
+    <div class="story-stage reverse fade-up d3">
+      <div class="story-text">
+        <span class="story-tag">{{ t('story_stage4_tag', lang)|default('04 — The Partnership') }}</span>
+        <h3>{{ t('story_stage4_title', lang)|default('Then came') }}<br><em>{{ t('story_stage4_subtitle', lang)|default('Bruno and Sean.') }}</em></h3>
+        <p>{{ t('story_stage4_text', lang)|default('Later I met Sean Valerio and Bruno Servaege — people who understood not just the technology, but the mission. We sat down together with a blank sheet of paper and built what you see today. <strong>Because I know what it means to start from zero. And I know it shouldn\'t take five years.</strong>') | safe }}</p>
+      </div>
+      <div class="story-visual">
+        <div class="stage4-visual">
+          {# meeting.jpg → /static/images/story/meeting.jpg #}
+          <img src="{{ url_for('static', filename='images/story/meeting.jpg') }}"
+               alt="Yevhenii and Bruno planning Mentora">
+        </div>
+        <div class="stage4-caption">
+          {{ t('story_stage4_caption', lang)|default('Yevhenii Butov & Bruno Servaege · Amsterdam') }}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  {# ── Read full story ── #}
+  <div class="story-read-more fade-up d4">
+    <a href="{{ url_for('main.about', lang=g.lang|default('en')) }}">
+      {{ t('story_read_full', lang)|default('Read the full story') }} →
+    </a>
+    <span class="story-read-more-note">
+      {{ t('story_read_note', lang)|default('From Lyptsi to Amsterdam — the complete journey') }}
+    </span>
+  </div>
+
+</div>
+{# ═══ END STORY SECTION ═══ #}

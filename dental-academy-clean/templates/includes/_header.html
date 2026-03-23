@@ -4,46 +4,41 @@
   <nav class="navbar navbar-expand-lg">
     <div class="container">
       <!-- Logo -->
-      <a class="navbar-brand" href="/{{ lang }}/">
+      <a href="{{ url_for('main.index', lang=lang|default('en')) }}" class="nav-logo-wrap navbar-brand">
         <div class="logo-container">
-          <img class="logo logo-light" src="{{ url_for('static', filename='mentora_logo.svg') }}" alt="Mentora" height="40">
-          <img class="logo logo-dark" src="{{ url_for('static', filename='mentora_logo_dark.svg') }}" alt="Mentora" height="40">
+          <img src="{{ url_for('static', filename='sproutmettextklein.svg') }}" 
+               alt="Mentora" class="nav-logo-img logo logo-light">
+          <img src="{{ url_for('static', filename='sproutmettextklein.svg') }}" 
+               alt="Mentora" class="nav-logo-img logo logo-dark">
         </div>
       </a>
-      
+
       <!-- Mobile Toggle -->
-      <button class="navbar-toggler" 
-              type="button" 
-              @click="toggleMobileMenu()"
-              :aria-expanded="mobileMenuOpen"
-              aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" @click="toggleMobileMenu()" :aria-expanded="mobileMenuOpen"
+        aria-label="Toggle navigation">
         <span class="hamburger-line" :class="{ 'active': mobileMenuOpen }"></span>
         <span class="hamburger-line" :class="{ 'active': mobileMenuOpen }"></span>
         <span class="hamburger-line" :class="{ 'active': mobileMenuOpen }"></span>
       </button>
-      
+
       <!-- Navigation -->
-      <div class="navbar-collapse" 
-           id="navbarMain"
-           :class="{ 'show': (isDesktop || mobileMenuOpen) }"
-           x-show="isDesktop || mobileMenuOpen"
-           x-cloak
-           x-init="$el.style.display = (isDesktop || mobileMenuOpen) ? 'flex' : 'none';"
-           :style="(isDesktop || mobileMenuOpen) ? 'display: flex !important; visibility: visible !important; opacity: 1 !important;' : 'display: none !important; visibility: hidden !important; opacity: 0 !important;'"
-           x-transition:enter="transition ease-out duration-200"
-           x-transition:enter-start="opacity-0 transform -translate-y-2"
-           x-transition:enter-end="opacity-100 transform translate-y-0"
-           x-transition:leave="transition ease-in duration-150"
-           x-transition:leave-start="opacity-100 transform translate-y-0"
-           x-transition:leave-end="opacity-0 transform -translate-y-2"
-           @click.away="if (!isDesktop) { mobileMenuOpen = false; }">
+      <div class="navbar-collapse" id="navbarMain" :class="{ 'show': (isDesktop || mobileMenuOpen) }"
+        x-show="isDesktop || mobileMenuOpen" x-cloak
+        x-init="$el.style.display = (isDesktop || mobileMenuOpen) ? 'flex' : 'none';"
+        :style="(isDesktop || mobileMenuOpen) ? 'display: flex !important; visibility: visible !important; opacity: 1 !important;' : 'display: none !important; visibility: hidden !important; opacity: 0 !important;'"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 transform -translate-y-2"
+        x-transition:enter-end="opacity-100 transform translate-y-0"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 transform translate-y-0"
+        x-transition:leave-end="opacity-0 transform -translate-y-2"
+        @click.away="if (!isDesktop) { mobileMenuOpen = false; }">
         <ul class="navbar-nav me-auto">
           {% if current_user.is_authenticated and current_user.role == 'admin' %}
           <!-- Learning Map - только для админов -->
           <li class="nav-item">
-            <a class="nav-link {{ 'active' if request.endpoint and (request.endpoint == 'learning_map_bp.learning_map' or request.endpoint.startswith('profession_map_bp')) }}" 
-               href="/{{ lang|default('en') }}/learning-map"
-               @click="closeMobileMenu()">
+            <a class="nav-link {{ 'active' if request.endpoint and (request.endpoint == 'learning_map_bp.learning_map' or request.endpoint.startswith('profession_map_bp')) }}"
+              href="/{{ lang|default('en') }}/learning-map" @click="closeMobileMenu()">
               {{ t('learning_map', lang|default('en'))|default('Learning Map') }}
             </a>
           </li>
@@ -51,123 +46,116 @@
 
 
         </ul>
-        
+
         <!-- Right Side Actions -->
         <div class="navbar-actions d-flex align-items-center">
           <!-- Language Dropdown -->
-          <div class="dropdown me-3 language-dropdown" 
-               x-data="{ open: false }"
-               @click.away="open = false"
-               style="position: relative; z-index: 9999;">
-            <button class="btn language-btn-modern" 
-                    type="button" 
-                    @click.stop.prevent="open = !open;"
-                    :aria-expanded="open"
-                    style="pointer-events: auto !important; cursor: pointer !important;"
-                    title="{{ t('language', lang)|default('Язык') }}: {{ lang|upper }}">
+          <div class="dropdown me-3 language-dropdown" x-data="{ open: false }" @click.away="open = false"
+            style="position: relative; z-index: 9999;">
+            <button class="btn language-btn-modern" type="button" @click.stop.prevent="open = !open;"
+              :aria-expanded="open" style="pointer-events: auto !important; cursor: pointer !important;"
+              title="{{ t('language', lang)|default('Язык') }}: {{ lang|upper }}">
               <span class="language-icon"><i class="bi bi-globe2"></i></span>
             </button>
-            <ul class="dropdown-menu dropdown-menu-end language-menu" 
-                x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0 transform scale-95 -translate-y-2"
-                x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
-                x-transition:leave="transition ease-in duration-150"
-                x-transition:leave-start="opacity-100 transform scale-100 translate-y-0"
-                x-transition:leave-end="opacity-0 transform scale-95 -translate-y-2"
-                style="z-index: 10000 !important; position: absolute !important; top: calc(100% + 0.5rem) !important; right: 0 !important; display: none !important;"
-                :style="open ? 'display: block !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important;' : 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;'"
-                x-cloak
-                @click.stop="open = false">
-              <li><a class="dropdown-item {% if lang == 'nl' %}active{% endif %}" 
-                     href="{{ language_url('nl') }}"
-                     onclick="">
-                <span class="fi fi-nl me-2"></span> Nederlands{% if lang == 'nl' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}
-              </a></li>
-              <li><a class="dropdown-item {% if lang == 'en' %}active{% endif %}" 
-                     href="{{ language_url('en') }}"
-                     onclick="">
-                <span class="fi fi-gb me-2"></span> English{% if lang == 'en' %} <i class="bi bi-check-lg ms-1"></i>{% endif %}
-              </a></li>
+            <ul class="dropdown-menu dropdown-menu-end language-menu"
+              x-transition:enter="transition ease-out duration-200"
+              x-transition:enter-start="opacity-0 transform scale-95 -translate-y-2"
+              x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
+              x-transition:leave="transition ease-in duration-150"
+              x-transition:leave-start="opacity-100 transform scale-100 translate-y-0"
+              x-transition:leave-end="opacity-0 transform scale-95 -translate-y-2"
+              style="z-index: 10000 !important; position: absolute !important; top: calc(100% + 0.5rem) !important; right: 0 !important; display: none !important;"
+              :style="open ? 'display: block !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important;' : 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;'"
+              x-cloak @click.stop="open = false">
+              <li><a class="dropdown-item {% if lang == 'nl' %}active{% endif %}" href="{{ language_url('nl') }}"
+                  onclick="">
+                  <span class="fi fi-nl me-2"></span> Nederlands{% if lang == 'nl' %} <i
+                    class="bi bi-check-lg ms-1"></i>{% endif %}
+                </a></li>
+              <li><a class="dropdown-item {% if lang == 'en' %}active{% endif %}" href="{{ language_url('en') }}"
+                  onclick="">
+                  <span class="fi fi-gb me-2"></span> English{% if lang == 'en' %} <i class="bi bi-check-lg ms-1"></i>{%
+                  endif %}
+                </a></li>
             </ul>
           </div>
-          
+
           {% if current_user.is_authenticated %}
           <!-- User Menu with Everything Inside -->
-          <div class="dropdown" 
-               x-data="{ open: false }"
-               @click.away="open = false"
-               style="position: relative; z-index: 1002;">
-            <button class="btn user-btn-modern" 
-                    type="button" 
-                    @click.stop.prevent="open = !open;"
-                    :aria-expanded="open"
-                    title="{{ current_user.get_display_name() }}">
+          <div class="dropdown" x-data="{ open: false }" @click.away="open = false"
+            style="position: relative; z-index: 1002;">
+            <button class="btn user-btn-modern" type="button" @click.stop.prevent="open = !open;" :aria-expanded="open"
+              title="{{ current_user.get_display_name() }}">
               <span class="user-icon"><i class="bi bi-person-circle"></i></span>
             </button>
-            <ul class="dropdown-menu dropdown-menu-end user-dropdown" 
-                x-transition:enter="transition ease-out duration-200"
-                x-transition:enter-start="opacity-0 transform scale-95 -translate-y-2"
-                x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
-                x-transition:leave="transition ease-in duration-150"
-                x-transition:leave-start="opacity-100 transform scale-100 translate-y-0"
-                x-transition:leave-end="opacity-0 transform scale-95 -translate-y-2"
-                style="position: absolute !important; top: calc(100% + 0.5rem) !important; right: 0 !important; display: none !important;"
-                :style="open ? 'display: block !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important;' : 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;'"
-                x-cloak
-                @click.stop="open = false">
+            <ul class="dropdown-menu dropdown-menu-end user-dropdown"
+              x-transition:enter="transition ease-out duration-200"
+              x-transition:enter-start="opacity-0 transform scale-95 -translate-y-2"
+              x-transition:enter-end="opacity-100 transform scale-100 translate-y-0"
+              x-transition:leave="transition ease-in duration-150"
+              x-transition:leave-start="opacity-100 transform scale-100 translate-y-0"
+              x-transition:leave-end="opacity-0 transform scale-95 -translate-y-2"
+              style="position: absolute !important; top: calc(100% + 0.5rem) !important; right: 0 !important; display: none !important;"
+              :style="open ? 'display: block !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important;' : 'display: none !important; visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;'"
+              x-cloak @click.stop="open = false">
               <!-- User Info Header -->
               <li class="dropdown-header">
                 <i class="bi bi-person-badge fs-5 me-1"></i> <strong>Dr. {{ current_user.get_display_name() }}</strong>
                 <br>
                 <small class="text-muted">
                   {% if current_user.profession == 'tandarts' %}
-                    {{ t('dentist', lang)|default('Dentist') }}
+                  {{ t('dentist', lang)|default('Dentist') }}
                   {% elif current_user.profession == 'huisarts' %}
-                    {{ t('general_practitioner', lang)|default('General Practitioner') }}
+                  {{ t('general_practitioner', lang)|default('General Practitioner') }}
                   {% else %}
-                    {{ t('medical_professional', lang)|default('Medical Professional') }}
+                  {{ t('medical_professional', lang)|default('Medical Professional') }}
                   {% endif %}
                 </small>
               </li>
-              
-                
-               <!-- Assessment (Pivot) -->
-               {% if current_user.role != 'admin' %}
-                <li><a class="dropdown-item" href="{{ url_for('diagnostic.start_diagnostic', lang=lang, diagnostic_type='quick_scan_10') }}">
+
+
+              <!-- Assessment (Pivot) -->
+              {% if current_user.role != 'admin' %}
+              <li><a class="dropdown-item"
+                  href="{{ url_for('diagnostic.start_diagnostic', lang=lang, diagnostic_type='quick_scan_10') }}">
                   {{ t('assessment_center', lang)|default('Assessment Center') }}
                 </a></li>
-               {% endif %}
-               
-               <!-- Profile -->
-              <li><a class="dropdown-item" href="/{{ lang }}/profile">
-                <i class="bi bi-person-gear fs-5 me-2"></i>
-                {{ t('edit_profile', lang)|default('Edit profile') }}
-              </a></li>
-              
+              {% endif %}
 
-              
-              <li><hr class="dropdown-divider"></li>
-              
+              <!-- Profile -->
+              <li><a class="dropdown-item" href="/{{ lang }}/profile">
+                  <i class="bi bi-person-gear fs-5 me-2"></i>
+                  {{ t('edit_profile', lang)|default('Edit profile') }}
+                </a></li>
+
+
+
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+
               <!-- Logout -->
               {% if current_user.is_digid_user() %}
               <li><a class="dropdown-item text-danger" href="/digid/logout">
-                <i class="bi bi-box-arrow-right fs-5 me-2"></i> DigiD 
-                {{ t('logout', lang)|default('Logout') }}
-              </a></li>
+                  <i class="bi bi-box-arrow-right fs-5 me-2"></i> DigiD
+                  {{ t('logout', lang)|default('Logout') }}
+                </a></li>
               {% else %}
-              <li><a class="dropdown-item text-danger" href="/auth/{{ lang }}/logout">
-                <i class="bi bi-box-arrow-right fs-5 me-2"></i>
-                {{ t('logout', lang)|default('Logout') }}
-              </a></li>
+              <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                  <i class="bi bi-box-arrow-right fs-5 me-2"></i>
+                  {{ t('logout', lang)|default('Logout') }}
+                </a></li>
               {% endif %}
             </ul>
           </div>
           {% else %}
           <!-- Visible Login & Register buttons for guests -->
-          <a href="{{ url_for('auth.login', lang=g.lang|default('en')) }}" class="btn btn-outline-secondary btn-sm" style="border-radius: 8px; font-weight: 500; font-size: 13px; padding: 0.45rem 1rem; white-space: nowrap;">
+          <a href="{{ url_for('auth.login', lang=g.lang|default('en')) }}" class="btn btn-outline-secondary btn-sm"
+            style="border-radius: 8px; font-weight: 500; font-size: 13px; padding: 0.45rem 1rem; white-space: nowrap;">
             {{ t('login', lang)|default('Log in') }}
           </a>
-          <a href="{{ url_for('auth.quick_register', lang=g.lang|default('en')) }}" class="btn btn-primary btn-sm" style="border-radius: 8px; font-weight: 500; font-size: 13px; padding: 0.45rem 1rem; white-space: nowrap; background: #4a9eb5; border-color: #4a9eb5;">
+          <a href="{{ url_for('auth.quick_register', lang=g.lang|default('en')) }}" class="btn btn-primary btn-sm"
+            style="border-radius: 8px; font-weight: 500; font-size: 13px; padding: 0.45rem 1rem; white-space: nowrap; background: #4a9eb5; border-color: #4a9eb5;">
             {{ t('register', lang)|default('Register') }}
           </a>
           {% endif %}
@@ -178,2245 +166,2278 @@
 </header>
 
 <style>
-/* ===== РАДИКАЛЬНОЕ ИСПРАВЛЕНИЕ ШАПКИ - МАКСИМАЛЬНЫЙ ПРИОРИТЕТ ===== */
+  /* ===== РАДИКАЛЬНОЕ ИСПРАВЛЕНИЕ ШАПКИ - МАКСИМАЛЬНЫЙ ПРИОРИТЕТ ===== */
 
-/* ПОЛНОЕ ПЕРЕОПРЕДЕЛЕНИЕ BOOTSTRAP СТИЛЕЙ */
-header.modern-header {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  width: 100% !important;
-  height: 70px !important;
-  min-height: 70px !important;
-  max-height: 70px !important;
-  z-index: 1000 !important;
-  background: rgba(255, 255, 255, 0.95) !important;
-  backdrop-filter: blur(0px) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
-  display: flex !important;
-  align-items: center !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  overflow: visible !important;
-  transition: all 0.3s ease !important;
-}
-
-header.modern-header.scrolled {
-  height: 56px !important;
-  min-height: 56px !important;
-  max-height: 56px !important;
-  backdrop-filter: blur(12px) !important;
-  background: rgba(255, 255, 255, 0.92) !important;
-  box-shadow: 0 1px 20px rgba(0, 0, 0, 0.08) !important;
-}
-
-/* Dark theme для шапки - более специфичный селектор для переопределения */
-html[data-theme="dark"] header.modern-header,
-[data-theme="dark"] header.modern-header,
-html[data-theme="dark"] .modern-header,
-[data-theme="dark"] .modern-header {
-  background: rgba(30, 41, 59, 0.98) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
-}
-
-/* Убеждаемся, что навбар тоже темный */
-html[data-theme="dark"] header.modern-header nav.navbar,
-[data-theme="dark"] header.modern-header nav.navbar {
-  background: transparent !important;
-}
-
-/* Dark theme для мобильного меню */
-[data-theme="dark"] header.modern-header .navbar-collapse {
-  background: rgba(15, 23, 42, 0.98) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
-}
-
-[data-theme="dark"] header.modern-header .navbar-toggler span {
-  background: rgba(248, 250, 252, 0.9) !important;
-}
-
-header.modern-header nav.navbar {
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 100% !important;
-  max-height: 100% !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex-wrap: nowrap !important;
-}
-
-header.modern-header nav.navbar .container {
-  width: 100% !important;
-  max-width: 1200px !important;
-  height: 100% !important;
-  min-height: 100% !important;
-  max-height: 100% !important;
-  margin: 0 auto !important;
-  padding: 0 1.5rem !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  flex-wrap: nowrap !important;
-  flex-direction: row !important;
-}
-
-header.modern-header .navbar-brand {
-  display: flex !important;
-  align-items: center !important;
-  height: 100% !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  flex-shrink: 0 !important;
-  order: 1 !important;
-  text-decoration: none;
-  transition: transform 0.3s ease;
-}
-
-header.modern-header .navbar-brand:hover {
-  transform: scale(1.05);
-}
-
-header.modern-header .navbar-brand img {
-  height: 40px !important;
-  width: auto !important;
-  max-height: 40px !important;
-  object-fit: contain !important;
-  transition: all 0.3s ease;
-}
-
-header.modern-header .navbar-brand:hover img {
-  filter: brightness(1.1);
-}
-
-
-header.modern-header .navbar-collapse {
-  /* display управляется через Alpine.js x-show и :style */
-  /* display: flex !important; */
-  align-items: center !important;
-  justify-content: space-between !important;
-  flex: 1 !important;
-  height: 100% !important;
-  margin: 0 1rem !important;
-  flex-wrap: nowrap !important;
-  flex-direction: row !important;
-  order: 2 !important;
-}
-
-header.modern-header .navbar-nav {
-  display: flex !important;
-  align-items: center !important;
-  flex-direction: row !important;
-  height: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  list-style: none !important;
-  flex-wrap: nowrap !important;
-  gap: 0.5rem !important;
-}
-
-header.modern-header .navbar-nav .nav-item {
-  display: flex !important;
-  align-items: center !important;
-  height: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-header.modern-header .navbar-nav .nav-link {
-  display: flex !important;
-  align-items: center !important;
-  height: auto !important;
-  padding: 0.5rem 1rem !important;
-  margin: 0 !important;
-  color: #333 !important;
-  text-decoration: none !important;
-  border-radius: 8px !important;
-  transition: all 0.3s ease !important;
-  white-space: nowrap !important;
-  flex-shrink: 0 !important;
-}
-
-header.modern-header .navbar-actions {
-  display: flex !important;
-  align-items: center !important;
-  height: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  gap: 0.5rem !important;
-  flex-wrap: nowrap !important;
-  flex-direction: row !important;
-  flex-shrink: 0 !important;
-}
-
-header.modern-header .dropdown,
-header.modern-header .btn,
-header.modern-header .dropdown-toggle {
-  display: flex !important;
-  align-items: center !important;
-  height: auto !important;
-  padding: 0.5rem 1rem !important;
-  margin: 0 !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
-  border-radius: 8px !important;
-  background: rgba(255, 255, 255, 0.8) !important;
-  color: #333 !important;
-  text-decoration: none !important;
-  transition: all 0.3s ease !important;
-  white-space: nowrap !important;
-  flex-shrink: 0 !important;
-}
-
-header.modern-header .navbar-toggler {
-  display: none !important;
-  order: 3 !important;
-}
-
-
-
-/* Мобильные устройства */
-@media (max-width: 992px) {
+  /* ПОЛНОЕ ПЕРЕОПРЕДЕЛЕНИЕ BOOTSTRAP СТИЛЕЙ */
   header.modern-header {
-    height: 60px !important;
-    min-height: 60px !important;
-    max-height: 60px !important;
-  }
-  
-  header.modern-header .navbar-brand img {
-    height: 32px !important;
-    max-height: 32px !important;
-  }
-  
-  header.modern-header .navbar-toggler {
-    display: block !important;
-    border: none !important;
-    background: none !important;
-    padding: 0.25rem !important;
-    margin-left: auto !important;
-  }
-  
-  header.modern-header .navbar-collapse {
-    position: absolute !important;
-    top: 100% !important;
+    position: fixed !important;
+    top: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    background: rgba(255, 255, 255, 0.98) !important;
-    backdrop-filter: blur(20px) !important;
-    border-radius: 0 0 16px 16px !important;
-    padding: 1rem !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-    height: auto !important;
-    z-index: 1001 !important;
-    /* По умолчанию скрыто на мобильных устройствах */
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
+    width: 100% !important;
+    height: 70px !important;
+    min-height: 70px !important;
+    max-height: 70px !important;
+    z-index: 1000 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(0px) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+    display: flex !important;
+    align-items: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    transition: all 0.3s ease !important;
   }
-  
-  /* Alpine.js управляет видимостью через x-show и :style */
-  header.modern-header .navbar-collapse.show {
+
+  header.modern-header.scrolled {
+    height: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
+    backdrop-filter: blur(12px) !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    box-shadow: 0 1px 20px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  /* Dark theme для шапки - более специфичный селектор для переопределения */
+  html[data-theme="dark"] header.modern-header,
+  [data-theme="dark"] header.modern-header,
+  html[data-theme="dark"] .modern-header,
+  [data-theme="dark"] .modern-header {
+    background: rgba(30, 41, 59, 0.98) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+  }
+
+  /* Убеждаемся, что навбар тоже темный */
+  html[data-theme="dark"] header.modern-header nav.navbar,
+  [data-theme="dark"] header.modern-header nav.navbar {
+    background: transparent !important;
+  }
+
+  /* Dark theme для мобильного меню */
+  [data-theme="dark"] header.modern-header .navbar-collapse {
+    background: rgba(15, 23, 42, 0.98) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  [data-theme="dark"] header.modern-header .navbar-toggler span {
+    background: rgba(248, 250, 252, 0.9) !important;
+  }
+
+  header.modern-header nav.navbar {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-wrap: nowrap !important;
+  }
+
+  header.modern-header nav.navbar .container {
+    width: 100% !important;
+    max-width: 1200px !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 1.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+    flex-direction: row !important;
+  }
+
+  header.modern-header .navbar-brand {
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+    order: 1 !important;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+  }
+
+  header.modern-header .navbar-brand:hover {
+    transform: scale(1.05);
+  }
+
+  header.modern-header .navbar-brand .logo-container {
+    height: 36px !important;
+    width: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    overflow: hidden !important;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  header.modern-header .navbar-brand .nav-logo-img {
+    height: 36px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    object-position: left !important;
+    transition: all 0.3s ease;
+    margin-right: 0 !important;
+  }
+
+  .nav-logo-wrap {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    text-decoration: none !important;
+    padding-right: 0 !important;
+  }
+
+
+
+  header.modern-header .navbar-collapse {
     /* display управляется через Alpine.js x-show и :style */
     /* display: flex !important; */
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex: 1 !important;
+    height: 100% !important;
+    margin: 0 1rem !important;
+    flex-wrap: nowrap !important;
+    flex-direction: row !important;
+    order: 2 !important;
   }
-  
+
   header.modern-header .navbar-nav {
-    flex-direction: column !important;
-    width: 100% !important;
-    height: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    flex-direction: row !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none !important;
+    flex-wrap: nowrap !important;
     gap: 0.5rem !important;
   }
-  
-  header.modern-header .navbar-actions {
-    flex-direction: column !important;
-    width: 100% !important;
-    height: auto !important;
-    margin-top: 1rem !important;
-    padding-top: 1rem !important;
-    border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
-  }
-}
 
-/* ПЛАНШЕТЫ (768px - 1024px) - СПЕЦИАЛЬНЫЕ ПРАВИЛА */
-@media (min-width: 768px) and (max-width: 1024px) {
-  header.modern-header {
-    height: 65px !important;
-  }
-  
-  header.modern-header .navbar-brand img {
-    height: 36px !important;
-  }
-  
-  /* НА ПЛАНШЕТАХ НАВИГАЦИЯ ОСТАЕТСЯ ГОРИЗОНТАЛЬНОЙ */
-  header.modern-header .navbar-collapse {
-    position: static !important;
-    /* display управляется через Alpine.js x-show и :style */
-    /* display: flex !important; */
-    flex-direction: row !important;
-    background: transparent !important;
-    backdrop-filter: none !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-    height: 100% !important;
-    z-index: auto !important;
-  }
-  
-  header.modern-header .navbar-nav {
-    flex-direction: row !important;
-    height: 100% !important;
-    gap: 0.25rem !important;
-  }
-  
-  header.modern-header .navbar-actions {
-    flex-direction: row !important;
-    height: 100% !important;
-    margin-top: 0 !important;
-    padding-top: 0 !important;
-    border-top: none !important;
-    gap: 0.25rem !important;
-  }
-  
-  /* СКРЫВАЕМ ПЕРЕКЛЮЧАТЕЛЬ НА ПЛАНШЕТАХ */
-  header.modern-header .navbar-toggler {
-    display: none !important;
-  }
-  
-  /* УМЕНЬШАЕМ РАЗМЕРЫ ЭЛЕМЕНТОВ */
-  header.modern-header .nav-link,
-  header.modern-header .dropdown-toggle,
-  header.modern-header .btn {
-    padding: 0.4rem 0.8rem !important;
-    font-size: 0.9rem !important;
-  }
-}
-
-/* ТОЛЬКО ТЕЛЕФОНЫ (до 768px) */
-@media (max-width: 767px) {
-  header.modern-header {
-    height: 60px !important;
-  }
-  
-  header.modern-header .navbar-brand img {
-    height: 32px !important;
-  }
-  
-  header.modern-header .navbar-toggler {
-    display: block !important;
-  }
-  
-  header.modern-header .navbar-collapse {
-    position: absolute !important;
-    top: 100% !important;
-    left: 0 !important;
-    right: 0 !important;
-    background: rgba(255, 255, 255, 0.98) !important;
-    backdrop-filter: blur(20px) !important;
-    border-radius: 0 0 16px 16px !important;
-    padding: 1rem !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-    height: auto !important;
-    z-index: 1001 !important;
-    /* По умолчанию скрыто на мобильных устройствах */
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-  }
-  
-  /* Alpine.js управляет видимостью через x-show и :style */
-  header.modern-header .navbar-collapse.show {
-    /* display управляется через Alpine.js x-show и :style */
-    /* display: flex !important; */
-  }
-}
-
-/* ===== ИСПРАВЛЕННЫЕ СТИЛИ ШАПКИ ===== */
-
-/* Унифицированные переменные */
-
-
-.modern-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  border-bottom: 1px solid var(--border-color);
-  transition: all var(--transition-slow);
-  box-shadow: var(--shadow-sm);
-  height: var(--header-height);
-  display: flex;
-  align-items: center;
-}
-
-.modern-header.scrolled {
-  height: 56px;
-  backdrop-filter: blur(12px);
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 1px 20px rgba(0, 0, 0, 0.08);
-}
-
-.modern-header.hidden {
-  transform: translateY(-100%);
-}
-
-.navbar {
-  padding: 0;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.navbar .container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  height: 100%;
-  flex-wrap: nowrap;
-}
-
-.navbar-brand {
-  font-weight: 800;
-  font-size: 1.5rem;
-  transition: transform var(--transition-normal);
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  height: 100%;
-}
-
-.navbar-brand:hover {
-  transform: scale(1.05);
-}
-
-.navbar-brand img {
-  transition: all var(--transition-normal);
-  height: 40px;
-  width: auto;
-}
-
-.navbar-brand:hover img {
-  filter: brightness(1.1);
-}
-
-/* Фиксированная навигация */
-.navbar-collapse {
-  /* display управляется через Alpine.js x-show и :style */
-  /* display: flex; */
-  justify-content: space-between;
-  align-items: center;
-  flex: 1;
-  height: 100%;
-  flex-wrap: nowrap;
-}
-
-.navbar-nav {
-  display: flex;
-  align-items: center;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  height: 100%;
-  flex-wrap: nowrap;
-}
-
-.navbar-nav .nav-item {
-  display: flex;
-  align-items: center;
-  height: 100%;
-}
-
-.navbar-actions {
-  display: flex;
-  align-items: center;
-  margin-left: auto;
-  height: 100%;
-  flex-wrap: nowrap;
-  gap: 0.5rem;
-}
-
-/* Hamburger Menu */
-.navbar-toggler {
-  border: none;
-  padding: 0.5rem;
-  background: var(--glass-bg);
-  border-radius: var(--radius-md);
-  width: 40px;
-  height: 40px;
-  position: relative;
-  transition: all var(--transition-normal);
-  display: none;
-}
-
-.navbar-toggler:focus {
-  box-shadow: none;
-}
-
-.navbar-toggler span {
-  display: block;
-  width: 20px;
-  height: 2px;
-  background: var(--text-primary);
-  margin: 4px auto;
-  transition: all var(--transition-normal);
-  border-radius: 1px;
-}
-
-/* Активное состояние hamburger для Alpine.js */
-.navbar-toggler span.hamburger-line.active:nth-child(1) {
-  transform: rotate(45deg) translate(5px, 5px);
-}
-
-.navbar-toggler span.hamburger-line.active:nth-child(2) {
-  opacity: 0;
-}
-
-.navbar-toggler span.hamburger-line.active:nth-child(3) {
-  transform: rotate(-45deg) translate(7px, -6px);
-}
-
-/* Совместимость со старым Bootstrap классом */
-.navbar-toggler:not(.collapsed) span:nth-child(1),
-.navbar-toggler[aria-expanded="true"] span:nth-child(1) {
-  transform: rotate(45deg) translate(5px, 5px);
-}
-
-.navbar-toggler:not(.collapsed) span:nth-child(2),
-.navbar-toggler[aria-expanded="true"] span:nth-child(2) {
-  opacity: 0;
-}
-
-.navbar-toggler:not(.collapsed) span:nth-child(3),
-.navbar-toggler[aria-expanded="true"] span:nth-child(3) {
-  transform: rotate(-45deg) translate(7px, -6px);
-}
-
-/* Navigation Links */
-.nav-link {
-  color: var(--text-secondary) !important;
-  font-weight: 500;
-  padding: 0.5rem 1rem !important;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-normal);
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  height: 100%;
-  white-space: nowrap;
-}
-
-/* Улучшенная читаемость в темной теме */
-[data-theme="dark"] header.modern-header .nav-link,
-[data-theme="dark"] .nav-link {
-  color: rgba(248, 250, 252, 0.9) !important;
-}
-
-[data-theme="dark"] header.modern-header .nav-link:hover,
-[data-theme="dark"] .nav-link:hover {
-  color: #1d4ed8 !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-}
-
-[data-theme="dark"] header.modern-header .nav-link.active,
-[data-theme="dark"] .nav-link.active {
-  color: #1d4ed8 !important;
-  background: rgba(29, 78, 216, 0.1) !important;
-}
-
-/* Темная тема для кнопок и элементов управления в шапке */
-[data-theme="dark"] header.modern-header .btn,
-[data-theme="dark"] header.modern-header .dropdown-toggle,
-[data-theme="dark"] header.modern-header .language-btn-modern {
-  color: rgba(248, 250, 252, 0.9) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-}
-
-[data-theme="dark"] header.modern-header .dropdown-menu {
-  background: rgba(30, 41, 59, 0.95) !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  color: rgba(248, 250, 252, 0.9) !important;
-}
-
-[data-theme="dark"] header.modern-header .dropdown-item {
-  color: rgba(248, 250, 252, 0.9) !important;
-}
-
-[data-theme="dark"] header.modern-header .dropdown-item:hover {
-  background: rgba(29, 78, 216, 0.1) !important;
-  color: #1d4ed8 !important;
-}
-
-.nav-link::before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-  transform: translateX(-50%);
-  transition: width var(--transition-normal);
-}
-
-.nav-link:hover::before {
-  width: 80%;
-}
-
-.nav-link:hover {
-  color: var(--primary-color) !important;
-  background: var(--glass-bg);
-  transform: translateY(-2px);
-}
-
-.nav-link.active {
-  color: var(--primary-color) !important;
-  background: var(--glass-bg);
-  box-shadow: var(--shadow-sm);
-}
-
-.nav-link.active::before {
-  width: 80%;
-}
-
-/* Dropdown Styles */
-.dropdown-toggle,
-.btn {
-  border-radius: var(--radius-md) !important;
-  transition: all var(--transition-normal);
-  border: 1px solid var(--border-color) !important;
-  display: flex;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.8);
-  color: var(--text-primary);
-  text-decoration: none;
-  height: auto;
-  white-space: nowrap;
-  flex-shrink: 0;
-  cursor: pointer;
-  pointer-events: auto !important;
-  z-index: 1001;
-  position: relative;
-}
-
-.dropdown-toggle:hover,
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-  background: rgba(255, 255, 255, 1);
-}
-
-/* Базовые стили для dropdown-menu - Alpine.js управляет display через x-show */
-.dropdown-menu {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
-  backdrop-filter: var(--glass-blur);
-  padding: 0.5rem;
-  margin-top: 0.5rem;
-  animation: dropdownSlide 0.3s ease;
-  min-width: 220px;
-  z-index: 1050 !important;
-  position: absolute !important;
-  max-height: 70vh !important;
-  overflow-y: auto !important;
-  /* НЕ устанавливаем display здесь - Alpine.js управляет через x-show */
-}
-
-/* Переопределяем Bootstrap display для Alpine.js dropdown */
-/* Используем :style для управления display, так как Bootstrap может переопределять x-show */
-
-/* Принудительно показываем когда :style устанавливает display: block */
-.dropdown[x-data] .dropdown-menu[style*="display: block"] {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-}
-
-/* Скрываем когда :style устанавливает display: none */
-.dropdown[x-data] .dropdown-menu[style*="display: none"] {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-
-
-/* ГРАДИЕНТНАЯ ТЕМА - ИСПРАВЛЕНИЯ ДЛЯ DROPDOWN */
-[data-theme="gradient"] .dropdown-menu {
-  background: rgba(0, 0, 0, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  backdrop-filter: blur(25px) !important;
-  color: #ffffff !important;
-}
-
-[data-theme="gradient"] .dropdown-item {
-  color: #ffffff !important;
-}
-
-[data-theme="gradient"] .dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
-}
-
-/* ДУБЛИРУЮЩИЕСЯ СТИЛИ УДАЛЕНЫ - ИСПОЛЬЗУЮТСЯ СТИЛИ НИЖЕ */
-
-/* МОБИЛЬНЫЕ ИСПРАВЛЕНИЯ ДЛЯ ПОЗИЦИОНИРОВАНИЯ */
-@media (max-width: 767px) {
-  .dropdown-menu {
-    position: static !important;
-    width: 100% !important;
-    left: auto !important;
-    right: auto !important;
-    top: auto !important;
-    margin-top: 0.5rem !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-    max-height: none !important;
-    overflow-y: visible !important;
-    transform: none !important;
-    max-width: 100% !important;
-    min-width: auto !important;
-  }
-  
-  .language-menu {
-    position: static !important;
-    width: 100% !important;
-    left: auto !important;
-    right: auto !important;
-    top: auto !important;
-    margin-top: 0.5rem !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-    transform: none !important;
-    max-width: 100% !important;
-    min-width: auto !important;
-  }
-  
-  /* Переопределяем inline стили на мобильных - используем более специфичный селектор */
-  .language-menu[style*="position: absolute"],
-  .language-menu[style*="right: 0"],
-  .language-dropdown .language-menu {
-    position: static !important;
-    right: auto !important;
-    left: auto !important;
-    top: auto !important;
-    transform: none !important;
-  }
-  
-  /* Переопределяем :style binding на мобильных через CSS */
-  .language-menu[style*="display: block"] {
-    position: static !important;
-    right: auto !important;
-    left: auto !important;
-    top: auto !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: auto !important;
-  }
-  
-  /* Убеждаемся, что родительские контейнеры не обрезают меню */
-  .navbar-actions,
-  .navbar-collapse,
-  .navbar {
-    overflow: visible !important;
-  }
-}
-
-@keyframes dropdownSlide {
-  from {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.dropdown-item {
-  color: var(--text-secondary);
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-normal);
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-weight: 500;
-  text-decoration: none;
-  border: none;
-  background: none;
-  width: 100%;
-  text-align: left;
-}
-
-.dropdown-item:hover {
-  background: var(--glass-bg);
-  color: var(--primary-color);
-  transform: translateX(5px);
-}
-
-.dropdown-item.active {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
-}
-
-.dropdown-item.text-danger {
-  color: var(--danger-color);
-}
-
-.dropdown-item.text-danger:hover {
-  background: rgba(231, 76, 60, 0.1);
-  color: var(--danger-color);
-}
-
-.dropdown-item i {
-  width: 16px;
-  text-align: center;
-  transition: transform var(--transition-normal);
-}
-
-.dropdown-item:hover i {
-  transform: scale(1.1);
-}
-
-.dropdown-header {
-  padding: 1rem;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 0.5rem;
-}
-
-.dropdown-header.border-bottom {
-  border-bottom: 1px solid var(--border-color);
-}
-
-/* User Info Styles */
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.user-details strong {
-  color: var(--text-primary);
-  font-size: 1rem;
-}
-
-.user-details small {
-  font-size: 0.8rem;
-  opacity: 0.8;
-}
-
-/* User Stats in Dropdown */
-.user-stats {
-  text-align: center;
-}
-
-.stat-item {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.level-badge {
-  background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-full);
-  font-size: 0.8rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.xp-counter {
-  color: var(--text-secondary);
-  font-size: 0.8rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.achievements-link-wrapper {
-  display: flex;
-  justify-content: center;
-}
-
-.achievements-link {
-  color: var(--accent-color);
-  text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-md);
-  transition: all var(--transition-normal);
-}
-
-.achievements-link:hover {
-  background: var(--glass-bg);
-  transform: scale(1.05);
-}
-
-/* Language Button */
-.language-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  min-width: 70px;
-  justify-content: center;
-}
-
-/* User Button */
-.user-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
-  border: none !important;
-  position: relative;
-  overflow: visible;
-  padding: 0.5rem 1rem !important;
-}
-
-.user-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: left 0.5s ease;
-}
-
-.user-btn:hover::before {
-  left: 100%;
-}
-
-.user-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(29, 78, 216, 0.3);
-}
-
-.user-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
-}
-
-/* Button Enhancements */
-.btn {
-  border-radius: var(--radius-md) !important;
-  font-weight: 600;
-  transition: all var(--transition-normal);
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.5rem 1rem !important;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
-  border: none !important;
-  position: relative;
-  overflow: visible;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(29, 78, 216, 0.3);
-}
-
-.btn-outline-primary {
-  border-color: var(--primary-color) !important;
-  color: var(--primary-color) !important;
-  background: transparent;
-}
-
-.btn-outline-primary:hover {
-  background: var(--primary-color) !important;
-  border-color: var(--primary-color) !important;
-  color: white !important;
-  transform: translateY(-2px);
-}
-
-/* Theme Toggle in Dropdown */
-.theme-toggle-inline {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  text-align: left;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-md);
-}
-
-.theme-toggle-inline:hover {
-  background: var(--glass-bg);
-  color: var(--primary-color);
-  transform: translateX(5px);
-}
-
-.theme-icon {
-  font-size: 1rem;
-  transition: transform var(--transition-normal);
-  width: 16px;
-  text-align: center;
-}
-
-.theme-toggle-inline:hover .theme-icon {
-  transform: rotate(180deg);
-}
-
-/* ===== ИСПРАВЛЕНИЕ ОТСТУПОВ ===== */
-
-/* УБИРАЕМ глобальный padding-top у body */
-body {
-  padding-top: 0 !important;
-  margin: 0;
-}
-
-/* Добавляем отступы ТОЛЬКО для специфических контейнеров */
-.main-content {
-  margin-top: var(--header-height);
-  min-height: calc(100vh - var(--header-height));
-  padding-top: 0 !important;
-}
-
-/* Специальная обработка для hero-секции */
-.hero-section {
-  padding-top: calc(var(--header-height) + 2rem);
-  min-height: 100vh;
-}
-
-/* Исправления для карты обучения */
-.learning-map-container .main-container {
-  margin-top: var(--header-height);
-  min-height: calc(100vh - var(--header-height));
-}
-
-/* Mobile Responsive */
-@media (max-width: 992px) {
-  
-  /* Улучшенный hamburger menu */
-  .navbar-toggler {
+  header.modern-header .navbar-nav .nav-item {
     display: flex !important;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 44px;
-    height: 44px;
-    padding: 8px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    order: 3;
-    margin-left: auto;
+    align-items: center !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  .hamburger-line {
-    display: block;
-    width: 24px;
-    height: 2px;
-    background: var(--text-primary);
-    margin: 2px 0;
-    transition: all 0.3s ease;
-    border-radius: 1px;
+  header.modern-header .navbar-nav .nav-link {
+    display: flex !important;
+    align-items: center !important;
+    height: auto !important;
+    padding: 0.5rem 1rem !important;
+    margin: 0 !important;
+    color: #333 !important;
+    text-decoration: none !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
   }
 
-  .navbar-toggler[aria-expanded="true"] .hamburger-line:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
+  header.modern-header .navbar-actions {
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0.5rem !important;
+    flex-wrap: nowrap !important;
+    flex-direction: row !important;
+    flex-shrink: 0 !important;
   }
 
-  .navbar-toggler[aria-expanded="true"] .hamburger-line:nth-child(2) {
-    opacity: 0;
+  header.modern-header .dropdown,
+  header.modern-header .btn,
+  header.modern-header .dropdown-toggle {
+    display: flex !important;
+    align-items: center !important;
+    height: auto !important;
+    padding: 0.5rem 1rem !important;
+    margin: 0 !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, 0.8) !important;
+    color: #333 !important;
+    text-decoration: none !important;
+    transition: all 0.3s ease !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
   }
 
-  .navbar-toggler[aria-expanded="true"] .hamburger-line:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -6px);
+  header.modern-header .navbar-toggler {
+    display: none !important;
+    order: 3 !important;
   }
-  
-  .navbar-brand {
-    order: 1;
+
+
+
+  /* Мобильные устройства */
+  @media (max-width: 992px) {
+    header.modern-header {
+      height: 60px !important;
+      min-height: 60px !important;
+      max-height: 60px !important;
+    }
+
+    header.modern-header .navbar-brand img {
+      height: 32px !important;
+      max-height: 32px !important;
+    }
+
+    header.modern-header .navbar-toggler {
+      display: block !important;
+      border: none !important;
+      background: none !important;
+      padding: 0.25rem !important;
+      margin-left: auto !important;
+    }
+
+    header.modern-header .navbar-collapse {
+      position: absolute !important;
+      top: 100% !important;
+      left: 0 !important;
+      right: 0 !important;
+      background: rgba(255, 255, 255, 0.98) !important;
+      backdrop-filter: blur(20px) !important;
+      border-radius: 0 0 16px 16px !important;
+      padding: 1rem !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      height: auto !important;
+      z-index: 1001 !important;
+      /* По умолчанию скрыто на мобильных устройствах */
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+    }
+
+    /* Alpine.js управляет видимостью через x-show и :style */
+    header.modern-header .navbar-collapse.show {
+      /* display управляется через Alpine.js x-show и :style */
+      /* display: flex !important; */
+    }
+
+    header.modern-header .navbar-nav {
+      flex-direction: column !important;
+      width: 100% !important;
+      height: auto !important;
+      gap: 0.5rem !important;
+    }
+
+    header.modern-header .navbar-actions {
+      flex-direction: column !important;
+      width: 100% !important;
+      height: auto !important;
+      margin-top: 1rem !important;
+      padding-top: 1rem !important;
+      border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+    }
   }
-  
-  .navbar-collapse {
-    order: 4;
-    width: 100%;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
-    margin-top: 1rem;
-    padding: 1.5rem;
-    box-shadow: var(--shadow-xl);
-    backdrop-filter: var(--glass-blur);
-    position: absolute;
-    top: 100%;
+
+  /* ПЛАНШЕТЫ (768px - 1024px) - СПЕЦИАЛЬНЫЕ ПРАВИЛА */
+  @media (min-width: 768px) and (max-width: 1024px) {
+    header.modern-header {
+      height: 65px !important;
+    }
+
+    header.modern-header .navbar-brand img {
+      height: 36px !important;
+    }
+
+    /* НА ПЛАНШЕТАХ НАВИГАЦИЯ ОСТАЕТСЯ ГОРИЗОНТАЛЬНОЙ */
+    header.modern-header .navbar-collapse {
+      position: static !important;
+      /* display управляется через Alpine.js x-show и :style */
+      /* display: flex !important; */
+      flex-direction: row !important;
+      background: transparent !important;
+      backdrop-filter: none !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+      height: 100% !important;
+      z-index: auto !important;
+    }
+
+    header.modern-header .navbar-nav {
+      flex-direction: row !important;
+      height: 100% !important;
+      gap: 0.25rem !important;
+    }
+
+    header.modern-header .navbar-actions {
+      flex-direction: row !important;
+      height: 100% !important;
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+      border-top: none !important;
+      gap: 0.25rem !important;
+    }
+
+    /* СКРЫВАЕМ ПЕРЕКЛЮЧАТЕЛЬ НА ПЛАНШЕТАХ */
+    header.modern-header .navbar-toggler {
+      display: none !important;
+    }
+
+    /* УМЕНЬШАЕМ РАЗМЕРЫ ЭЛЕМЕНТОВ */
+    header.modern-header .nav-link,
+    header.modern-header .dropdown-toggle,
+    header.modern-header .btn {
+      padding: 0.4rem 0.8rem !important;
+      font-size: 0.9rem !important;
+    }
+  }
+
+  /* ТОЛЬКО ТЕЛЕФОНЫ (до 768px) */
+  @media (max-width: 767px) {
+    header.modern-header {
+      height: 60px !important;
+    }
+
+    header.modern-header .navbar-brand img {
+      height: 32px !important;
+    }
+
+    header.modern-header .navbar-toggler {
+      display: block !important;
+    }
+
+    header.modern-header .navbar-collapse {
+      position: absolute !important;
+      top: 100% !important;
+      left: 0 !important;
+      right: 0 !important;
+      background: rgba(255, 255, 255, 0.98) !important;
+      backdrop-filter: blur(20px) !important;
+      border-radius: 0 0 16px 16px !important;
+      padding: 1rem !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+      height: auto !important;
+      z-index: 1001 !important;
+      /* По умолчанию скрыто на мобильных устройствах */
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+    }
+
+    /* Alpine.js управляет видимостью через x-show и :style */
+    header.modern-header .navbar-collapse.show {
+      /* display управляется через Alpine.js x-show и :style */
+      /* display: flex !important; */
+    }
+  }
+
+  /* ===== ИСПРАВЛЕННЫЕ СТИЛИ ШАПКИ ===== */
+
+  /* Унифицированные переменные */
+
+
+  .modern-header {
+    position: fixed;
+    top: 0;
     left: 0;
     right: 0;
-    flex-direction: column;
-    align-items: stretch;
-    max-height: calc(100vh - 100%);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    z-index: 100;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--border-color);
+    transition: all var(--transition-slow);
+    box-shadow: var(--shadow-sm);
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+  }
+
+  .modern-header.scrolled {
+    height: 56px;
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 1px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .modern-header.hidden {
+    transform: translateY(-100%);
+  }
+
+  .navbar {
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .navbar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    height: 100%;
+    flex-wrap: nowrap;
+  }
+
+  .navbar-brand {
+    font-weight: 800;
+    font-size: 1.5rem;
+    transition: transform var(--transition-normal);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    height: 100%;
+  }
+
+  .navbar-brand:hover {
+    transform: scale(1.05);
+  }
+
+  .navbar-brand .nav-logo-img {
+    transition: all var(--transition-normal);
+    height: 32px;
+    width: 86px;
+    object-fit: cover;
+    object-position: left;
+  }
+
+  .navbar-brand:hover img {
+    filter: brightness(1.1);
+  }
+
+  /* Фиксированная навигация */
+  .navbar-collapse {
+    /* display управляется через Alpine.js x-show и :style */
+    /* display: flex; */
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    height: 100%;
+    flex-wrap: nowrap;
   }
 
   .navbar-nav {
-    flex-direction: column;
-    width: 100%;
-    gap: 0.5rem;
-  }
-
-  .nav-link {
-    margin: 0;
-    padding: 1rem;
-    border-radius: 12px;
-    font-size: 1.1rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    min-height: 44px;
     display: flex;
     align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    height: 100%;
+    flex-wrap: nowrap;
   }
 
-  .nav-link:hover,
-  .nav-link.active {
-    background: rgba(102, 126, 234, 0.1);
-    transform: translateX(5px);
+  .navbar-nav .nav-item {
+    display: flex;
+    align-items: center;
+    height: 100%;
   }
 
   .navbar-actions {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--border-color);
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 0.75rem;
-    margin-left: 0;
-  }
-
-  .dropdown {
-    width: 100%;
-  }
-
-  .dropdown-toggle {
-    width: 100%;
-    justify-content: space-between;
-    padding: 1rem;
-    min-height: 44px;
-  }
-
-  .dropdown-menu {
-    width: 100%;
-    margin-top: 0.5rem;
-  }
-
-  .dropdown-item {
-    padding: 1rem;
-    min-height: 44px;
     display: flex;
     align-items: center;
-  }
-
-  .guest-actions {
-    flex-direction: column !important;
+    margin-left: auto;
+    height: 100%;
+    flex-wrap: nowrap;
     gap: 0.5rem;
   }
 
-  .guest-actions .btn {
+  /* Hamburger Menu */
+  .navbar-toggler {
+    border: none;
+    padding: 0.5rem;
+    background: var(--glass-bg);
+    border-radius: var(--radius-md);
+    width: 40px;
+    height: 40px;
+    position: relative;
+    transition: all var(--transition-normal);
+    display: none;
+  }
+
+  .navbar-toggler:focus {
+    box-shadow: none;
+  }
+
+  .navbar-toggler span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--text-primary);
+    margin: 4px auto;
+    transition: all var(--transition-normal);
+    border-radius: 1px;
+  }
+
+  /* Активное состояние hamburger для Alpine.js */
+  .navbar-toggler span.hamburger-line.active:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+
+  .navbar-toggler span.hamburger-line.active:nth-child(2) {
+    opacity: 0;
+  }
+
+  .navbar-toggler span.hamburger-line.active:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
+  }
+
+  /* Совместимость со старым Bootstrap классом */
+  .navbar-toggler:not(.collapsed) span:nth-child(1),
+  .navbar-toggler[aria-expanded="true"] span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+
+  .navbar-toggler:not(.collapsed) span:nth-child(2),
+  .navbar-toggler[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .navbar-toggler:not(.collapsed) span:nth-child(3),
+  .navbar-toggler[aria-expanded="true"] span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
+  }
+
+  /* Navigation Links */
+  .nav-link {
+    color: var(--text-secondary) !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-normal);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    height: 100%;
+    white-space: nowrap;
+  }
+
+  /* Улучшенная читаемость в темной теме */
+  [data-theme="dark"] header.modern-header .nav-link,
+  [data-theme="dark"] .nav-link {
+    color: rgba(248, 250, 252, 0.9) !important;
+  }
+
+  [data-theme="dark"] header.modern-header .nav-link:hover,
+  [data-theme="dark"] .nav-link:hover {
+    color: #1d4ed8 !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  [data-theme="dark"] header.modern-header .nav-link.active,
+  [data-theme="dark"] .nav-link.active {
+    color: #1d4ed8 !important;
+    background: rgba(29, 78, 216, 0.1) !important;
+  }
+
+  /* Темная тема для кнопок и элементов управления в шапке */
+  [data-theme="dark"] header.modern-header .btn,
+  [data-theme="dark"] header.modern-header .dropdown-toggle,
+  [data-theme="dark"] header.modern-header .language-btn-modern {
+    color: rgba(248, 250, 252, 0.9) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+  }
+
+  [data-theme="dark"] header.modern-header .dropdown-menu {
+    background: rgba(30, 41, 59, 0.95) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(248, 250, 252, 0.9) !important;
+  }
+
+  [data-theme="dark"] header.modern-header .dropdown-item {
+    color: rgba(248, 250, 252, 0.9) !important;
+  }
+
+  [data-theme="dark"] header.modern-header .dropdown-item:hover {
+    background: rgba(29, 78, 216, 0.1) !important;
+    color: #1d4ed8 !important;
+  }
+
+  .nav-link::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    transform: translateX(-50%);
+    transition: width var(--transition-normal);
+  }
+
+  .nav-link:hover::before {
+    width: 80%;
+  }
+
+  .nav-link:hover {
+    color: var(--primary-color) !important;
+    background: var(--glass-bg);
+    transform: translateY(-2px);
+  }
+
+  .nav-link.active {
+    color: var(--primary-color) !important;
+    background: var(--glass-bg);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .nav-link.active::before {
+    width: 80%;
+  }
+
+  /* Dropdown Styles */
+  .dropdown-toggle,
+  .btn {
+    border-radius: var(--radius-md) !important;
+    transition: all var(--transition-normal);
+    border: 1px solid var(--border-color) !important;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--text-primary);
+    text-decoration: none;
+    height: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+    cursor: pointer;
+    pointer-events: auto !important;
+    z-index: 1001;
+    position: relative;
+  }
+
+  .dropdown-toggle:hover,
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+    background: rgba(255, 255, 255, 1);
+  }
+
+  /* Базовые стили для dropdown-menu - Alpine.js управляет display через x-show */
+  .dropdown-menu {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    backdrop-filter: var(--glass-blur);
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    animation: dropdownSlide 0.3s ease;
+    min-width: 220px;
+    z-index: 1050 !important;
+    position: absolute !important;
+    max-height: 70vh !important;
+    overflow-y: auto !important;
+    /* НЕ устанавливаем display здесь - Alpine.js управляет через x-show */
+  }
+
+  /* Переопределяем Bootstrap display для Alpine.js dropdown */
+  /* Используем :style для управления display, так как Bootstrap может переопределять x-show */
+
+  /* Принудительно показываем когда :style устанавливает display: block */
+  .dropdown[x-data] .dropdown-menu[style*="display: block"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  /* Скрываем когда :style устанавливает display: none */
+  .dropdown[x-data] .dropdown-menu[style*="display: none"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+
+
+  /* ГРАДИЕНТНАЯ ТЕМА - ИСПРАВЛЕНИЯ ДЛЯ DROPDOWN */
+  [data-theme="gradient"] .dropdown-menu {
+    background: rgba(0, 0, 0, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(25px) !important;
+    color: #ffffff !important;
+  }
+
+  [data-theme="gradient"] .dropdown-item {
+    color: #ffffff !important;
+  }
+
+  [data-theme="gradient"] .dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+  }
+
+  /* ДУБЛИРУЮЩИЕСЯ СТИЛИ УДАЛЕНЫ - ИСПОЛЬЗУЮТСЯ СТИЛИ НИЖЕ */
+
+  /* МОБИЛЬНЫЕ ИСПРАВЛЕНИЯ ДЛЯ ПОЗИЦИОНИРОВАНИЯ */
+  @media (max-width: 767px) {
+    .dropdown-menu {
+      position: static !important;
+      width: 100% !important;
+      left: auto !important;
+      right: auto !important;
+      top: auto !important;
+      margin-top: 0.5rem !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      max-height: none !important;
+      overflow-y: visible !important;
+      transform: none !important;
+      max-width: 100% !important;
+      min-width: auto !important;
+    }
+
+    .language-menu {
+      position: static !important;
+      width: 100% !important;
+      left: auto !important;
+      right: auto !important;
+      top: auto !important;
+      margin-top: 0.5rem !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      transform: none !important;
+      max-width: 100% !important;
+      min-width: auto !important;
+    }
+
+    /* Переопределяем inline стили на мобильных - используем более специфичный селектор */
+    .language-menu[style*="position: absolute"],
+    .language-menu[style*="right: 0"],
+    .language-dropdown .language-menu {
+      position: static !important;
+      right: auto !important;
+      left: auto !important;
+      top: auto !important;
+      transform: none !important;
+    }
+
+    /* Переопределяем :style binding на мобильных через CSS */
+    .language-menu[style*="display: block"] {
+      position: static !important;
+      right: auto !important;
+      left: auto !important;
+      top: auto !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: auto !important;
+    }
+
+    /* Убеждаемся, что родительские контейнеры не обрезают меню */
+    .navbar-actions,
+    .navbar-collapse,
+    .navbar {
+      overflow: visible !important;
+    }
+  }
+
+  @keyframes dropdownSlide {
+    from {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .dropdown-item {
+    color: var(--text-secondary);
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    background: none;
     width: 100%;
+    text-align: left;
+  }
+
+  .dropdown-item:hover {
+    background: var(--glass-bg);
+    color: var(--primary-color);
+    transform: translateX(5px);
+  }
+
+  .dropdown-item.active {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+  }
+
+  .dropdown-item.text-danger {
+    color: var(--danger-color);
+  }
+
+  .dropdown-item.text-danger:hover {
+    background: rgba(231, 76, 60, 0.1);
+    color: var(--danger-color);
+  }
+
+  .dropdown-item i {
+    width: 16px;
+    text-align: center;
+    transition: transform var(--transition-normal);
+  }
+
+  .dropdown-item:hover i {
+    transform: scale(1.1);
+  }
+
+  .dropdown-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 0.5rem;
+  }
+
+  .dropdown-header.border-bottom {
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  /* User Info Styles */
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .user-details strong {
+    color: var(--text-primary);
+    font-size: 1rem;
+  }
+
+  .user-details small {
+    font-size: 0.8rem;
+    opacity: 0.8;
+  }
+
+  /* User Stats in Dropdown */
+  .user-stats {
+    text-align: center;
+  }
+
+  .stat-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .level-badge {
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .xp-counter {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .achievements-link-wrapper {
+    display: flex;
     justify-content: center;
   }
 
-  .user-dropdown {
-    position: static !important;
-    transform: none !important;
-    border: none;
-    box-shadow: none;
+  .achievements-link {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-normal);
+  }
+
+  .achievements-link:hover {
     background: var(--glass-bg);
-    margin-top: 1rem;
+    transform: scale(1.05);
   }
-  
-  .hero-section {
-    padding-top: calc(var(--header-mobile-height) + 1rem);
-  }
-}
 
-@media (max-width: 576px) {
-  .navbar {
-    padding: 0.75rem 0;
-  }
-  
-  .navbar-brand img {
-    height: 32px;
-  }
-  
-  .btn span {
-    display: none;
-  }
-  
+  /* Language Button */
   .language-btn {
-    min-width: 45px;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 70px;
+    justify-content: center;
   }
-}
 
-/* ===== ИСПРАВЛЕНИЕ ЯЗЫКОВОЙ КНОПКИ БЕЗ BOOTSTRAP КОНФЛИКТОВ ===== */
-.language-dropdown {
-  position: relative !important;
-  z-index: 9999 !important;
-  display: inline-block !important;
-}
-
-.language-dropdown .language-btn {
-  pointer-events: auto !important;
-  cursor: pointer !important;
-  user-select: none !important;
-  border: 1px solid var(--primary-color) !important;
-  background: rgba(255, 255, 255, 0.9) !important;
-  color: var(--primary-color) !important;
-  transition: all 0.3s ease !important;
-  font-weight: 500 !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.25rem !important;
-}
-
-.language-dropdown .language-btn:hover,
-.language-dropdown .language-btn:focus {
-  background-color: var(--primary-color) !important;
-  color: white !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-  outline: none !important;
-}
-
-.language-dropdown .language-btn[aria-expanded="true"] {
-  background-color: var(--primary-color) !important;
-  color: white !important;
-}
-
-.language-menu {
-  position: absolute !important;
-  top: calc(100% + 0.5rem) !important;
-  right: 0 !important;
-  z-index: 10000 !important;
-  min-width: 180px !important;
-  border: 1px solid rgba(0, 0, 0, 0.15) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
-  background: white !important;
-  backdrop-filter: blur(10px) !important;
-  padding: 0.5rem 0 !important;
-  list-style: none !important;
-  margin: 0 !important;
-  /* Alpine.js управляет видимостью через x-show */
-}
-
-/* ПЕРЕОПРЕДЕЛЕНИЕ ДЛЯ ТЕМНОЙ ТЕМЫ */
-[data-theme="dark"] .language-menu {
-  background: rgba(30, 41, 59, 0.95) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  backdrop-filter: blur(20px) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
-}
-
-[data-theme="gradient"] .language-menu {
-  background: rgba(0, 0, 0, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  backdrop-filter: blur(25px) !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
-}
-
-/* Alpine.js управляет видимостью через x-show */
-
-.language-menu .dropdown-item {
-  padding: 0.5rem 1rem !important;
-  font-size: 0.9rem !important;
-  transition: all 0.2s ease !important;
-  border: none !important;
-  cursor: pointer !important;
-  color: #333 !important;
-}
-
-.language-menu .dropdown-item:hover {
-  background-color: var(--primary-color) !important;
-  color: white !important;
-  transform: translateX(2px) !important;
-}
-
-.language-menu .dropdown-item.active {
-  background-color: rgba(var(--primary-color), 0.1) !important;
-  color: var(--primary-color) !important;
-  font-weight: 600 !important;
-}
-
-
-
-/* ПЕРЕОПРЕДЕЛЕНИЕ ТЕКСТА ДЛЯ ГРАДИЕНТНОЙ ТЕМЫ */
-[data-theme="gradient"] .language-menu .dropdown-item {
-  color: #ffffff !important;
-}
-
-[data-theme="gradient"] .language-menu .dropdown-item:hover {
-  background-color: rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
-}
-
-[data-theme="gradient"] .language-menu .dropdown-item.active {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
-}
-
-/* Мобильные исправления для языковой кнопки */
-@media (max-width: 768px) {
-  .language-dropdown {
-    width: 100% !important;
-    position: relative !important;
-  }
-  
-  .language-dropdown .dropdown-toggle {
-    width: 100% !important;
-    justify-content: space-between !important;
-  }
-  
-  /* Агрессивное переопределение всех inline стилей на мобильных */
-  .language-dropdown .language-menu,
-  .language-menu.language-menu,
-  ul.language-menu.dropdown-menu {
-    position: static !important;
-    width: 100% !important;
-    left: auto !important;
-    right: auto !important;
-    top: auto !important;
-    bottom: auto !important;
-    margin-top: 0.5rem !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
+  /* User Button */
+  .user-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
     border: none !important;
-    box-shadow: none !important;
-    background: rgba(255, 255, 255, 0.05) !important;
-    transform: none !important;
-    max-width: 100% !important;
-    min-width: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-    overflow-y: visible !important;
-    overflow-x: visible !important;
+    position: relative;
+    overflow: visible;
+    padding: 0.5rem 1rem !important;
   }
-  
-  /* Переопределяем inline стили через атрибут селекторы */
-  .language-menu[style*="position"],
-  .language-menu[style*="right"],
-  .language-menu[style*="absolute"] {
-    position: static !important;
-    right: auto !important;
-    left: auto !important;
-    top: auto !important;
-    transform: none !important;
+
+  .user-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
   }
-  
-  /* Переопределяем :style binding на мобильных через CSS */
-  .language-menu[style*="display: block"],
-  .language-menu[style*="visibility: visible"] {
-    position: static !important;
-    right: auto !important;
-    left: auto !important;
-    top: auto !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: auto !important;
+
+  .user-btn:hover::before {
+    left: 100%;
   }
-  
-  /* ТЕМНАЯ ТЕМА НА МОБИЛЬНЫХ */
+
+  .user-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(29, 78, 216, 0.3);
+  }
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+  }
+
+  /* Button Enhancements */
+  .btn {
+    border-radius: var(--radius-md) !important;
+    font-weight: 600;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 1rem !important;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+    border: none !important;
+    position: relative;
+    overflow: visible;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(29, 78, 216, 0.3);
+  }
+
+  .btn-outline-primary {
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+    background: transparent;
+  }
+
+  .btn-outline-primary:hover {
+    background: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: white !important;
+    transform: translateY(-2px);
+  }
+
+  /* Theme Toggle in Dropdown */
+  .theme-toggle-inline {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+  }
+
+  .theme-toggle-inline:hover {
+    background: var(--glass-bg);
+    color: var(--primary-color);
+    transform: translateX(5px);
+  }
+
+  .theme-icon {
+    font-size: 1rem;
+    transition: transform var(--transition-normal);
+    width: 16px;
+    text-align: center;
+  }
+
+  .theme-toggle-inline:hover .theme-icon {
+    transform: rotate(180deg);
+  }
+
+  /* ===== ИСПРАВЛЕНИЕ ОТСТУПОВ ===== */
+
+  /* УБИРАЕМ глобальный padding-top у body */
+  body {
+    padding-top: 0 !important;
+    margin: 0;
+  }
+
+  /* Добавляем отступы ТОЛЬКО для специфических контейнеров */
+  .main-content {
+    margin-top: var(--header-height);
+    min-height: calc(100vh - var(--header-height));
+    padding-top: 0 !important;
+  }
+
+  /* Специальная обработка для hero-секции */
+  .hero-section {
+    padding-top: calc(var(--header-height) + 2rem);
+    min-height: 100vh;
+  }
+
+  /* Исправления для карты обучения */
+  .learning-map-container .main-container {
+    margin-top: var(--header-height);
+    min-height: calc(100vh - var(--header-height));
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 992px) {
+
+    /* Улучшенный hamburger menu */
+    .navbar-toggler {
+      display: flex !important;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 44px;
+      height: 44px;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      order: 3;
+      margin-left: auto;
+    }
+
+    .hamburger-line {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--text-primary);
+      margin: 2px 0;
+      transition: all 0.3s ease;
+      border-radius: 1px;
+    }
+
+    .navbar-toggler[aria-expanded="true"] .hamburger-line:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .navbar-toggler[aria-expanded="true"] .hamburger-line:nth-child(2) {
+      opacity: 0;
+    }
+
+    .navbar-toggler[aria-expanded="true"] .hamburger-line:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -6px);
+    }
+
+    .navbar-brand {
+      order: 1;
+    }
+
+    .navbar-collapse {
+      order: 4;
+      width: 100%;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      margin-top: 1rem;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-xl);
+      backdrop-filter: var(--glass-blur);
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      max-height: calc(100vh - 100%);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .navbar-nav {
+      flex-direction: column;
+      width: 100%;
+      gap: 0.5rem;
+    }
+
+    .nav-link {
+      margin: 0;
+      padding: 1rem;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      background: rgba(102, 126, 234, 0.1);
+      transform: translateX(5px);
+    }
+
+    .navbar-actions {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 0.75rem;
+      margin-left: 0;
+    }
+
+    .dropdown {
+      width: 100%;
+    }
+
+    .dropdown-toggle {
+      width: 100%;
+      justify-content: space-between;
+      padding: 1rem;
+      min-height: 44px;
+    }
+
+    .dropdown-menu {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+
+    .dropdown-item {
+      padding: 1rem;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    .guest-actions {
+      flex-direction: column !important;
+      gap: 0.5rem;
+    }
+
+    .guest-actions .btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .user-dropdown {
+      position: static !important;
+      transform: none !important;
+      border: none;
+      box-shadow: none;
+      background: var(--glass-bg);
+      margin-top: 1rem;
+    }
+
+    .hero-section {
+      padding-top: calc(var(--header-mobile-height) + 1rem);
+    }
+  }
+
+  @media (max-width: 576px) {
+    .navbar {
+      padding: 0.75rem 0;
+    }
+
+    .navbar-brand img {
+      height: 32px;
+    }
+
+    .btn span {
+      display: none;
+    }
+
+    .language-btn {
+      min-width: 45px;
+    }
+  }
+
+  /* ===== ИСПРАВЛЕНИЕ ЯЗЫКОВОЙ КНОПКИ БЕЗ BOOTSTRAP КОНФЛИКТОВ ===== */
+  .language-dropdown {
+    position: relative !important;
+    z-index: 9999 !important;
+    display: inline-block !important;
+  }
+
+  .language-dropdown .language-btn {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    border: 1px solid var(--primary-color) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    color: var(--primary-color) !important;
+    transition: all 0.3s ease !important;
+    font-weight: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.25rem !important;
+  }
+
+  .language-dropdown .language-btn:hover,
+  .language-dropdown .language-btn:focus {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    outline: none !important;
+  }
+
+  .language-dropdown .language-btn[aria-expanded="true"] {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+  }
+
+  .language-menu {
+    position: absolute !important;
+    top: calc(100% + 0.5rem) !important;
+    right: 0 !important;
+    z-index: 10000 !important;
+    min-width: 180px !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+    background: white !important;
+    backdrop-filter: blur(10px) !important;
+    padding: 0.5rem 0 !important;
+    list-style: none !important;
+    margin: 0 !important;
+    /* Alpine.js управляет видимостью через x-show */
+  }
+
+  /* ПЕРЕОПРЕДЕЛЕНИЕ ДЛЯ ТЕМНОЙ ТЕМЫ */
   [data-theme="dark"] .language-menu {
     background: rgba(30, 41, 59, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(20px) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
   }
-  
+
   [data-theme="gradient"] .language-menu {
     background: rgba(0, 0, 0, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(25px) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
   }
-  
-  /* Убеждаемся, что родительские контейнеры не обрезают меню */
-  .navbar-actions,
-  .navbar-collapse,
-  .navbar,
-  header {
-    overflow: visible !important;
-    overflow-x: visible !important;
-    overflow-y: visible !important;
+
+  /* Alpine.js управляет видимостью через x-show */
+
+  .language-menu .dropdown-item {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.9rem !important;
+    transition: all 0.2s ease !important;
+    border: none !important;
+    cursor: pointer !important;
+    color: #333 !important;
   }
-  
-  /* Убеждаемся, что dropdown контейнер не обрезает */
-  .language-dropdown {
-    overflow: visible !important;
+
+  .language-menu .dropdown-item:hover {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    transform: translateX(2px) !important;
   }
+
+  .language-menu .dropdown-item.active {
+    background-color: rgba(var(--primary-color), 0.1) !important;
+    color: var(--primary-color) !important;
+    font-weight: 600 !important;
+  }
+
+
+
+  /* ПЕРЕОПРЕДЕЛЕНИЕ ТЕКСТА ДЛЯ ГРАДИЕНТНОЙ ТЕМЫ */
+  [data-theme="gradient"] .language-menu .dropdown-item {
+    color: #ffffff !important;
+  }
+
+  [data-theme="gradient"] .language-menu .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+  }
+
+  [data-theme="gradient"] .language-menu .dropdown-item.active {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+  }
+
+  /* Мобильные исправления для языковой кнопки */
+  @media (max-width: 768px) {
+    .language-dropdown {
+      width: 100% !important;
+      position: relative !important;
+    }
+
+    .language-dropdown .dropdown-toggle {
+      width: 100% !important;
+      justify-content: space-between !important;
+    }
+
+    /* Агрессивное переопределение всех inline стилей на мобильных */
+    .language-dropdown .language-menu,
+    .language-menu.language-menu,
+    ul.language-menu.dropdown-menu {
+      position: static !important;
+      width: 100% !important;
+      left: auto !important;
+      right: auto !important;
+      top: auto !important;
+      bottom: auto !important;
+      margin-top: 0.5rem !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      background: rgba(255, 255, 255, 0.05) !important;
+      transform: none !important;
+      max-width: 100% !important;
+      min-width: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      overflow-y: visible !important;
+      overflow-x: visible !important;
+    }
+
+    /* Переопределяем inline стили через атрибут селекторы */
+    .language-menu[style*="position"],
+    .language-menu[style*="right"],
+    .language-menu[style*="absolute"] {
+      position: static !important;
+      right: auto !important;
+      left: auto !important;
+      top: auto !important;
+      transform: none !important;
+    }
+
+    /* Переопределяем :style binding на мобильных через CSS */
+    .language-menu[style*="display: block"],
+    .language-menu[style*="visibility: visible"] {
+      position: static !important;
+      right: auto !important;
+      left: auto !important;
+      top: auto !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: auto !important;
+    }
+
+    /* ТЕМНАЯ ТЕМА НА МОБИЛЬНЫХ */
+    [data-theme="dark"] .language-menu {
+      background: rgba(30, 41, 59, 0.95) !important;
+    }
+
+    [data-theme="gradient"] .language-menu {
+      background: rgba(0, 0, 0, 0.8) !important;
+    }
+
+    /* Убеждаемся, что родительские контейнеры не обрезают меню */
+    .navbar-actions,
+    .navbar-collapse,
+    .navbar,
+    header {
+      overflow: visible !important;
+      overflow-x: visible !important;
+      overflow-y: visible !important;
+    }
+
+    /* Убеждаемся, что dropdown контейнер не обрезает */
+    .language-dropdown {
+      overflow: visible !important;
+    }
   }
 </style>
 
 <!-- ===== СТИЛИ ДЛЯ INLINE ПЕРЕКЛЮЧАТЕЛЯ ТЕМ ===== -->
 <style>
-.theme-switcher-inline {
-  display: flex !important;
-  gap: 0.5rem !important;
-  padding: 0.5rem 1rem !important;
-  justify-content: center !important;
-  align-items: center !important;
-  background: rgba(0, 0, 0, 0.02) !important;
-  border-radius: 8px !important;
-  margin: 0.25rem 0 !important;
-}
-
-.theme-btn {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 36px !important;
-  height: 36px !important;
-  border: 2px solid transparent !important;
-  border-radius: 50% !important;
-  background: transparent !important;
-  color: var(--text-secondary, #666) !important;
-  font-size: 16px !important;
-  cursor: pointer !important;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-  position: relative !important;
-  overflow: hidden !important;
-}
-
-.theme-btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: var(--primary-color, #1d4ed8);
-  opacity: 0.1;
-  transform: translate(-50%, -50%);
-  transition: all 0.3s ease;
-  z-index: 0;
-}
-
-.theme-btn:hover::before {
-  width: 100%;
-  height: 100%;
-}
-
-.theme-btn:hover {
-  color: var(--primary-color, #1d4ed8) !important;
-  transform: translateY(-3px) scale(1.05) !important;
-  box-shadow: 
-    0 8px 25px rgba(29, 78, 216, 0.25),
-    0 2px 0 rgba(255, 255, 255, 0.3) inset !important;
-  background: var(--bg-surface, rgba(255, 255, 255, 0.15)) !important;
-}
-
-.theme-btn:active {
-  transform: translateY(0) scale(0.95) !important;
-}
-
-.theme-btn i {
-  position: relative;
-  z-index: 1;
-}
-
-/* ===== СОСТОЯНИЯ АКТИВНЫХ ТЕМ ===== */
-.theme-btn.active {
-  color: #ffffff !important;
-  border-color: var(--primary-color, #1d4ed8) !important;
-  background: var(--primary-color, #1d4ed8) !important;
-  box-shadow: 
-    0 4px 15px rgba(29, 78, 216, 0.3),
-    0 0 0 3px rgba(29, 78, 216, 0.1) !important;
-  transform: scale(1.1) !important;
-}
-
-.theme-btn.active::before {
-  width: 100%;
-  height: 100%;
-  opacity: 0.2;
-  background: #ffffff;
-}
-
-/* ===== СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ КАЖДОЙ ТЕМЫ ===== */
-.theme-btn[data-theme="light"]:hover {
-  color: #f59e0b !important;
-  border-color: #f59e0b !important;
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2) !important;
-}
-
-.theme-btn[data-theme="light"].active {
-  background: #f59e0b !important;
-  border-color: #f59e0b !important;
-  box-shadow: 
-    0 4px 15px rgba(245, 158, 11, 0.3),
-    0 0 0 3px rgba(245, 158, 11, 0.1) !important;
-}
-
-.theme-btn[data-theme="dark"]:hover {
-  color: #8b5cf6 !important;
-  border-color: #8b5cf6 !important;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2) !important;
-}
-
-.theme-btn[data-theme="dark"].active {
-  background: #8b5cf6 !important;
-  border-color: #8b5cf6 !important;
-  box-shadow: 
-    0 4px 15px rgba(139, 92, 246, 0.3),
-    0 0 0 3px rgba(139, 92, 246, 0.1) !important;
-}
-
-.theme-btn[data-theme="gradient"]:hover {
-  color: #06b6d4 !important;
-  border-color: #06b6d4 !important;
-  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2) !important;
-}
-
-.theme-btn[data-theme="gradient"].active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  border-color: #667eea !important;
-  box-shadow: 
-    0 4px 15px rgba(102, 126, 234, 0.3),
-    0 0 0 3px rgba(102, 126, 234, 0.1) !important;
-}
-
-/* ===== АНИМАЦИЯ ПЕРЕКЛЮЧЕНИЯ ===== */
-@keyframes themeSwitch {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1.1);
-  }
-}
-
-.theme-btn.switching {
-  animation: themeSwitch 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
   .theme-switcher-inline {
-    padding: 0.75rem 1rem !important;
-    gap: 0.75rem !important;
+    display: flex !important;
+    gap: 0.5rem !important;
+    padding: 0.5rem 1rem !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background: rgba(0, 0, 0, 0.02) !important;
+    border-radius: 8px !important;
+    margin: 0.25rem 0 !important;
   }
-  
+
   .theme-btn {
-    width: 40px !important;
-    height: 40px !important;
-    font-size: 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    border: 2px solid transparent !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    color: var(--text-secondary, #666) !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    position: relative !important;
+    overflow: hidden !important;
   }
-}
+
+  .theme-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: var(--primary-color, #1d4ed8);
+    opacity: 0.1;
+    transform: translate(-50%, -50%);
+    transition: all 0.3s ease;
+    z-index: 0;
+  }
+
+  .theme-btn:hover::before {
+    width: 100%;
+    height: 100%;
+  }
+
+  .theme-btn:hover {
+    color: var(--primary-color, #1d4ed8) !important;
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow:
+      0 8px 25px rgba(29, 78, 216, 0.25),
+      0 2px 0 rgba(255, 255, 255, 0.3) inset !important;
+    background: var(--bg-surface, rgba(255, 255, 255, 0.15)) !important;
+  }
+
+  .theme-btn:active {
+    transform: translateY(0) scale(0.95) !important;
+  }
+
+  .theme-btn i {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ===== СОСТОЯНИЯ АКТИВНЫХ ТЕМ ===== */
+  .theme-btn.active {
+    color: #ffffff !important;
+    border-color: var(--primary-color, #1d4ed8) !important;
+    background: var(--primary-color, #1d4ed8) !important;
+    box-shadow:
+      0 4px 15px rgba(29, 78, 216, 0.3),
+      0 0 0 3px rgba(29, 78, 216, 0.1) !important;
+    transform: scale(1.1) !important;
+  }
+
+  .theme-btn.active::before {
+    width: 100%;
+    height: 100%;
+    opacity: 0.2;
+    background: #ffffff;
+  }
+
+  /* ===== СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ КАЖДОЙ ТЕМЫ ===== */
+  .theme-btn[data-theme="light"]:hover {
+    color: #f59e0b !important;
+    border-color: #f59e0b !important;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2) !important;
+  }
+
+  .theme-btn[data-theme="light"].active {
+    background: #f59e0b !important;
+    border-color: #f59e0b !important;
+    box-shadow:
+      0 4px 15px rgba(245, 158, 11, 0.3),
+      0 0 0 3px rgba(245, 158, 11, 0.1) !important;
+  }
+
+  .theme-btn[data-theme="dark"]:hover {
+    color: #8b5cf6 !important;
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2) !important;
+  }
+
+  .theme-btn[data-theme="dark"].active {
+    background: #8b5cf6 !important;
+    border-color: #8b5cf6 !important;
+    box-shadow:
+      0 4px 15px rgba(139, 92, 246, 0.3),
+      0 0 0 3px rgba(139, 92, 246, 0.1) !important;
+  }
+
+  .theme-btn[data-theme="gradient"]:hover {
+    color: #06b6d4 !important;
+    border-color: #06b6d4 !important;
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2) !important;
+  }
+
+  .theme-btn[data-theme="gradient"].active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-color: #667eea !important;
+    box-shadow:
+      0 4px 15px rgba(102, 126, 234, 0.3),
+      0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+  }
+
+  /* ===== АНИМАЦИЯ ПЕРЕКЛЮЧЕНИЯ ===== */
+  @keyframes themeSwitch {
+    0% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.2);
+    }
+
+    100% {
+      transform: scale(1.1);
+    }
+  }
+
+  .theme-btn.switching {
+    animation: themeSwitch 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 768px) {
+    .theme-switcher-inline {
+      padding: 0.75rem 1rem !important;
+      gap: 0.75rem !important;
+    }
+
+    .theme-btn {
+      width: 40px !important;
+      height: 40px !important;
+      font-size: 18px !important;
+    }
+  }
 </style>
 
 <!-- ===== СОВРЕМЕННЫЕ СТИЛИ ДЛЯ КОМПАКТНЫХ КНОПОК ===== -->
 <style>
-/* ===== КОМПАКТНЫЕ КНОПКИ ЯЗЫКА И ПРОФИЛЯ ===== */
-.language-btn-modern,
-.user-btn-modern {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 44px !important;
-  height: 44px !important;
-  border: none !important;
-  border-radius: 50% !important;
-  background: var(--bg-surface-alpha, rgba(255, 255, 255, 0.1)) !important;
-  backdrop-filter: blur(10px) !important;
-  color: var(--text-primary, #333) !important;
-  font-size: 18px !important;
-  cursor: pointer !important;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-  position: relative !important;
-  overflow: hidden !important;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.1),
-    0 1px 0 rgba(255, 255, 255, 0.2) inset !important;
-  text-decoration: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-.language-btn-modern::before,
-.user-btn-modern::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: var(--primary-color, #1d4ed8);
-  opacity: 0.15;
-  transform: translate(-50%, -50%);
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  z-index: 0;
-}
-
-.language-btn-modern:hover::before,
-.user-btn-modern:hover::before {
-  width: 120%;
-  height: 120%;
-  opacity: 0.2;
-}
-
-.language-btn-modern:hover,
-.user-btn-modern:hover {
-  color: var(--primary-color, #1d4ed8) !important;
-  border: none !important;
-  transform: translateY(-3px) scale(1.05) !important;
-  box-shadow: 
-    0 8px 25px rgba(29, 78, 216, 0.25),
-    0 2px 0 rgba(255, 255, 255, 0.3) inset !important;
-  background: var(--bg-surface, rgba(255, 255, 255, 0.15)) !important;
-}
-
-.language-btn-modern:active,
-.user-btn-modern:active {
-  transform: translateY(-1px) scale(0.98) !important;
-  box-shadow: 
-    0 4px 15px rgba(29, 78, 216, 0.2),
-    0 1px 0 rgba(255, 255, 255, 0.2) inset !important;
-}
-
-.language-btn-modern i,
-.user-btn-modern i {
-  position: relative;
-  z-index: 1;
-  font-size: 18px !important;
-  transition: all 0.3s ease !important;
-}
-
-.language-btn-modern:hover i,
-.user-btn-modern:hover i {
-  transform: scale(1.1) !important;
-}
-
-/* ===== СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ USER AVATAR ===== */
-.user-btn-modern .user-avatar {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 100% !important;
-  height: 100% !important;
-  position: relative !important;
-  z-index: 1 !important;
-}
-
-.user-btn-modern .user-avatar i {
-  font-size: 20px !important;
-}
-
-/* ===== АНИМАЦИЯ ПУЛЬСАЦИИ ===== */
-@keyframes buttonPulse {
-  0% {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(29, 78, 216, 0.4);
-  }
-  50% {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 8px rgba(29, 78, 216, 0);
-  }
-  100% {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(29, 78, 216, 0);
-  }
-}
-
-.language-btn-modern:focus,
-.user-btn-modern:focus {
-  outline: none !important;
-  animation: buttonPulse 1.5s infinite !important;
-}
-
-/* ===== АДАПТИВНОСТЬ ===== */
-@media (max-width: 768px) {
+  /* ===== КОМПАКТНЫЕ КНОПКИ ЯЗЫКА И ПРОФИЛЯ ===== */
   .language-btn-modern,
   .user-btn-modern {
-    width: 40px !important;
-    height: 40px !important;
-    font-size: 16px !important;
-  }
-  
-  .user-btn-modern .user-avatar i {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 44px !important;
+    height: 44px !important;
+    border: none !important;
+    border-radius: 50% !important;
+    background: var(--bg-surface-alpha, rgba(255, 255, 255, 0.1)) !important;
+    backdrop-filter: blur(10px) !important;
+    color: var(--text-primary, #333) !important;
     font-size: 18px !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.1),
+      0 1px 0 rgba(255, 255, 255, 0.2) inset !important;
+    text-decoration: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
-}
 
-@media (max-width: 576px) {
-  .language-btn-modern,
-  .user-btn-modern {
-    width: 38px !important;
-    height: 38px !important;
-    font-size: 15px !important;
+  .language-btn-modern::before,
+  .user-btn-modern::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: var(--primary-color, #1d4ed8);
+    opacity: 0.15;
+    transform: translate(-50%, -50%);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 0;
   }
-  
-  .user-btn-modern .user-avatar i {
-    font-size: 17px !important;
+
+  .language-btn-modern:hover::before,
+  .user-btn-modern:hover::before {
+    width: 120%;
+    height: 120%;
+    opacity: 0.2;
   }
-}
 
-/* ===== LOADING STATE ===== */
-.language-btn-modern.loading,
-.user-btn-modern.loading {
-  pointer-events: none !important;
-  opacity: 0.7 !important;
-}
+  .language-btn-modern:hover,
+  .user-btn-modern:hover {
+    color: var(--primary-color, #1d4ed8) !important;
+    border: none !important;
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow:
+      0 8px 25px rgba(29, 78, 216, 0.25),
+      0 2px 0 rgba(255, 255, 255, 0.3) inset !important;
+    background: var(--bg-surface, rgba(255, 255, 255, 0.15)) !important;
+  }
 
-.language-btn-modern.loading::after,
-.user-btn-modern.loading::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 20px;
-  height: 20px;
-  border: 2px solid transparent;
-  border-top: 2px solid var(--primary-color, #1d4ed8);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  animation: spin 1s linear infinite;
-  z-index: 2;
-}
+  .language-btn-modern:active,
+  .user-btn-modern:active {
+    transform: translateY(-1px) scale(0.98) !important;
+    box-shadow:
+      0 4px 15px rgba(29, 78, 216, 0.2),
+      0 1px 0 rgba(255, 255, 255, 0.2) inset !important;
+  }
 
-@keyframes spin {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(-50%, -50%) rotate(360deg); }
-}
-
-/* ===== ТЕМНАЯ ТЕМА ДЛЯ КНОПОК ===== */
-[data-theme="dark"] .language-btn-modern,
-[data-theme="dark"] .user-btn-modern {
-  background: rgba(30, 41, 59, 0.8) !important;
-  color: #f8fafc !important;
-  border: none !important;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.1) inset !important;
-}
-
-[data-theme="dark"] .language-btn-modern:hover,
-[data-theme="dark"] .user-btn-modern:hover {
-  background: rgba(30, 41, 59, 0.9) !important;
-  color: #1d4ed8 !important;
-  border: none !important;
-  box-shadow: 
-    0 8px 25px rgba(29, 78, 216, 0.3),
-    0 2px 0 rgba(255, 255, 255, 0.2) inset !important;
-}
-
-/* ===== ГРАДИЕНТНАЯ ТЕМА ДЛЯ КНОПОК ===== */
-[data-theme="gradient"] .language-btn-modern,
-[data-theme="gradient"] .user-btn-modern {
-  background: rgba(0, 0, 0, 0.4) !important;
-  color: #ffffff !important;
-  border: none !important;
-  backdrop-filter: blur(15px) !important;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.4),
-    0 1px 0 rgba(255, 255, 255, 0.2) inset !important;
-}
-
-[data-theme="gradient"] .language-btn-modern:hover,
-[data-theme="gradient"] .user-btn-modern:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
-  border: none !important;
-  box-shadow: 
-    0 8px 25px rgba(255, 255, 255, 0.2),
-    0 2px 0 rgba(255, 255, 255, 0.3) inset !important;
-}
-
-/* ===== УБИРАЕМ БЕЛЫЕ КОНТЕЙНЕРЫ ВОКРУГ КНОПОК ===== */
-
-/* Основные переопределения для кнопок языка и профиля */
-.language-btn-modern,
-.user-btn-modern {
-  /* УБИРАЕМ БЕЛЫЙ ФОН */
-  background: transparent !important;
-  /* УБИРАЕМ ГРАНИЦЫ */
-  border: none !important;
-  /* УБИРАЕМ PADDING */
-  padding: 0 !important;
-  /* РАЗМЕРЫ */
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 50% !important;
-  /* ЦЕНТРИРОВАНИЕ ИКОНКИ */
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  /* КУРСОР */
-  cursor: pointer !important;
-  /* АНИМАЦИЯ */
-  transition: all 0.3s ease !important;
-  /* ЦВЕТ ИКОНКИ */
-  color: #6b7280 !important;
-  font-size: 20px !important;
-}
-
-/* Hover эффект без белого фона */
-.language-btn-modern:hover,
-.user-btn-modern:hover {
-  background: rgba(29, 78, 216, 0.1) !important;
-  color: #1d4ed8 !important;
-  transform: scale(1.1) !important;
-  border: none !important;
-}
-
-/* Убираем Bootstrap стили для dropdown контейнеров */
-.language-dropdown,
-.navbar-actions .dropdown {
-  background: transparent !important;
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-/* Переопределяем общие стили header для dropdown кнопок */
-header.modern-header .dropdown,
-header.modern-header .btn {
-  background: transparent !important;
-  border: none !important;
-  padding: 0 !important;
-}
-
-/* Убираем фон у контейнера navbar-actions */
-header.modern-header .navbar-actions {
-  background: transparent !important;
-  border: none !important;
-  padding: 0 !important;
-  gap: 1rem !important;
-}
-
-/* Специальные переопределения для dropdown-toggle */
-.language-dropdown .dropdown-toggle,
-.navbar-actions .dropdown-toggle {
-  background: transparent !important;
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 50% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  color: #6b7280 !important;
-  font-size: 20px !important;
-}
-
-/* Focus состояния без белого фона */
-.language-btn-modern:focus,
-.user-btn-modern:focus,
-.language-btn-modern:focus-visible,
-.user-btn-modern:focus-visible {
-  background: rgba(29, 78, 216, 0.1) !important;
-  border: none !important;
-  outline: none !important;
-  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.3) !important;
-}
-
-/* Active состояние без белого фона */
-.language-btn-modern:active,
-.user-btn-modern:active {
-  background: rgba(29, 78, 216, 0.2) !important;
-  transform: scale(0.95) !important;
-  border: none !important;
-}
-
-/* Убираем белый фон у родительских контейнеров */
-.navbar-actions .dropdown,
-.navbar-actions .language-dropdown {
-  background: transparent !important;
-  border: none !important;
-}
-
-/* Убираем box-shadow у всех кнопок действий */
-.navbar-actions * {
-  box-shadow: none !important;
-  border: none !important;
-}
-
-/* Убираем padding у контейнера actions */
-.navbar-actions {
-  padding: 0 !important;
-  margin: 0 !important;
-  background: transparent !important;
-}
-
-/* Исправляем иконки */
-.language-btn-modern i,
-.user-btn-modern i {
-  font-size: inherit !important;
-  color: inherit !important;
-}
-
-/* Убираем любые возможные белые фоны */
-.language-dropdown *,
-.user-dropdown * {
-  background: transparent !important;
-  border: none !important;
-}
-
-/* Исключение только для dropdown меню (не кнопок) */
-.dropdown-menu {
-  background: white !important;
-  border: 1px solid rgba(0, 0, 0, 0.15) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175) !important;
-}
-
-/* ===== УДАЛЯЕМ СТАРЫЕ СТИЛИ СВЕТЛОЙ ТЕМЫ ===== */
-
-[data-theme="light"] .language-btn-modern:hover,
-[data-theme="light"] .user-btn-modern:hover {
-  background: rgba(29, 78, 216, 0.1) !important;
-  color: #1d4ed8 !important;
-  border: none !important;
-}
-
-/* ===== ТЕМНАЯ ТЕМА БЕЗ БЕЛОГО ФОНА ===== */
-[data-theme="dark"] .language-btn-modern,
-[data-theme="dark"] .user-btn-modern {
-  background: transparent !important;
-  color: #e2e8f0 !important;
-  border: none !important;
-}
-
-[data-theme="dark"] .language-btn-modern:hover,
-[data-theme="dark"] .user-btn-modern:hover {
-  background: rgba(29, 78, 216, 0.2) !important;
-  color: #1d4ed8 !important;
-  border: none !important;
-}
-
-/* ===== ГРАДИЕНТНАЯ ТЕМА БЕЗ БЕЛОГО ФОНА ===== */
-[data-theme="gradient"] .language-btn-modern,
-[data-theme="gradient"] .user-btn-modern {
-  background: transparent !important;
-  color: rgba(255, 255, 255, 0.8) !important;
-  border: none !important;
-}
-
-[data-theme="gradient"] .language-btn-modern:hover,
-[data-theme="gradient"] .user-btn-modern:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
-  border: none !important;
-}
-
-/* ===== СВЕТЛАЯ ТЕМА БЕЗ БЕЛОГО ФОНА ===== */
-[data-theme="light"] .language-btn-modern,
-[data-theme="light"] .user-btn-modern {
-  background: transparent !important;
-  color: #64748b !important;
-  border: none !important;
-}
-
-/* ===== АДАПТИВНОСТЬ БЕЗ БЕЛОГО ФОНА ===== */
-@media (max-width: 768px) {
-  .language-btn-modern,
-  .user-btn-modern {
-    width: 40px !important;
-    height: 40px !important;
+  .language-btn-modern i,
+  .user-btn-modern i {
+    position: relative;
+    z-index: 1;
     font-size: 18px !important;
+    transition: all 0.3s ease !important;
+  }
+
+  .language-btn-modern:hover i,
+  .user-btn-modern:hover i {
+    transform: scale(1.1) !important;
+  }
+
+  /* ===== СПЕЦИАЛЬНЫЕ СТИЛИ ДЛЯ USER AVATAR ===== */
+  .user-btn-modern .user-avatar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+    position: relative !important;
+    z-index: 1 !important;
+  }
+
+  .user-btn-modern .user-avatar i {
+    font-size: 20px !important;
+  }
+
+  /* ===== АНИМАЦИЯ ПУЛЬСАЦИИ ===== */
+  @keyframes buttonPulse {
+    0% {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(29, 78, 216, 0.4);
+    }
+
+    50% {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 8px rgba(29, 78, 216, 0);
+    }
+
+    100% {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 0 0 0 rgba(29, 78, 216, 0);
+    }
+  }
+
+  .language-btn-modern:focus,
+  .user-btn-modern:focus {
+    outline: none !important;
+    animation: buttonPulse 1.5s infinite !important;
+  }
+
+  /* ===== АДАПТИВНОСТЬ ===== */
+  @media (max-width: 768px) {
+
+    .language-btn-modern,
+    .user-btn-modern {
+      width: 40px !important;
+      height: 40px !important;
+      font-size: 16px !important;
+    }
+
+    .user-btn-modern .user-avatar i {
+      font-size: 18px !important;
+    }
+  }
+
+  @media (max-width: 576px) {
+
+    .language-btn-modern,
+    .user-btn-modern {
+      width: 38px !important;
+      height: 38px !important;
+      font-size: 15px !important;
+    }
+
+    .user-btn-modern .user-avatar i {
+      font-size: 17px !important;
+    }
+  }
+
+  /* ===== LOADING STATE ===== */
+  .language-btn-modern.loading,
+  .user-btn-modern.loading {
+    pointer-events: none !important;
+    opacity: 0.7 !important;
+  }
+
+  .language-btn-modern.loading::after,
+  .user-btn-modern.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--primary-color, #1d4ed8);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: spin 1s linear infinite;
+    z-index: 2;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+
+  /* ===== ТЕМНАЯ ТЕМА ДЛЯ КНОПОК ===== */
+  [data-theme="dark"] .language-btn-modern,
+  [data-theme="dark"] .user-btn-modern {
+    background: rgba(30, 41, 59, 0.8) !important;
+    color: #f8fafc !important;
+    border: none !important;
+    box-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.3),
+      0 1px 0 rgba(255, 255, 255, 0.1) inset !important;
+  }
+
+  [data-theme="dark"] .language-btn-modern:hover,
+  [data-theme="dark"] .user-btn-modern:hover {
+    background: rgba(30, 41, 59, 0.9) !important;
+    color: #1d4ed8 !important;
+    border: none !important;
+    box-shadow:
+      0 8px 25px rgba(29, 78, 216, 0.3),
+      0 2px 0 rgba(255, 255, 255, 0.2) inset !important;
+  }
+
+  /* ===== ГРАДИЕНТНАЯ ТЕМА ДЛЯ КНОПОК ===== */
+  [data-theme="gradient"] .language-btn-modern,
+  [data-theme="gradient"] .user-btn-modern {
+    background: rgba(0, 0, 0, 0.4) !important;
+    color: #ffffff !important;
+    border: none !important;
+    backdrop-filter: blur(15px) !important;
+    box-shadow:
+      0 2px 8px rgba(0, 0, 0, 0.4),
+      0 1px 0 rgba(255, 255, 255, 0.2) inset !important;
+  }
+
+  [data-theme="gradient"] .language-btn-modern:hover,
+  [data-theme="gradient"] .user-btn-modern:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow:
+      0 8px 25px rgba(255, 255, 255, 0.2),
+      0 2px 0 rgba(255, 255, 255, 0.3) inset !important;
+  }
+
+  /* ===== УБИРАЕМ БЕЛЫЕ КОНТЕЙНЕРЫ ВОКРУГ КНОПОК ===== */
+
+  /* Основные переопределения для кнопок языка и профиля */
+  .language-btn-modern,
+  .user-btn-modern {
+    /* УБИРАЕМ БЕЛЫЙ ФОН */
+    background: transparent !important;
+    /* УБИРАЕМ ГРАНИЦЫ */
+    border: none !important;
+    /* УБИРАЕМ PADDING */
+    padding: 0 !important;
+    /* РАЗМЕРЫ */
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    /* ЦЕНТРИРОВАНИЕ ИКОНКИ */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    /* КУРСОР */
+    cursor: pointer !important;
+    /* АНИМАЦИЯ */
+    transition: all 0.3s ease !important;
+    /* ЦВЕТ ИКОНКИ */
+    color: #6b7280 !important;
+    font-size: 20px !important;
+  }
+
+  /* Hover эффект без белого фона */
+  .language-btn-modern:hover,
+  .user-btn-modern:hover {
+    background: rgba(29, 78, 216, 0.1) !important;
+    color: #1d4ed8 !important;
+    transform: scale(1.1) !important;
+    border: none !important;
+  }
+
+  /* Убираем Bootstrap стили для dropdown контейнеров */
+  .language-dropdown,
+  .navbar-actions .dropdown {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Переопределяем общие стили header для dropdown кнопок */
+  header.modern-header .dropdown,
+  header.modern-header .btn {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  /* Убираем фон у контейнера navbar-actions */
+  header.modern-header .navbar-actions {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    gap: 1rem !important;
+  }
+
+  /* Специальные переопределения для dropdown-toggle */
+  .language-dropdown .dropdown-toggle,
+  .navbar-actions .dropdown-toggle {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #6b7280 !important;
+    font-size: 20px !important;
+  }
+
+  /* Focus состояния без белого фона */
+  .language-btn-modern:focus,
+  .user-btn-modern:focus,
+  .language-btn-modern:focus-visible,
+  .user-btn-modern:focus-visible {
+    background: rgba(29, 78, 216, 0.1) !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.3) !important;
+  }
+
+  /* Active состояние без белого фона */
+  .language-btn-modern:active,
+  .user-btn-modern:active {
+    background: rgba(29, 78, 216, 0.2) !important;
+    transform: scale(0.95) !important;
+    border: none !important;
+  }
+
+  /* Убираем белый фон у родительских контейнеров */
+  .navbar-actions .dropdown,
+  .navbar-actions .language-dropdown {
     background: transparent !important;
     border: none !important;
   }
-}
 
-@media (max-width: 576px) {
-  .language-btn-modern,
-  .user-btn-modern {
-    width: 38px !important;
-    height: 38px !important;
-    font-size: 16px !important;
+  /* Убираем box-shadow у всех кнопок действий */
+  .navbar-actions * {
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Убираем padding у контейнера actions */
+  .navbar-actions {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+  }
+
+  /* Исправляем иконки */
+  .language-btn-modern i,
+  .user-btn-modern i {
+    font-size: inherit !important;
+    color: inherit !important;
+  }
+
+  /* Убираем любые возможные белые фоны */
+  .language-dropdown *,
+  .user-dropdown * {
     background: transparent !important;
     border: none !important;
   }
-}
+
+  /* Исключение только для dropdown меню (не кнопок) */
+  .dropdown-menu {
+    background: white !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175) !important;
+  }
+
+  /* ===== УДАЛЯЕМ СТАРЫЕ СТИЛИ СВЕТЛОЙ ТЕМЫ ===== */
+
+  [data-theme="light"] .language-btn-modern:hover,
+  [data-theme="light"] .user-btn-modern:hover {
+    background: rgba(29, 78, 216, 0.1) !important;
+    color: #1d4ed8 !important;
+    border: none !important;
+  }
+
+  /* ===== ТЕМНАЯ ТЕМА БЕЗ БЕЛОГО ФОНА ===== */
+  [data-theme="dark"] .language-btn-modern,
+  [data-theme="dark"] .user-btn-modern {
+    background: transparent !important;
+    color: #e2e8f0 !important;
+    border: none !important;
+  }
+
+  [data-theme="dark"] .language-btn-modern:hover,
+  [data-theme="dark"] .user-btn-modern:hover {
+    background: rgba(29, 78, 216, 0.2) !important;
+    color: #1d4ed8 !important;
+    border: none !important;
+  }
+
+  /* ===== ГРАДИЕНТНАЯ ТЕМА БЕЗ БЕЛОГО ФОНА ===== */
+  [data-theme="gradient"] .language-btn-modern,
+  [data-theme="gradient"] .user-btn-modern {
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    border: none !important;
+  }
+
+  [data-theme="gradient"] .language-btn-modern:hover,
+  [data-theme="gradient"] .user-btn-modern:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+    border: none !important;
+  }
+
+  /* ===== СВЕТЛАЯ ТЕМА БЕЗ БЕЛОГО ФОНА ===== */
+  [data-theme="light"] .language-btn-modern,
+  [data-theme="light"] .user-btn-modern {
+    background: transparent !important;
+    color: #64748b !important;
+    border: none !important;
+  }
+
+  /* ===== АДАПТИВНОСТЬ БЕЗ БЕЛОГО ФОНА ===== */
+  @media (max-width: 768px) {
+
+    .language-btn-modern,
+    .user-btn-modern {
+      width: 40px !important;
+      height: 40px !important;
+      font-size: 18px !important;
+      background: transparent !important;
+      border: none !important;
+    }
+  }
+
+  @media (max-width: 576px) {
+
+    .language-btn-modern,
+    .user-btn-modern {
+      width: 38px !important;
+      height: 38px !important;
+      font-size: 16px !important;
+      background: transparent !important;
+      border: none !important;
+    }
+  }
 </style>
 
 <script>
-// Alpine.js компонент для управления шапкой
-// Делаем функцию глобальной для Alpine.js
-window.headerNav = function() {
-  return {
-    mobileMenuOpen: false,
-    isDesktop: false,
-    
-    init() {
-      // Принудительно закрываем меню при инициализации
-      this.mobileMenuOpen = false;
-      
-      // Определяем размер экрана при загрузке
-      this.checkDesktop();
-      
-      // Закрываем мобильное меню если это десктоп
-      if (this.isDesktop) {
+  // Alpine.js компонент для управления шапкой
+  // Делаем функцию глобальной для Alpine.js
+  window.headerNav = function () {
+    return {
+      mobileMenuOpen: false,
+      isDesktop: false,
+
+      init() {
+        // Принудительно закрываем меню при инициализации
         this.mobileMenuOpen = false;
-      } else {
-        // На мобильном устройстве меню должно быть закрыто
-        this.mobileMenuOpen = false;
-      }
-      
-      // Слушаем изменения размера окна
-      const handleResize = () => {
-        const wasDesktop = this.isDesktop;
+
+        // Определяем размер экрана при загрузке
         this.checkDesktop();
-        // Закрываем мобильное меню при переходе на десктоп
+
+        // Закрываем мобильное меню если это десктоп
         if (this.isDesktop) {
           this.mobileMenuOpen = false;
+        } else {
+          // На мобильном устройстве меню должно быть закрыто
+          this.mobileMenuOpen = false;
         }
-      };
-      
-      window.addEventListener('resize', handleResize);
-    },
-    
-    checkDesktop() {
-      this.isDesktop = window.innerWidth >= 992;
-    },
-    
-    toggleMobileMenu() {
-      // На десктопе не переключаем меню
-      if (this.isDesktop) {
-        this.mobileMenuOpen = false;
-        return;
-      }
-      this.mobileMenuOpen = !this.mobileMenuOpen;
-    },
-    
-    closeMobileMenu() {
-      if (!this.isDesktop) {
-        this.mobileMenuOpen = false;
+
+        // Слушаем изменения размера окна
+        const handleResize = () => {
+          const wasDesktop = this.isDesktop;
+          this.checkDesktop();
+          // Закрываем мобильное меню при переходе на десктоп
+          if (this.isDesktop) {
+            this.mobileMenuOpen = false;
+          }
+        };
+
+        window.addEventListener('resize', handleResize);
+      },
+
+      checkDesktop() {
+        this.isDesktop = window.innerWidth >= 992;
+      },
+
+      toggleMobileMenu() {
+        // На десктопе не переключаем меню
+        if (this.isDesktop) {
+          this.mobileMenuOpen = false;
+          return;
+        }
+        this.mobileMenuOpen = !this.mobileMenuOpen;
+      },
+
+      closeMobileMenu() {
+        if (!this.isDesktop) {
+          this.mobileMenuOpen = false;
+        }
       }
     }
   }
-}
 
-// Также экспортируем для обратной совместимости
-function headerNav() {
-  return window.headerNav();
-}
+  // Также экспортируем для обратной совместимости
+  function headerNav() {
+    return window.headerNav();
+  }
 
-// Проверка инициализации Alpine.js
-document.addEventListener('DOMContentLoaded', function() {
-  // Ждем загрузки Alpine.js
-  setTimeout(function() {
-    if (typeof Alpine === 'undefined') {
-      console.error('❌ Alpine.js не загружен!');
+  // Проверка инициализации Alpine.js
+  document.addEventListener('DOMContentLoaded', function () {
+    // Ждем загрузки Alpine.js
+    setTimeout(function () {
+      if (typeof Alpine === 'undefined') {
+        console.error('❌ Alpine.js не загружен!');
+      }
+    }, 500);
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const header = document.querySelector('.modern-header');
+    let lastScrollTop = 0;
+    const scrollThreshold = 50;
+
+    // Header scroll behavior
+    if (header) {
+      window.addEventListener('scroll', function () {
+        let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
+        // Add scrolled class for styling
+        if (currentScroll > 10) {
+          header.classList.add('scrolled');
+        } else {
+          header.classList.remove('scrolled');
+        }
+
+        lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+      }, { passive: true });
     }
-  }, 500);
-});
+
+    // Close mobile menu when clicking outside - ОТКЛЮЧЕНО (конфликт с base.html)
+    // document.addEventListener('click', function(e) {
+    //   const navbar = document.querySelector('.navbar-collapse');
+    //   const toggle = document.querySelector('.navbar-toggler');
+    //   
+    //   if (navbar && navbar.classList.contains('show') && 
+    //       !navbar.contains(e.target) && 
+    //       !toggle.contains(e.target)) {
+    //     const bsCollapse = bootstrap.Collapse.getInstance(navbar);
+    //     if (bsCollapse) {
+    //       bsCollapse.hide();
+    //     }
+    //   }
+    // });
+
+    // Auto-close mobile menu when clicking nav links - ОТКЛЮЧЕНО (конфликт с base.html)
+    // document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
+    //   link.addEventListener('click', function() {
+    //     const navbar = document.querySelector('.navbar-collapse');
+    //     if (navbar && navbar.classList.contains('show')) {
+    //       const bsCollapse = bootstrap.Collapse.getInstance(navbar);
+    //       if (bsCollapse) {
+    //         bsCollapse.hide();
+    //       }
+    //     }
+    //   });
+    // });
+  });
 </script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const header = document.querySelector('.modern-header');
-  let lastScrollTop = 0;
-  const scrollThreshold = 50;
+  // ===== INLINE THEME SWITCHER CONTROLLER =====
+  document.addEventListener('DOMContentLoaded', function () {
+    // Инициализация inline переключателя тем
 
-  // Header scroll behavior
-  if (header) {
-    window.addEventListener('scroll', function() {
-      let currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-      
-      // Add scrolled class for styling
-      if (currentScroll > 10) {
-        header.classList.add('scrolled');
-      } else {
-        header.classList.remove('scrolled');
-      }
-      
-      lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
-    }, { passive: true });
-  }
+    const themeButtons = document.querySelectorAll('.theme-btn');
+    const currentTheme = localStorage.getItem('theme') || 'light';
 
-  // Close mobile menu when clicking outside - ОТКЛЮЧЕНО (конфликт с base.html)
-  // document.addEventListener('click', function(e) {
-  //   const navbar = document.querySelector('.navbar-collapse');
-  //   const toggle = document.querySelector('.navbar-toggler');
-  //   
-  //   if (navbar && navbar.classList.contains('show') && 
-  //       !navbar.contains(e.target) && 
-  //       !toggle.contains(e.target)) {
-  //     const bsCollapse = bootstrap.Collapse.getInstance(navbar);
-  //     if (bsCollapse) {
-  //       bsCollapse.hide();
-  //     }
-  //   }
-  // });
+    // Функция обновления активной кнопки
+    function updateActiveButton(activeTheme) {
+      themeButtons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.theme === activeTheme) {
+          btn.classList.add('active');
+        }
+      });
+    }
 
-  // Auto-close mobile menu when clicking nav links - ОТКЛЮЧЕНО (конфликт с base.html)
-  // document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
-  //   link.addEventListener('click', function() {
-  //     const navbar = document.querySelector('.navbar-collapse');
-  //     if (navbar && navbar.classList.contains('show')) {
-  //       const bsCollapse = bootstrap.Collapse.getInstance(navbar);
-  //       if (bsCollapse) {
-  //         bsCollapse.hide();
-  //       }
-  //     }
-  //   });
-  // });
-});
+    // Устанавливаем начальную активную кнопку
+    updateActiveButton(currentTheme);
+
+    // Обработчики кликов для кнопок тем
+    themeButtons.forEach(button => {
+      button.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const selectedTheme = this.dataset.theme;
+
+        // Добавляем анимацию переключения
+        this.classList.add('switching');
+        setTimeout(() => {
+          this.classList.remove('switching');
+        }, 400);
+
+        // Применяем тему через глобальный контроллер
+        if (window.themeController) {
+          window.themeController.setTheme(selectedTheme);
+        } else {
+          // Fallback если контроллер не загружен
+          localStorage.setItem('theme', selectedTheme);
+          document.documentElement.setAttribute('data-theme', selectedTheme);
+        }
+
+        // Обновляем активную кнопку
+        updateActiveButton(selectedTheme);
+
+        // Закрываем dropdown меню (Alpine.js автоматически закроет через @click.away)
+
+        // Тема применена
+      });
+
+      // Добавляем hover эффекты
+      button.addEventListener('mouseenter', function () {
+        if (!this.classList.contains('active')) {
+          this.style.transform = 'translateY(-2px) scale(1.05)';
+        }
+      });
+
+      button.addEventListener('mouseleave', function () {
+        if (!this.classList.contains('active')) {
+          this.style.transform = '';
+        }
+      });
+    });
+
+    // Слушаем изменения темы от других источников
+    window.addEventListener('themechange', function (e) {
+      updateActiveButton(e.detail.theme);
+    });
+
+    // Слушаем изменения атрибута data-theme
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          const newTheme = document.documentElement.getAttribute('data-theme');
+          updateActiveButton(newTheme);
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
+    // Inline переключатель тем инициализирован
+  });
 </script>
 
 <script>
-// ===== INLINE THEME SWITCHER CONTROLLER =====
-document.addEventListener('DOMContentLoaded', function() {
-  // Инициализация inline переключателя тем
-  
-  const themeButtons = document.querySelectorAll('.theme-btn');
-  const currentTheme = localStorage.getItem('theme') || 'light';
-  
-  // Функция обновления активной кнопки
-  function updateActiveButton(activeTheme) {
-    themeButtons.forEach(btn => {
-      btn.classList.remove('active');
-      if (btn.dataset.theme === activeTheme) {
-        btn.classList.add('active');
-      }
-    });
-  }
-  
-  // Устанавливаем начальную активную кнопку
-  updateActiveButton(currentTheme);
-  
-  // Обработчики кликов для кнопок тем
-  themeButtons.forEach(button => {
-    button.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const selectedTheme = this.dataset.theme;
-      
-      // Добавляем анимацию переключения
-      this.classList.add('switching');
-      setTimeout(() => {
-        this.classList.remove('switching');
-      }, 400);
-      
-      // Применяем тему через глобальный контроллер
-      if (window.themeController) {
-        window.themeController.setTheme(selectedTheme);
-      } else {
-        // Fallback если контроллер не загружен
-        localStorage.setItem('theme', selectedTheme);
-        document.documentElement.setAttribute('data-theme', selectedTheme);
-      }
-      
-      // Обновляем активную кнопку
-      updateActiveButton(selectedTheme);
-      
-      // Закрываем dropdown меню (Alpine.js автоматически закроет через @click.away)
-      
-      // Тема применена
-    });
-    
-    // Добавляем hover эффекты
-    button.addEventListener('mouseenter', function() {
-      if (!this.classList.contains('active')) {
-        this.style.transform = 'translateY(-2px) scale(1.05)';
-      }
-    });
-    
-    button.addEventListener('mouseleave', function() {
-      if (!this.classList.contains('active')) {
-        this.style.transform = '';
-      }
-    });
-  });
-  
-  // Слушаем изменения темы от других источников
-  window.addEventListener('themechange', function(e) {
-    updateActiveButton(e.detail.theme);
-  });
-  
-  // Слушаем изменения атрибута data-theme
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
-        const newTheme = document.documentElement.getAttribute('data-theme');
-        updateActiveButton(newTheme);
-      }
-    });
-  });
-  
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['data-theme']
-  });
-  
-  // Inline переключатель тем инициализирован
-});
-</script>
+  // ===== ИНТЕРАКТИВНЫЕ ЭФФЕКТЫ ДЛЯ КОМПАКТНЫХ КНОПОК =====
+  document.addEventListener('DOMContentLoaded', function () {
 
-<script>
-// ===== ИНТЕРАКТИВНЫЕ ЭФФЕКТЫ ДЛЯ КОМПАКТНЫХ КНОПОК =====
-document.addEventListener('DOMContentLoaded', function() {
-  
-  const modernButtons = document.querySelectorAll('.language-btn-modern, .user-btn-modern');
-  
-  modernButtons.forEach(button => {
-    // Эффект пульсации при клике
-    button.addEventListener('click', function(e) {
-      // Создаем эффект волны
-      const ripple = document.createElement('div');
-      const rect = this.getBoundingClientRect();
-      const size = Math.max(rect.width, rect.height);
-      const x = e.clientX - rect.left - size / 2;
-      const y = e.clientY - rect.top - size / 2;
-      
-      ripple.style.cssText = `
+    const modernButtons = document.querySelectorAll('.language-btn-modern, .user-btn-modern');
+
+    modernButtons.forEach(button => {
+      // Эффект пульсации при клике
+      button.addEventListener('click', function (e) {
+        // Создаем эффект волны
+        const ripple = document.createElement('div');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+
+        ripple.style.cssText = `
         position: absolute;
         left: ${x}px;
         top: ${y}px;
@@ -2429,120 +2450,120 @@ document.addEventListener('DOMContentLoaded', function() {
         pointer-events: none;
         z-index: 10;
       `;
-      
-      this.appendChild(ripple);
-      
-      // Удаляем элемент после анимации
-      setTimeout(() => {
-        if (ripple.parentNode) {
-          ripple.parentNode.removeChild(ripple);
-        }
-      }, 600);
-    });
-    
-    // Эффект магнетизма при наведении
-    button.addEventListener('mouseenter', function() {
-      this.style.transform = 'translateY(-2px) scale(1.05) rotate(1deg)';
-    });
-    
-    button.addEventListener('mouseleave', function() {
-      this.style.transform = '';
-    });
-  });
-  
-  // Эффекты для компактных кнопок инициализированы
-});
 
-// ===== SMART DROPDOWN POSITIONING =====
-document.addEventListener('DOMContentLoaded', function() {
-  // Инициализация умного позиционирования dropdown
-  
-  function adjustDropdownPosition(dropdown, toggle) {
-    if (!dropdown || !toggle) return;
-    
-    const rect = toggle.getBoundingClientRect();
-    const dropdownRect = dropdown.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    const viewportWidth = window.innerWidth;
-    
-    // Сброс стилей позиционирования
-    dropdown.style.position = 'absolute';
-    dropdown.style.top = '';
-    dropdown.style.bottom = '';
-    dropdown.style.left = '';
-    dropdown.style.right = '';
-    dropdown.style.transform = '';
-    
-    // Проверяем, помещается ли dropdown снизу
-    const spaceBelow = viewportHeight - rect.bottom;
-    const spaceAbove = rect.top;
-    const dropdownHeight = dropdownRect.height || 300; // примерная высота
-    
-    if (spaceBelow >= dropdownHeight + 10) {
-      // Размещаем снизу
-      dropdown.style.top = '100%';
-      dropdown.style.marginTop = '0.5rem';
-    } else if (spaceAbove >= dropdownHeight + 10) {
-      // Размещаем сверху
-      dropdown.style.bottom = '100%';
-      dropdown.style.marginBottom = '0.5rem';
-    } else {
-      // Размещаем в доступном пространстве с прокруткой
-      if (spaceBelow > spaceAbove) {
+        this.appendChild(ripple);
+
+        // Удаляем элемент после анимации
+        setTimeout(() => {
+          if (ripple.parentNode) {
+            ripple.parentNode.removeChild(ripple);
+          }
+        }, 600);
+      });
+
+      // Эффект магнетизма при наведении
+      button.addEventListener('mouseenter', function () {
+        this.style.transform = 'translateY(-2px) scale(1.05) rotate(1deg)';
+      });
+
+      button.addEventListener('mouseleave', function () {
+        this.style.transform = '';
+      });
+    });
+
+    // Эффекты для компактных кнопок инициализированы
+  });
+
+  // ===== SMART DROPDOWN POSITIONING =====
+  document.addEventListener('DOMContentLoaded', function () {
+    // Инициализация умного позиционирования dropdown
+
+    function adjustDropdownPosition(dropdown, toggle) {
+      if (!dropdown || !toggle) return;
+
+      const rect = toggle.getBoundingClientRect();
+      const dropdownRect = dropdown.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+
+      // Сброс стилей позиционирования
+      dropdown.style.position = 'absolute';
+      dropdown.style.top = '';
+      dropdown.style.bottom = '';
+      dropdown.style.left = '';
+      dropdown.style.right = '';
+      dropdown.style.transform = '';
+
+      // Проверяем, помещается ли dropdown снизу
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      const dropdownHeight = dropdownRect.height || 300; // примерная высота
+
+      if (spaceBelow >= dropdownHeight + 10) {
+        // Размещаем снизу
         dropdown.style.top = '100%';
         dropdown.style.marginTop = '0.5rem';
-        dropdown.style.maxHeight = `${spaceBelow - 20}px`;
-      } else {
+      } else if (spaceAbove >= dropdownHeight + 10) {
+        // Размещаем сверху
         dropdown.style.bottom = '100%';
         dropdown.style.marginBottom = '0.5rem';
-        dropdown.style.maxHeight = `${spaceAbove - 20}px`;
+      } else {
+        // Размещаем в доступном пространстве с прокруткой
+        if (spaceBelow > spaceAbove) {
+          dropdown.style.top = '100%';
+          dropdown.style.marginTop = '0.5rem';
+          dropdown.style.maxHeight = `${spaceBelow - 20}px`;
+        } else {
+          dropdown.style.bottom = '100%';
+          dropdown.style.marginBottom = '0.5rem';
+          dropdown.style.maxHeight = `${spaceAbove - 20}px`;
+        }
+        dropdown.style.overflowY = 'auto';
       }
-      dropdown.style.overflowY = 'auto';
-    }
-    
-    // Проверяем горизонтальное позиционирование
-    const spaceRight = viewportWidth - rect.right;
-    const dropdownWidth = dropdown.offsetWidth || 220;
-    
-    if (dropdown.classList.contains('dropdown-menu-end')) {
-      if (spaceRight < dropdownWidth && rect.left > dropdownWidth) {
-        dropdown.style.right = '0';
-      }
-    } else {
-      if (rect.left + dropdownWidth > viewportWidth && spaceRight < dropdownWidth) {
-        dropdown.style.right = '0';
-        dropdown.style.left = 'auto';
-      }
-    }
-  }
-  
-  // Обработчик для всех dropdown
-  document.addEventListener('show.bs.dropdown', function(e) {
-    const toggle = e.target;
-    const dropdown = toggle.nextElementSibling;
-    
-    if (dropdown && dropdown.classList.contains('dropdown-menu')) {
-      // Небольшая задержка для корректного расчета размеров
-      setTimeout(() => {
-        adjustDropdownPosition(dropdown, toggle);
-      }, 10);
-    }
-  });
-  
-  // Переопределяем позиционирование при изменении размера окна
-  window.addEventListener('resize', function() {
-    document.querySelectorAll('.dropdown-menu.show').forEach(dropdown => {
-      const toggle = dropdown.previousElementSibling;
-      adjustDropdownPosition(dropdown, toggle);
-    });
-  });
-  
-  // Умное позиционирование dropdown инициализировано
-});
 
-// Добавляем CSS анимации для эффектов
-const modernButtonStyles = document.createElement('style');
-modernButtonStyles.textContent = `
+      // Проверяем горизонтальное позиционирование
+      const spaceRight = viewportWidth - rect.right;
+      const dropdownWidth = dropdown.offsetWidth || 220;
+
+      if (dropdown.classList.contains('dropdown-menu-end')) {
+        if (spaceRight < dropdownWidth && rect.left > dropdownWidth) {
+          dropdown.style.right = '0';
+        }
+      } else {
+        if (rect.left + dropdownWidth > viewportWidth && spaceRight < dropdownWidth) {
+          dropdown.style.right = '0';
+          dropdown.style.left = 'auto';
+        }
+      }
+    }
+
+    // Обработчик для всех dropdown
+    document.addEventListener('show.bs.dropdown', function (e) {
+      const toggle = e.target;
+      const dropdown = toggle.nextElementSibling;
+
+      if (dropdown && dropdown.classList.contains('dropdown-menu')) {
+        // Небольшая задержка для корректного расчета размеров
+        setTimeout(() => {
+          adjustDropdownPosition(dropdown, toggle);
+        }, 10);
+      }
+    });
+
+    // Переопределяем позиционирование при изменении размера окна
+    window.addEventListener('resize', function () {
+      document.querySelectorAll('.dropdown-menu.show').forEach(dropdown => {
+        const toggle = dropdown.previousElementSibling;
+        adjustDropdownPosition(dropdown, toggle);
+      });
+    });
+
+    // Умное позиционирование dropdown инициализировано
+  });
+
+  // Добавляем CSS анимации для эффектов
+  const modernButtonStyles = document.createElement('style');
+  modernButtonStyles.textContent = `
   @keyframes rippleEffect {
     0% {
       transform: scale(0);
@@ -2554,311 +2575,317 @@ modernButtonStyles.textContent = `
     }
   }
 `;
-document.head.appendChild(modernButtonStyles);
+  document.head.appendChild(modernButtonStyles);
 </script>
 
 <!-- ===== ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ ТЕМНОЙ ТЕМЫ С ВЫСОКОЙ СПЕЦИФИЧНОСТЬЮ ===== -->
 <style>
-/* ПРИНУДИТЕЛЬНОЕ ПЕРЕОПРЕДЕЛЕНИЕ ДЛЯ ТЕМНОЙ ТЕМЫ */
-html[data-theme="dark"] .dropdown-menu,
-html[data-theme="dark"] .language-menu,
-[data-theme="dark"] .dropdown-menu.show,
-[data-theme="dark"] .language-menu.show {
-  background: rgba(30, 41, 59, 0.95) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #f8fafc !important;
-}
+  /* ПРИНУДИТЕЛЬНОЕ ПЕРЕОПРЕДЕЛЕНИЕ ДЛЯ ТЕМНОЙ ТЕМЫ */
+  html[data-theme="dark"] .dropdown-menu,
+  html[data-theme="dark"] .language-menu,
+  [data-theme="dark"] .dropdown-menu.show,
+  [data-theme="dark"] .language-menu.show {
+    background: rgba(30, 41, 59, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #f8fafc !important;
+  }
 
-html[data-theme="dark"] .dropdown-item,
-html[data-theme="dark"] .language-menu .dropdown-item {
-  color: #f8fafc !important;
-  background: transparent !important;
-}
+  html[data-theme="dark"] .dropdown-item,
+  html[data-theme="dark"] .language-menu .dropdown-item {
+    color: #f8fafc !important;
+    background: transparent !important;
+  }
 
-html[data-theme="dark"] .dropdown-item:hover,
-html[data-theme="dark"] .language-menu .dropdown-item:hover {
-  background: rgba(29, 78, 216, 0.2) !important;
-  color: #ffffff !important;
-}
+  html[data-theme="dark"] .dropdown-item:hover,
+  html[data-theme="dark"] .language-menu .dropdown-item:hover {
+    background: rgba(29, 78, 216, 0.2) !important;
+    color: #ffffff !important;
+  }
 
-html[data-theme="dark"] .dropdown-header {
-  color: #f8fafc !important;
-  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
-}
+  html[data-theme="dark"] .dropdown-header {
+    color: #f8fafc !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
 
-html[data-theme="dark"] .user-details strong {
-  color: #f8fafc !important;
-}
+  html[data-theme="dark"] .user-details strong {
+    color: #f8fafc !important;
+  }
 
-html[data-theme="dark"] .user-details small {
-  color: #cbd5e1 !important;
-}
+  html[data-theme="dark"] .user-details small {
+    color: #cbd5e1 !important;
+  }
 
-/* ПРИНУДИТЕЛЬНОЕ ПЕРЕОПРЕДЕЛЕНИЕ ДЛЯ ГРАДИЕНТНОЙ ТЕМЫ */
-html[data-theme="gradient"] .dropdown-menu,
-html[data-theme="gradient"] .language-menu,
-[data-theme="gradient"] .dropdown-menu.show,
-[data-theme="gradient"] .language-menu.show {
-  background: rgba(0, 0, 0, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
-}
+  /* ПРИНУДИТЕЛЬНОЕ ПЕРЕОПРЕДЕЛЕНИЕ ДЛЯ ГРАДИЕНТНОЙ ТЕМЫ */
+  html[data-theme="gradient"] .dropdown-menu,
+  html[data-theme="gradient"] .language-menu,
+  [data-theme="gradient"] .dropdown-menu.show,
+  [data-theme="gradient"] .language-menu.show {
+    background: rgba(0, 0, 0, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+  }
 
-html[data-theme="gradient"] .dropdown-item,
-html[data-theme="gradient"] .language-menu .dropdown-item {
-  color: #ffffff !important;
-  background: transparent !important;
-}
+  html[data-theme="gradient"] .dropdown-item,
+  html[data-theme="gradient"] .language-menu .dropdown-item {
+    color: #ffffff !important;
+    background: transparent !important;
+  }
 
-html[data-theme="gradient"] .dropdown-item:hover,
-html[data-theme="gradient"] .language-menu .dropdown-item:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
-}
+  html[data-theme="gradient"] .dropdown-item:hover,
+  html[data-theme="gradient"] .language-menu .dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+  }
 </style>
 
 <!-- ===== СТИЛИ ДЛЯ INLINE ПЕРЕКЛЮЧАТЕЛЯ ТЕМ ===== -->
 
 <!-- ===== КРАСИВЫЕ ЗНАЧКИ ДЛЯ НАВИГАЦИИ ===== -->
 <style>
-/* ===== АНИМИРОВАННЫЕ ЗНАЧКИ МЕНЮ ===== */
-.language-icon,
-.user-icon,
-.settings-icon {
-  display: inline-block !important;
-  font-size: 24px !important;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-  position: relative !important;
-  z-index: 1 !important;
-}
-
-/* Эффекты при наведении */
-.language-btn-modern:hover .language-icon {
-  transform: rotate(15deg) scale(1.1) !important;
-  filter: drop-shadow(0 0 8px rgba(29, 78, 216, 0.6)) !important;
-}
-
-.user-btn-modern:hover .user-icon {
-  transform: scale(1.15) !important;
-  filter: drop-shadow(0 0 8px rgba(29, 78, 216, 0.6)) !important;
-}
-
-.user-btn-modern:hover .settings-icon {
-  transform: rotate(90deg) scale(1.1) !important;
-  filter: drop-shadow(0 0 8px rgba(29, 78, 216, 0.6)) !important;
-}
-
-/* Пульсирующий эффект для активного состояния */
-@keyframes iconPulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-.dropdown.show .language-icon,
-.dropdown.show .user-icon,
-.dropdown.show .settings-icon {
-  animation: iconPulse 1.5s ease-in-out infinite !important;
-  filter: drop-shadow(0 0 12px rgba(29, 78, 216, 0.8)) !important;
-}
-
-/* Стили для Bootstrap иконок */
-.language-icon i,
-.user-icon i,
-.settings-icon i {
-  color: #1d4ed8 !important;
-}
-
-/* Эффект свечения при клике */
-@keyframes iconGlow {
-  0% {
-    filter: drop-shadow(0 0 5px rgba(29, 78, 216, 0.3));
-  }
-  50% {
-    filter: drop-shadow(0 0 20px rgba(29, 78, 216, 0.8));
-  }
-  100% {
-    filter: drop-shadow(0 0 5px rgba(29, 78, 216, 0.3));
-  }
-}
-
-.language-btn-modern:active .language-icon,
-.user-btn-modern:active .user-icon,
-.user-btn-modern:active .settings-icon {
-  animation: iconGlow 0.3s ease-out !important;
-}
-
-/* Адаптивность для мобильных устройств */
-@media (max-width: 768px) {
+  /* ===== АНИМИРОВАННЫЕ ЗНАЧКИ МЕНЮ ===== */
   .language-icon,
   .user-icon,
   .settings-icon {
-    font-size: 20px !important;
-    margin-right: 6px !important;
+    display: inline-block !important;
+    font-size: 24px !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+    position: relative !important;
+    z-index: 1 !important;
   }
-}
 
-/* Темная тема */
-html[data-theme="dark"] .language-icon i,
-html[data-theme="dark"] .user-icon i,
-html[data-theme="dark"] .settings-icon i {
-  color: #64FFDA !important;
-}
+  /* Эффекты при наведении */
+  .language-btn-modern:hover .language-icon {
+    transform: rotate(15deg) scale(1.1) !important;
+    filter: drop-shadow(0 0 8px rgba(29, 78, 216, 0.6)) !important;
+  }
 
-/* Градиентная тема */
-html[data-theme="gradient"] .language-icon i,
-html[data-theme="gradient"] .user-icon i,
-html[data-theme="gradient"] .settings-icon i {
-  color: #ffffff !important;
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5)) !important;
-}
+  .user-btn-modern:hover .user-icon {
+    transform: scale(1.15) !important;
+    filter: drop-shadow(0 0 8px rgba(29, 78, 216, 0.6)) !important;
+  }
+
+  .user-btn-modern:hover .settings-icon {
+    transform: rotate(90deg) scale(1.1) !important;
+    filter: drop-shadow(0 0 8px rgba(29, 78, 216, 0.6)) !important;
+  }
+
+  /* Пульсирующий эффект для активного состояния */
+  @keyframes iconPulse {
+
+    0%,
+    100% {
+      transform: scale(1);
+    }
+
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  .dropdown.show .language-icon,
+  .dropdown.show .user-icon,
+  .dropdown.show .settings-icon {
+    animation: iconPulse 1.5s ease-in-out infinite !important;
+    filter: drop-shadow(0 0 12px rgba(29, 78, 216, 0.8)) !important;
+  }
+
+  /* Стили для Bootstrap иконок */
+  .language-icon i,
+  .user-icon i,
+  .settings-icon i {
+    color: #1d4ed8 !important;
+  }
+
+  /* Эффект свечения при клике */
+  @keyframes iconGlow {
+    0% {
+      filter: drop-shadow(0 0 5px rgba(29, 78, 216, 0.3));
+    }
+
+    50% {
+      filter: drop-shadow(0 0 20px rgba(29, 78, 216, 0.8));
+    }
+
+    100% {
+      filter: drop-shadow(0 0 5px rgba(29, 78, 216, 0.3));
+    }
+  }
+
+  .language-btn-modern:active .language-icon,
+  .user-btn-modern:active .user-icon,
+  .user-btn-modern:active .settings-icon {
+    animation: iconGlow 0.3s ease-out !important;
+  }
+
+  /* Адаптивность для мобильных устройств */
+  @media (max-width: 768px) {
+
+    .language-icon,
+    .user-icon,
+    .settings-icon {
+      font-size: 20px !important;
+      margin-right: 6px !important;
+    }
+  }
+
+  /* Темная тема */
+  html[data-theme="dark"] .language-icon i,
+  html[data-theme="dark"] .user-icon i,
+  html[data-theme="dark"] .settings-icon i {
+    color: #64FFDA !important;
+  }
+
+  /* Градиентная тема */
+  html[data-theme="gradient"] .language-icon i,
+  html[data-theme="gradient"] .user-icon i,
+  html[data-theme="gradient"] .settings-icon i {
+    color: #ffffff !important;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5)) !important;
+  }
 </style>
 
 <script>
-// ===== ФУНКЦИИ ДЛЯ РАБОТЫ С ТЕМАМИ И ГАЛОЧКАМИ =====
-document.addEventListener('DOMContentLoaded', function() {
-  // Инициализация системы тем с галочками
-  
-  // Функция для обновления галочек в меню тем
-  function updateThemeCheckmarks() {
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-    
-    // Убираем все галочки
-    document.querySelectorAll('.theme-checkmark').forEach(check => {
-      check.style.display = 'none';
-    });
-    
-    // Показываем галочку для текущей темы
-    const activeCheck = document.getElementById(currentTheme + '-check');
-    if (activeCheck) {
-      activeCheck.style.display = 'inline';
+  // ===== ФУНКЦИИ ДЛЯ РАБОТЫ С ТЕМАМИ И ГАЛОЧКАМИ =====
+  document.addEventListener('DOMContentLoaded', function () {
+    // Инициализация системы тем с галочками
+
+    // Функция для обновления галочек в меню тем
+    function updateThemeCheckmarks() {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+
+      // Убираем все галочки
+      document.querySelectorAll('.theme-checkmark').forEach(check => {
+        check.style.display = 'none';
+      });
+
+      // Показываем галочку для текущей темы
+      const activeCheck = document.getElementById(currentTheme + '-check');
+      if (activeCheck) {
+        activeCheck.style.display = 'inline';
+      }
     }
-  }
-  
-  // Переопределяем функцию setTheme для обновления галочек
-  const originalSetTheme = window.setTheme;
-  window.setTheme = function(theme) {
-    if (originalSetTheme) {
-      originalSetTheme(theme);
-    } else if (window.DentalAcademy && window.DentalAcademy.themeManager) {
-      window.DentalAcademy.themeManager.setTheme(theme);
-    } else {
-      // Fallback если основной менеджер тем не загружен
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('theme', theme);
-    }
-    updateThemeCheckmarks();
-  };
-  
-  // Функция для переключения темы
-  window.toggleTheme = function() {
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    
-    // Обновляем иконку в меню
-    const themeIcon = document.querySelector('.theme-btn[data-theme="toggle"] i');
-    if (themeIcon) {
-      if (newTheme === 'dark') {
-        themeIcon.className = 'bi bi-sun fs-5 me-2';
+
+    // Переопределяем функцию setTheme для обновления галочек
+    const originalSetTheme = window.setTheme;
+    window.setTheme = function (theme) {
+      if (originalSetTheme) {
+        originalSetTheme(theme);
+      } else if (window.DentalAcademy && window.DentalAcademy.themeManager) {
+        window.DentalAcademy.themeManager.setTheme(theme);
       } else {
-        themeIcon.className = 'bi bi-moon-stars fs-5 me-2';
+        // Fallback если основной менеджер тем не загружен
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
       }
-    }
-  };
-  
-  // Инициализация галочек при загрузке
-  setTimeout(updateThemeCheckmarks, 100);
-  
-  // Обновление галочек при изменении темы через другие элементы
-  const observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-      if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
-        updateThemeCheckmarks();
+      updateThemeCheckmarks();
+    };
+
+    // Функция для переключения темы
+    window.toggleTheme = function () {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      setTheme(newTheme);
+
+      // Обновляем иконку в меню
+      const themeIcon = document.querySelector('.theme-btn[data-theme="toggle"] i');
+      if (themeIcon) {
+        if (newTheme === 'dark') {
+          themeIcon.className = 'bi bi-sun fs-5 me-2';
+        } else {
+          themeIcon.className = 'bi bi-moon-stars fs-5 me-2';
+        }
       }
+    };
+
+    // Инициализация галочек при загрузке
+    setTimeout(updateThemeCheckmarks, 100);
+
+    // Обновление галочек при изменении темы через другие элементы
+    const observer = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          updateThemeCheckmarks();
+        }
+      });
     });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
+    // Система тем с галочками инициализирована
   });
-  
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['data-theme']
-  });
-  
-  // Система тем с галочками инициализирована
-});
 </script>
 
 <style>
-.language-btn-modern,
-.user-btn-modern {
-  padding: 0.5rem !important;
-  width: 40px !important;
-  height: 40px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 50% !important;
-}
+  .language-btn-modern,
+  .user-btn-modern {
+    padding: 0.5rem !important;
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+  }
 
-/* ===== СТИЛИ ЛОГОТИПА ДЛЯ ПЕРЕКЛЮЧЕНИЯ ТЕМЫ (ТОЧНО КАК В КАРТЕ ОБУЧЕНИЯ) ===== */
-/* ТОЧНО КАК В КАРТЕ ОБУЧЕНИЯ - прямые селекторы без .logo-container */
-.logo-container .logo-dark {
-  display: none !important;
-}
+  /* ===== СТИЛИ ЛОГОТИПА ДЛЯ ПЕРЕКЛЮЧЕНИЯ ТЕМЫ (ТОЧНО КАК В КАРТЕ ОБУЧЕНИЯ) ===== */
+  /* ТОЧНО КАК В КАРТЕ ОБУЧЕНИЯ - прямые селекторы без .logo-container */
+  .logo-container .logo-dark {
+    display: none !important;
+  }
 
-.logo-container .logo-light {
-  display: inline-block !important;
-}
+  .logo-container .logo-light {
+    display: inline-block !important;
+  }
 
-/* Темная тема - переключаем логотипы */
-html[data-theme="dark"] .logo-container .logo-light,
-[data-theme="dark"] .logo-container .logo-light,
-html[data-theme="dark"] header.modern-header .logo-container .logo-light,
-[data-theme="dark"] header.modern-header .logo-container .logo-light {
-  display: none !important;
-}
+  /* Темная тема - переключаем логотипы */
+  html[data-theme="dark"] .logo-container .logo-light,
+  [data-theme="dark"] .logo-container .logo-light,
+  html[data-theme="dark"] header.modern-header .logo-container .logo-light,
+  [data-theme="dark"] header.modern-header .logo-container .logo-light {
+    display: none !important;
+  }
 
-html[data-theme="dark"] .logo-container .logo-dark,
-[data-theme="dark"] .logo-container .logo-dark,
-html[data-theme="dark"] header.modern-header .logo-container .logo-dark,
-[data-theme="dark"] header.modern-header .logo-container .logo-dark {
-  display: inline-block !important;
-}
+  html[data-theme="dark"] .logo-container .logo-dark,
+  [data-theme="dark"] .logo-container .logo-dark,
+  html[data-theme="dark"] header.modern-header .logo-container .logo-dark,
+  [data-theme="dark"] header.modern-header .logo-container .logo-dark {
+    display: inline-block !important;
+  }
 </style>
 
 <script>
-// Диагностика переключения логотипов
-document.addEventListener('DOMContentLoaded', function() {
-  const checkLogos = () => {
-    const theme = document.documentElement.getAttribute('data-theme');
-    const logoLight = document.querySelector('.logo-container .logo-light');
-    const logoDark = document.querySelector('.logo-container .logo-dark');
-    
-    if (logoLight && logoDark) {
-      const lightDisplay = window.getComputedStyle(logoLight).display;
-      const darkDisplay = window.getComputedStyle(logoDark).display;
-      
-      if (theme === 'dark' && darkDisplay === 'none') {
-        console.warn('⚠️ Проблема: темная тема активна, но темный логотип скрыт!');
+  // Диагностика переключения логотипов
+  document.addEventListener('DOMContentLoaded', function () {
+    const checkLogos = () => {
+      const theme = document.documentElement.getAttribute('data-theme');
+      const logoLight = document.querySelector('.logo-container .logo-light');
+      const logoDark = document.querySelector('.logo-container .logo-dark');
+
+      if (logoLight && logoDark) {
+        const lightDisplay = window.getComputedStyle(logoLight).display;
+        const darkDisplay = window.getComputedStyle(logoDark).display;
+
+        if (theme === 'dark' && darkDisplay === 'none') {
+          console.warn('⚠️ Проблема: темная тема активна, но темный логотип скрыт!');
+        }
+        if (theme === 'light' && lightDisplay === 'none') {
+          console.warn('⚠️ Проблема: светлая тема активна, но светлый логотип скрыт!');
+        }
       }
-      if (theme === 'light' && lightDisplay === 'none') {
-        console.warn('⚠️ Проблема: светлая тема активна, но светлый логотип скрыт!');
-      }
-    }
-  };
-  
-  checkLogos();
-  
-  // Проверяем при изменении темы
-  const observer = new MutationObserver(checkLogos);
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['data-theme']
+    };
+
+    checkLogos();
+
+    // Проверяем при изменении темы
+    const observer = new MutationObserver(checkLogos);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
+    window.addEventListener('themechange', checkLogos);
   });
-  
-  window.addEventListener('themechange', checkLogos);
-});
 </script>

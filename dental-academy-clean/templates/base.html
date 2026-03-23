@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="{{ lang or 'en' }}" data-theme="{{ theme or 'light' }}">
+
 <head>
     <!-- Preload only the most critical CSS -->
-    <link rel="preload" href="{{ static_versioned('css/main.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="{{ static_versioned('css/main.css') }}"></noscript>
-    
+    <link rel="preload" href="{{ static_versioned('css/main.css') }}" as="style"
+        onload="this.onload=null;this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="{{ static_versioned('css/main.css') }}">
+    </noscript>
+
     <!-- Prefetch other CSS for better performance -->
     <link rel="prefetch" href="{{ static_versioned('css/universal-styles.css') }}" as="style">
 
@@ -17,6 +21,23 @@
     <meta http-equiv="Expires" content="0">
     <title>{% block title %}{% endblock %} - Mentora</title>
     
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="{% block meta_description %}{{ t('site_description') }}{% endblock %}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:title" content="{% block og_title %}{{ t('site_title') }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ t('site_description') }}{% endblock %}">
+    <meta property="og:image" content="{{ url_for('static', filename='images/og-image.svg', _external=True) }}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.url }}">
+    <meta property="twitter:title" content="{% block twitter_title %}{{ t('site_title') }}{% endblock %}">
+    <meta property="twitter:description" content="{% block twitter_description %}{{ t('site_description') }}{% endblock %}">
+    <meta property="twitter:image" content="{{ url_for('static', filename='images/og-image.svg', _external=True) }}">
+
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#1d4ed8">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -25,69 +46,72 @@
     <meta name="apple-mobile-web-app-title" content="Mentora">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/favicon.png') }}">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    
+
     <!-- Favicon -->
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" />
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
-    
+
     <!-- Preconnect for Performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 
-    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap"
+        rel="stylesheet">
+
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Alpine.js x-cloak для предотвращения мерцания -->
     <style>
         [x-cloak] {
             display: none !important;
         }
     </style>
-    
+
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     <!-- Flag Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@6.6.6/css/flag-icons.min.css" />
 
     <!-- ПРАВИЛЬНЫЙ ПОРЯДОК: СНАЧАЛА ТЕМЫ, ПОТОМ УНИВЕРСАЛЬНЫЕ СТИЛИ -->
-    
+
     <!-- 1. СИСТЕМА ТЕМ (базовые переменные) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/themes.css') }}">
-    
+
     <!-- 1.1. Компоненты тем (логотип и т.д.) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/themes/theme-components.css') }}">
-    
+
     <!-- 2. Основные стили -->
     <link rel="stylesheet" href="{{ static_versioned('css/unified-theme.css') }}">
     <link rel="stylesheet" href="{{ static_versioned('css/main.css') }}">
-    
+
     <!-- 3. Универсальные стили из index.html (используют переменные тем) -->
     <link rel="stylesheet" href="{{ static_versioned('css/universal-styles.css') }}">
-    
+
     <!-- 4. Универсальная система лейаутов -->
     <link rel="stylesheet" href="{{ static_versioned('css/universal-layout-system.css') }}">
-    
+
     <!-- 5. Дополнительные стили компонентов -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/components/footer-spacing.css') }}">
-    
+
     <!-- 6. Мобильные исправления -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-responsive-fixes.css') }}">
-    
+
     <!-- 7. Notification System -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/notification-system.css') }}">
-    
+
     <!-- Page-specific styles -->
     {% block head %}{% endblock %}
-    
+
     <!-- DigiD Styles -->
     <style>
         :root {
@@ -96,7 +120,7 @@
             --digid-bg: #f6f8fa;
             --digid-border: #e0e6ef;
         }
-        
+
         /* DigiD Button */
         .btn-digid {
             background: var(--digid-blue);
@@ -111,15 +135,17 @@
             gap: 0.5rem;
             transition: all 0.2s;
         }
+
         .btn-digid:hover {
             background: #002a5c;
             color: white;
             transform: translateY(-1px);
         }
+
         .btn-digid:active {
             transform: translateY(0);
         }
-        
+
         /* DigiD Badge */
         .digid-badge {
             background: var(--digid-blue);
@@ -131,7 +157,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        
+
         /* DigiD Status */
         .digid-status {
             display: inline-flex;
@@ -141,257 +167,265 @@
             color: var(--digid-blue);
             font-weight: 500;
         }
+
         .digid-status .status-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
             background: #28a745;
         }
+
         .digid-status.expired .status-dot {
             background: #dc3545;
         }
-        
+
         /* DigiD User Menu */
         .digid-user-info {
             border-left: 3px solid var(--digid-blue);
             padding-left: 0.8rem;
             margin: 0.5rem 0;
         }
+
         .digid-user-info .auth-method {
             font-size: 0.8rem;
             color: var(--digid-blue);
             font-weight: 600;
         }
-        
+
         /* Mobile DigiD */
         @media (max-width: 768px) {
             .btn-digid {
                 padding: 0.4rem 0.8rem;
                 font-size: 0.9rem;
             }
+
             .digid-badge {
                 font-size: 0.7rem;
                 padding: 0.15rem 0.4rem;
             }
         }
     </style>
-    
+
     <!-- Page-specific styles -->
     {% block page_styles %}{% endblock %}
-    {% block styles %}{% endblock %}
+    {% block styles %}
+    {% endblock %}
     {% block extra_css %}{% endblock %}
-    
+
     <!-- Cookie Notice Styles -->
     <style>
-    .cookie-notice {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        right: 20px;
-        max-width: 500px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 20px;
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        z-index: 10000;
-        transform: translateY(100px);
-        opacity: 0;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        pointer-events: none;
-    }
-    
-    .cookie-notice.show {
-        transform: translateY(0);
-        opacity: 1;
-        pointer-events: auto;
-    }
-    
-    .cookie-notice-content {
-        display: flex;
-        align-items: flex-start;
-        gap: 15px;
-    }
-    
-    .cookie-notice-icon {
-        font-size: 24px;
-        margin-top: 2px;
-        flex-shrink: 0;
-    }
-    
-    .cookie-notice-text {
-        flex: 1;
-        font-size: 14px;
-        line-height: 1.5;
-    }
-    
-    .cookie-notice-text p {
-        margin: 0 0 12px 0;
-    }
-    
-    .cookie-notice-text a {
-        color: #ffd700;
-        text-decoration: none;
-        font-weight: 500;
-        transition: color 0.3s ease;
-    }
-    
-    .cookie-notice-text a:hover {
-        color: #fff;
-        text-decoration: underline;
-    }
-    
-    .cookie-notice-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 15px;
-    }
-    
-    .cookie-notice-btn {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-    
-    .cookie-notice-btn.accept {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-    
-    .cookie-notice-btn.accept:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-1px);
-    }
-    
-    .cookie-notice-btn.decline {
-        background: transparent;
-        color: rgba(255, 255, 255, 0.8);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-    
-    .cookie-notice-btn.decline:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-    }
-    
-    .cookie-notice-close {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        background: none;
-        border: none;
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 18px;
-        cursor: pointer;
-        padding: 4px;
-        border-radius: 4px;
-        transition: all 0.3s ease;
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .cookie-notice-close:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-    }
-    
-    /* Dark theme support */
-    [data-theme="dark"] .cookie-notice {
-        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Mobile responsive */
-    @media (max-width: 768px) {
         .cookie-notice {
-            left: 15px;
-            right: 15px;
-            bottom: 15px;
-            padding: 16px;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            max-width: 500px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 10000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: none;
         }
-        
+
+        .cookie-notice.show {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
         .cookie-notice-content {
-            gap: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
         }
-        
+
+        .cookie-notice-icon {
+            font-size: 24px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
         .cookie-notice-text {
-            font-size: 13px;
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.5;
         }
-        
+
+        .cookie-notice-text p {
+            margin: 0 0 12px 0;
+        }
+
+        .cookie-notice-text a {
+            color: #ffd700;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .cookie-notice-text a:hover {
+            color: #fff;
+            text-decoration: underline;
+        }
+
         .cookie-notice-actions {
-            flex-direction: column;
-            gap: 8px;
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
         }
-        
+
         .cookie-notice-btn {
-            width: 100%;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .cookie-notice-btn.accept {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .cookie-notice-btn.accept:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .cookie-notice-btn.decline {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .cookie-notice-btn.decline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .cookie-notice-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
             justify-content: center;
         }
-    }
-    
-    /* Global mobile interaction fixes */
-    @media (max-width: 768px) {
-        /* Ensure no invisible overlays block interaction */
-        body {
-            touch-action: manipulation;
-        }
-        
-        /* Fix all hidden elements that might block interaction */
-        [style*="display: none"] {
-            pointer-events: none !important;
-            z-index: -1 !important;
-        }
-        
-        /* Fix elements with visibility hidden */
-        [style*="visibility: hidden"] {
-            pointer-events: none !important;
-            z-index: -1 !important;
-        }
-        
-        /* Fix elements with opacity 0 */
-        [style*="opacity: 0"]:not(.cookie-notice) {
-            pointer-events: none !important;
-        }
-    }
-    </style>
-    
 
-    
+        .cookie-notice-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* Dark theme support */
+        [data-theme="dark"] .cookie-notice {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .cookie-notice {
+                left: 15px;
+                right: 15px;
+                bottom: 15px;
+                padding: 16px;
+            }
+
+            .cookie-notice-content {
+                gap: 12px;
+            }
+
+            .cookie-notice-text {
+                font-size: 13px;
+            }
+
+            .cookie-notice-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .cookie-notice-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Global mobile interaction fixes */
+        @media (max-width: 768px) {
+
+            /* Ensure no invisible overlays block interaction */
+            body {
+                touch-action: manipulation;
+            }
+
+            /* Fix all hidden elements that might block interaction */
+            [style*="display: none"] {
+                pointer-events: none !important;
+                z-index: -1 !important;
+            }
+
+            /* Fix elements with visibility hidden */
+            [style*="visibility: hidden"] {
+                pointer-events: none !important;
+                z-index: -1 !important;
+            }
+
+            /* Fix elements with opacity 0 */
+            [style*="opacity: 0"]:not(.cookie-notice) {
+                pointer-events: none !important;
+            }
+        }
+    </style>
+
+
+
     <!-- Enhanced Editor Styles -->
     {% if request.endpoint and request.endpoint == 'content_editor.enhanced_editor' %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/enhanced-editor.css') }}">
     {% endif %}
-    
+
     <!-- Progress Sync Debug Script -->
     <script>
         document.addEventListener('progressUpdated', (e) => {
             console.log('🔄 Progress event triggered:', e.detail);
         });
-        
+
         document.addEventListener('lessonCompleted', (e) => {
             console.log('✅ Lesson completed event:', e.detail);
         });
-        
+
         document.addEventListener('sessionCompleted', (e) => {
             console.log('✅ Session completed event:', e.detail);
         });
     </script>
 </head>
-  <body class="modern-app {% if request.endpoint and request.endpoint == 'learning.index' %}learning-map-page{% endif %}{% if request.endpoint and request.endpoint == 'daily_learning.knowledge_base' %} knowledge-base-page{% endif %}{% if request.endpoint and request.endpoint == 'learning_map_bp.learning_map' %}learning-map-page{% endif %}">
+
+<body
+    class="modern-app {% if request.endpoint and request.endpoint == 'learning.index' %}learning-map-page{% endif %}{% if request.endpoint and request.endpoint == 'daily_learning.knowledge_base' %} knowledge-base-page{% endif %}{% if request.endpoint and request.endpoint == 'learning_map_bp.learning_map' %}learning-map-page{% endif %}">
     <!-- HEADER INCLUDE -->
     {% include 'includes/_header.html' %}
 
@@ -401,18 +435,18 @@
     <!-- Flash Messages Container -->
     <div class="flash-container" id="flash-container">
         {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else category }}" 
-                         data-category="{{ category }}" role="alert">
-                        <div class="alert-content">
-                            <div class="alert-title">{{ category.title() }}</div>
-                            <div class="alert-message">{{ message }}</div>
-                        </div>
-                        <button type="button" class="btn-close" onclick="this.parentElement.remove()" aria-label="Close"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }}" data-category="{{ category }}"
+            role="alert">
+            <div class="alert-content">
+                <div class="alert-title">{{ category.title() }}</div>
+                <div class="alert-message">{{ message }}</div>
+            </div>
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
         {% endwith %}
     </div>
 
@@ -423,21 +457,21 @@
 
     <!-- FOOTER INCLUDE - исключаем для карты обучения и иерархии -->
     {% if not request.endpoint or not (
-        request.endpoint == 'learning.index' or 
-        request.endpoint.startswith('learning_map_bp.') or 
-        request.endpoint.startswith('subject_view_bp.') or 
-        request.endpoint.startswith('profession_map_bp.') or
-        request.endpoint.startswith('main.community') or
-        request.endpoint.startswith('main.community_category') or
-        request.endpoint.startswith('main.community_topic') or
-        request.endpoint.startswith('main.new_topic') or
-        request.endpoint.startswith('main.create_topic') or
-        'leerkaart' in request.path or
-        'learning-map' in request.path or
-        'subject-view' in request.path or
-        'community/topic' in request.path
+    request.endpoint == 'learning.index' or
+    request.endpoint.startswith('learning_map_bp.') or
+    request.endpoint.startswith('subject_view_bp.') or
+    request.endpoint.startswith('profession_map_bp.') or
+    request.endpoint.startswith('main.community') or
+    request.endpoint.startswith('main.community_category') or
+    request.endpoint.startswith('main.community_topic') or
+    request.endpoint.startswith('main.new_topic') or
+    request.endpoint.startswith('main.create_topic') or
+    'leerkaart' in request.path or
+    'learning-map' in request.path or
+    'subject-view' in request.path or
+    'community/topic' in request.path
     ) %}
-        {% include 'includes/_footer.html' %}
+    {% include 'includes/_footer.html' %}
     {% endif %}
 
     <!-- Loading Indicator -->
@@ -462,77 +496,77 @@
     <!-- Инициализация Bootstrap компонентов -->
     <script>
         // Принудительное обновление кэша// Добавляем обработчик ошибок
-        window.addEventListener('error', function(e) {
+        window.addEventListener('error', function (e) {
             console.error('❌ JavaScript Error:', e.error);
             console.error('❌ Error message:', e.message);
             console.error('❌ Error file:', e.filename);
             console.error('❌ Error line:', e.lineno);
         });
-            
-        document.addEventListener('DOMContentLoaded', function() {
+
+        document.addEventListener('DOMContentLoaded', function () {
             // Ждем полной загрузки Alpine.js перед инициализацией Bootstrap
             function initBootstrapDropdowns() {
                 // Инициализация всех выпадающих меню Bootstrap (только для элементов БЕЗ Alpine.js)
-            try {
+                try {
                     // Исключаем элементы с x-data (Alpine.js dropdown)
                     var dropdownElementList = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'))
-                        .filter(function(el) {
+                        .filter(function (el) {
                             // Пропускаем элементы, которые находятся внутри Alpine.js dropdown
                             return !el.closest('[x-data]');
                         });
-                    
-                    var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
-                    return new bootstrap.Dropdown(dropdownToggleEl);
+
+                    var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+                        return new bootstrap.Dropdown(dropdownToggleEl);
                     });
                 } catch (error) {
-                console.error('❌ Bootstrap dropdown error:', error);
+                    console.error('❌ Bootstrap dropdown error:', error);
                 }
             }
-            
+
             // Ждем загрузки Alpine.js
             if (typeof Alpine !== 'undefined') {
                 // Alpine уже загружен
                 initBootstrapDropdowns();
             } else {
                 // Ждем загрузки Alpine.js
-                var checkAlpine = setInterval(function() {
+                var checkAlpine = setInterval(function () {
                     if (typeof Alpine !== 'undefined') {
                         clearInterval(checkAlpine);
                         initBootstrapDropdowns();
                     }
                 }, 100);
-                
+
                 // Таймаут на случай, если Alpine не загрузится
-                setTimeout(function() {
+                setTimeout(function () {
                     clearInterval(checkAlpine);
                     initBootstrapDropdowns();
                 }, 2000);
             }
-            
+
             // Отладка выпадающих меню
             // Инициализировано выпадающих меню
-            
+
             // Добавляем обработчик для закрытия dropdown меню по клику вне (только для Bootstrap dropdown)
             // Примечание: Dropdown меню в шапке управляются через Alpine.js и не требуют этого обработчика
             if (typeof dropdownList !== 'undefined' && dropdownList.length > 0) {
-            document.addEventListener('click', function(event) {
+                document.addEventListener('click', function (event) {
                     // Проверяем, что клик не по Alpine.js dropdown (они имеют x-data)
                     // И не по элементам внутри Alpine.js dropdown
                     const alpineDropdown = event.target.closest('.dropdown[x-data]');
                     if (!alpineDropdown) {
-                    dropdownList.forEach(function(dropdown) {
+                        dropdownList.forEach(function (dropdown) {
                             try {
-                        dropdown.hide();
+                                dropdown.hide();
                             } catch (e) {
                                 // Игнорируем ошибки для Alpine.js dropdown
                             }
-                    });
+                        });
                     }
                 });
             }
 
             // Scroll handler for modern-header
-            window.addEventListener('scroll', function() {
+            window.addEventListener('scroll', function () {
                 const header = document.querySelector('.modern-header');
                 if (header) {
                     header.classList.toggle('scrolled', window.scrollY > 40);
@@ -551,16 +585,16 @@
     <script src="{{ url_for('static', filename='js/simple-counters.js') }}"></script>
     <script src="{{ url_for('static', filename='js/modern_flash_messages.js') }}"></script>
     <script src="{{ url_for('static', filename='js/api.js') }}"></script>
-    
+
     <!-- Универсальные скрипты из index.html -->
     <script src="{{ url_for('static', filename='js/universal-scripts.js') }}"></script>
 
     <!-- Main JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}" data-cfasync="false"></script>
-    
+
     <!-- Registration Tracking -->
     <script src="{{ url_for('static', filename='js/registration_tracker.js') }}" data-cfasync="false"></script>
-    
+
     <!-- Analytics JavaScript -->
     <script src="{{ url_for('static', filename='js/analytics.js') }}" data-cfasync="false"></script>
 
@@ -620,10 +654,10 @@
                     timestamp: new Date().toISOString(),
                     version: '1.0'
                 };
-                
+
                 localStorage.setItem(this.cookieName, JSON.stringify(consent));
                 this.hideNotice();
-                
+
                 // Track consent (if analytics is available)
                 if (typeof gtag !== 'undefined') {
                     gtag('consent', 'update', {
@@ -643,27 +677,27 @@
             const cookieNotice = new CookieNoticeSystem();
             return cookieNotice;
         }
-        
+
         // Wait for DOM to be ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initCookieNotice);
         } else {
             initCookieNotice();
         }
-        
+
 
         // Global functions for button clicks
-        window.acceptCookies = function() {
+        window.acceptCookies = function () {
             const cookieNotice = new CookieNoticeSystem();
             cookieNotice.setConsent(true);
         };
 
-        window.declineCookies = function() {
+        window.declineCookies = function () {
             const cookieNotice = new CookieNoticeSystem();
             cookieNotice.setConsent(false);
         };
 
-        window.hideCookieNotice = function() {
+        window.hideCookieNotice = function () {
             const cookieNotice = new CookieNoticeSystem();
             cookieNotice.hideNotice();
         };
@@ -677,13 +711,13 @@
 
             init() {
                 if (!this.container) return;
-                
+
                 // Auto-hide flash messages after 5 seconds
                 const messages = this.container.querySelectorAll('.alert');
                 messages.forEach(message => {
                     // Добавляем класс show для анимации
                     setTimeout(() => message.classList.add('show'), 100);
-                    
+
                     // Автоскрытие через 5 секунд
                     setTimeout(() => {
                         message.classList.add('hiding');
@@ -694,13 +728,13 @@
 
             showMessage(category, message, title = null) {
                 if (!this.container) return;
-                
+
                 const alertDiv = document.createElement('div');
                 alertDiv.className = `alert alert-${category === 'error' ? 'danger' : category}`;
                 alertDiv.setAttribute('role', 'alert');
-                
+
                 const titleText = title || category.charAt(0).toUpperCase() + category.slice(1);
-                
+
                 alertDiv.innerHTML = `
                     <div class="alert-content">
                         <div class="alert-title">${titleText}</div>
@@ -708,12 +742,12 @@
                     </div>
                     <button type="button" class="btn-close" onclick="this.parentElement.remove()" aria-label="Close"></button>
                 `;
-                
+
                 this.container.appendChild(alertDiv);
-                
+
                 // Анимация появления
                 setTimeout(() => alertDiv.classList.add('show'), 100);
-                
+
                 // Автоскрытие
                 setTimeout(() => {
                     alertDiv.classList.add('hiding');
@@ -769,7 +803,7 @@
                         const expiresAt = new Date(data.expires_at);
                         const now = new Date();
                         const timeLeft = Math.floor((expiresAt - now) / 1000 / 60); // минуты
-                        
+
                         if (timeLeft <= 0) {
                             statusElement.classList.add('expired');
                             const currentLang = "{{ g.lang }}";
@@ -810,16 +844,16 @@
                 if (window.flashMessagesSystem) {
                     const currentLang = "{{ g.lang }}";
                     let message = 'Uw DigiD sessie is verlopen. U wordt doorgestuurd naar de inlogpagina.';
-                    
+
                     if (currentLang === 'en') {
                         message = 'Your DigiD session has expired. You will be redirected to the login page.';
                     } else if (currentLang === 'ru') {
                         message = 'Ваша DigiD сессия истекла. Вы будете перенаправлены на страницу входа.';
                     }
-                    
+
                     window.flashMessagesSystem.showMessage('warning', message);
                 }
-                
+
                 // Перенаправляем через 3 секунды
                 setTimeout(() => {
                     window.location.href = '/auth/login';
@@ -830,7 +864,7 @@
         // Инициализация систем
         const flashMessagesSystem = new FlashMessagesSystem();
         const digiDSessionMonitor = new DigiDSessionMonitor();
-        
+
         // Делаем доступным глобально
         window.flashMessagesSystem = flashMessagesSystem;
         window.digiDSessionMonitor = digiDSessionMonitor;
@@ -838,30 +872,30 @@
 
     <!-- Mobile Enhancements -->
     <script src="{{ url_for('static', filename='js/mobile-enhancements.js') }}"></script>
-    
+
     <!-- Coming Soon Overlay (встроенный) -->
-    
+
     <!-- Page-specific scripts -->
     {% block extra_js %}{% endblock %}
     {% block page_scripts %}{% endblock %}
     {% block scripts %}{% endblock %}
     {% block body_scripts %}{% endblock %}
-    
+
     <!-- Notification System -->
     <script src="{{ url_for('static', filename='js/notification-system.js') }}"></script>
-    
+
     <!-- Simple Coming Soon Overlay -->
-    
+
     <!-- Mobile Dropdown Fix - Load last to avoid conflicts -->
     <!-- <script src="{{ url_for('static', filename='js/mobile-dropdown-fix.js') }}"></script> -->
-    
+
     <!-- Passive Event Listeners Fix for Better Performance -->
     <script>
         // Make touch/wheel events passive by default for better scroll performance
-        (function() {
+        (function () {
             if (typeof EventTarget !== 'undefined') {
                 const originalAddEventListener = EventTarget.prototype.addEventListener;
-                EventTarget.prototype.addEventListener = function(type, fn, options) {
+                EventTarget.prototype.addEventListener = function (type, fn, options) {
                     let opts = typeof options !== 'object' ? { capture: !!options } : Object.assign({}, options);
                     // Make touch and wheel events passive by default unless explicitly set to false
                     if (['touchstart', 'touchmove', 'touchend', 'touchcancel', 'wheel', 'mousewheel'].indexOf(type) !== -1) {
@@ -878,7 +912,7 @@
     <!-- Image Optimization -->
     <script src="{{ url_for('static', filename='js/image-optimizer.min.js') }}" data-cfasync="false"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/image-optimization.min.css') }}">
-    
+
     <!-- Admin Functions - HTML data attributes to avoid Rocket Loader -->
     <script type="text/rocketscript" data-rocketsrc="false" data-cfasync="false">
         // Admin bulk action functions - protected from Rocket Loader
@@ -940,7 +974,7 @@
             });
         })();
     </script>
-    
+
     <!-- Cookie Notice -->
     <div id="cookie-notice" class="cookie-notice">
         <button class="cookie-notice-close" onclick="hideCookieNotice()" aria-label="Close cookie notice">
@@ -950,7 +984,8 @@
             <div class="cookie-notice-icon">🍪</div>
             <div class="cookie-notice-text">
                 <p><strong>We use cookies to enhance your experience</strong></p>
-                <p>We use essential cookies to make our site work. We'd also like to set analytics cookies to help us improve it. <a href="/{{ g.lang|default('en') }}/privacy" target="_blank">Learn more</a></p>
+                <p>We use essential cookies to make our site work. We'd also like to set analytics cookies to help us
+                    improve it. <a href="/{{ g.lang|default('en') }}/privacy" target="_blank">Learn more</a></p>
             </div>
         </div>
         <div class="cookie-notice-actions">
@@ -965,4 +1000,5 @@
         </div>
     </div>
 </body>
-</html> 
+
+</html>

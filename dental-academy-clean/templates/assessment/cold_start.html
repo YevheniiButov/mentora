@@ -3,41 +3,49 @@
 {% block title %}{{ t('cold_start_title_tag', lang)|default('Mentora — Start uw BIG-readiness check') }}{% endblock %}
 
 {% block extra_css %}
-<link
-  href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap"
-  rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --medical-blue: #1d4ed8;
-    --medical-blue-light: #3b82f6;
-    --medical-blue-pale: #eff6ff;
-    --slate-50: #f8fafc;
-    --slate-100: #f1f5f9;
-    --slate-200: #e2e8f0;
-    --slate-400: #94a3b8;
-    --slate-500: #64748b;
-    --slate-700: #334155;
-    --slate-900: #0f172a;
-    --radius-md: 14px;
-    --radius-lg: 20px;
-    --radius-xl: 28px;
-    --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
+    --teal: #4a9eb5;
+    --teal-dim: rgba(74,158,181,0.12);
+    --teal-border: rgba(74,158,181,0.35);
+    --dark: #1a1a2e;
+    --mentora-text: #1a202c;
+    --mentora-text-secondary: #64748b;
+    --mentora-text-tertiary: #94a3b8;
+    --mentora-bg: #ffffff;
+    --mentora-border: rgba(0,0,0,0.08);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --font-body: 'DM Sans', sans-serif;
+    --font-display: 'DM Serif Display', serif;
   }
 
-  .assessment-container {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 0 20px;
-    font-family: 'DM Sans', sans-serif;
+  .premium-wrapper {
+    font-family: var(--font-body);
+    color: var(--mentora-text);
+    background-color: #fafbfc;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(74, 158, 181, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(26, 26, 46, 0.02) 0px, transparent 50%);
+    min-height: calc(100vh - 80px);
+    padding: 80px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .cold-start-card {
-    background: white;
-    border: 1px solid var(--slate-200);
+    background: var(--mentora-bg);
+    border: 0.5px solid var(--mentora-border);
     border-radius: var(--radius-xl);
-    padding: 60px 40px;
+    padding: 70px 60px;
+    max-width: 860px;
+    width: 100%;
+    margin: 0 auto;
     text-align: center;
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0,0,0,0.02);
     position: relative;
     overflow: hidden;
   }
@@ -45,138 +53,191 @@
   .cold-start-card::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 6px;
-    background: linear-gradient(90deg, var(--medical-blue), var(--medical-blue-light));
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--teal);
   }
 
   .hero-label {
     display: inline-block;
     font-size: 11px;
     font-weight: 600;
-    letter-spacing: 1.2px;
+    letter-spacing: 2px;
     text-transform: uppercase;
-    color: var(--medical-blue-light);
-    background: var(--medical-blue-pale);
-    padding: 6px 16px;
-    border-radius: 100px;
+    color: var(--teal);
     margin-bottom: 24px;
   }
 
   .hero-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(28px, 5vw, 42px);
-    line-height: 1.1;
-    color: var(--slate-900);
-    margin-bottom: 20px;
+    font-family: var(--font-display);
+    font-size: clamp(36px, 5vw, 48px);
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--dark);
+    margin-bottom: 24px;
   }
 
   .hero-title em {
     font-style: italic;
-    color: var(--medical-blue);
+    color: var(--teal);
   }
 
   .hero-description {
     font-size: 18px;
-    color: var(--slate-500);
-    line-height: 1.6;
-    max-width: 600px;
-    margin: 0 auto 40px;
+    font-weight: 300;
+    color: var(--mentora-text-secondary);
+    line-height: 1.7;
+    max-width: 640px;
+    margin: 0 auto 56px;
   }
 
   .feature-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 24px;
-    margin-bottom: 48px;
-    text-align: left;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-bottom: 64px;
+    text-align: center;
+    border-top: 0.5px solid var(--mentora-border);
+    padding-top: 56px;
   }
 
   .feature-item {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     gap: 16px;
-    align-items: flex-start;
   }
 
   .feature-icon {
-    width: 40px;
-    height: 40px;
-    background: var(--medical-blue-pale);
-    border-radius: 10px;
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-    color: var(--medical-blue);
+    width: 48px;
+    height: 48px;
+    background: rgba(74, 158, 181, 0.05);
+    border: 0.5px solid var(--teal-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--teal);
   }
 
   .feature-text h3 {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--slate-900);
-    margin-bottom: 4px;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--dark);
+    margin-bottom: 8px;
   }
 
   .feature-text p {
-    font-size: 13px;
-    color: var(--slate-500);
-    line-height: 1.4;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--mentora-text-secondary);
+    line-height: 1.6;
+    margin: 0;
   }
 
-  .btn-start {
+  .actions-container {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+
+  .btn-premium {
     display: inline-flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    background: linear-gradient(135deg, var(--medical-blue) 0%, var(--medical-blue-light) 100%);
-    color: white;
-    padding: 18px 36px;
-    border-radius: var(--radius-md);
+    padding: 20px 48px;
+    border-radius: 100px;
     font-size: 16px;
-    font-weight: 600;
     text-decoration: none;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 16px rgba(29, 78, 216, 0.28);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     border: none;
     cursor: pointer;
+    min-width: 280px;
+    outline: none;
   }
 
-  .btn-start:hover {
+  .btn-primary {
+    background: var(--dark);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(26, 26, 46, 0.15);
+  }
+  .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(29, 78, 216, 0.35);
+    box-shadow: 0 8px 24px rgba(26, 26, 46, 0.25);
+    background: #23233a;
   }
 
-  .btn-start svg {
-    transition: transform 0.2s ease;
+  .btn-secondary {
+    background: var(--mentora-bg);
+    color: var(--dark);
+    border: 1px solid var(--mentora-border);
+  }
+  .btn-secondary:hover {
+    transform: translateY(-2px);
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
   }
 
-  .btn-start:hover svg {
-    transform: translateX(4px);
+  .btn-title {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn-primary .btn-title svg { stroke: var(--teal); }
+  .btn-secondary .btn-title svg { stroke: var(--dark); }
+  
+  .btn-desc {
+    font-size: 12px;
+    font-weight: 400;
+    opacity: 0.7;
+    margin-top: 4px;
   }
 
   .stats-info {
-    margin-top: 32px;
     font-size: 13px;
-    color: var(--slate-400);
+    color: var(--mentora-text-tertiary);
+    font-weight: 300;
+  }
+
+  @media (max-width: 768px) {
+    .feature-grid { grid-template-columns: 1fr; gap: 32px; padding-top: 40px; }
+    .cold-start-card { padding: 48px 32px; }
+    .actions-container { flex-direction: column; align-items: center; }
+    .btn-premium { width: 100%; min-width: unset; }
+  }
+
+  .fade-up { opacity: 0; transform: translateY(20px); animation: fadeUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+  .d-1 { animation-delay: 0.1s; }
+  .d-2 { animation-delay: 0.2s; }
+  .d-3 { animation-delay: 0.3s; }
+  .d-4 { animation-delay: 0.4s; }
+  
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="assessment-container">
-  <div class="cold-start-card">
-    <span class="hero-label">{{ t('cold_start_hero_label', lang)|default('Kwalificatie Dashboard') }}</span>
-    <h1 class="hero-title">{{ t('cold_start_hero_title', lang)|default('Ontdek uw <em>BIG-gereedheid</em>') | safe }}</h1>
-    <p class="hero-description">
+<div class="premium-wrapper">
+  <div class="cold-start-card fade-up">
+    
+    <span class="hero-label fade-up d-1">{{ t('cold_start_hero_label', lang)|default('Kwalificatie Dashboard') }}</span>
+    <h1 class="hero-title fade-up d-1">{{ t('cold_start_hero_title', lang)|default('Ontdek uw <em>BIG-gereedheid</em>') | safe }}</h1>
+    
+    <p class="hero-description fade-up d-2">
       {{ t('cold_start_hero_desc', lang)|default('Krijg direct inzicht in uw medische kennis volgens de Nederlandse NHG-standaarden. Start uw eerste scan om uw persoonlijke dashboard te activeren.') }}
     </p>
 
-    <div class="feature-grid">
+    <div class="feature-grid fade-up d-2">
       <div class="feature-item">
         <div class="feature-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
           </svg>
         </div>
@@ -187,8 +248,7 @@
       </div>
       <div class="feature-item">
         <div class="feature-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 20h9"></path>
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
           </svg>
@@ -200,8 +260,7 @@
       </div>
       <div class="feature-item">
         <div class="feature-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
@@ -213,41 +272,42 @@
       </div>
     </div>
 
-    <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:16px;">
-
-      <form action="{{ url_for('diagnostic.start_diagnostic', lang=lang) }}" method="POST">
+    <div class="actions-container fade-up d-3">
+      <form action="{{ url_for('diagnostic.start_diagnostic', lang=lang) }}" method="POST" style="margin: 0;">
         <input type="hidden" name="diagnostic_type" value="quick_scan_10">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn-start">
-          {{ t('cold_start_btn_start', lang)|default('Snelle scan (10 vragen)') }}
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
+        <button type="submit" class="btn-premium btn-primary">
+          <span class="btn-title">
+            {{ t('cold_start_btn_start', lang)|default('Snelle scan (10 vragen)') }}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </span>
+          <span class="btn-desc">~5 minuten voltooitijd</span>
         </button>
-        <p style="font-size:12px; color:var(--slate-400); margin-top:8px; text-align:center;">~5 minuten</p>
       </form>
 
-      <form action="{{ url_for('diagnostic.start_diagnostic', lang=lang) }}" method="POST">
+      <form action="{{ url_for('diagnostic.start_diagnostic', lang=lang) }}" method="POST" style="margin: 0;">
         <input type="hidden" name="diagnostic_type" value="full_60">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn-start" style="background: linear-gradient(135deg, #334155 0%, #64748b 100%); box-shadow: 0 4px 16px rgba(51,65,85,0.2);">
-          {{ t('cold_start_btn_full', lang)|default('Uitgebreide diagnostiek (30 vragen)') }}
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
+        <button type="submit" class="btn-premium btn-secondary">
+          <span class="btn-title">
+            {{ t('cold_start_btn_full', lang)|default('Uitgebreide diagnostiek') }}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </span>
+          <span class="btn-desc">~20 minuten &middot; gedetailleerd rapport</span>
         </button>
-        <p style="font-size:12px; color:var(--slate-400); margin-top:8px; text-align:center;">~20 minuten &middot; gedetailleerd rapport</p>
       </form>
-
     </div>
 
-    <p class="stats-info">
+    <p class="stats-info fade-up d-4">
       {{ t('cold_start_stats_info', lang)|default('Al meer dan 1.200 artsen gingen u voor deze week.') }}
     </p>
+
   </div>
 </div>
 {% endblock %}

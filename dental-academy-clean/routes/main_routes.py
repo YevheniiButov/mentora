@@ -105,8 +105,13 @@ def home(lang):
 
 @main_bp.route('/about')
 def about(lang):
-    """About page"""
-    return render_template('about.html', lang=lang)
+    """About page (Redirects to our_story)"""
+    return redirect(url_for('main.our_story', lang=lang))
+
+@main_bp.route('/our-story')
+def our_story(lang):
+    """Founder's Journey - Editorial Long-read"""
+    return render_template('our_story.html', lang=lang)
 
 @main_bp.route('/contact')
 def contact(lang):
