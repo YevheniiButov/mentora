@@ -769,8 +769,56 @@
       cursor: pointer; letter-spacing: .5px;
       animation: fade-in-soft 1s ease 2s both;
     }
-    @keyframes fade-in-soft { from{opacity:0} to{opacity:1} }
+    @keyframes fade-in-soft { from { opacity: 0; } to { opacity: 1; } }
     #intro-skip:hover { color: #64748b; }
+
+    /* Responsive Layout Grids */
+    .philosophy-grid, .amc-showcase-grid, .amc-cta-grid {
+      display: grid;
+      gap: 20px;
+    }
+    
+    .philosophy-grid {
+      grid-template-columns: 1fr 1fr;
+      max-width: 800px;
+    }
+    
+    .amc-showcase-container {
+      padding: 72px 40px;
+      background: #1a1a2e;
+      margin-bottom: 0;
+    }
+    
+    .amc-showcase-grid {
+      grid-template-columns: 1fr 1fr;
+      max-width: 680px;
+      margin-bottom: 40px;
+    }
+    
+    .amc-cta-grid {
+      grid-template-columns: 1fr 1fr; 
+      gap: 60px; 
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    @media (max-width: 768px) {
+      .amc-showcase-container {
+        padding: 48px 20px;
+      }
+      .philosophy-grid, .amc-showcase-grid, .amc-cta-grid {
+        grid-template-columns: 1fr;
+        max-width: 100%;
+      }
+      .amc-cta-grid {
+        gap: 32px;
+        padding: 0 20px;
+      }
+      .philosophy-section {
+        padding: 48px 20px !important;
+      }
+    }
   </style>
 
   <div id="intro-inner" style="display:flex;flex-direction:column;align-items:center;">
@@ -963,7 +1011,7 @@ border-top: 0.5px solid var(--mentora-border); max-width: 1200px; margin: 0 auto
   line-height:1.8;max-width:640px;font-weight:300;margin-bottom:40px;">
     {{ t('philosophy_desc', lang)|default('Medicine is a universal language. Whether you practiced in Kyiv, Madrid, or Istanbul, your dedication to the patient is the same. MentoraMedic is a prestigious collective of adoptive professionals. We are here to help you navigate the transition into your new home, ensuring your skills are recognized, respected, and put to work where they are needed most.') }}
   </p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:800px;">
+  <div class="philosophy-grid">
     <div style="padding:32px;border:0.5px solid var(--mentora-border);
     border-radius:16px;background:var(--mentora-bg);">
       <h3 style="font-family:'DM Serif Display',serif;font-size:20px;
@@ -1036,8 +1084,7 @@ border-top: 0.5px solid var(--mentora-border); max-width: 1200px; margin: 0 auto
 </div>
 
 <!-- Change 4: AMC Showcase Section -->
-<div class="fade-up" style="padding:72px 40px;background:#1a1a2e;
-margin-bottom:0;">
+<div class="fade-up amc-showcase-container">
   <div style="max-width:1200px;margin:0 auto;">
     <div class="section-label" style="color:rgba(255,255,255,0.3);">
       {{ t('amc_label', lang)|default('AMC Showcase · Amsterdam') }}
@@ -1049,8 +1096,7 @@ margin-bottom:0;">
     max-width:580px;font-weight:300;margin-bottom:40px;">
       {{ t('amc_desc', lang)|default('Our upcoming national campaign at the AMC Hospital features 30 specialists in full professional dress. It is a visual testament to the reality of our workforce: half are already practicing in the Netherlands, and half are ready to join them.') }}
     </p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;
-    gap:20px;max-width:680px;margin-bottom:40px;">
+    <div class="amc-showcase-grid">
       <div style="padding:28px;background:rgba(255,255,255,0.05);
       border:0.5px solid rgba(255,255,255,0.1);border-radius:16px;">
         <div style="font-family:'DM Serif Display',serif;font-size:52px;

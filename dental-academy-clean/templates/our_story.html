@@ -196,6 +196,22 @@
     }
   }
 
+  .amc-cta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 900px) {
+    .amc-cta-grid {
+      grid-template-columns: 1fr;
+      gap: 40px;
+      padding: 0 20px;
+    }
+  }
   /* Copying identical button styles from index */
   .btn-white {
     background: #fff;
@@ -331,7 +347,7 @@
 <!-- VERIFICATION & CTA LAYER (Reused from index.html) -->
 <div style="padding: 100px 40px; background: #1a1a2e; margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.05);">
   <div style="max-width: 1200px; margin: 0 auto;">
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;">
+    <div class="amc-cta-grid">
       <div>
         <div class="section-label" style="color: rgba(255,255,255,0.4);">
           {{ t('amc_label', lang)|default('AMC Showcase · Amsterdam') }}
