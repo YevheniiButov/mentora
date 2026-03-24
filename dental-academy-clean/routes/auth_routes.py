@@ -59,7 +59,7 @@ def register():
     lang = g.get('lang', 'en')
     if current_user.is_authenticated:
         return redirect(url_for('main.index', lang=lang))
-    return render_template('auth/register.html', lang=lang)
+    return redirect(url_for('auth.quick_register', lang=lang))
 
 @auth_bp.route('/quick-register')
 def quick_register():

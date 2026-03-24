@@ -157,7 +157,7 @@ def auth_login_redirect(lang):
 @main_bp.route('/auth/register')
 def auth_register_redirect(lang):
     """Redirect to auth register page"""
-    return redirect(url_for('auth.register', lang=lang))
+    return redirect(url_for('auth.quick_register', lang=lang))
 
 @main_bp.route('/auth/quick-register')
 def auth_quick_register_redirect(lang):
