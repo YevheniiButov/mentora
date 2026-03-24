@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('resend_confirmation', lang) | default('Resend Confirmation') }} - Mentora{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+<style>
+.resend-container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+.resend-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.resend-header h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.resend-header p {
+    color: #7f8c8d;
+    font-size: 16px;
+}
+
+.resend-form {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ecf0f1;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.btn-primary-premium {
+    background: linear-gradient(135deg, #1d4ed8, #2DB5A9);
+    color: white;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-primary-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+}
+
+.back-to-login {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.back-to-login a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-to-login a:hover {
+    text-decoration: underline;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="resend-container">
+    <div class="resend-header">
+        <h1>{{ t('resend_confirmation', lang) | default('Resend Confirmation') }}</h1>
+        <p>{{ t('resend_confirmation_subtitle', lang) | default('Enter your email address to receive a new confirmation link') }}</p>
+    </div>
+
+    <form class="resend-form" id="resendForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        
+        <div class="form-group">
+            <label for="email">{{ t('email', lang) | default('Email Address') }}</label>
+            <input type="email" id="email" name="email" required autocomplete="email" placeholder="{{ t('email_placeholder', lang) | default('Enter your email address') }}">
+        </div>
+
+        <button type="submit" class="btn-primary-premium" id="submitBtn">
+            <i class="fas fa-paper-plane"></i> {{ t('send_link', lang) | default('Send Confirmation Link') }}
+        </button>
+    </form>
+
+    <div class="back-to-login">
+        <a href="{{ url_for('auth.login', lang=lang) }}">
+            <i class="fas fa-arrow-left"></i> {{ t('back_to_login', lang) | default('Back to Login') }}
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('resendForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const email = document.getElementById('email').value.trim();
+        
+        if (!email) return;
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ t("sending", lang) | default("Sending...") }}';
+        
+        try {
+            const response = await fetch('{{ url_for("auth.resend_confirmation") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showNotification('success', result.message);
+                form.reset();
+            } else {
+                showNotification('error', result.error || 'Failed to resend confirmation.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showNotification('error', 'Network error. Please try again.');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> {{ t("send_link", lang) | default("Send Confirmation Link") }}';
+        }
+    });
+});
+
+function showNotification(type, message) {
+    // Basic notification (assuming notification-system.js is available or using local alert)
+    if (window.showToast) {
+        window.showToast(type, message);
+    } else {
+        alert(message);
+    }
+}
+</script>
+{% endblock %}
