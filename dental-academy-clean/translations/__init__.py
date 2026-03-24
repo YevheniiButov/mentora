@@ -5,12 +5,26 @@ Professional medical terminology in 9 languages
 
 from .nl import translations as nl_translations
 from .en import translations as en_translations
+from .ru import translations as ru_translations
+from .uk import translations as uk_translations
+from .tr import translations as tr_translations
+from .ar import translations as ar_translations
+from .es import translations as es_translations
+from .pt import translations as pt_translations
+from .fa import translations as fa_translations
 from .domain_diagnostic_translations import DOMAIN_DIAGNOSTIC_TRANSLATIONS
 
 # Combine all translations
 translations = {
     'nl': nl_translations,
     'en': en_translations,
+    'ru': ru_translations,
+    'uk': uk_translations,
+    'tr': tr_translations,
+    'ar': ar_translations,
+    'es': es_translations,
+    'pt': pt_translations,
+    'fa': fa_translations,
 }
 
 # Default language (Dutch)
@@ -20,15 +34,29 @@ DEFAULT_LANGUAGE = 'nl'
 LANGUAGE_NAMES = {
     'nl': 'Nederlands',
     'en': 'English',
+    'ru': 'Русский',
+    'uk': 'Українська',
+    'tr': 'Türkçe',
+    'ar': 'العربية',
+    'es': 'Español',
+    'pt': 'Português',
+    'fa': 'فارسی',
 }
 
 # RTL languages
-RTL_LANGUAGES = []
+RTL_LANGUAGES = ['ar', 'fa']
 
 # Country codes for flags
 COUNTRY_CODES = {
     'nl': 'nl',
     'en': 'gb',
+    'ru': 'ru',
+    'uk': 'ua',
+    'tr': 'tr',
+    'ar': 'sa',
+    'es': 'es',
+    'pt': 'pt',
+    'fa': 'ir',
 }
 
 def get_translation(key, lang=DEFAULT_LANGUAGE, **kwargs):

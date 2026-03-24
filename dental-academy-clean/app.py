@@ -50,7 +50,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Supported languages
-SUPPORTED_LANGUAGES = ['nl', 'en']
+SUPPORTED_LANGUAGES = ['nl', 'en', 'ru', 'uk', 'tr', 'ar', 'es', 'pt', 'fa']
 DEFAULT_LANGUAGE = 'nl'
 
 # Load configuration

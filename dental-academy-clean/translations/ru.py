@@ -1167,6 +1167,7 @@ translations = {
     'profession_required': 'Профессия обязательна',
     'select_profession': 'Выберите профессию',
     'dentist': 'Стоматолог',
+    'doctor': 'Врач',
     'pharmacist': 'Фармацевт',
     'family_doctor': 'Семейный врач',
     'nurse': 'Медсестра',

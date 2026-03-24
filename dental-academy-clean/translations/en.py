@@ -1245,6 +1245,7 @@ translations = {
     'profession_required': 'Profession is required',
     'select_profession': 'Select profession',
     'dentist': 'Dentist',
+    'doctor': 'Doctor',
     'pharmacist': 'Pharmacist',
     'family_doctor': 'Family Doctor',
     'nurse': 'Nurse',

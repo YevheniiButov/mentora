@@ -17,7 +17,7 @@ def is_user_admin(user):
 main_bp = Blueprint('main', __name__, url_prefix='/<string:lang>')
 
 # Поддерживаемые языки
-SUPPORTED_LANGUAGES = ['nl', 'en']
+SUPPORTED_LANGUAGES = ['nl', 'en', 'ru', 'uk', 'tr', 'ar', 'es', 'pt', 'fa']
 DEFAULT_LANGUAGE = 'nl'
 
 @main_bp.before_request
@@ -158,6 +158,14 @@ def auth_login_redirect(lang):
 def auth_register_redirect(lang):
     """Redirect to auth register page"""
     return redirect(url_for('auth.register', lang=lang))
+
+@main_bp.route('/auth/quick-register')
+def auth_quick_register_redirect(lang):
+    """Handle auth quick-register page directly"""
+    from flask import g, session
+    g.lang = lang
+    session['lang'] = lang
+    return render_template('auth/quick_register.html', lang=lang)
 
 @main_bp.route('/assessment')
 @login_required

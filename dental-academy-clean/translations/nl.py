@@ -1006,6 +1006,7 @@ translations = {
     'profession_required': 'Beroep is verplicht',
     'select_profession': 'Selecteer beroep',
     'dentist': 'Tandarts',
+    'doctor': 'Arts',
     'pharmacist': 'Apotheker',
     'family_doctor': 'Huisarts',
     'nurse': 'Verpleegkundige',
